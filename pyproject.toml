@@ -1,0 +1,17 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "act"
+version = "0.0.1"
+description = "Automatic Cell Tuner"
+readme = "README.md"
+requires-python = "==3.8.*"
+dependencies = [
+    "NEURON==8.2.2",
+    "numpy==1.23.5",
+    "sbi==0.17.2",
+    "matplotlib",
+    "torch",
+]
