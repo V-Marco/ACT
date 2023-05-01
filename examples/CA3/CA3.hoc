@@ -80,6 +80,7 @@ begintemplate CA3PyramidalCell
 		
 			insert imCA3
 			gbar_imCA3 = gim
+			tau_imCA3 = 5
 
 			ena=45  ek=-80 
 		}
@@ -102,6 +103,7 @@ begintemplate CA3PyramidalCell
 
 			insert imCA3
 			gbar_imCA3 = gim
+			tau_imCA3 = 5
 
 			ena=45  ek=-80
 		}
@@ -124,6 +126,7 @@ begintemplate CA3PyramidalCell
 
 			insert imCA3
 			gbar_imCA3 = gim
+			tau_imCA3 = 5
 			
 			ena=45  ek=-80  		}
 		

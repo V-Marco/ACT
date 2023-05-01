@@ -11,8 +11,8 @@
       },
       "optimization_parameters": {
         "current_injections": [0.2,0.3,0.4,0.5,0.6],
-        "parameters": ["gbar_natCA3", "gbar_kdrCA3", "gbar_napCA3", "gbar_imCA3","tau_imCA3"],
-        "lows": [0.001, 6.0e-04, 1.0e-05, 5.0e-06, 1.0],
-        "highs": [0.36, 0.18, 0.005, 0.017, 10.0]
+        "parameters": ["gbar_natCA3"],
+        "lows": [0.01],
+        "highs": [0.1]
       }
 }

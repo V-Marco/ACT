@@ -124,7 +124,7 @@ class ACTOptimizer:
 
 class SBIOptimizer(ACTOptimizer):
     '''
-    Optimizer based on SBI's SNPE-C (https://www.mackelab.org/sbi/).
+    Optimizer based on SBI's SNPE-C (https://www.mackelab.org/sbi/). Trains the feature model at each epoch.
     '''
 
     def __init__(self, config_file: str) -> None:
@@ -150,8 +150,6 @@ class SBIOptimizer(ACTOptimizer):
                  num_samples: int = 10, workers: int = 1,
                  verbose = False) -> np.array:
         '''
-        Optimize using SBI's SNPE-C method. Trains the feature model at each epoch.
-
         Parameters:
         ----------
         feature_model: torch.nn.Module
@@ -174,7 +172,7 @@ class SBIOptimizer(ACTOptimizer):
             Number of threads for SBI to use.
 
         verbose: bool = False
-            Show progress information.
+            Show progress information reported by SBI.
 
         Returns:
         ----------
@@ -276,16 +274,16 @@ class SBIOptimizer(ACTOptimizer):
     
 class NaiveLinearOptimizer(ACTOptimizer):
     '''
-    At each epoch, naive linear optimizer generates random parameter samples from a uniform distribution 
+    At each epoch, Naive Linear Optimizer generates random parameter samples from the uniform distribution 
     on given [lows, highs] bounds and runs NEURON on these samples for each value of current injection amplitude.
     NEURON's voltage output is then used as training data for the predictive model, which tries to find parameters 
     that could produce such output.
     
-    The predictive model consists of two linear layers separated by a RELU activation. The output of the second linear layer 
+    The predictive model consists of two linear layers separated by a ReLU activation. The output of the second linear layer 
     is passed through a sigmoid function and multiplied by (highs - lows) + lows to ensure predictions lie in the given bounds.
     The network is optimized with the ADAM optimizer to minimize MSE loss.
     
-    The pipeline does not require any external data and uses observed_data only for predictions.
+    The pipeline does not require any external data and uses observed_data only for predictions. It also does not support feature models.
 
     The optimizer outputs parameter estimates for each current injection amplidtude. Ideally, constant parameter estimates should have
     the same value across all amplitudes, but if that is not the case, the estimates can be treated as different potential solutions.
@@ -424,13 +422,18 @@ class NaiveLinearOptimizer(ACTOptimizer):
 
 
 
-class LinearOptimizer(ACTOptimizer):
+class RandomSearchLinearOptimizer(ACTOptimizer):
     '''
-    Optimizes by training one linear layer on top of the provided feature model. 
-    Training is done by sampling random parameter estimates within specified bounds, simulating voltage 
-    outputs with these estimates, passing the outputs through the model and minimizing MSELoss with the target.
+    At each epoch, Random Search Linear Optimizer generates a random parameter sample from the uniform on [lows, highs] distribution
+    and runs NEURON with the generated sample. NEURON's voltage output is passed through a feature model and a linear layer with
+    ReLU activation to obtain predictions which are then optimized to match the observed data. Both the feature and linear models
+    are trained simultaneoulsy with the SGD optimizer and MSE loss.
 
-    Predicts by running the model num_prediction_rounds times and selecting the prediction with the smallest loss.
+    Predictions for the observed data are made with random search. At each round, a random parameter sample is generated and passed
+    through NEURON and the trained model, and the loss value is saved to the list. The algorithm outputs the parameter sample with
+    the lowest loss value across prediction rounds.
+
+    Due to the nature of the algorithm, training loss values on general data will probably be large and unstable.
     '''
 
     def __init__(self, config_file: str) -> None:
@@ -443,7 +446,8 @@ class LinearOptimizer(ACTOptimizer):
         super().__init__(config_file)
 
     def optimize(self, feature_model: torch.nn.Module, observed_data: torch.Tensor, num_summary_features: int, 
-                 num_epochs: int = 10, num_prediction_rounds: int = 10) -> np.array:
+                 num_epochs: int = 100, num_prediction_rounds: int = 100, lr: float = 1e-3, 
+                 verbose: bool = False, return_loss_history: bool = False) -> np.array:
         '''
         Optimize using a linear model.
 
@@ -460,15 +464,24 @@ class LinearOptimizer(ACTOptimizer):
             Number of summary features which a feature model outputs.
 
         num_epochs: int = 10
-            Number of epochs (rounds) to run.
+            Number of training epochs to run.
 
         num_prediction_rounds = 10
             Number of prediction trials.
 
+        verbose: bool = False
+            Whether to print training loss at each epoch. The loss is averaged across current injections.
+
+        return_loss_history: bool = False
+            Whether to return loss history together with parameter esitmates.
+
         Returns:
         ----------
-        estimates: np.array, shape = (number of parameters,)
-            Parameter estimates made for observed_data.
+        estimates: ndarray, shape = (number of parameters, )
+            Parameter estimates.
+
+        loss_history: list
+            If return_loss_history = True, list of loss values at each epoch.
         '''
 
         self.model = torch.nn.Sequential(
@@ -477,26 +490,35 @@ class LinearOptimizer(ACTOptimizer):
             torch.nn.ReLU()
         )
 
-        optim = torch.optim.Adam(self.model.parameters(), lr = 1e-3)
+        optim = torch.optim.SGD(self.model.parameters(), lr = lr)
 
         self.model.train(True)
-        for _ in range(num_epochs):
-            
-            # Generate random parameter samples in the specified bounds
+        loss_history = []
+        for ne in range(num_epochs):
+            # Generate a random parameter sample in the specified bounds
             param_samples = np.random.uniform(low = self.lows, high = self.highs)
 
-            # Simulate a batch with generated parameter samples
+            # Simulate a batch with the generated parameter sample
             simulated_data = self.simulate(param_samples, self.parameters)
 
             # Do standard optimization
+            losses = []
             for i in range(self.num_current_injections):
                 optim.zero_grad()
                 pred = self.model(simulated_data[i])
+
                 loss = torch.nn.functional.mse_loss(pred, observed_data[i].reshape((1, -1)))
+                losses.append(loss.detach().numpy())
+
                 loss.backward()
                 optim.step()
 
-        # Predict
+            if verbose:
+                print(f"epoch {ne}: mean_train_loss = {np.mean(losses)}")
+            if return_loss_history:
+                loss_history.append(np.mean(losses))
+
+        # Predict with random search
         predicts = []
         losses = []
 
@@ -518,7 +540,12 @@ class LinearOptimizer(ACTOptimizer):
                 predicts.append(param_samples)
                 losses.append(np.mean(candidate_loss))
 
-        return predicts[np.argmin(losses)]
+        final_prediction = np.array(predicts[np.argmin(losses)]).flatten()
+
+        if return_loss_history:
+            return final_prediction, loss_history
+        else:
+            return final_prediction
         
 
     def simulate(self, *args, **kwargs) -> torch.Tensor:
