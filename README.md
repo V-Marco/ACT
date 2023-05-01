@@ -53,17 +53,17 @@ import torch
 import numpy as np
 import pandas as pd
 from act.feature_model import DefaultSummaryModel
-from act.optim import LinearOptimizer
+from act.optim import RandomSearchLinearOptimizer
 from act.metrics import correlation_score
 
 # Load observed data
 data = torch.tensor(pd.read_csv("example_data.csv", header = None).to_numpy()).float()
 
 # Reshape to (num_current_injections, 1024) for convenience
-data = data.reshape((5, 1024))
+data = data.T
 
 # Define optimizer
-linopt = LinearOptimizer(config_file = "config.json")
+linopt = RandomSearchLinearOptimizer(config_file = "config.json")
 
 # Define feature model
 feature_model = DefaultSummaryModel(num_summary_features = 8, use_statistics = True)
