@@ -33,7 +33,7 @@ Conceptually, to run `act` you need four components.
 1. A `.hoc` file which declares the cell's architecture.
 2. Compiled modfiles for this `.hoc` file.
 3. A `config.json` file declaring biological parameters of optimization.
-4. A data file with observed (target) voltage traces.
+4. A data file with observed (target) voltage traces, possibly for different current injections. Each trace must have 1024 observations.
 
 The running process consists of three steps.
 1. Defining an optimizer and a feature model.
