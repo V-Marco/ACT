@@ -276,11 +276,21 @@ class SBIOptimizer(ACTOptimizer):
     
 class NaiveLinearOptimizer(ACTOptimizer):
     '''
-    Optimize by sampling random parameter samples, generating voltage output and training a two-layer
-    linear neural network to predict parameters from voltage data. 
-    The optimizer does not take into account different current injection values.
+    At each epoch, naive linear optimizer generates random parameter samples from a uniform distribution 
+    on given [lows, highs] bounds and runs NEURON on these samples for each value of current injection amplitude.
+    NEURON's voltage output is then used as training data for the predictive model, which tries to find parameters 
+    that could produce such output.
+    
+    The predictive model consists of two linear layers separated by a RELU activation. The output of the second linear layer 
+    is passed through a sigmoid function and multiplied by (highs - lows) + lows to ensure predictions lie in the given bounds.
+    The network is optimized with the ADAM optimizer to minimize MSE loss.
+    
+    The pipeline does not require any external data and uses observed_data only for predictions.
 
-    Obtained estimates are guaranteed to be in range [0, highs].
+    The optimizer outputs parameter estimates for each current injection amplidtude. Ideally, constant parameter estimates should have
+    the same value across all amplitudes, but if that is not the case, the estimates can be treated as different potential solutions.
+
+    The optimizer is known to get stuck in local minima, so multiple re-runs are advised. 
     '''
 
     def __init__(self, config_file: str) -> None:
@@ -292,19 +302,33 @@ class NaiveLinearOptimizer(ACTOptimizer):
         '''
         super().__init__(config_file)
 
-    def optimize(self, observed_data: torch.Tensor, num_epochs: int) -> np.array:
+    def optimize(self, observed_data: torch.Tensor, num_epochs: int = 100, lr: float = 1e-3, 
+                 verbose: bool = False, return_loss_history: bool = False) -> np.array:
         '''
         Parameters:
         ----------
         observed_data: torch.Tensor(shape = (num_current_injections, 1024))
             Target values to optimize for. They will only be used for predictions.
 
-        num_epochs: int = 1
+        num_epochs: int = 100
             Number of epochs (rounds) to run.
+
+        lr: float = 1e-3
+            Learning rate for the ADAM optimizer.
+
+        verbose: bool = False
+            Whether to print loss at each epoch. The loss is averaged across all current injections.
+
+        return_loss_history: bool = False
+            Whether to return loss history together with parameter esitmates.
 
         Returns:
         ----------
-        estimates: np.array, shape = (number of parameters,)
+        estimates: ndarray, shape = (num_current_injections, number of parameters)
+            Parameter estimates.
+
+        loss_history: list
+            If return_loss_history = True, list of loss values at each epoch.
         '''
         
         self.model = torch.nn.Sequential(
@@ -313,13 +337,17 @@ class NaiveLinearOptimizer(ACTOptimizer):
             torch.nn.Linear(16, self.num_parameters),
             torch.nn.Sigmoid()
         )
-        # Scaler to ensure parameter predictions are lower than self.highs
-        sigmoid_scaler = torch.tensor(self.highs)
 
-        optim = torch.optim.Adam(self.model.parameters(), lr = 1e-3)
+        # Scalers to ensure parameter predictions are within range
+        # Ref: https://stackoverflow.com/questions/73071399/how-to-bound-the-output-of-a-layer-in-pytorch
+        sigmoid_mins = torch.tensor(self.lows)
+        sigmoid_maxs = torch.tensor(self.highs)
+
+        optim = torch.optim.Adam(self.model.parameters(), lr = lr)
 
         self.model.train(True)
-        for _ in range(num_epochs):
+        loss_history = []
+        for ne in range(num_epochs):
             # Generate random parameter samples in the specified bounds
             param_samples = np.random.uniform(low = self.lows, high = self.highs)
 
@@ -327,18 +355,33 @@ class NaiveLinearOptimizer(ACTOptimizer):
             simulated_data = self.simulate(param_samples, self.parameters)
 
             # Do standard optimization
+            losses = []
             for i in range(self.num_current_injections):
                 optim.zero_grad()
-                pred = self.model(simulated_data[i]) * sigmoid_scaler
+                pred = self.model(simulated_data[i]) * (sigmoid_maxs - sigmoid_mins) + sigmoid_mins
+
                 loss = torch.nn.functional.mse_loss(pred, torch.tensor(param_samples).float())
+                losses.append(loss.detach().numpy())
+
                 loss.backward()
                 optim.step()
 
+            if verbose:
+                print(f"epoch {ne}: mean_train_loss = {np.mean(losses)}")
+
+            loss_history.append(np.mean(losses))
+
         # Get predictions
         self.model.eval()
-        out = self.model(observed_data[i]) * sigmoid_scaler
+        outs = []
+        for i in range(self.num_current_injections):
+            out = self.model(observed_data[i]) * (sigmoid_maxs - sigmoid_mins) + sigmoid_mins
+            outs.append(out.detach().numpy())
 
-        return out.detach().numpy()
+        if return_loss_history:
+            return np.array(outs).reshape((self.num_current_injections, -1)), loss_history
+        else:
+            return np.array(outs).reshape((self.num_current_injections, -1))
         
 
     def simulate(self, *args, **kwargs) -> torch.Tensor:
@@ -375,7 +418,7 @@ class NaiveLinearOptimizer(ACTOptimizer):
             voltage, _ = self.cell.resample()
             data.append(voltage)
 
-        out = torch.tensor(np.array(data)).float() # 5 x 1024
+        out = torch.tensor(np.array(data)).float()
 
         return out
 
