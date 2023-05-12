@@ -6,6 +6,9 @@ import torch
 import numpy as np
 import json
 
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.metrics import mean_squared_error
+
 from act.cell import Cell
 
 class ACTOptimizer:
@@ -268,7 +271,7 @@ class SBIOptimizer(ACTOptimizer):
             voltage, _ = self.cell.resample()
             data.append(voltage)
 
-        out = torch.tensor(np.array(data)).float() # 5 x 1024
+        out = torch.tensor(np.array(data)).float()
 
         return out
     
@@ -466,7 +469,7 @@ class RandomSearchLinearOptimizer(ACTOptimizer):
         num_epochs: int = 10
             Number of training epochs to run.
 
-        num_prediction_rounds = 10
+        num_prediction_rounds: int = 10
             Number of prediction trials.
 
         verbose: bool = False
@@ -582,8 +585,142 @@ class RandomSearchLinearOptimizer(ACTOptimizer):
             voltage, _ = self.cell.resample()
             data.append(voltage)
 
-        out = torch.tensor(np.array(data)).float() # 5 x 1024
+        out = torch.tensor(np.array(data)).float()
 
         return out
-
     
+
+class RandomSearchTreeOptimizer(ACTOptimizer):
+    '''
+    At each epoch, Random Search Tree Optimizer generates a random parameter sample from the uniform on [lows, highs] distribution
+    and runs NEURON with the generated sample. NEURON's voltage output for each current injection value is then used to train an
+    independent decision tree to predict the voltage trace for the same current injection value from the observed data. Trees for
+    a single parameter sample are united into groves (lists of fitted decision trees). The final model is a list of groves.
+
+    Predictions for the observed data are made with random search. At each round, a random parameter sample is generated and passed
+    through NEURON and then averaged across all groves for each value of current injection. The algorithm outputs the parameter sample with
+    the lowest loss value across prediction rounds.
+
+    The tree model is provided by scikit-learn, so all methods and attributes from 
+    https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html can be used.
+    '''
+
+    def __init__(self, config_file: str) -> None:
+        '''
+        Parameters:
+        ----------
+        config_file: str
+            Path to the .json configuration file with simulation parameters' values.
+        '''
+        super().__init__(config_file)
+
+    def optimize(self, observed_data: torch.Tensor, num_groves: int = 100, 
+                 num_prediction_rounds: int = 10, tree_max_depth: int = 5) -> np.array:
+        '''
+        Optimize using a decision tree.
+
+        Parameters:
+        ----------
+        observed_data: torch.Tensor(shape = (num_current_injections, 1024))
+            Target values to optimize for.
+
+        num_groves: int = 100
+            Number of groves to average across. Equivalent to the number of epochs.
+
+        num_prediction_rounds: int = 10
+            Number of prediction trials.
+
+        tree_max_depth: int = 5
+            Max depth of each tree.
+
+        Returns:
+        ----------
+        estimates: ndarray, shape = (number of parameters, )
+            Parameter estimates.
+        '''
+
+        self.model = []
+
+        for _ in range(num_groves):
+            # Generate a random parameter sample in the specified bounds
+            param_samples = np.random.uniform(low = self.lows, high = self.highs)
+
+            # Simulate a batch with the generated parameter sample
+            simulated_data = self.simulate(param_samples, self.parameters)
+
+            # Train a tree for each value of current injection
+            grove = []
+            for i in range(self.num_current_injections):
+                tree = DecisionTreeRegressor(max_depth = tree_max_depth)
+                tree.fit(simulated_data[i].reshape((-1, 1)), observed_data[i])
+                grove.append(tree)
+
+            self.model.append(grove)
+
+        # Predict with random search
+        predicts = []
+        losses = []
+
+        for _ in range(num_prediction_rounds):
+            # Generate random parameter samples in the specified bounds
+            param_samples = np.random.uniform(low = self.lows, high = self.highs)
+
+            # Simulate a batch with generated parameter samples
+            simulated_data = self.simulate(param_samples, self.parameters)
+
+            # Final prediction is the average prediction across all trees for each value of current injection
+            candidate_loss = []
+            for i in range(self.num_current_injections):
+                pred_for_ci = 0
+                for j in range(num_groves):
+                    pred_for_ci += self.model[j][i].predict(simulated_data[i].reshape((-1, 1)))
+                pred_for_ci = pred_for_ci / num_groves
+
+                loss = mean_squared_error(observed_data[i].detach().numpy(), pred_for_ci)
+                candidate_loss.append(loss)
+
+            predicts.append(param_samples)
+            losses.append(np.mean(candidate_loss))
+
+        final_prediction = np.array(predicts[np.argmin(losses)]).flatten()
+
+        return final_prediction
+        
+
+    def simulate(self, *args, **kwargs) -> torch.Tensor:
+        '''
+        Simulate data for the optimizer.
+
+        Returns:
+        ----------
+        outs: ndarray(shape = (num_current_injections, 1024))
+            Simulated data.
+        '''
+
+        data = []
+
+        for inj in self.current_injections:
+
+            # Set simulation parameters
+            steps_per_ms = 5000 / 600
+            h.steps_per_ms = steps_per_ms
+            h.dt = 1 / steps_per_ms
+            h.tstop = self.tstop
+            h.v_init = self.v_init
+
+            self.i_clamp.dur = self.i_clamp_dur
+            self.i_clamp.amp = inj
+            self.i_clamp.delay = self.i_clamp_delay
+
+            self.cell.set_parameters(self.parameters, args[0])
+            self.cell.set_parameters(list(kwargs.keys()), list(kwargs.values()))
+
+            # Run the simulation with the given parameters
+            h.run()
+
+            voltage, _ = self.cell.resample()
+            data.append(voltage)
+
+        out = np.array(data)
+
+        return out
