@@ -4,6 +4,7 @@ from sbi.inference import SNPE, prepare_for_sbi, simulate_for_sbi
 
 import torch
 import numpy as np
+from scipy.signal import resample
 import json
 
 from sklearn.tree import DecisionTreeRegressor
@@ -75,7 +76,7 @@ class ACTOptimizer:
         num_simulations: int
             Number of simulations to draw each round.
 
-        observed_data: torch.Tensor(shape = (num_current_injections, 1024))
+        observed_data: torch.Tensor(shape = (num_current_injections, len_voltage_trace))
             Target values to optimize for.
 
         Returns:
@@ -86,16 +87,46 @@ class ACTOptimizer:
         '''
         raise NotImplementedError
     
-    def simulate(self, *args, **kwargs) -> torch.Tensor:
+    def simulate(self, parameters: np.ndarray) -> torch.Tensor:
         '''
         Function to simulate data from a model for optimizer to use.
 
+        Parameters:
+        ----------
+        parameters: ndarray(shape = num_parameters)
+            Parameters optimized for.
+
         Returns:
         ----------
-        out: torch.Tensor, shape = (num_current_injections, 1024)
+        out: ndarray(shape = (num_current_injections, tstop * 10 + 1))
             Generated data.
         '''
-        raise NotImplementedError
+        simulated_data = []
+
+        for inj in self.current_injections:
+
+            # Set simulation parameters
+            steps_per_ms = 10
+            h.steps_per_ms = steps_per_ms
+            h.dt = 1 / steps_per_ms
+            h.tstop = self.tstop
+            h.v_init = self.v_init
+
+            self.i_clamp.dur = self.i_clamp_dur
+            self.i_clamp.amp = inj
+            self.i_clamp.delay = self.i_clamp_delay
+
+            self.cell.set_parameters(self.parameters, parameters)
+
+            # Run the simulation with the given parameters
+            h.run()
+
+            voltage = self.cell.mem_potential.as_numpy()
+            simulated_data.append(voltage)
+
+        out = np.array(simulated_data)
+
+        return out
 
     def parse_config(self, config_file: str) -> None:
         '''
@@ -156,10 +187,10 @@ class SBIOptimizer(ACTOptimizer):
         Parameters:
         ----------
         feature_model: torch.nn.Module
-            Model that generates summary features. Accepts tensors of shape (num_current_injections, 1024).
+            Model that generates summary features. Accepts tensors of shape (num_current_injections, len_voltage_trace).
             Returns tensors of shape (num_current_injections, num_summary_features).
 
-        observed_data: torch.Tensor(shape = (num_current_injections, 1024))
+        observed_data: torch.Tensor(shape = (num_current_injections, len_voltage_trace))
             Target values to optimize for.
 
         num_epochs: int = 1
@@ -186,7 +217,7 @@ class SBIOptimizer(ACTOptimizer):
         self.observed_data = observed_data
 
         # Prepare the simulation function and prior for SBI (default method from SBI)
-        # Simulation function must return tensors of shape (num_current_injections, 1024)
+        # Simulation function must return tensors of shape (num_current_injections, voltage_trace_length)
         self.simulator, self.prior = prepare_for_sbi(self.simulate, self.prior)
         
         # Set up posterior
@@ -236,7 +267,7 @@ class SBIOptimizer(ACTOptimizer):
             out.append(self.posterior[-1].sample((num_samples, ), x = self.observed_data[i, :], show_progress_bars = verbose).numpy())
 
         return np.array(out)
-
+    
     def simulate(self, *args, **kwargs) -> torch.Tensor:
         '''
         Simulate data for SBI.
@@ -247,12 +278,12 @@ class SBIOptimizer(ACTOptimizer):
             Simulated data.
         '''
 
-        data = []
+        simulated_data = []
 
         for inj in self.current_injections:
 
             # Set simulation parameters
-            steps_per_ms = 5000 / 600
+            steps_per_ms = 10
             h.steps_per_ms = steps_per_ms
             h.dt = 1 / steps_per_ms
             h.tstop = self.tstop
@@ -268,10 +299,11 @@ class SBIOptimizer(ACTOptimizer):
             # Run the simulation with the given parameters
             h.run()
 
-            voltage, _ = self.cell.resample()
-            data.append(voltage)
+            voltage = self.cell.mem_potential.as_numpy()
+            voltage = resample(voltage, self.observed_data.shape[1])
+            simulated_data.append(voltage)
 
-        out = torch.tensor(np.array(data)).float()
+        out = torch.tensor(np.array(simulated_data)).float()
 
         return out
     
@@ -308,7 +340,7 @@ class NaiveLinearOptimizer(ACTOptimizer):
         '''
         Parameters:
         ----------
-        observed_data: torch.Tensor(shape = (num_current_injections, 1024))
+        observed_data: torch.Tensor(shape = (num_current_injections, len_voltage_trace))
             Target values to optimize for. They will only be used for predictions.
 
         num_epochs: int = 100
@@ -333,7 +365,7 @@ class NaiveLinearOptimizer(ACTOptimizer):
         '''
         
         self.model = torch.nn.Sequential(
-            torch.nn.Linear(1024, 16),
+            torch.nn.Linear(observed_data.shape[1], 16),
             torch.nn.ReLU(),
             torch.nn.Linear(16, self.num_parameters),
             torch.nn.Sigmoid()
@@ -353,13 +385,20 @@ class NaiveLinearOptimizer(ACTOptimizer):
             param_samples = np.random.uniform(low = self.lows, high = self.highs)
 
             # Simulate a batch with generated parameter samples
-            simulated_data = self.simulate(param_samples, self.parameters)
+            simulated_data = self.simulate(param_samples)
+            
+            # Resample to match the length of target data
+            resampled_data = []
+            for i in range(self.num_current_injections):
+                resampled_data.append(resample(x = simulated_data[i], num = observed_data.shape[1]))
+
+            resampled_data = torch.tensor(np.array(resampled_data)).float()
 
             # Do standard optimization
             losses = []
             for i in range(self.num_current_injections):
                 optim.zero_grad()
-                pred = self.model(simulated_data[i]) * (sigmoid_maxs - sigmoid_mins) + sigmoid_mins
+                pred = self.model(resampled_data[i]) * (sigmoid_maxs - sigmoid_mins) + sigmoid_mins
 
                 loss = torch.nn.functional.mse_loss(pred, torch.tensor(param_samples).float())
                 losses.append(loss.detach().numpy())
@@ -384,46 +423,6 @@ class NaiveLinearOptimizer(ACTOptimizer):
         else:
             return np.array(outs).reshape((self.num_current_injections, -1))
         
-
-    def simulate(self, *args, **kwargs) -> torch.Tensor:
-        '''
-        Simulate data for the optimizer.
-
-        Returns:
-        ----------
-        outs: torch.Tensor(shape = (num_current_injections, 1024))
-            Simulated data.
-        '''
-
-        data = []
-
-        for inj in self.current_injections:
-
-            # Set simulation parameters
-            steps_per_ms = 5000 / 600
-            h.steps_per_ms = steps_per_ms
-            h.dt = 1 / steps_per_ms
-            h.tstop = self.tstop
-            h.v_init = self.v_init
-
-            self.i_clamp.dur = self.i_clamp_dur
-            self.i_clamp.amp = inj
-            self.i_clamp.delay = self.i_clamp_delay
-
-            self.cell.set_parameters(self.parameters, args[0])
-            self.cell.set_parameters(list(kwargs.keys()), list(kwargs.values()))
-
-            # Run the simulation with the given parameters
-            h.run()
-
-            voltage, _ = self.cell.resample()
-            data.append(voltage)
-
-        out = torch.tensor(np.array(data)).float()
-
-        return out
-
-
 
 class RandomSearchLinearOptimizer(ACTOptimizer):
     '''
@@ -457,10 +456,10 @@ class RandomSearchLinearOptimizer(ACTOptimizer):
         Parameters:
         ----------
         feature_model: torch.nn.Module
-            Model that generates summary features. Accepts tensors of shape (num_current_injections, 1024).
+            Model that generates summary features. Accepts tensors of shape (num_current_injections, len_voltage_trace).
             Returns tensors of shape (num_current_injections, num_summary_features).
 
-        observed_data: torch.Tensor(shape = (num_current_injections, 1024))
+        observed_data: torch.Tensor(shape = (num_current_injections, len_voltage_trace))
             Target values to optimize for.
 
         num_summary_features: int
@@ -489,7 +488,7 @@ class RandomSearchLinearOptimizer(ACTOptimizer):
 
         self.model = torch.nn.Sequential(
             feature_model,
-            torch.nn.Linear(num_summary_features, 1024),
+            torch.nn.Linear(num_summary_features, observed_data.shape[1]),
             torch.nn.ReLU()
         )
 
@@ -502,13 +501,20 @@ class RandomSearchLinearOptimizer(ACTOptimizer):
             param_samples = np.random.uniform(low = self.lows, high = self.highs)
 
             # Simulate a batch with the generated parameter sample
-            simulated_data = self.simulate(param_samples, self.parameters)
+            simulated_data = self.simulate(param_samples)
+
+            # Resample to match the length of target data
+            resampled_data = []
+            for i in range(self.num_current_injections):
+                resampled_data.append(resample(x = simulated_data[i], num = observed_data.shape[1]))
+
+            resampled_data = torch.tensor(np.array(resampled_data)).float()
 
             # Do standard optimization
             losses = []
             for i in range(self.num_current_injections):
                 optim.zero_grad()
-                pred = self.model(simulated_data[i])
+                pred = self.model(resampled_data[i])
 
                 loss = torch.nn.functional.mse_loss(pred, observed_data[i].reshape((1, -1)))
                 losses.append(loss.detach().numpy())
@@ -532,11 +538,18 @@ class RandomSearchLinearOptimizer(ACTOptimizer):
                 param_samples = np.random.uniform(low = self.lows, high = self.highs)
 
                 # Simulate a batch with generated parameter samples
-                simulated_data = self.simulate(param_samples, self.parameters)
+                simulated_data = self.simulate(param_samples)
+
+                # Resample to match the length of target data
+                resampled_data = []
+                for i in range(self.num_current_injections):
+                    resampled_data.append(resample(x = simulated_data[i], num = observed_data.shape[1]))
+
+                resampled_data = torch.tensor(np.array(resampled_data)).float()
 
                 candidate_loss = []
                 for i in range(self.num_current_injections):
-                    pred = self.model(simulated_data[i])
+                    pred = self.model(resampled_data[i])
                     loss = torch.nn.functional.mse_loss(pred, observed_data[i].reshape((1, -1)))
                     candidate_loss.append(loss.detach().numpy())
 
@@ -549,45 +562,6 @@ class RandomSearchLinearOptimizer(ACTOptimizer):
             return final_prediction, loss_history
         else:
             return final_prediction
-        
-
-    def simulate(self, *args, **kwargs) -> torch.Tensor:
-        '''
-        Simulate data for the optimizer.
-
-        Returns:
-        ----------
-        outs: torch.Tensor(shape = (num_current_injections, 1024))
-            Simulated data.
-        '''
-
-        data = []
-
-        for inj in self.current_injections:
-
-            # Set simulation parameters
-            steps_per_ms = 5000 / 600
-            h.steps_per_ms = steps_per_ms
-            h.dt = 1 / steps_per_ms
-            h.tstop = self.tstop
-            h.v_init = self.v_init
-
-            self.i_clamp.dur = self.i_clamp_dur
-            self.i_clamp.amp = inj
-            self.i_clamp.delay = self.i_clamp_delay
-
-            self.cell.set_parameters(self.parameters, args[0])
-            self.cell.set_parameters(list(kwargs.keys()), list(kwargs.values()))
-
-            # Run the simulation with the given parameters
-            h.run()
-
-            voltage, _ = self.cell.resample()
-            data.append(voltage)
-
-        out = torch.tensor(np.array(data)).float()
-
-        return out
     
 
 class RandomSearchTreeOptimizer(ACTOptimizer):
@@ -621,7 +595,7 @@ class RandomSearchTreeOptimizer(ACTOptimizer):
 
         Parameters:
         ----------
-        observed_data: torch.Tensor(shape = (num_current_injections, 1024))
+        observed_data: torch.Tensor(shape = (num_current_injections, len_voltage_trace))
             Target values to optimize for.
 
         num_groves: int = 100
@@ -646,13 +620,20 @@ class RandomSearchTreeOptimizer(ACTOptimizer):
             param_samples = np.random.uniform(low = self.lows, high = self.highs)
 
             # Simulate a batch with the generated parameter sample
-            simulated_data = self.simulate(param_samples, self.parameters)
+            simulated_data = self.simulate(param_samples)
+
+            # Resample to match the length of target data
+            resampled_data = []
+            for i in range(self.num_current_injections):
+                resampled_data.append(resample(x = simulated_data[i], num = observed_data.shape[1]))
+
+            resampled_data = np.array(resampled_data)
 
             # Train a tree for each value of current injection
             grove = []
             for i in range(self.num_current_injections):
                 tree = DecisionTreeRegressor(max_depth = tree_max_depth)
-                tree.fit(simulated_data[i].reshape((-1, 1)), observed_data[i])
+                tree.fit(resampled_data[i].reshape((-1, 1)), observed_data[i])
                 grove.append(tree)
 
             self.model.append(grove)
@@ -666,14 +647,21 @@ class RandomSearchTreeOptimizer(ACTOptimizer):
             param_samples = np.random.uniform(low = self.lows, high = self.highs)
 
             # Simulate a batch with generated parameter samples
-            simulated_data = self.simulate(param_samples, self.parameters)
+            simulated_data = self.simulate(param_samples)
+
+            # Resample to match the length of target data
+            resampled_data = []
+            for i in range(self.num_current_injections):
+                resampled_data.append(resample(x = simulated_data[i], num = observed_data.shape[1]))
+
+            resampled_data = np.array(resampled_data)
 
             # Final prediction is the average prediction across all trees for each value of current injection
             candidate_loss = []
             for i in range(self.num_current_injections):
                 pred_for_ci = 0
                 for j in range(num_groves):
-                    pred_for_ci += self.model[j][i].predict(simulated_data[i].reshape((-1, 1)))
+                    pred_for_ci += self.model[j][i].predict(resampled_data[i].reshape((-1, 1)))
                 pred_for_ci = pred_for_ci / num_groves
 
                 loss = mean_squared_error(observed_data[i].detach().numpy(), pred_for_ci)
@@ -685,42 +673,3 @@ class RandomSearchTreeOptimizer(ACTOptimizer):
         final_prediction = np.array(predicts[np.argmin(losses)]).flatten()
 
         return final_prediction
-        
-
-    def simulate(self, *args, **kwargs) -> torch.Tensor:
-        '''
-        Simulate data for the optimizer.
-
-        Returns:
-        ----------
-        outs: ndarray(shape = (num_current_injections, 1024))
-            Simulated data.
-        '''
-
-        data = []
-
-        for inj in self.current_injections:
-
-            # Set simulation parameters
-            steps_per_ms = 5000 / 600
-            h.steps_per_ms = steps_per_ms
-            h.dt = 1 / steps_per_ms
-            h.tstop = self.tstop
-            h.v_init = self.v_init
-
-            self.i_clamp.dur = self.i_clamp_dur
-            self.i_clamp.amp = inj
-            self.i_clamp.delay = self.i_clamp_delay
-
-            self.cell.set_parameters(self.parameters, args[0])
-            self.cell.set_parameters(list(kwargs.keys()), list(kwargs.values()))
-
-            # Run the simulation with the given parameters
-            h.run()
-
-            voltage, _ = self.cell.resample()
-            data.append(voltage)
-
-        out = np.array(data)
-
-        return out
