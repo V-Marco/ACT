@@ -23,7 +23,7 @@ def correlation_score(optimizer, observed_data, estimates):
         Sample correlations.
     '''
 
-    simulated_data = optimizer.simulate(estimates, optimizer.parameters)
+    simulated_data = torch.tensor(optimizer.simulate(estimates))
 
     cov = (observed_data - torch.mean(observed_data, dim = 1, keepdim = True)) * (simulated_data - torch.mean(simulated_data, dim = 1, keepdim = True))
     cov = torch.sum(cov, dim = 1)
@@ -55,7 +55,7 @@ def mse_score(optimizer, observed_data, estimates):
         MSE values.
     '''
 
-    simulated_data = optimizer.simulate(estimates, optimizer.parameters)
+    simulated_data = torch.tensor(optimizer.simulate(estimates))
     return torch.mean(torch.square(observed_data - simulated_data), dim = 1).detach().numpy()
 
 def plot_score(optimizer, observed_data, estimates):
@@ -79,7 +79,7 @@ def plot_score(optimizer, observed_data, estimates):
         Sample correlations.
     '''
 
-    simulated_data = optimizer.simulate(estimates, optimizer.parameters).T
+    simulated_data = torch.tensor(optimizer.simulate(estimates).T)
     observed_data = observed_data.T
 
     fig, ax = plt.subplots(nrows = 1, ncols = observed_data.shape[1], figsize = (30, 4))

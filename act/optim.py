@@ -56,9 +56,15 @@ class ACTOptimizer:
         # Observed (target) data
         self.observed_data = None
 
+        # Compute segregation regions 
+        # Spiking: 20 ms before and after current injection
+        # Passive: everything to the left of spiking
+        self.seg_passive = [0, (self.i_clamp_delay - 20) * 10]
+        self.seg_spiking = [(self.i_clamp_delay - 20) * 10, (self.i_clamp_delay + self.i_clamp_dur + 20) * 10]
+
     def optimize(self, feature_model: torch.nn.Module, observed_data: torch.Tensor, num_epochs: int, num_simulations: int) -> np.array:
         '''
-        Optimize current injections. This is the optimizer's main method which should
+        Optimize parameters. This is the optimizer's main method which should
         (1) train the feature model if applicable,
         (2) perform the optimization,
         (3) return parameters's estimates.
@@ -78,6 +84,40 @@ class ACTOptimizer:
 
         observed_data: torch.Tensor(shape = (num_current_injections, len_voltage_trace))
             Target values to optimize for.
+
+        Returns:
+        ----------
+        estimates: np.array
+            Parameter estimates made for observed_data.
+
+        '''
+        raise NotImplementedError
+    
+    def optimize_with_segregation(self, feature_model: torch.nn.Module, 
+                                  observed_data: torch.Tensor, parameter_inds: list, region: str,
+                                  num_epochs: int, num_simulations: int) -> np.array:
+        '''
+        Optimize using the segregation scheme from Alturki2016. Segregates and runs self.optimize(...).
+
+        Parameters:
+        ----------
+        feature_model: torch.nn.Module
+            Model that generates summary features.
+
+        observed_data: torch.Tensor(shape = (num_current_injections, len_voltage_trace))
+            Target values to optimize for.
+
+        parameter_inds: list
+            Indexes of parameters to be optimized for.
+
+        region: str
+            What region to optimize for.
+
+        num_epochs: int
+            Number of epochs (rounds) to run.
+
+        num_simulations: int
+            Number of simulations to draw each round.
 
         Returns:
         ----------
@@ -307,6 +347,70 @@ class SBIOptimizer(ACTOptimizer):
 
         return out
     
+    def optimize_with_segregation(self, feature_model: torch.nn.Module, observed_data: torch.Tensor, 
+                                  parameter_inds: list, region: str = "spiking", 
+                                  num_epochs: int = 1, num_simulations: int = 100,
+                                  num_samples: int = 10, workers: int = 1,
+                                  verbose = False) -> np.array:
+        '''
+        Optimize using the segregation scheme from Alturki2016.
+
+        Parameters:
+        ----------
+        observed_data: torch.Tensor(shape = (num_current_injections, len_voltage_trace))
+            Target values to optimize for.
+
+        parameter_inds: list
+            Indexes of parameters to be optimized for.
+
+        region: str
+            What region to optimize for. One of ['passive', 'spiking'].
+
+        num_groves: int = 100
+            Number of groves to average across. Equivalent to the number of epochs.
+
+        num_prediction_rounds: int = 10
+            Number of prediction trials.
+
+        tree_max_depth: int = 5
+            Max depth of each tree.
+
+        Returns:
+        ----------
+        estimates: ndarray, shape = (number of parameters, )
+            Parameter estimates.
+        '''
+        # Choose bounds to cut simulated and observed data (assume they are valid for both)
+        bounds = None
+
+        if region == "passive":
+            bounds = self.seg_passive
+        elif region == "spiking":
+            bounds = self.seg_spiking
+        else:
+            raise RuntimeError
+        
+        # Cut observed data and temporarily drop parameters which are not in the region of interest
+        # Clunky, but it is a bad side-effect of using config files.
+        cut_observed_data = observed_data[:, bounds[0] : bounds[1]]
+
+        original_param_set = [self.parameters.copy(), self.lows.copy(), self.highs.copy(), self.num_parameters]
+        self.parameters = [self.parameters[i] for i in parameter_inds]
+        self.lows = [self.lows[i] for i in parameter_inds]
+        self.highs = [self.highs[i] for i in parameter_inds]
+        self.num_parameters = len(self.parameters)
+
+        # Optimize
+        out = self.optimize(feature_model = feature_model, observed_data = cut_observed_data, 
+                            num_epochs = num_epochs, num_simulations = num_simulations,
+                            num_samples = num_samples, workers = workers,
+                            verbose = verbose)
+
+        # Reset parameters back to the full sets
+        self.parameters, self.lows, self.highs, self.num_parameters = original_param_set
+
+        return out
+    
 class NaiveLinearOptimizer(ACTOptimizer):
     '''
     At each epoch, Naive Linear Optimizer generates random parameter samples from the uniform distribution 
@@ -423,6 +527,73 @@ class NaiveLinearOptimizer(ACTOptimizer):
         else:
             return np.array(outs).reshape((self.num_current_injections, -1))
         
+    
+    def optimize_with_segregation(self, observed_data: torch.Tensor, parameter_inds: list, region: str = "spiking", 
+                                  num_epochs: int = 100, lr: float = 1e-3, 
+                                  verbose: bool = False, return_loss_history: bool = False) -> np.array:
+        '''
+        Optimize using the segregation scheme from Alturki2016.
+
+        Parameters:
+        ----------
+        observed_data: torch.Tensor(shape = (num_current_injections, len_voltage_trace))
+            Target values to optimize for. They will only be used for predictions.
+
+        parameter_inds: list
+            Indexes of parameters to be optimized for.
+
+        region: str
+            What region to optimize for. One of ['passive', 'spiking'].
+
+        num_epochs: int = 100
+            Number of epochs (rounds) to run.
+
+        lr: float = 1e-3
+            Learning rate for the ADAM optimizer.
+
+        verbose: bool = False
+            Whether to print loss at each epoch. The loss is averaged across all current injections.
+
+        return_loss_history: bool = False
+            Whether to return loss history together with parameter esitmates.
+
+        Returns:
+        ----------
+        estimates: ndarray, shape = (num_current_injections, number of parameters)
+            Parameter estimates.
+
+        loss_history: list
+            If return_loss_history = True, list of loss values at each epoch.
+        '''
+        # Choose bounds to cut simulated and observed data (assume they are valid for both)
+        bounds = None
+
+        if region == "passive":
+            bounds = self.seg_passive
+        elif region == "spiking":
+            bounds = self.seg_spiking
+        else:
+            raise RuntimeError
+        
+        # Cut observed data and temporarily drop parameters which are not in the region of interest
+        # Clunky, but it is a bad side-effect of using config files.
+        cut_observed_data = observed_data[:, bounds[0] : bounds[1]]
+
+        original_param_set = [self.parameters.copy(), self.lows.copy(), self.highs.copy(), self.num_parameters]
+        self.parameters = [self.parameters[i] for i in parameter_inds]
+        self.lows = [self.lows[i] for i in parameter_inds]
+        self.highs = [self.highs[i] for i in parameter_inds]
+        self.num_parameters = len(self.parameters)
+
+        # Optimize
+        out = self.optimize(cut_observed_data, num_epochs, lr, verbose, return_loss_history)
+
+        # Reset parameters back to the full sets
+        self.parameters, self.lows, self.highs, self.num_parameters = original_param_set
+
+        return out
+        
+
 
 class RandomSearchLinearOptimizer(ACTOptimizer):
     '''
@@ -562,6 +733,83 @@ class RandomSearchLinearOptimizer(ACTOptimizer):
             return final_prediction, loss_history
         else:
             return final_prediction
+        
+
+    def optimize_with_segregation(self, feature_model: torch.nn.Module, observed_data: torch.Tensor, 
+                                  num_summary_features: int, parameter_inds: list, region: str = "spiking", 
+                                  num_epochs: int = 100, num_prediction_rounds: int = 100, lr: float = 1e-3, 
+                                  verbose: bool = False, return_loss_history: bool = False) -> np.array:
+        '''
+        Optimize using the segregation scheme from Alturki2016.
+
+        Parameters:
+        ----------
+        feature_model: torch.nn.Module
+            Model that generates summary features. Accepts tensors of shape (num_current_injections, len_voltage_trace).
+            Returns tensors of shape (num_current_injections, num_summary_features).
+
+        observed_data: torch.Tensor(shape = (num_current_injections, len_voltage_trace))
+            Target values to optimize for.
+
+        num_summary_features: int
+            Number of summary features which a feature model outputs.
+
+        parameter_inds: list
+            Indexes of parameters to be optimized for.
+
+        region: str
+            What region to optimize for. One of ['passive', 'spiking'].
+
+        num_epochs: int = 10
+            Number of training epochs to run.
+
+        num_prediction_rounds: int = 10
+            Number of prediction trials.
+
+        verbose: bool = False
+            Whether to print training loss at each epoch. The loss is averaged across current injections.
+
+        return_loss_history: bool = False
+            Whether to return loss history together with parameter esitmates.
+
+        Returns:
+        ----------
+        estimates: ndarray, shape = (number of parameters, )
+            Parameter estimates.
+
+        loss_history: list
+            If return_loss_history = True, list of loss values at each epoch.
+        '''
+        # Choose bounds to cut simulated and observed data (assume they are valid for both)
+        bounds = None
+
+        if region == "passive":
+            bounds = self.seg_passive
+        elif region == "spiking":
+            bounds = self.seg_spiking
+        else:
+            raise RuntimeError
+        
+        # Cut observed data and temporarily drop parameters which are not in the region of interest
+        # Clunky, but it is a bad side-effect of using config files.
+        cut_observed_data = observed_data[:, bounds[0] : bounds[1]]
+
+        original_param_set = [self.parameters.copy(), self.lows.copy(), self.highs.copy(), self.num_parameters]
+        self.parameters = [self.parameters[i] for i in parameter_inds]
+        self.lows = [self.lows[i] for i in parameter_inds]
+        self.highs = [self.highs[i] for i in parameter_inds]
+        self.num_parameters = len(self.parameters)
+
+        # Optimize
+        out = self.optimize(feature_model = feature_model, observed_data = cut_observed_data, 
+                            num_summary_features = num_summary_features, num_epochs = num_epochs, 
+                            num_prediction_rounds = num_prediction_rounds, lr = lr,
+                            verbose = verbose, return_loss_history = return_loss_history)
+
+        # Reset parameters back to the full sets
+        self.parameters, self.lows, self.highs, self.num_parameters = original_param_set
+
+        return out
     
 
 class RandomSearchTreeOptimizer(ACTOptimizer):
@@ -673,3 +921,63 @@ class RandomSearchTreeOptimizer(ACTOptimizer):
         final_prediction = np.array(predicts[np.argmin(losses)]).flatten()
 
         return final_prediction
+
+    def optimize_with_segregation(self, observed_data: torch.Tensor, parameter_inds: list, region: str = "spiking", 
+                                  num_groves: int = 100, num_prediction_rounds: int = 10, 
+                                  tree_max_depth: int = 5) -> np.array:
+        '''
+        Optimize using the segregation scheme from Alturki2016.
+
+        Parameters:
+        ----------
+        observed_data: torch.Tensor(shape = (num_current_injections, len_voltage_trace))
+            Target values to optimize for.
+
+        parameter_inds: list
+            Indexes of parameters to be optimized for.
+
+        region: str
+            What region to optimize for. One of ['passive', 'spiking'].
+
+        num_groves: int = 100
+            Number of groves to average across. Equivalent to the number of epochs.
+
+        num_prediction_rounds: int = 10
+            Number of prediction trials.
+
+        tree_max_depth: int = 5
+            Max depth of each tree.
+
+        Returns:
+        ----------
+        estimates: ndarray, shape = (number of parameters, )
+            Parameter estimates.
+        '''
+        # Choose bounds to cut simulated and observed data (assume they are valid for both)
+        bounds = None
+
+        if region == "passive":
+            bounds = self.seg_passive
+        elif region == "spiking":
+            bounds = self.seg_spiking
+        else:
+            raise RuntimeError
+        
+        # Cut observed data and temporarily drop parameters which are not in the region of interest
+        # Clunky, but it is a bad side-effect of using config files.
+        cut_observed_data = observed_data[:, bounds[0] : bounds[1]]
+
+        original_param_set = [self.parameters.copy(), self.lows.copy(), self.highs.copy(), self.num_parameters]
+        self.parameters = [self.parameters[i] for i in parameter_inds]
+        self.lows = [self.lows[i] for i in parameter_inds]
+        self.highs = [self.highs[i] for i in parameter_inds]
+        self.num_parameters = len(self.parameters)
+
+        # Optimize
+        out = self.optimize(observed_data = cut_observed_data, num_groves = num_groves, 
+                            num_prediction_rounds = num_prediction_rounds, tree_max_depth = tree_max_depth)
+
+        # Reset parameters back to the full sets
+        self.parameters, self.lows, self.highs, self.num_parameters = original_param_set
+
+        return out
