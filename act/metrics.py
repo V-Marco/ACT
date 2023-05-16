@@ -88,5 +88,5 @@ def plot_score(optimizer, observed_data, estimates):
         ax[i].plot(simulated_data[:, i], label = "Simulated")
         ax[i].set_xlabel("Time")
         ax[i].set_ylabel("Voltage")
-        ax[i].set_title(f"I: {optimizer.current_injections[i]}, esitmate: {round(float(estimates[i]), 4)}")
+        ax[i].set_title(f"I: {optimizer.current_injections[i]}")
         ax[i].legend()
