@@ -56,12 +56,6 @@ class ACTOptimizer:
         # Observed (target) data
         self.observed_data = None
 
-        # Compute segregation regions 
-        # Spiking: 20 ms before and after current injection
-        # Passive: everything to the left of spiking
-        self.seg_passive = [0, (self.i_clamp_delay - 20) * 10]
-        self.seg_spiking = [(self.i_clamp_delay - 20) * 10, (self.i_clamp_delay + self.i_clamp_dur + 20) * 10]
-
     def optimize(self, feature_model: torch.nn.Module, observed_data: torch.Tensor, num_epochs: int, num_simulations: int) -> np.array:
         '''
         Optimize parameters. This is the optimizer's main method which should
@@ -348,7 +342,7 @@ class SBIOptimizer(ACTOptimizer):
         return out
     
     def optimize_with_segregation(self, feature_model: torch.nn.Module, observed_data: torch.Tensor, 
-                                  parameter_inds: list, region: str = "spiking", 
+                                  parameter_inds: list, voltage_bounds: list, 
                                   num_epochs: int = 1, num_simulations: int = 100,
                                   num_samples: int = 10, workers: int = 1,
                                   verbose = False) -> np.array:
@@ -363,8 +357,8 @@ class SBIOptimizer(ACTOptimizer):
         parameter_inds: list
             Indexes of parameters to be optimized for.
 
-        region: str
-            What region to optimize for. One of ['passive', 'spiking'].
+        voltage_bounds: list[int]
+            Lower and upper bound of the region which will be cut from the voltage trace.
 
         num_groves: int = 100
             Number of groves to average across. Equivalent to the number of epochs.
@@ -380,19 +374,9 @@ class SBIOptimizer(ACTOptimizer):
         estimates: ndarray, shape = (number of parameters, )
             Parameter estimates.
         '''
-        # Choose bounds to cut simulated and observed data (assume they are valid for both)
-        bounds = None
-
-        if region == "passive":
-            bounds = self.seg_passive
-        elif region == "spiking":
-            bounds = self.seg_spiking
-        else:
-            raise RuntimeError
-        
         # Cut observed data and temporarily drop parameters which are not in the region of interest
         # Clunky, but it is a bad side-effect of using config files.
-        cut_observed_data = observed_data[:, bounds[0] : bounds[1]]
+        cut_observed_data = observed_data[:, voltage_bounds[0] : voltage_bounds[1]]
 
         original_param_set = [self.parameters.copy(), self.lows.copy(), self.highs.copy(), self.num_parameters]
         self.parameters = [self.parameters[i] for i in parameter_inds]
@@ -528,7 +512,7 @@ class NaiveLinearOptimizer(ACTOptimizer):
             return np.array(outs).reshape((self.num_current_injections, -1))
         
     
-    def optimize_with_segregation(self, observed_data: torch.Tensor, parameter_inds: list, region: str = "spiking", 
+    def optimize_with_segregation(self, observed_data: torch.Tensor, parameter_inds: list, voltage_bounds: list, 
                                   num_epochs: int = 100, lr: float = 1e-3, 
                                   verbose: bool = False, return_loss_history: bool = False) -> np.array:
         '''
@@ -542,8 +526,8 @@ class NaiveLinearOptimizer(ACTOptimizer):
         parameter_inds: list
             Indexes of parameters to be optimized for.
 
-        region: str
-            What region to optimize for. One of ['passive', 'spiking'].
+        voltage_bounds: list[int]
+            Lower and upper bound of the region which will be cut from the voltage trace.
 
         num_epochs: int = 100
             Number of epochs (rounds) to run.
@@ -565,19 +549,9 @@ class NaiveLinearOptimizer(ACTOptimizer):
         loss_history: list
             If return_loss_history = True, list of loss values at each epoch.
         '''
-        # Choose bounds to cut simulated and observed data (assume they are valid for both)
-        bounds = None
-
-        if region == "passive":
-            bounds = self.seg_passive
-        elif region == "spiking":
-            bounds = self.seg_spiking
-        else:
-            raise RuntimeError
-        
         # Cut observed data and temporarily drop parameters which are not in the region of interest
         # Clunky, but it is a bad side-effect of using config files.
-        cut_observed_data = observed_data[:, bounds[0] : bounds[1]]
+        cut_observed_data = observed_data[:, voltage_bounds[0] : voltage_bounds[1]]
 
         original_param_set = [self.parameters.copy(), self.lows.copy(), self.highs.copy(), self.num_parameters]
         self.parameters = [self.parameters[i] for i in parameter_inds]
@@ -736,7 +710,7 @@ class RandomSearchLinearOptimizer(ACTOptimizer):
         
 
     def optimize_with_segregation(self, feature_model: torch.nn.Module, observed_data: torch.Tensor, 
-                                  num_summary_features: int, parameter_inds: list, region: str = "spiking", 
+                                  num_summary_features: int, parameter_inds: list, voltage_bounds: list, 
                                   num_epochs: int = 100, num_prediction_rounds: int = 100, lr: float = 1e-3, 
                                   verbose: bool = False, return_loss_history: bool = False) -> np.array:
         '''
@@ -757,8 +731,8 @@ class RandomSearchLinearOptimizer(ACTOptimizer):
         parameter_inds: list
             Indexes of parameters to be optimized for.
 
-        region: str
-            What region to optimize for. One of ['passive', 'spiking'].
+        voltage_bounds: list[int]
+            Lower and upper bound of the region which will be cut from the voltage trace.
 
         num_epochs: int = 10
             Number of training epochs to run.
@@ -780,19 +754,9 @@ class RandomSearchLinearOptimizer(ACTOptimizer):
         loss_history: list
             If return_loss_history = True, list of loss values at each epoch.
         '''
-        # Choose bounds to cut simulated and observed data (assume they are valid for both)
-        bounds = None
-
-        if region == "passive":
-            bounds = self.seg_passive
-        elif region == "spiking":
-            bounds = self.seg_spiking
-        else:
-            raise RuntimeError
-        
         # Cut observed data and temporarily drop parameters which are not in the region of interest
         # Clunky, but it is a bad side-effect of using config files.
-        cut_observed_data = observed_data[:, bounds[0] : bounds[1]]
+        cut_observed_data = observed_data[:, voltage_bounds[0] : voltage_bounds[1]]
 
         original_param_set = [self.parameters.copy(), self.lows.copy(), self.highs.copy(), self.num_parameters]
         self.parameters = [self.parameters[i] for i in parameter_inds]
@@ -922,7 +886,7 @@ class RandomSearchTreeOptimizer(ACTOptimizer):
 
         return final_prediction
 
-    def optimize_with_segregation(self, observed_data: torch.Tensor, parameter_inds: list, region: str = "spiking", 
+    def optimize_with_segregation(self, observed_data: torch.Tensor, parameter_inds: list, voltage_bounds: list, 
                                   num_groves: int = 100, num_prediction_rounds: int = 10, 
                                   tree_max_depth: int = 5) -> np.array:
         '''
@@ -936,8 +900,8 @@ class RandomSearchTreeOptimizer(ACTOptimizer):
         parameter_inds: list
             Indexes of parameters to be optimized for.
 
-        region: str
-            What region to optimize for. One of ['passive', 'spiking'].
+        voltage_bounds: list[int]
+            Lower and upper bound of the region which will be cut from the voltage trace.
 
         num_groves: int = 100
             Number of groves to average across. Equivalent to the number of epochs.
@@ -953,19 +917,9 @@ class RandomSearchTreeOptimizer(ACTOptimizer):
         estimates: ndarray, shape = (number of parameters, )
             Parameter estimates.
         '''
-        # Choose bounds to cut simulated and observed data (assume they are valid for both)
-        bounds = None
-
-        if region == "passive":
-            bounds = self.seg_passive
-        elif region == "spiking":
-            bounds = self.seg_spiking
-        else:
-            raise RuntimeError
-        
         # Cut observed data and temporarily drop parameters which are not in the region of interest
         # Clunky, but it is a bad side-effect of using config files.
-        cut_observed_data = observed_data[:, bounds[0] : bounds[1]]
+        cut_observed_data = observed_data[:, voltage_bounds[0] : voltage_bounds[1]]
 
         original_param_set = [self.parameters.copy(), self.lows.copy(), self.highs.copy(), self.num_parameters]
         self.parameters = [self.parameters[i] for i in parameter_inds]
