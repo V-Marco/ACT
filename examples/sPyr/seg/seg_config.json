@@ -1,0 +1,18 @@
+{
+    "general": {
+        "hoc_file": "seg/seg_sPYr_template.hoc",
+        "cell_name": "sPYr"
+      },
+      "run_options": {
+        "v_init": -67.0,
+        "tstop": 1500,
+        "i_clamp_delay": 100,
+        "i_clamp_dur": 1200
+      },
+      "optimization_parameters": {
+        "current_injections": [0.2,0.3,0.4,0.5,0.6],
+        "parameters": ["g_pas", "gnabar_hh2", "gkbar_hh2", "gkbar_im", "gcabar_it"],
+        "lows": [0.000001, 0.01, 0.001, 0.00005, 0.0005],
+        "highs": [0.000015, 0.09, 0.009, 0.00020, 0.0015]
+      }
+}
