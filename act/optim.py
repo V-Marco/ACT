@@ -88,7 +88,7 @@ class ACTOptimizer:
         raise NotImplementedError
     
     def optimize_with_segregation(self, feature_model: torch.nn.Module, 
-                                  observed_data: torch.Tensor, parameter_inds: list, region: str,
+                                  observed_data: torch.Tensor, parameter_inds: list, voltage_bounds: list,
                                   num_epochs: int, num_simulations: int) -> np.array:
         '''
         Optimize using the segregation scheme from Alturki2016. Segregates and runs self.optimize(...).
@@ -104,8 +104,8 @@ class ACTOptimizer:
         parameter_inds: list
             Indexes of parameters to be optimized for.
 
-        region: str
-            What region to optimize for.
+        voltage_bounds: list[int]
+            Lower and upper bound of the region which will be cut from the voltage trace.
 
         num_epochs: int
             Number of epochs (rounds) to run.
@@ -120,6 +120,47 @@ class ACTOptimizer:
 
         '''
         raise NotImplementedError
+    
+    def prepare_for_segregation(self, observed_data: torch.Tensor, parameter_inds: list, voltage_bounds: list):
+        '''
+        Cuts a specified region from the voltage trace and resamples the cut portions to match the original data's length
+        and sets parameter lists to optimize for user-defined parameters.
+
+        Parameters:
+        ----------
+        observed_data: torch.Tensor(shape = (num_current_injections, len_voltage_trace))
+            Target values to optimize for.
+
+        parameter_inds: list[int]
+            Indexes of parameters to be optimized for.
+
+        voltage_bounds: list[int]
+            Lower and upper bound of the region which will be cut from the voltage trace.
+
+        Returns:
+        ----------
+        cut_observed_data: torch.Tensor
+            Data to estimate on.
+
+        original_param_set: list[list]
+            List of original values for self.parameters, self.lows, self.highs, self.num_parameters to use for a reset later.
+        '''
+
+        # Cut observed data and temporarily drop parameters which are not in the region of interest
+        # Clunky, but it is a bad side-effect of using config files.
+        cut_observed_data = torch.zeros_like(observed_data)
+        for i in range(self.num_current_injections):
+            trace = observed_data[i]
+            trace = trace[(trace >= voltage_bounds[0]) & (trace < voltage_bounds[1])]
+            cut_observed_data[i] = torch.tensor(resample(x = trace, num = observed_data.shape[1])).float()
+
+        original_param_set = [self.parameters.copy(), self.lows.copy(), self.highs.copy(), self.num_parameters]
+        self.parameters = [self.parameters[i] for i in parameter_inds]
+        self.lows = [self.lows[i] for i in parameter_inds]
+        self.highs = [self.highs[i] for i in parameter_inds]
+        self.num_parameters = len(self.parameters)
+
+        return cut_observed_data, original_param_set
     
     def simulate(self, parameters: np.ndarray) -> torch.Tensor:
         '''
@@ -374,15 +415,9 @@ class SBIOptimizer(ACTOptimizer):
         estimates: ndarray, shape = (number of parameters, )
             Parameter estimates.
         '''
-        # Cut observed data and temporarily drop parameters which are not in the region of interest
-        # Clunky, but it is a bad side-effect of using config files.
-        cut_observed_data = observed_data[:, voltage_bounds[0] : voltage_bounds[1]]
-
-        original_param_set = [self.parameters.copy(), self.lows.copy(), self.highs.copy(), self.num_parameters]
-        self.parameters = [self.parameters[i] for i in parameter_inds]
-        self.lows = [self.lows[i] for i in parameter_inds]
-        self.highs = [self.highs[i] for i in parameter_inds]
-        self.num_parameters = len(self.parameters)
+        # Get data to estimate on and set parameters to the user-defined values;
+        # Save original parameters for a future reset 
+        cut_observed_data, original_param_set = self.prepare_for_segregation(observed_data, parameter_inds, voltage_bounds)
 
         # Optimize
         out = self.optimize(feature_model = feature_model, observed_data = cut_observed_data, 
@@ -549,15 +584,9 @@ class NaiveLinearOptimizer(ACTOptimizer):
         loss_history: list
             If return_loss_history = True, list of loss values at each epoch.
         '''
-        # Cut observed data and temporarily drop parameters which are not in the region of interest
-        # Clunky, but it is a bad side-effect of using config files.
-        cut_observed_data = observed_data[:, voltage_bounds[0] : voltage_bounds[1]]
-
-        original_param_set = [self.parameters.copy(), self.lows.copy(), self.highs.copy(), self.num_parameters]
-        self.parameters = [self.parameters[i] for i in parameter_inds]
-        self.lows = [self.lows[i] for i in parameter_inds]
-        self.highs = [self.highs[i] for i in parameter_inds]
-        self.num_parameters = len(self.parameters)
+        # Get data to estimate on and set parameters to the user-defined values;
+        # Save original parameters for a future reset 
+        cut_observed_data, original_param_set = self.prepare_for_segregation(observed_data, parameter_inds, voltage_bounds)
 
         # Optimize
         out = self.optimize(cut_observed_data, num_epochs, lr, verbose, return_loss_history)
@@ -754,15 +783,9 @@ class RandomSearchLinearOptimizer(ACTOptimizer):
         loss_history: list
             If return_loss_history = True, list of loss values at each epoch.
         '''
-        # Cut observed data and temporarily drop parameters which are not in the region of interest
-        # Clunky, but it is a bad side-effect of using config files.
-        cut_observed_data = observed_data[:, voltage_bounds[0] : voltage_bounds[1]]
-
-        original_param_set = [self.parameters.copy(), self.lows.copy(), self.highs.copy(), self.num_parameters]
-        self.parameters = [self.parameters[i] for i in parameter_inds]
-        self.lows = [self.lows[i] for i in parameter_inds]
-        self.highs = [self.highs[i] for i in parameter_inds]
-        self.num_parameters = len(self.parameters)
+        # Get data to estimate on and set parameters to the user-defined values;
+        # Save original parameters for a future reset 
+        cut_observed_data, original_param_set = self.prepare_for_segregation(observed_data, parameter_inds, voltage_bounds)
 
         # Optimize
         out = self.optimize(feature_model = feature_model, observed_data = cut_observed_data, 
@@ -917,15 +940,9 @@ class RandomSearchTreeOptimizer(ACTOptimizer):
         estimates: ndarray, shape = (number of parameters, )
             Parameter estimates.
         '''
-        # Cut observed data and temporarily drop parameters which are not in the region of interest
-        # Clunky, but it is a bad side-effect of using config files.
-        cut_observed_data = observed_data[:, voltage_bounds[0] : voltage_bounds[1]]
-
-        original_param_set = [self.parameters.copy(), self.lows.copy(), self.highs.copy(), self.num_parameters]
-        self.parameters = [self.parameters[i] for i in parameter_inds]
-        self.lows = [self.lows[i] for i in parameter_inds]
-        self.highs = [self.highs[i] for i in parameter_inds]
-        self.num_parameters = len(self.parameters)
+        # Get data to estimate on and set parameters to the user-defined values;
+        # Save original parameters for a future reset 
+        cut_observed_data, original_param_set = self.prepare_for_segregation(observed_data, parameter_inds, voltage_bounds)
 
         # Optimize
         out = self.optimize(observed_data = cut_observed_data, num_groves = num_groves, 

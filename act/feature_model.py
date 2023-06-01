@@ -61,7 +61,7 @@ class DefaultSummaryModel(torch.nn.Module):
         sk_con = self.pool4(out)
         out = self.pool4(torch.nn.functional.relu(self.conv4(out)))
         
-        out = out.view(-1, self.num_linear_layer_input_features)
+        out = out.view(1, -1)
         out = self.linear(out)
 
         if self.use_statistics:
