@@ -1,0 +1,224 @@
+//one-compartment cell template
+//load_file("nrngui.hoc")
+//The parameters in this model are based on Type C cell of 3-compartment model 
+
+
+/////////////////////////////
+///// Type A cell in LA /////
+/////////////////////////////
+
+begintemplate Cell_A
+
+public soma, connect2target, type
+public all
+
+create soma
+access soma // declares soma as a membrane compartment object
+	public ncl, synlist
+	objref ncl, synlist
+	strdef type	
+
+     /////biophysical properties/////
+proc init() {
+
+	create soma // create soma in the initialization
+	ncl = new List()
+	synlist =new List()		
+	type = "Cell_A"
+	
+	gUnf_Xsoma = 2.5e-05
+	Rm = 80000 // decreased overall
+	SpineScale = 1.76371308 //2
+	SpineScale_leak = 1.763714578
+	RaAll= 200
+	RaSoma= 146.969697 //200 
+	RaAxIs = 100//100//200
+	Vpas = -70//-65//-69 // -67
+	gna =  0.041//.039//.03*0.6*1.5 //.03*0.6*1.5 /* decreased from 0.03 */
+	AXONM = 3 /*decrease from 2 */
+	gkdr = 0.005*.6 /* decreased from 0.005 */
+	ghd=0.000003 *.7
+	nash=10
+	Vrest = -67
+	celsius = 31.0 
+	gsAHP = 0.0014//0.0005
+	GmC = 0.0096//0.0085//0.006 //0.0035 //0.0006
+
+     /////geometrical properties/////
+soma {nseg = 1 L = 117.77 diam = 24.5} // L = 55.2
+	
+	soma {
+		insert cadyn gcabar_cadyn = 6e-5  eca = 120
+		insert leak el_leak=Vpas glbar_leak = 3.5e-5 /*2e-5*/ Ra=RaAll cm=2.5 //different values in the thress compartment model
+		insert hd ghdbar_hd=2.3e-05 78.72884325  //ghd //only in dend and p_dend
+		insert na3 sh_na3=nash ar_na3=1	gbar_na3=0.03//gna //soma and p_dend are different
+		// insert na gnabar_na=0.03
+		insert nap gbar_nap= 0.0003//0.00113//8e-4 //4.5e-4
+		insert kdr gkdrbar_kdr=gkdr //same value in the three compartment model
+		insert capool taucas = 1000  fcas_capool = 0.05 //only in dend and p_dend
+		insert sAHP gsAHPbar_sAHP = 0.009//0.005 //0.008968224 //0.00015 //2.3181e-05 //different values in dend and p_dend
+		insert im gmbar_im = 0.002//GmC //same value in the three compartment model
+		insert kap gkabar_kap = 0.000843 //only in soma
+
+		
+		ena = 45
+		ek = -80
+		if (ismembrane("kdr") || ismembrane("kap") ) {ek=-80} //???
+		if (ismembrane("hd") ) {ehd_hd=-43 } // change from -30 to -50 //???
+		}
+}
+obfunc connect2target() { localobj nc
+	soma nc = new NetCon(&v(0.5), $o1)
+	nc.threshold = 0
+	if (numarg() == 2) ($o2 = nc)
+	return nc
+	}
+endtemplate Cell_A
+
+
+
+/////////////////////////////
+///// Type B cell in LA /////
+/////////////////////////////
+
+begintemplate Cell_B
+
+public soma, connect2target, type
+public all
+
+create soma
+access soma // declares soma as a membrane compartment object
+	public ncl, synlist
+	objref ncl, synlist
+	strdef type	
+
+     /////biophysical properties/////
+proc init() {
+
+	create soma // create soma in the initialization
+	ncl = new List()
+	synlist =new List()		
+	type = "Cell_B"
+	
+	gUnf_Xsoma = 2.5e-05
+	Rm = 80000 // decreased overall
+	SpineScale = 1.76371308 //2
+	SpineScale_leak = 1.763714578
+	RaAll= 200
+	RaSoma= 146.969697 //200 
+	RaAxIs = 100//100//200
+	Vpas = -70//-65//-69 // -67
+	gna =  0.039//.03*0.6*1.5 //.03*0.6*1.5 /* decreased from 0.03 */
+	AXONM = 3 /*decrease from 2 */
+	gkdr = 0.005*.6 /* decreased from 0.005 */
+	ghd=0.000003 *.7
+	nash=10
+	Vrest = -67
+	celsius = 31.0 
+	gsAHP = 0.0005
+	GmC = 0.0096//0.0085//0.006 //0.0035 //0.0006
+
+     /////geometrical properties/////
+soma {nseg = 1 L = 117.77 diam = 24.5} // L = 55.2
+	
+	soma {
+		insert cadyn gcabar_cadyn = 7e-5 /*6e-5*/  eca = 120
+		insert iCat2 gbar_iCat2 = 0//6e-4 eca = 120
+		insert leak el_leak=Vpas glbar_leak = 4.5e-5 /*2e-5*/ Ra=RaAll cm=2.5 //different values in the thress compartment model
+		insert hd ghdbar_hd=2.3e-05 78.72884325  //ghd //only in dend and p_dend
+		insert na3 sh_na3=nash ar_na3=1	gbar_na3=0.027//gna //soma and p_dend are different
+		// insert na gnabar_na=0.027
+		insert nap gbar_nap= 0.00012//0.00018//0.00113//8e-4 //4.5e-4
+		insert kdr gkdrbar_kdr=0.005//gkdr //same value in the three compartment model
+		insert capool taucas = 1000  fcas_capool = 0.05 //only in dend and p_dend
+		insert sAHP gsAHPbar_sAHP = 0.00072//gsAHP //0.008968224 //0.00015 //2.3181e-05 //different values in dend and p_dend
+		insert im gmbar_im = 0.000722//0.000725//0.001//GmC //same value in the three compartment model
+		insert kap gkabar_kap = 0.000843 //only in soma
+
+		
+		ena = 45
+		ek = -80
+		if (ismembrane("kdr") || ismembrane("kap") ) {ek=-80} //???
+		if (ismembrane("hd") ) {ehd_hd=-43 } // change from -30 to -50 //???
+		}
+}
+obfunc connect2target() { localobj nc
+	soma nc = new NetCon(&v(0.5), $o1)
+	nc.threshold = 0
+	if (numarg() == 2) ($o2 = nc)
+	return nc
+	}
+endtemplate Cell_B
+
+
+/////////////////////////////
+///// Type C cell in LA /////
+/////////////////////////////
+
+begintemplate Cell_C
+
+public soma, connect2target, type
+public all
+
+create soma
+access soma // declares soma as a membrane compartment object
+	public ncl, synlist
+	objref ncl, synlist
+	strdef type	
+
+     /////biophysical properties/////
+proc init() {
+
+	create soma // create soma in the initialization
+	ncl = new List()
+	synlist =new List()		
+	type = "Cell_C"
+	
+	gUnf_Xsoma = 2.5e-05
+	Rm = 80000 // decreased overall
+	SpineScale = 1.76371308 //2
+	SpineScale_leak = 1.763714578
+	RaAll= 200
+	RaSoma= 146.969697 //200 
+	RaAxIs = 100//100//200
+	Vpas = -70//-65//-69 // -67
+	gna =  0.039//.03*0.6*1.5 //.03*0.6*1.5 /* decreased from 0.03 */
+	AXONM = 3 /*decrease from 2 */
+	gkdr = 0.005*.6 /* decreased from 0.005 */
+	ghd=0.000003 *.7
+	nash=10
+	Vrest = -67
+	celsius = 31.0 
+	gsAHP = 0.0014//0.0005
+	GmC = 0.0096//0.0085//0.006 //0.0035 //0.0006
+
+     /////geometrical properties/////
+soma {nseg = 1 L = 117.77 diam = 24.5} // L = 55.2
+	
+	soma {
+		insert cadyn gcabar_cadyn = 7e-5 /*6e-5*/  eca = 120
+		insert leak el_leak=Vpas glbar_leak = 4e-5 /*2e-5*/ Ra=RaAll cm=2.5 //different values in the thress compartment model
+		insert hd ghdbar_hd=2.3e-05 78.72884325  //ghd //only in dend and p_dend
+		insert na3 sh_na3=nash ar_na3=1	gbar_na3=0.03//gna //soma and p_dend are different
+		// insert na gnabar_na=0.03
+		insert nap gbar_nap= 0.00014//0.0011//8e-4 //4.5e-4
+		insert kdr gkdrbar_kdr=0.009//gkdr //same value in the three compartment model
+		insert capool taucas = 1000  fcas_capool = 0.05 //only in dend and p_dend
+		insert sAHP gsAHPbar_sAHP = 0.00025//0.0001 //0.008968224 //0.00015 //2.3181e-05 //different values in dend and p_dend
+		insert im gmbar_im = 0.001//0.008 //same value in the three compartment model
+		insert kap gkabar_kap = 0.000843 //only in soma
+
+		
+		ena = 45
+		ek = -80
+		if (ismembrane("kdr") || ismembrane("kap") ) {ek=-80} //???
+		if (ismembrane("hd") ) {ehd_hd=-43 } // change from -30 to -50 //???
+		}
+}
+obfunc connect2target() { localobj nc
+	soma nc = new NetCon(&v(0.5), $o1)
+	nc.threshold = 0
+	if (numarg() == 2) ($o2 = nc)
+	return nc
+	}
+endtemplate Cell_C
