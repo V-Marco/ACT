@@ -33,7 +33,7 @@ Conceptually, to run `act` you need four components.
 1. A `.hoc` file which declares the cell's architecture.
 2. Compiled modfiles for this `.hoc` file.
 3. A `config.json` file declaring biological parameters of optimization.
-4. A data file with observed (target) voltage traces, possibly for different current injections. Each trace must have 1024 observations.
+4. A data file with observed (target) voltage traces, possibly for different current injections.
 
 The running process consists of three steps.
 1. Defining an optimizer and a feature model.
@@ -42,11 +42,11 @@ The running process consists of three steps.
 
 `act.optim` provides several built-in optimizers and a generic class for creating custom optimizers. Some optimizers, such as `NaiveLinearOptimizer`, do not require target data for training, although most optimizers do.
 
-Most optimizers also allow you to specify a feature model, a `torch.nn.Module` which will be used to extract summary features from generated voltage data. `act.feature_model` provides a `DefaultSummaryModel` which can also be used as a reference for creating custom feature models.
+Most non-naive optimizers also allow you to specify a feature model, a `torch.nn.Module` which will be used to extract summary features from generated voltage data. `act.feature_model` provides a `DefaultSummaryModel` which can also be used as a reference for creating custom feature models.
 
 `act.metrics` contains standardized goodness-of-fit metrics which can be used as a reference for creating custom metrics. 
 
-A snapshot example is presented below. Please, see `examples/CA3/` for a more detailed overview.
+A snapshot example is presented below. Please, see `examples/` for a more detailed overview.
 
 ```python
 import torch
