@@ -9,7 +9,7 @@ description = "Automatic Cell Tuner"
 readme = "README.md"
 requires-python = "==3.8.*"
 dependencies = [
-    "NEURON==8.2.2",
+    "NEURON>=8.2.0",
     "numpy==1.23.5",
     "sbi==0.17.2",
     "matplotlib",
