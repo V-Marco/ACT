@@ -59,7 +59,7 @@ from act.metrics import correlation_score
 # Load observed data
 data = torch.tensor(pd.read_csv("example_data.csv", header = None).to_numpy()).float()
 
-# Reshape to (num_current_injections, 1024) for convenience
+# Reshape to (num_current_injections, len_voltage_trace)
 data = data.T
 
 # Define optimizer
