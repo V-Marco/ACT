@@ -69,7 +69,9 @@ linopt = RandomSearchLinearOptimizer(config_file = "config.json")
 feature_model = DefaultSummaryModel(num_summary_features = 8, use_statistics = True)
 
 # Optimize
-linopt_estimates = linopt.optimize(feature_model = feature_model, observed_data = data, num_summary_features = 11, num_epochs = 100, num_prediction_rounds = 50)
+linopt_estimates = linopt.optimize(feature_model = feature_model, observed_data = data, 
+                                   num_summary_features = 11, num_epochs = 100, 
+                                   num_prediction_rounds = 50)
 
 # Check goodness-of-fit
 correlation_score(linopt, data, linopt_estimates)
