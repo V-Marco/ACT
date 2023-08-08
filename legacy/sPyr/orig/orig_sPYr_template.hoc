@@ -84,7 +84,6 @@ proc init() { local v_potassium, v_sodium
 	eca = 120 
 	gcabar_it = 0.001	// specific to LTS pyr cell
 
-
   }
 
   
