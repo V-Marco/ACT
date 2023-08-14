@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Outputs
+.png
+
+# Mac
 .DS_Store
 
 # C extensions
