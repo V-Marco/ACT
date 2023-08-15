@@ -4,7 +4,9 @@ import os
 
 output_folders = [
     "output_Pospischil_sPY/original_original",
-    "output_Pospischil_sPY/original_segregated"
+    "output_Pospischil_sPY/original_segregated",
+    "output_Pospischil_sPYr/original_original",
+    "output_Pospischil_sPYr/original_segregated"
 ]
 
 def main():

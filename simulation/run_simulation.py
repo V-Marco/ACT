@@ -86,7 +86,7 @@ def main(constants: object):
 
 if __name__ == "__main__":
 
-    constants = PospischilsPY
+    constants = PospischilsPYr
 
     if not os.path.exists(constants.output_folder):
         os.mkdir(constants.output_folder)

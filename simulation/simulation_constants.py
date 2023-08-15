@@ -88,8 +88,9 @@ class PospischilsPYr:
 
     # Runtime
     run_mode = "original" # "original", "segregated"
-    modfiles_folder = "../data/Pospischil/sPYr/orig_modfiles"
-    num_repeats = 1
+    modfiles_mode = "segregated" # Used only for the output folder name
+    modfiles_folder = "../data/Pospischil/sPYr/seg_modfiles"
+    num_repeats = 3
     num_amps_to_match = 30
     num_epochs = 5000
 
