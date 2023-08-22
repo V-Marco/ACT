@@ -15,8 +15,6 @@ class PospischilsPY:
     # Optimization parameters
     amps = list(np.arange(-2, 10, 0.1))
     params = ["g_pas", "gnabar_hh2", "gkbar_hh2", "gkbar_im"]
-    #lows = [1.e-05, 5.e-03, 5.e-04, 7.e-06]
-    #highs = [0.001, 0.5, 0.05, 0.0007]
     lows = [5.0e-05, 2.5e-02, 2.5e-03, 3.5e-05]
     highs = [0.0002, 0.1, 0.01, 0.00014]
 
