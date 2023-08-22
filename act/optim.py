@@ -89,7 +89,7 @@ class GeneralACTOptimizer(ACTOptimizer):
 
     def optimize(self, target_V: torch.Tensor) -> torch.Tensor:
         # Get voltage with characteristics similar to target
-        simulated_V_for_next_stage, param_samples_for_next_stage, inds_of_ampl_next_stage = self.match_voltage(target_V)
+        simulated_V_for_next_stage, param_samples_for_next_stage = self.match_voltage(target_V)
 
         self.model = self.init_nn_model(in_channels = target_V.shape[1], out_channels = self.num_params)
 
@@ -117,7 +117,7 @@ class GeneralACTOptimizer(ACTOptimizer):
             raise ValueError("segregate_by must be either 'voltage' or 'time'.")
 
         # Get voltage with characteristics similar to target
-        simulated_V_for_next_stage, param_samples_for_next_stage, inds_of_ampl_next_stage = self.match_voltage(target_V)
+        simulated_V_for_next_stage, param_samples_for_next_stage = self.match_voltage(target_V)
 
         # Resample to match the length of target data
         resampled_data = self.resample_voltage(simulated_V_for_next_stage, target_V.shape[1])
@@ -258,7 +258,7 @@ class GeneralACTOptimizer(ACTOptimizer):
 
         self.logger.info(f"Matched amplitudes: {np.array(self.constants.amps)[inds_of_ampl_next_stage]}")
 
-        return simulated_V_for_next_stage, param_samples_for_next_stage, inds_of_ampl_next_stage
+        return simulated_V_for_next_stage, param_samples_for_next_stage
 
     def get_match_condition(self, target: torch.Tensor, simulated: torch.Tensor, threshold: float):
         return (torch.abs(target - simulated) < threshold).flatten()
