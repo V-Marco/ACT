@@ -52,7 +52,7 @@ proc init() { local v_potassium, v_sodium
 
 	insert pas		// leak current 
 	e_pas = -70
-	g_pas = 1.4998139e-05 // #ACT_MARK: g_leak
+	g_pas = 0.0001 // #ACT_MARK: g_leak
 
 	// conversion with McC units: 
 	// g(S/cm2) = g(nS)*1e-9/29000e-8
@@ -61,14 +61,14 @@ proc init() { local v_potassium, v_sodium
 	insert hh2		// Hodgin-Huxley INa and IK 
 	ek = v_potassium
 	ena = v_sodium
-	vtraub_hh2 = -55	// Resting Vm, BJ was -55
-	gnabar_hh2 = 0.08155758 // #ACT_MARK: g_Na
-	gkbar_hh2 = 0.0056799036 // #ACT_MARK: g_Kdr
+	vtraub_hh2 = -70	// Resting Vm, BJ was -55
+	gnabar_hh2 = 0.05 // #ACT_MARK: g_Na
+	gkbar_hh2 = 0.005 // #ACT_MARK: g_Kdr
 
 
 	insert im		// M current 
 	taumax_im = 1000
-	gkbar_im = 0.0002 // #ACT_MARK: g_KM
+	gkbar_im = 7e-5 // #ACT_MARK: g_KM
   }
 
 }

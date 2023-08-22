@@ -64,7 +64,7 @@ proc init() { local v_potassium, v_sodium
 	insert hh2		// Hodgin-Huxley INa and IK 
 	ek = v_potassium
 	ena = v_sodium
-	vtraub_hh2 = -55	// Resting Vm, BJ was -55
+	vtraub_hh2 = -60	// Resting Vm, BJ was -55
 	gnabar_hh2 = 0.05	// McCormick=15 muS, thal was 0.09
 	gkbar_hh2 = 0.005	// spike duration of pyr cells
 

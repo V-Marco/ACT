@@ -91,7 +91,7 @@ INITIAL {
 PROCEDURE evaluate_fct(v(mV)) { LOCAL Vm
 
 	Vm = v + shift
-	if (Vm < -75 ) {           :::::: modification starts here
+	if (Vm < -65 ) {           :::::: modification starts here
 	m_inf = 0
 	} else{
 	m_inf = 1.0 / ( 1 + exp(-(Vm+57)/6.2) )

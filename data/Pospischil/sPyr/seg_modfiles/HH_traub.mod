@@ -113,7 +113,7 @@ PROCEDURE evaluate_fct(v(mV)) { LOCAL a,b,v2
 	b = 0.28 * vtrap(v2-40, 5)
 	tau_m = 1 / (a + b) / tadj
 	
-	if (v < -60 ) {           :::::: modification starts here
+	if (v < -65 ) {           :::::: modification starts here
 	m_inf = 0
 	} else{
 	m_inf = a/(a+b)
@@ -130,7 +130,7 @@ PROCEDURE evaluate_fct(v(mV)) { LOCAL a,b,v2
 	b = 0.5 * Exp((10-v2)/40)
 	tau_n = 1 / (a + b) / tadj
 	
-	if (v < -60 ) {            :::::: modification starts here
+	if (v < -65 ) {            :::::: modification starts here
 	n_inf = 0
 	} else{
 	n_inf = a/(a+b)
