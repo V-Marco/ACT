@@ -28,7 +28,7 @@ Conceptually, `act` requires three components.
 2. Modfiles for this `.hoc` file.
 3. Target voltage data of shape (num_cur_inj, ...) to predict on OR parameters to simulate target data with.
 
-## Pipeline
+### Pipeline
 `act` operates in original and segregated modes. Original mode runs in the following steps:
 1. Generate a parameter set uniformly randomly from a (lower; upper) interval for each current injection.
 2. Simulate a voltage trace for each current injection and respective parameter set.
