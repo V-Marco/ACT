@@ -7,16 +7,18 @@ class PospischilsPY:
 
     # Simulation parameters
     h_v_init = -67.0 # (mV)
-    h_tstop = 1500 # (ms)
-    h_i_delay = 100 # (ms)
-    h_i_dur = 1200 # (ms)
+    h_tstop = 2000 # (ms)
+    h_i_delay = 500 # (ms)
+    h_i_dur = 1500 # (ms)
     h_dt = 0.025
 
     # Optimization parameters
     amps = list(np.arange(-2, 10, 0.1))
     params = ["g_pas", "gnabar_hh2", "gkbar_hh2", "gkbar_im"]
-    lows = [0.000001, 0.01, 0.001, 0.00005]
-    highs = [0.000015, 0.09, 0.009, 0.00020]
+    #lows = [1.e-05, 5.e-03, 5.e-04, 7.e-06]
+    #highs = [0.001, 0.5, 0.05, 0.0007]
+    lows = [5.0e-05, 2.5e-02, 2.5e-03, 3.5e-05]
+    highs = [0.0002, 0.1, 0.01, 0.00014]
 
     # Summary features
     spike_threshold = 20 # (mV) 
@@ -29,20 +31,20 @@ class PospischilsPY:
     mc_max_v = 1 # (mV)
 
     # Segregation
-    segr_param_inds = [[0], [3], [1, 2]]
-    segr_voltage_bounds = [[-100, -75], [-75, -65], [-65, 100]]
-    segr_time_bounds = [[None], [None], [None]]
+    segr_param_inds = [[0], [1, 2, 3]]
+    segr_voltage_bounds = [[-100, -65], [-65, 100]]
+    segr_time_bounds = [[0, 500], [0, 2000]]
 
     # Target voltage
     target_V = None
-    target_params = [1.4998139e-05, 0.08155758, 0.0056799036, 0.0002]
+    target_params = [0.0001, 0.05, 0.005, 7e-5]
 
     # Runtime
-    run_mode = "original" # "original", "segregated"
+    run_mode = "segregated" # "original", "segregated"
     modfiles_mode = "segregated" # Used only for the output folder name
     modfiles_folder = "../data/Pospischil/sPY/seg_modfiles"
     num_repeats = 3
-    num_amps_to_match = 30
+    num_amps_to_match = 12
     num_epochs = 5000
 
     # Output
@@ -56,16 +58,16 @@ class PospischilsPYr:
 
     # Simulation parameters
     h_v_init = -67.0 # (mV)
-    h_tstop = 1500 # (ms)
-    h_i_delay = 100 # (ms)
-    h_i_dur = 1200 # (ms)
+    h_tstop = 2000 # (ms)
+    h_i_delay = 500 # (ms)
+    h_i_dur = 1500 # (ms)
     h_dt = 0.025
 
     # Optimization parameters
     amps = list(np.arange(-2, 10, 0.1))
     params = ["g_pas", "gnabar_hh2", "gkbar_hh2", "gkbar_im", "gcabar_it"]
-    lows = [0.000001, 0.01, 0.001, 0.00005, 0.0001]
-    highs = [0.000015, 0.09, 0.009, 0.00020, 0.01]
+    lows = [5.0e-06, 2.5e-02, 2.5e-03, 1.5e-05, 5.0e-04]
+    highs = [2.e-05, 1.e-01, 1.e-02, 6.e-05, 2.e-03]
 
     # Summary features
     spike_threshold = 20 # (mV) 
@@ -78,20 +80,20 @@ class PospischilsPYr:
     mc_max_v = 1 # (mV)
 
     # Segregation
-    segr_param_inds = [[0], [3], [1, 2]]
-    segr_voltage_bounds = [[-100, -75], [-75, -65], [-65, 100]]
-    segr_time_bounds = [[None], [None], [None]]
+    segr_param_inds = [[0], [1, 2, 3, 4]]
+    segr_voltage_bounds = [[-100, -65], [-65, 100]]
+    segr_time_bounds = [[0, 500], [0, 2000]]
 
     # Target voltage
     target_V = None
-    target_params = [1.4998139e-05, 0.08155758, 0.0056799036, 0.0002, 0.001]
+    target_params = [1e-5, 0.05, 0.005, 3e-5, 0.001]
 
     # Runtime
-    run_mode = "original" # "original", "segregated"
+    run_mode = "segregated" # "original", "segregated"
     modfiles_mode = "segregated" # Used only for the output folder name
     modfiles_folder = "../data/Pospischil/sPYr/seg_modfiles"
     num_repeats = 3
-    num_amps_to_match = 30
+    num_amps_to_match = 12
     num_epochs = 5000
 
     # Output

@@ -46,7 +46,7 @@ def main(constants: object):
             predictions = optim.optimize(target_V)
         elif constants.run_mode == "segregated":
             optim = GeneralACTOptimizer(simulation_constants = constants, logger = logger)
-            predictions = optim.optimize_with_segregation(target_V)
+            predictions = optim.optimize_with_segregation(target_V, "voltage")
         else:
             raise ValueError
 
