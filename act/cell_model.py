@@ -1,9 +1,9 @@
 from neuron import h
 
-class CellModel:
 
+class CellModel:
     def __init__(self, hoc_file: str, cell_name: str):
-        '''
+        """
         Constructs a Cell object.
 
         Parameters:
@@ -13,7 +13,7 @@ class CellModel:
 
         cell_name: str
             Name of the cell in the .hoc file.
-        '''
+        """
 
         # Load the .hoc file
         h.load_file(hoc_file)
@@ -30,7 +30,7 @@ class CellModel:
         # Init injection
         self.inj = h.IClamp(self.soma[0](0.5))
         self.I = h.Vector().record(h._ref_i)
-    
+
     def set_parameters(self, parameter_list: list, parameter_values: list) -> None:
         for sec in self.all:
             for index, key in enumerate(parameter_list):

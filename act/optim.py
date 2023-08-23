@@ -6,17 +6,24 @@ from scipy.signal import resample
 from act.cell_model import CellModel
 from act.logger import ACTDummyLogger
 
+
 class ACTOptimizer:
-
-    def __init__(self, simulation_constants: object, logger: object = None, reset_cell_params_to_lower_bounds_on_init: bool = True):
-
+    def __init__(
+        self,
+        simulation_constants: object,
+        logger: object = None,
+        reset_cell_params_to_lower_bounds_on_init: bool = True,
+    ):
         self.constants = simulation_constants
 
         # Initialize standard run
-        h.load_file('stdrun.hoc')
+        h.load_file("stdrun.hoc")
 
         # Initialize the cell
-        self.cell = CellModel(hoc_file = self.constants.cell_hoc_file, cell_name = self.constants.cell_name_in_hoc_file)
+        self.cell = CellModel(
+            hoc_file=self.constants.cell_hoc_file,
+            cell_name=self.constants.cell_name_in_hoc_file,
+        )
         if reset_cell_params_to_lower_bounds_on_init:
             self.cell.set_parameters(self.constants.params, self.constants.lows)
 
@@ -27,86 +34,113 @@ class ACTOptimizer:
         self.logger = logger
         if self.logger is None:
             self.logger = ACTDummyLogger()
-            
 
     def optimize(self, target_V: torch.Tensor) -> torch.Tensor:
         raise NotImplementedError
-    
-    def optimize_with_segregation(self, target_V: torch.Tensor, segregate_by: str) -> torch.Tensor:
+
+    def optimize_with_segregation(
+        self, target_V: torch.Tensor, segregate_by: str
+    ) -> torch.Tensor:
         raise NotImplementedError
-    
-    def cut_voltage_region(self, target_V: torch.Tensor, voltage_bounds: list) -> torch.Tensor:
+
+    def cut_voltage_region(
+        self, target_V: torch.Tensor, voltage_bounds: list
+    ) -> torch.Tensor:
         cut_target_V = torch.zeros_like(target_V)
 
         for i in range(cut_target_V.shape[0]):
             trace = target_V[i]
             trace = trace[(trace >= voltage_bounds[0]) & (trace < voltage_bounds[1])]
-            cut_target_V[i] = torch.tensor(resample(x = trace, num = target_V.shape[1])).float()
+            cut_target_V[i] = torch.tensor(
+                resample(x=trace, num=target_V.shape[1])
+            ).float()
 
         return cut_target_V
-    
-    def cut_time_region(self, target_V: torch.Tensor, time_bounds: tuple) -> torch.Tensor:
+
+    def cut_time_region(
+        self, target_V: torch.Tensor, time_bounds: tuple
+    ) -> torch.Tensor:
         cut_target_V = torch.zeros_like(target_V)
 
         for i in range(cut_target_V.shape[0]):
             trace = target_V[i, time_bounds[0] : time_bounds[1]]
-            cut_target_V[i] = torch.tensor(resample(x = trace, num = target_V.shape[1])).float()
+            cut_target_V[i] = torch.tensor(
+                resample(x=trace, num=target_V.shape[1])
+            ).float()
 
         return cut_target_V
-    
-    def simulate(self, amp: float, parameter_names: list, parameter_values: np.ndarray) -> torch.Tensor:
 
+    def simulate(
+        self, amp: float, parameter_names: list, parameter_values: np.ndarray
+    ) -> torch.Tensor:
         h.dt = self.constants.h_dt
         h.tstop = self.constants.h_tstop
         h.v_init = self.constants.h_v_init
 
         self.cell.set_parameters(parameter_names, parameter_values)
-        self.cell.apply_current_injection(amp, self.constants.h_i_dur, self.constants.h_i_delay)
+        self.cell.apply_current_injection(
+            amp, self.constants.h_i_dur, self.constants.h_i_delay
+        )
 
         h.run()
 
         return torch.Tensor(self.cell.Vm.as_numpy()[:-1])
-    
+
     def resample_voltage(self, V: torch.Tensor, num_obs: int) -> torch.Tensor:
         resampled_data = []
         for i in range(V.shape[0]):
-            resampled_data.append(resample(x = V[i], num = num_obs))
+            resampled_data.append(resample(x=V[i], num=num_obs))
         resampled_data = torch.tensor(np.array(resampled_data)).float()
         return resampled_data
-    
+
     def update_param_vars(self) -> None:
         self.num_ampl = len(self.constants.amps)
         self.num_params = len(self.constants.params)
-    
-class GeneralACTOptimizer(ACTOptimizer):
 
-    def __init__(self, simulation_constants: object, logger: object = None, reset_cell_params_to_lower_bounds_on_init: bool = True):
-        super().__init__(simulation_constants = simulation_constants, logger = logger, 
-                         reset_cell_params_to_lower_bounds_on_init = reset_cell_params_to_lower_bounds_on_init)
+
+class GeneralACTOptimizer(ACTOptimizer):
+    def __init__(
+        self,
+        simulation_constants: object,
+        logger: object = None,
+        reset_cell_params_to_lower_bounds_on_init: bool = True,
+    ):
+        super().__init__(
+            simulation_constants=simulation_constants,
+            logger=logger,
+            reset_cell_params_to_lower_bounds_on_init=reset_cell_params_to_lower_bounds_on_init,
+        )
 
         self.model = None
         self.model_pool = None
 
     def optimize(self, target_V: torch.Tensor) -> torch.Tensor:
         # Get voltage with characteristics similar to target
-        simulated_V_for_next_stage, param_samples_for_next_stage = self.match_voltage(target_V)
+        simulated_V_for_next_stage, param_samples_for_next_stage = self.match_voltage(
+            target_V
+        )
 
-        self.model = self.init_nn_model(in_channels = target_V.shape[1], out_channels = self.num_params)
+        self.model = self.init_nn_model(
+            in_channels=target_V.shape[1], out_channels=self.num_params
+        )
 
         # Resample to match the length of target data
-        resampled_data = self.resample_voltage(simulated_V_for_next_stage, target_V.shape[1])
+        resampled_data = self.resample_voltage(
+            simulated_V_for_next_stage, target_V.shape[1]
+        )
 
         # Train model
         self.train_model(resampled_data, param_samples_for_next_stage)
-        
+
         # Predict and take max across ci to prevent underestimating
         predictions = self.predict_with_model(target_V)
-        predictions = torch.max(predictions, dim = 0).values
-        
+        predictions = torch.max(predictions, dim=0).values
+
         return predictions
-    
-    def optimize_with_segregation(self, target_V: torch.Tensor, segregate_by: str = "voltage") -> torch.Tensor:
-        
+
+    def optimize_with_segregation(
+        self, target_V: torch.Tensor, segregate_by: str = "voltage"
+    ) -> torch.Tensor:
         if segregate_by == "voltage":
             cut_func = self.cut_voltage_region
             cut_bounds_list = self.constants.segr_voltage_bounds
@@ -117,10 +151,14 @@ class GeneralACTOptimizer(ACTOptimizer):
             raise ValueError("segregate_by must be either 'voltage' or 'time'.")
 
         # Get voltage with characteristics similar to target
-        simulated_V_for_next_stage, param_samples_for_next_stage = self.match_voltage(target_V)
+        simulated_V_for_next_stage, param_samples_for_next_stage = self.match_voltage(
+            target_V
+        )
 
         # Resample to match the length of target data
-        resampled_data = self.resample_voltage(simulated_V_for_next_stage, target_V.shape[1])
+        resampled_data = self.resample_voltage(
+            simulated_V_for_next_stage, target_V.shape[1]
+        )
 
         # Store original params to restore later
         orig_params = self.constants.params.copy()
@@ -130,7 +168,6 @@ class GeneralACTOptimizer(ACTOptimizer):
         self.model_pool = []
         prediction_pool = []
         for param_ind, bounds in zip(self.constants.segr_param_inds, cut_bounds_list):
-
             # Set the parameters
             self.constants.params = [orig_params[v] for v in param_ind]
             self.constants.lows = [orig_lows[v] for v in param_ind]
@@ -141,12 +178,14 @@ class GeneralACTOptimizer(ACTOptimizer):
             cut_target_V = cut_func(resampled_data, bounds)
 
             # Train a model for this segment
-            self.model = self.init_nn_model(in_channels = cut_target_V.shape[1], out_channels = len(param_ind))
+            self.model = self.init_nn_model(
+                in_channels=cut_target_V.shape[1], out_channels=len(param_ind)
+            )
             self.train_model(cut_target_V, param_samples_for_next_stage[:, param_ind])
 
             # Predict and take max across ci to prevent underestimating
             predictions = self.predict_with_model(cut_target_V)
-            predictions = torch.max(predictions, dim = 0).values
+            predictions = torch.max(predictions, dim=0).values
 
             # Update cell model
             self.cell.set_parameters(self.constants.params, predictions)
@@ -155,15 +194,15 @@ class GeneralACTOptimizer(ACTOptimizer):
             prediction_pool.append(predictions)
             self.model_pool.append(self.model)
 
-        prediction_pool = torch.cat(prediction_pool, dim = 0)
+        prediction_pool = torch.cat(prediction_pool, dim=0)
 
         # Restore original params
         self.constants.params = orig_params.copy()
         self.constants.lows = orig_lows.copy()
         self.constants.highs = orig_highs.copy()
-        
+
         return prediction_pool
-    
+
     def init_nn_model(self, in_channels: int, out_channels: int) -> torch.nn.Sequential:
         model = torch.nn.Sequential(
             torch.nn.Linear(in_channels, 256),
@@ -171,31 +210,37 @@ class GeneralACTOptimizer(ACTOptimizer):
             torch.nn.Linear(256, 256),
             torch.nn.ReLU(),
             torch.nn.Linear(256, out_channels),
-            torch.nn.Sigmoid()
+            torch.nn.Sigmoid(),
         )
         return model
-    
-    def train_model(self, voltage_data: torch.Tensor, target_params: torch.Tensor) -> None:
 
-        optim = torch.optim.SGD(self.model.parameters(), lr = 1e-8)
+    def train_model(
+        self, voltage_data: torch.Tensor, target_params: torch.Tensor
+    ) -> None:
+        optim = torch.optim.SGD(self.model.parameters(), lr=1e-8)
         sigmoid_mins = torch.tensor(self.constants.lows)
         sigmoid_maxs = torch.tensor(self.constants.highs)
 
         self.logger.info("Training a model with SGD optimizer and lr = 1e-8.")
-        self.logger.info(f"Number of trainable parameters: {sum(p.numel() for p in self.model.parameters() if p.requires_grad)}")
+        self.logger.info(
+            f"Number of trainable parameters: {sum(p.numel() for p in self.model.parameters() if p.requires_grad)}"
+        )
 
         self.model.train(True)
         for i in range(voltage_data.shape[0]):
             # Track loss to stop if it starts to go up
             loss0 = np.inf
-            
+
             for ne in range(self.constants.num_epochs):
-                pred = self.model(voltage_data[i]) * (sigmoid_maxs - sigmoid_mins) + sigmoid_mins
+                pred = (
+                    self.model(voltage_data[i]) * (sigmoid_maxs - sigmoid_mins)
+                    + sigmoid_mins
+                )
                 loss = torch.nn.functional.l1_loss(pred, target_params[i])
 
                 if ne % 100 == 0:
                     self.logger.epoch(ne, "l1_loss", float(loss.detach().numpy()))
-                
+
                 if loss.detach().numpy() >= loss0:
                     break
                 loss0 = loss.detach().numpy()
@@ -212,64 +257,107 @@ class GeneralACTOptimizer(ACTOptimizer):
         for i in range(target_V.shape[0]):
             out = self.model(target_V[i]) * (sigmoid_maxs - sigmoid_mins) + sigmoid_mins
             outs.append(out.reshape(1, -1))
-        
-        return torch.cat(outs, dim = 0)
 
-    
+        return torch.cat(outs, dim=0)
+
     def match_voltage(self, target_V: torch.Tensor) -> tuple:
         # Get target voltage summary features
-        num_target_spikes, target_interspike_times = self.extract_summary_features(target_V) # (N x 1)
+        num_target_spikes, target_interspike_times = self.extract_summary_features(
+            target_V
+        )  # (N x 1)
 
         # Set a vector of non-correspondence to target features
         non_corresp = torch.ones(self.num_ampl)
 
-        simulated_V_for_next_stage = torch.zeros((self.num_ampl, int(self.constants.h_tstop / self.constants.h_dt)))
+        simulated_V_for_next_stage = torch.zeros(
+            (self.num_ampl, int(self.constants.h_tstop / self.constants.h_dt))
+        )
         param_samples_for_next_stage = torch.zeros((self.num_ampl, self.num_params))
 
         self.logger.info(f"Matching {self.constants.num_amps_to_match} amplitudes.")
-        while torch.sum(non_corresp) > (self.num_ampl - self.constants.num_amps_to_match):
+        while torch.sum(non_corresp) > (
+            self.num_ampl - self.constants.num_amps_to_match
+        ):
             # Simulate with these samples
-            simulated_V = torch.zeros((self.num_ampl, int(self.constants.h_tstop / self.constants.h_dt)))
+            simulated_V = torch.zeros(
+                (self.num_ampl, int(self.constants.h_tstop / self.constants.h_dt))
+            )
             for ind, amp in enumerate(self.constants.amps):
                 if non_corresp[ind] == 1:
                     # For each current injection amplitude, sample random parameters
-                    param_samples = np.random.uniform(low = self.constants.lows, high = self.constants.highs)
-                    simulated_V[ind] = self.simulate(amp, self.constants.params, param_samples)
+                    param_samples = np.random.uniform(
+                        low=self.constants.lows, high=self.constants.highs
+                    )
+                    simulated_V[ind] = self.simulate(
+                        amp, self.constants.params, param_samples
+                    )
                     param_samples_for_next_stage[ind] = torch.Tensor(param_samples)
-                    
+
             # Compute summary features for simulated data
-            num_spikes_simulated, simulated_interspike_times = self.extract_summary_features(simulated_V)
+            (
+                num_spikes_simulated,
+                simulated_interspike_times,
+            ) = self.extract_summary_features(simulated_V)
 
             # Save those voltage traces which match the target
-            cond_spikes = self.get_match_condition(num_target_spikes, num_spikes_simulated, self.constants.mc_num_spikes)
-            cond_times = self.get_match_condition(target_interspike_times, simulated_interspike_times, self.constants.mc_interspike_time)
-            cond_min = self.get_match_condition(torch.min(target_V, dim = 1).values, torch.min(simulated_V, dim = 1).values, self.constants.mc_min_v)
-            cond_mean = self.get_match_condition(torch.mean(target_V, dim = 1), torch.mean(simulated_V, dim = 1), self.constants.mc_mean_v)
-            cond_max = self.get_match_condition(torch.max(target_V, dim = 1).values, torch.max(simulated_V, dim = 1).values, self.constants.mc_max_v)
+            cond_spikes = self.get_match_condition(
+                num_target_spikes, num_spikes_simulated, self.constants.mc_num_spikes
+            )
+            cond_times = self.get_match_condition(
+                target_interspike_times,
+                simulated_interspike_times,
+                self.constants.mc_interspike_time,
+            )
+            cond_min = self.get_match_condition(
+                torch.min(target_V, dim=1).values,
+                torch.min(simulated_V, dim=1).values,
+                self.constants.mc_min_v,
+            )
+            cond_mean = self.get_match_condition(
+                torch.mean(target_V, dim=1),
+                torch.mean(simulated_V, dim=1),
+                self.constants.mc_mean_v,
+            )
+            cond_max = self.get_match_condition(
+                torch.max(target_V, dim=1).values,
+                torch.max(simulated_V, dim=1).values,
+                self.constants.mc_max_v,
+            )
 
             cond = cond_spikes & cond_times & cond_mean & cond_min & cond_max
             simulated_V_for_next_stage[cond] = simulated_V[cond]
             non_corresp[cond] = 0
-            self.logger.info(f"Total amplitudes matched: {int(torch.sum(1 - non_corresp))}/{self.constants.num_amps_to_match}.")
-        
+            self.logger.info(
+                f"Total amplitudes matched: {int(torch.sum(1 - non_corresp))}/{self.constants.num_amps_to_match}."
+            )
+
         simulated_V_for_next_stage = simulated_V_for_next_stage[non_corresp == 0]
         param_samples_for_next_stage = param_samples_for_next_stage[non_corresp == 0]
         inds_of_ampl_next_stage = np.where(non_corresp == 0)[0].tolist()
 
-        self.logger.info(f"Matched amplitudes: {np.array(self.constants.amps)[inds_of_ampl_next_stage]}")
+        self.logger.info(
+            f"Matched amplitudes: {np.array(self.constants.amps)[inds_of_ampl_next_stage]}"
+        )
 
         return simulated_V_for_next_stage, param_samples_for_next_stage
 
-    def get_match_condition(self, target: torch.Tensor, simulated: torch.Tensor, threshold: float):
+    def get_match_condition(
+        self, target: torch.Tensor, simulated: torch.Tensor, threshold: float
+    ):
         return (torch.abs(target - simulated) < threshold).flatten()
 
     def extract_summary_features(self, V: torch.Tensor) -> tuple:
-
-        threshold_crossings = torch.diff(V > self.constants.spike_threshold, dim = 1)
-        num_spikes = torch.round(torch.sum(threshold_crossings, dim = 1) * 0.5)
+        threshold_crossings = torch.diff(V > self.constants.spike_threshold, dim=1)
+        num_spikes = torch.round(torch.sum(threshold_crossings, dim=1) * 0.5)
 
         interspike_times = torch.zeros((V.shape[0], 1))
         for i in range(threshold_crossings.shape[0]):
-            interspike_times[i, :] = torch.mean(torch.diff(torch.arange(threshold_crossings.shape[1])[threshold_crossings[i, :]]).float())
+            interspike_times[i, :] = torch.mean(
+                torch.diff(
+                    torch.arange(threshold_crossings.shape[1])[
+                        threshold_crossings[i, :]
+                    ]
+                ).float()
+            )
 
         return num_spikes, interspike_times

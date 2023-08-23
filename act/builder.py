@@ -1,11 +1,8 @@
-
-
 """
 The purpose of this module is to assist in the creation of single cells, from scratch
 """
 
-cell_hoc_template = \
-"""
+cell_hoc_template = """
 {{load_file("stdrun.hoc")}}
 {{load_file("nrngui.hoc")}}
 
@@ -44,6 +41,7 @@ begintemplate {cell_name}
 endtemplate {cell_name}
 """
 
+
 class CellGenerator:
 
     """
@@ -67,7 +65,7 @@ class CellGenerator:
         self.mods = {}
         self.set_geometry()
 
-    def set_geometry(self, L = 25, diam = 25, nseg = 1):
+    def set_geometry(self, L=25, diam=25, nseg=1):
         """
         Set geometric properties for the cell
         """
@@ -81,11 +79,11 @@ class CellGenerator:
         """
         for key, value in kwargs.items():
             self.global_params[key] = value
-    
+
     def insert_mech(self, mechanism, **params):
         """
         Insert a new mechanism and properties, can update
-        """        
+        """
         self.mods[mechanism] = params
 
     def write_hoc(self, file_path, append=False):
@@ -108,18 +106,19 @@ class CellGenerator:
         for param, value in self.global_params.items():
             global_params += f"{param} = {value}\n"
 
-        geometry_section = \
-        f"""
+        geometry_section = f"""
         L = {self.L}
         diam = {self.diam}
         nseg = {self.nseg}
         """
 
-        cell_hoc = cell_hoc_template.format(cell_name = self.cell_name,
-                                            global_params = global_params,
-                                            geometry_section = geometry_section,
-                                            mechanism_section = mechanism_section)
-        
+        cell_hoc = cell_hoc_template.format(
+            cell_name=self.cell_name,
+            global_params=global_params,
+            geometry_section=geometry_section,
+            mechanism_section=mechanism_section,
+        )
+
         # write to file
         with open(file_path, "a" if append else "w") as text_file:
             text_file.write(cell_hoc)
