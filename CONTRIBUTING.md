@@ -1,7 +1,7 @@
 ## Developing
 
 ```
-python setup.py develop
+pip install -e .
 ```
 
 ## Code cleanup
