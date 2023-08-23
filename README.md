@@ -10,7 +10,11 @@ it tries to obtain parameter estimates indirectly by working with simulated data
 
 ## Installation
 
-Currently, `act` can be installed from GitHub using standard `pip` installation process.
+Currently, `act` can be installed from GitHub using pip or locally with the standard `pip` installation process.
+
+```bash
+pip install act-neuron
+```
 
 ```bash
 git clone https://github.com/V-Marco/ACT.git
