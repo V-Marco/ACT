@@ -133,3 +133,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+*.c
+*.o
+*.cpp
+makemod2c_inc
+special
+special.nrn
