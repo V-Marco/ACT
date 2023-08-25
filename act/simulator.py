@@ -80,7 +80,7 @@ def _run(constants: SimulationConstants):
 
     run_output_folder_name = f"{constants['run_mode']}"
     output_folder = os.path.join(
-        constants["output"]["output_folder"], run_output_folder_name
+        constants["output"]["folder"], run_output_folder_name
     )
     os.mkdir(output_folder)
 
