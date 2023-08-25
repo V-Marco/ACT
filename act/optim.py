@@ -330,7 +330,7 @@ class GeneralACTOptimizer(ACTOptimizer):
             ):
                 if non_corresp[ind] == 1:
                     # For each current injection amplitude, sample random parameters
-                    param_samples = np.random.uniform(low=self.lows, high=self.highs)
+                    param_samples = np.random.uniform(low=lows, high=highs)
                     simulated_V[ind] = self.simulate(amp, params, param_samples)
                     param_samples_for_next_stage[ind] = torch.Tensor(param_samples)
 
@@ -344,27 +344,27 @@ class GeneralACTOptimizer(ACTOptimizer):
             cond_spikes = self.get_match_condition(
                 num_target_spikes,
                 num_spikes_simulated,
-                self.self.constants["summary_features"]["mc_num_spikes"],
+                self.constants["summary_features"]["mc_num_spikes"],
             )
             cond_times = self.get_match_condition(
                 target_interspike_times,
                 simulated_interspike_times,
-                self.self.constants["summary_features"]["mc_interspike_time"],
+                self.constants["summary_features"]["mc_interspike_time"],
             )
             cond_min = self.get_match_condition(
                 torch.min(target_V, dim=1).values,
                 torch.min(simulated_V, dim=1).values,
-                self.self.constants["summary_features"]["mc_min_v"],
+                self.constants["summary_features"]["mc_min_v"],
             )
             cond_mean = self.get_match_condition(
                 torch.mean(target_V, dim=1),
                 torch.mean(simulated_V, dim=1),
-                self.self.constants["summary_features"]["mc_mean_v"],
+                self.constants["summary_features"]["mc_mean_v"],
             )
             cond_max = self.get_match_condition(
                 torch.max(target_V, dim=1).values,
                 torch.max(simulated_V, dim=1).values,
-                self.self.constants["summary_features"]["mc_max_v"],
+                self.constants["summary_features"]["mc_max_v"],
             )
 
             cond = cond_spikes & cond_times & cond_mean & cond_min & cond_max
@@ -391,7 +391,7 @@ class GeneralACTOptimizer(ACTOptimizer):
 
     def extract_summary_features(self, V: torch.Tensor) -> tuple:
         threshold_crossings = torch.diff(
-            V > self.self.constants["summary_features"]["spike_threshold"], dim=1
+            V > self.constants["summary_features"]["spike_threshold"], dim=1
         )
         num_spikes = torch.round(torch.sum(threshold_crossings, dim=1) * 0.5)
 

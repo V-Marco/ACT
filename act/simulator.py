@@ -17,17 +17,13 @@ from act.optim import GeneralACTOptimizer
 from act.target_utils import get_voltage_trace_from_params
 
 
-def run(constants: SimulationConstants):
+def _run(constants: SimulationConstants):
     if constants["num_epochs"] < 1000:
         raise ValueError("Number of epochs is expected to be >= 1000.")
 
     output_folder = constants["output"]["output_folder"]
     if not os.path.exists(output_folder):
         os.mkdir(output_folder)
-
-    # Compile modfiles
-    if os.path.exists("x86_64"):
-        os.system("rm -r x86_64")
 
     os.system(f"nrnivmodl {constants['modfiles_folder']}")
     #h.nrn_load_dll("./x86_64/.libs/libnrnmech.so")
@@ -103,3 +99,13 @@ def run(constants: SimulationConstants):
                 output_folder,
             )
             i += 5
+
+    if os.path.exists("x86_64"):
+        os.system("rm -r x86_64")
+
+
+def run(constants: SimulationConstants):
+    p = Process(target=_run, args=[constants])
+    p.start()
+    p.join()
+    p.terminate()
