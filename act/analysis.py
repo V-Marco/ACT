@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
+from act.act_types import SimulationConstants
 from act.metrics import correlation_score, mse_score
 from act.optim import ACTOptimizer
 
@@ -11,14 +12,17 @@ from act.optim import ACTOptimizer
 def save_prediction_plots(
     target_V: torch.Tensor,
     amp: list,
-    simulation_constants: object,
+    simulation_constants: SimulationConstants,
     predicted_params_values: torch.Tensor,
     output_folder: str,
 ) -> None:
     _, ax = plt.subplots(1, 1, figsize=(10, 10))
     optim = ACTOptimizer(simulation_constants=simulation_constants)
+    params = [
+        p["channel"] for p in simulation_constants["optimization_parameters"]["params"]
+    ]
     simulated_data = optim.simulate(
-        amp, simulation_constants.params, predicted_params_values.detach().numpy()
+        amp, params, predicted_params_values.detach().numpy()
     )
     simulated_data = optim.resample_voltage(
         V=simulated_data.reshape((1, -1)), num_obs=target_V.shape[1]
@@ -39,7 +43,7 @@ def save_prediction_plots(
 
 def save_mse_corr(
     target_V: torch.Tensor,
-    simulation_constants: object,
+    simulation_constants: SimulationConstants,
     predicted_params_values: torch.Tensor,
     output_folder: str,
 ) -> None:
@@ -47,10 +51,12 @@ def save_mse_corr(
         file.write(f"amp,mse,corr\n")
 
     optim = ACTOptimizer(simulation_constants=simulation_constants)
-    for ind, amp in enumerate(simulation_constants.amps):
-        sim_data = optim.simulate(
-            amp, simulation_constants.params, predicted_params_values.detach().numpy()
-        )
+    for ind, amp in enumerate(simulation_constants["optimization_parameters"]["amps"]):
+        params = [
+            p["channel"]
+            for p in simulation_constants["optimization_parameters"]["params"]
+        ]
+        sim_data = optim.simulate(amp, params, predicted_params_values.detach().numpy())
         simulated_data = optim.resample_voltage(
             V=sim_data.reshape((1, -1)), num_obs=target_V.shape[1]
         )
