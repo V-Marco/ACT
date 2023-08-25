@@ -65,9 +65,7 @@ def _run(constants: SimulationConstants):
 
         sims = []
         for amp in constants["optimization_parameters"]["amps"]:
-            sims.append(
-                optim.simulate(amp, params, predictions).reshape(1, -1)
-            )
+            sims.append(optim.simulate(amp, params, predictions).reshape(1, -1))
         sims = torch.cat(sims, dim=0)
 
         # Compute composite error
@@ -86,24 +84,22 @@ def _run(constants: SimulationConstants):
         json.dump(constants, file, indent=2)
 
     # Save predictions
-    pred_df = pd.DataFrame(
-        dict(zip(params, predictions.detach().numpy())), index=[0]
-    )
+    pred_df = pd.DataFrame(dict(zip(params, predictions.detach().numpy())), index=[0])
     pred_df.to_csv(os.path.join(output_folder, "pred.csv"))
 
     save_mse_corr(target_V, constants, predictions, output_folder)
 
-    if constants["outputs"]["produce_plots"]:
+    if constants["output"]["produce_plots"]:
         i = 0
         while i < len(constants["optimization_parameters"]["amps"]):
             save_prediction_plots(
                 target_V[i].reshape(1, -1),
-                constants["amps"][i],
+                constants["optimization_parameters"]["amps"][i],
                 constants,
                 predictions,
                 output_folder,
             )
-            i += 5
+            i += 5  # should be user variable
 
     if os.path.exists("x86_64"):
         os.system("rm -r x86_64")
