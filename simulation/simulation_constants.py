@@ -143,8 +143,8 @@ pospischilsPYr: SimulationConstants = {
     "segregation": [
         {
             "params": ["g_pas"],
-            "voltage_bounds": [-100, -65],
-            "time_bounds": [0, 500],
+            "voltage": [-100, -65],
+            "time": [0, 500],
         },
         {
             "params": ["gnabar_hh2", "gkbar_hh2", "gkbar_im", "gcabar_it"],
