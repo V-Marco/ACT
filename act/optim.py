@@ -180,16 +180,21 @@ class GeneralACTOptimizer(ACTOptimizer):
         prediction_pool = []
 
         for segregation in self.constants["segregation"]:
-            params = segregation["params"]
+            seg_params = segregation["params"]
             bounds = segregation[segregate_by]
 
             # Set the parameters
             param_ind = [
-                i for i, (c, _) in enumerate(orig_params.items()) if c in params
+                i for i, (c, _) in enumerate(orig_params.items()) if c in seg_params
             ]
-            lows = [p["low"] for _, p in orig_params.items() if p in params]
-            highs = [p["high"] for _, p in orig_params.items() if p in params]
-            self.num_params = len(params)
+
+            lows = [
+                p["low"] for channel, p in orig_params.items() if channel in seg_params
+            ]
+            highs = [
+                p["high"] for channel, p in orig_params.items() if channel in seg_params
+            ]
+            self.num_params = len(seg_params)
 
             # Cut the required segment
             cut_target_V = cut_func(resampled_data, bounds)
@@ -210,7 +215,7 @@ class GeneralACTOptimizer(ACTOptimizer):
             predictions = torch.max(predictions, dim=0).values
 
             # Update cell model
-            self.cell.set_parameters(params, predictions)
+            self.cell.set_parameters(seg_params, predictions)
 
             # Update the pools
             prediction_pool.append(predictions)

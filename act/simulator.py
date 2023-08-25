@@ -110,7 +110,8 @@ def _run(constants: SimulationConstants):
 
 
 def run(constants: SimulationConstants):
-    p = Process(target=_run, args=[constants])
-    p.start()
-    p.join()
-    p.terminate()
+    _run(constants)
+    # p = Process(target=_run, args=[constants])
+    # p.start()
+    # p.join()
+    # p.terminate()
