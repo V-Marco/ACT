@@ -30,7 +30,7 @@ def run(constants: SimulationConstants):
         os.system("rm -r x86_64")
 
     os.system(f"nrnivmodl {constants['modfiles_folder']}")
-    # h.nrn_load_dll("./x86_64/.libs/libnrnmech.so")
+    #h.nrn_load_dll("./x86_64/.libs/libnrnmech.so")
 
     logger = ACTLogger()
     logger.info(
