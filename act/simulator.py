@@ -26,12 +26,16 @@ def _run(constants: SimulationConstants):
         os.mkdir(output_folder)
 
     os.system(f"nrnivmodl {constants['modfiles_folder']}")
-    #h.nrn_load_dll("./x86_64/.libs/libnrnmech.so")
 
     logger = ACTLogger()
     logger.info(
         f"Number of amplitudes: {len(constants['optimization_parameters']['amps'])}"
     )
+
+    try:
+        h.nrn_load_dll("./x86_64/.libs/libnrnmech.so")
+    except:
+        logger.info("Mod files already loaded. Continuing.")
 
     # Get target voltage
     if constants["segregation"]["target_V"] is not None:
@@ -46,6 +50,7 @@ def _run(constants: SimulationConstants):
     # Run the optimizer
     pred_pool = []
     err_pool = []
+    params = [p["channel"] for p in constants["optimization_parameters"]["params"]]
     for _ in range(constants["num_repeats"]):
         if constants["run_mode"] == "original":
             optim = GeneralACTOptimizer(simulation_constants=constants, logger=logger)
@@ -61,7 +66,7 @@ def _run(constants: SimulationConstants):
         sims = []
         for amp in constants["optimization_parameters"]["amps"]:
             sims.append(
-                optim.simulate(amp, constants["params"], predictions).reshape(1, -1)
+                optim.simulate(amp, params, predictions).reshape(1, -1)
             )
         sims = torch.cat(sims, dim=0)
 
@@ -82,7 +87,7 @@ def _run(constants: SimulationConstants):
 
     # Save predictions
     pred_df = pd.DataFrame(
-        dict(zip(constants["params"], predictions.detach().numpy())), index=[0]
+        dict(zip(params, predictions.detach().numpy())), index=[0]
     )
     pred_df.to_csv(os.path.join(output_folder, "pred.csv"))
 
