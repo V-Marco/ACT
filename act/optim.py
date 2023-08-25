@@ -22,8 +22,8 @@ class ACTOptimizer:
 
         # Initialize the cell
         self.cell = CellModel(
-            hoc_file=self.constants["cell"]["cell_hoc_file"],
-            cell_name=self.constants["cell"]["cell_name"],
+            hoc_file=self.constants["cell"]["hoc_file"],
+            cell_name=self.constants["cell"]["name"],
         )
         if reset_cell_params_to_lower_bounds_on_init:
             params = [
@@ -139,8 +139,11 @@ class GeneralACTOptimizer(ACTOptimizer):
             simulated_V_for_next_stage, target_V.shape[1]
         )
 
+        lows = [p["low"] for p in self.constants["optimization_parameters"]["params"]]
+        highs = [p["high"] for p in self.constants["optimization_parameters"]["params"]]
+
         # Train model
-        self.train_model(resampled_data, param_samples_for_next_stage)
+        self.train_model(resampled_data, param_samples_for_next_stage, lows, highs)
 
         # Predict and take max across ci to prevent underestimating
         predictions = self.predict_with_model(target_V)
@@ -153,10 +156,8 @@ class GeneralACTOptimizer(ACTOptimizer):
     ) -> torch.Tensor:
         if segregate_by == "voltage":
             cut_func = self.cut_voltage_region
-            cut_bounds_list = self.constants["segregation"]["segr_voltage_bounds"]
         elif segregate_by == "time":
             cut_func = self.cut_time_region
-            cut_bounds_list = self.constants["segregation"]["segr_time_bounds"]
         else:
             raise ValueError("segregate_by must be either 'voltage' or 'time'.")
 
@@ -171,25 +172,23 @@ class GeneralACTOptimizer(ACTOptimizer):
         )
 
         # Store original params to restore later
-        orig_params = [
-            p["channel"] for p in self.constants["optimization_parameters"]["params"]
-        ]
-        orig_lows = [
-            p["low"] for p in self.constants["optimization_parameters"]["params"]
-        ]
-        orig_highs = [
-            p["high"] for p in self.constants["optimization_parameters"]["params"]
-        ]
+        orig_params = {
+            p["channel"]: p for p in self.constants["optimization_parameters"]["params"]
+        }
 
         self.model_pool = []
         prediction_pool = []
-        for param_ind, bounds in zip(
-            self.constants["segregation"]["segr_param_inds"], cut_bounds_list
-        ):
+
+        for segregation in self.constants["segregation"]:
+            params = segregation["params"]
+            bounds = segregation[segregate_by]
+
             # Set the parameters
-            params = [orig_params[v] for v in param_ind]
-            lows = [orig_lows[v] for v in param_ind]
-            highs = [orig_highs[v] for v in param_ind]
+            param_ind = [
+                i for i, (c, _) in enumerate(orig_params.items()) if c in params
+            ]
+            lows = [p["low"] for _, p in orig_params.items() if p in params]
+            highs = [p["high"] for _, p in orig_params.items() if p in params]
             self.num_params = len(params)
 
             # Cut the required segment
@@ -197,12 +196,11 @@ class GeneralACTOptimizer(ACTOptimizer):
 
             # Train a model for this segment
             self.model = self.init_nn_model(
-                in_channels=cut_target_V.shape[1], out_channels=len(param_ind)
+                in_channels=cut_target_V.shape[1], out_channels=self.num_params
             )
             self.train_model(
                 cut_target_V,
                 param_samples_for_next_stage[:, param_ind],
-                params=params,
                 lows=lows,
                 highs=highs,
             )
@@ -237,7 +235,6 @@ class GeneralACTOptimizer(ACTOptimizer):
         self,
         voltage_data: torch.Tensor,
         target_params: torch.Tensor,
-        params,
         lows,
         highs,
     ) -> None:
@@ -255,7 +252,7 @@ class GeneralACTOptimizer(ACTOptimizer):
             # Track loss to stop if it starts to go up
             loss0 = np.inf
 
-            for ne in range(self.constants["num_epochs"]):
+            for ne in range(self.constants["optimization_parameters"]["num_epochs"]):
                 pred = (
                     self.model(voltage_data[i]) * (sigmoid_maxs - sigmoid_mins)
                     + sigmoid_mins
@@ -304,7 +301,9 @@ class GeneralACTOptimizer(ACTOptimizer):
         )
         param_samples_for_next_stage = torch.zeros((self.num_ampl, self.num_params))
 
-        self.logger.info(f"Matching {self.constants['num_amps_to_match']} amplitudes.")
+        self.logger.info(
+            f"Matching {self.constants['optimization_parameters']['num_amps_to_match']} amplitudes."
+        )
 
         params = [
             p["channel"] for p in self.constants["optimization_parameters"]["params"]
@@ -313,7 +312,8 @@ class GeneralACTOptimizer(ACTOptimizer):
         highs = [p["high"] for p in self.constants["optimization_parameters"]["params"]]
 
         while torch.sum(non_corresp) > (
-            self.num_ampl - self.constants["num_amps_to_match"]
+            self.num_ampl
+            - self.constants["optimization_parameters"]["num_amps_to_match"]
         ):
             # Simulate with these samples
             simulated_V = torch.zeros(
@@ -371,7 +371,7 @@ class GeneralACTOptimizer(ACTOptimizer):
             simulated_V_for_next_stage[cond] = simulated_V[cond]
             non_corresp[cond] = 0
             self.logger.info(
-                f"Total amplitudes matched: {int(torch.sum(1 - non_corresp))}/{self.constants['num_amps_to_match']}."
+                f"Total amplitudes matched: {int(torch.sum(1 - non_corresp))}/{self.constants['optimization_parameters']['num_amps_to_match']}."
             )
 
         simulated_V_for_next_stage = simulated_V_for_next_stage[non_corresp == 0]

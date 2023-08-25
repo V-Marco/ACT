@@ -18,14 +18,14 @@ from act.target_utils import get_voltage_trace_from_params
 
 
 def _run(constants: SimulationConstants):
-    if constants["num_epochs"] < 1000:
+    if constants["optimization_parameters"]["num_epochs"] < 1000:
         raise ValueError("Number of epochs is expected to be >= 1000.")
 
-    output_folder = constants["output"]["output_folder"]
+    output_folder = constants["output"]["folder"]
     if not os.path.exists(output_folder):
         os.mkdir(output_folder)
 
-    os.system(f"nrnivmodl {constants['modfiles_folder']}")
+    os.system(f"nrnivmodl {constants['cell']['modfiles_folder']}")
 
     logger = ACTLogger()
     logger.info(
@@ -38,12 +38,14 @@ def _run(constants: SimulationConstants):
         logger.info("Mod files already loaded. Continuing.")
 
     # Get target voltage
-    if constants["segregation"]["target_V"] is not None:
-        target_V = constants["segregation"]["target_V"].copy()
-    elif constants["segregation"]["target_params"] is not None:
+    if constants["optimization_parameters"]["target_V"] is not None:
+        target_V = constants["optimization_parameters"]["target_V"]
+    elif constants["optimization_parameters"]["target_params"] is not None:
         target_V = get_voltage_trace_from_params(constants)
     else:
-        raise ValueError
+        raise ValueError(
+            "Must specify either target_V or target_params for optimization_parameters"
+        )
 
     logger.info(f"Target voltage shape: {target_V.shape}")
 
@@ -51,7 +53,7 @@ def _run(constants: SimulationConstants):
     pred_pool = []
     err_pool = []
     params = [p["channel"] for p in constants["optimization_parameters"]["params"]]
-    for _ in range(constants["num_repeats"]):
+    for _ in range(constants["optimization_parameters"]["num_repeats"]):
         if constants["run_mode"] == "original":
             optim = GeneralACTOptimizer(simulation_constants=constants, logger=logger)
             predictions = optim.optimize(target_V)
@@ -59,7 +61,9 @@ def _run(constants: SimulationConstants):
             optim = GeneralACTOptimizer(simulation_constants=constants, logger=logger)
             predictions = optim.optimize_with_segregation(target_V, "voltage")
         else:
-            raise ValueError
+            raise ValueError(
+                "run mode not specified, 'original' or 'segregated' supported."
+            )
 
         pred_pool.append(predictions)
 
@@ -74,7 +78,7 @@ def _run(constants: SimulationConstants):
 
     predictions = pred_pool[np.argmin(err_pool)]
 
-    run_output_folder_name = f"{constants['run_mode']}_{constants['modfiles_mode']}"
+    run_output_folder_name = f"{constants['run_mode']}"
     output_folder = os.path.join(
         constants["output"]["output_folder"], run_output_folder_name
     )

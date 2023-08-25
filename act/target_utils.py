@@ -15,7 +15,7 @@ def get_voltage_trace_from_params(
             p["channel"]
             for p in simulation_constants["optimization_parameters"]["params"]
         ]
-        target_params = simulation_constants["segregation"]["target_params"]
+        target_params = simulation_constants["optimization_parameters"]["target_params"]
         target_V.append(optim.simulate(amp, params, target_params).reshape(1, -1))
     target_V = torch.cat(target_V, dim=0)
     return target_V

@@ -7,8 +7,9 @@ from typing import List, TypedDict
 
 
 class Cell(TypedDict):
-    cell_hoc_file: str
-    cell_name: str
+    hoc_file: str
+    modfiles_folder: str
+    name: str
 
 
 class SimulationParameters(TypedDict):
@@ -28,6 +29,11 @@ class OptimizationParam(TypedDict):
 class OptimizationParameters(TypedDict):
     amps: List[float]
     params: List[OptimizationParam]
+    target_V: List[List[float]]  # Target voltage
+    target_params: List[List[float]]
+    num_repeats: int
+    num_amps_to_match: int
+    num_epochs: int
 
 
 class SummaryFeatures:
@@ -41,18 +47,14 @@ class SummaryFeatures:
     mc_max_v: int  # (mV)
 
 
-class Segregation(TypedDict):
-    segr_param_inds: List[List[int]]
-    segr_voltage_bounds: List[List[int]]
-    segr_time_bounds: List[List[int]]
-
-    # Target voltage
-    target_V: int
-    target_params: List[float]
+class SegregationModule(TypedDict):
+    params: List[str]
+    voltage: List[int]
+    time: List[int]
 
 
 class Output(TypedDict):
-    output_folder: str
+    folder: str
     produce_plots: bool
 
 
@@ -61,12 +63,7 @@ class SimulationConstants(TypedDict):
     simulation_parameters: SimulationParameters
     optimization_parameters: OptimizationParameters
     summary_features: SummaryFeatures
-    segregation: Segregation
+    segregation: List[SegregationModule]
     output: Output
 
     run_mode: str  # "original", "segregated"
-    modfiles_mode: str  # Used only for the output folder name
-    modfiles_folder: str
-    num_repeats: int
-    num_amps_to_match: int
-    num_epochs: int
