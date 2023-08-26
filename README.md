@@ -59,3 +59,5 @@ Simulations' parameters are defined as `python` classes in `simulation/simulatio
 ### Examples (Jupyter Notebook)
 
 `examples/Pospischil_sPYr/main.ipynb` example of running `act` on Pospichil's cells
+
+On Google Colab: [Pospischil_sPYr](https://colab.research.google.com/github/V-Marco/ACT/blob/main/examples/Pospischil_sPYr/main.ipynb)
