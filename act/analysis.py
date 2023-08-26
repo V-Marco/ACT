@@ -2,9 +2,10 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import torch
 
-from act.act_types import SimulationConstants
+from act.act_types import SimulationConfig
 from act.metrics import correlation_score, mse_score
 from act.optim import ACTOptimizer
 
@@ -12,14 +13,14 @@ from act.optim import ACTOptimizer
 def save_prediction_plots(
     target_V: torch.Tensor,
     amp: list,
-    simulation_constants: SimulationConstants,
+    simulation_config: SimulationConfig,
     predicted_params_values: torch.Tensor,
     output_folder: str,
 ) -> None:
     _, ax = plt.subplots(1, 1, figsize=(10, 10))
-    optim = ACTOptimizer(simulation_constants=simulation_constants)
+    optim = ACTOptimizer(simulation_config=simulation_config)
     params = [
-        p["channel"] for p in simulation_constants["optimization_parameters"]["params"]
+        p["channel"] for p in simulation_config["optimization_parameters"]["params"]
     ]
     simulated_data = optim.simulate(
         amp, params, predicted_params_values.detach().numpy()
@@ -43,18 +44,17 @@ def save_prediction_plots(
 
 def save_mse_corr(
     target_V: torch.Tensor,
-    simulation_constants: SimulationConstants,
+    simulation_config: SimulationConfig,
     predicted_params_values: torch.Tensor,
     output_folder: str,
 ) -> None:
     with open(os.path.join(output_folder, "metrics.csv"), "w") as file:
         file.write(f"amp,mse,corr\n")
 
-    optim = ACTOptimizer(simulation_constants=simulation_constants)
-    for ind, amp in enumerate(simulation_constants["optimization_parameters"]["amps"]):
+    optim = ACTOptimizer(simulation_config=simulation_config)
+    for ind, amp in enumerate(simulation_config["optimization_parameters"]["amps"]):
         params = [
-            p["channel"]
-            for p in simulation_constants["optimization_parameters"]["params"]
+            p["channel"] for p in simulation_config["optimization_parameters"]["params"]
         ]
         sim_data = optim.simulate(amp, params, predicted_params_values.detach().numpy())
         simulated_data = optim.resample_voltage(
@@ -67,3 +67,20 @@ def save_mse_corr(
 
         with open(os.path.join(output_folder, "metrics.csv"), "a") as file:
             file.write(f"{amp},{mse},{corr}\n")
+
+
+def print_run_stats(config: SimulationConfig):
+    output_folder = config["output"]["folder"]
+    run_mode = config["run_mode"]
+    target_params = config["optimization_parameters"].get("target_params")
+
+    metrics = pd.read_csv(os.path.join(output_folder, run_mode, "metrics.csv"))
+    preds = np.array(
+        pd.read_csv(os.path.join(output_folder, run_mode, "pred.csv"), index_col=0)
+    )
+    print(output_folder, ":", run_mode)
+    print(f"Med MSE: {metrics['mse'].median():.4f} ({metrics['mse'].std():.4f})")
+    print(f"Med Corr: {metrics['corr'].median():.4f} ({metrics['corr'].std():.4f})")
+    if target_params:
+        print(f"Pred MAE: {np.mean(np.abs(target_params - preds)):.4f}")
+    print("----------\n")

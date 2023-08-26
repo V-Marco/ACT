@@ -1,8 +1,8 @@
-from simulation_constants import pospischilsPYr
+from simulation_configs import pospischilsPYr
 
 from act import simulator
 
 if __name__ == "__main__":
-    constants = pospischilsPYr
+    config = pospischilsPYr
 
-    p = simulator.run(constants)
+    p = simulator.run(config)

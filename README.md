@@ -43,7 +43,7 @@ Conceptually, `act` requires three components.
 
 Segregated mode changes step 5 so that the model is trained on regions of a voltage trace. The regions can be specified in terms of time (X-axis) or voltage (Y-axis) bounds.
 
-### Setting a simulation
+### Setting up a simulation
 
 Simulations' parameters are defined as `python` classes in `simulation/simulation_constants.py`. 
 - Names of parameters to optimize for are defined in the `params` property. The names must match the hoc file. Lower and upper bounds are specified in `lows` and `highs` properties.
@@ -56,3 +56,6 @@ Simulations' parameters are defined as `python` classes in `simulation/simulatio
 `simulation/analyze_res.py` is an example script which gives a summary of the model's quality.
 
 
+### Examples (Jupyter Notebook)
+
+`examples/Pospischil_sPYr/main.ipynb` example of running `act` on Pospichil's cells

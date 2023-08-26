@@ -1,5 +1,5 @@
 """
-These types should be used to define the user supplied simulation config/constants.
+These types should be used to define the user supplied simulation config/config.
 
 """
 
@@ -58,7 +58,7 @@ class Output(TypedDict):
     produce_plots: bool
 
 
-class SimulationConstants(TypedDict):
+class SimulationConfig(TypedDict):
     cell: Cell
     simulation_parameters: SimulationParameters
     optimization_parameters: OptimizationParameters
