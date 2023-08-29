@@ -25,6 +25,10 @@ class ACTOptimizer:
             hoc_file=self.config["cell"]["hoc_file"],
             cell_name=self.config["cell"]["name"],
         )
+        self.cell.set_passive_properties(
+            simulation_config["cell"].get("passive_properties")
+        )
+
         if reset_cell_params_to_lower_bounds_on_init:
             params = [
                 p["channel"] for p in self.config["optimization_parameters"]["params"]

@@ -6,10 +6,19 @@ These types should be used to define the user supplied simulation config/config.
 from typing import List, TypedDict
 
 
+class PassiveProperties(TypedDict):
+    v_rest: float
+    r_in: float
+    tau: float
+    leak_conductance_variable: str  # eg: g_leak
+    leak_reversal_variable: str  # eg: e_leak
+
+
 class Cell(TypedDict):
     hoc_file: str
     modfiles_folder: str
     name: str
+    passive_properties: PassiveProperties  # optional if you want an analytical passive approach
 
 
 class SimulationParameters(TypedDict):
