@@ -29,7 +29,7 @@ def save_prediction_plots(
         V=simulated_data.reshape((1, -1)), num_obs=target_V.shape[1]
     )
 
-    title = f"I = {amp} nA"
+    title = f"I = {(amp * 1000):.0f} nA"
     ax.plot(simulated_data.flatten(), label="Simulated")
     ax.plot(target_V.flatten(), label="Target")
     ax.set_title(title)
