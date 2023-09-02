@@ -38,7 +38,7 @@ def save_prediction_plots(
     ax.legend()
     ax.grid()
 
-    plt.savefig(os.path.join(output_folder, f"{amp * 1000}nA.png"))
+    plt.savefig(os.path.join(output_folder, f"{(amp * 1000):.0f}nA.png"))
     plt.close()
 
 
