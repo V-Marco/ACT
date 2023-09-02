@@ -80,7 +80,8 @@ def _run(config: SimulationConfig):
 
     run_output_folder_name = f"{config['run_mode']}"
     output_folder = os.path.join(config["output"]["folder"], run_output_folder_name)
-    os.mkdir(output_folder)
+    if not os.path.exists(output_folder):
+        os.mkdir(output_folder)
 
     with open(os.path.join(output_folder, "config.json"), "w") as file:
         json.dump(config, file, indent=2)
