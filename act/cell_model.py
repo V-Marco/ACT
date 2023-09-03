@@ -33,6 +33,10 @@ class CellModel:
         self.inj = h.IClamp(self.soma[0](0.5))
         self.I = h.Vector().record(h._ref_i)
 
+        # Passive properties
+        self.gleak_var = None
+        self.g_bar_leak = None
+
     def set_parameters(self, parameter_list: list, parameter_values: list) -> None:
         for sec in self.all:
             for index, key in enumerate(parameter_list):
@@ -74,6 +78,8 @@ class CellModel:
                     g_bar_leak = 1 / (r_in * area) * 1e2  # area m to cm?
                     print(f"Setting {sec}.{gleak_var} = {g_bar_leak:.8f}")
                     setattr(sec, gleak_var, g_bar_leak)
+                    if sec == self.soma:
+                        g_bar_leak = g_bar_leak
 
                     if tau:
                         # tau = (R*C) = R*Area*cm

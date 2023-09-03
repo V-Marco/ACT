@@ -3,7 +3,7 @@ import torch
 from neuron import h
 from scipy.signal import resample
 
-from act.act_types import SimulationConfig
+from act.act_types import PassiveProperties, SimulationConfig
 from act.cell_model import CellModel
 from act.logger import ACTDummyLogger
 
@@ -80,22 +80,97 @@ class ACTOptimizer:
         return cut_target_V
 
     def simulate(
-        self, amp: float, parameter_names: list, parameter_values: np.ndarray
+        self,
+        amp: float,
+        parameter_names: list,
+        parameter_values: np.ndarray,
+        i_dur: float = 0,
+        i_delay: float = 0,
     ) -> torch.Tensor:
         h.dt = self.config["simulation_parameters"]["h_dt"]
         h.tstop = self.config["simulation_parameters"]["h_tstop"]
         h.v_init = self.config["simulation_parameters"]["h_v_init"]
 
         self.cell.set_parameters(parameter_names, parameter_values)
+        if not i_dur:
+            i_dur = self.config["simulation_parameters"]["h_i_dur"]
+        if not i_delay:
+            i_delay = self.config["simulation_parameters"]["h_i_delay"]
         self.cell.apply_current_injection(
             amp,
-            self.config["simulation_parameters"]["h_i_dur"],
-            self.config["simulation_parameters"]["h_i_delay"],
+            i_dur,
+            i_delay,
         )
 
         h.run()
 
         return torch.Tensor(self.cell.Vm.as_numpy()[:-1])
+
+    def calculate_passive_properties(
+        self, parameter_names: list, parameter_values: np.ndarray
+    ) -> (PassiveProperties, np.ndarray):
+        """
+        Run simulations to determine passive properties for a given cell parameter set
+        """
+        gleak_var = (
+            self.config.get("cell", {})
+            .get("passive_properties", {})
+            .get("leak_conductance_variable")
+        )
+        eleak_var = (
+            self.config.get("cell", {})
+            .get("passive_properties", {})
+            .get("leak_reversal_variable")
+        )
+        props: PassiveProperties = {
+            "leak_conductance_variable": gleak_var,
+            "leak_reversal_variable": eleak_var,
+            "r_in": 0,
+            "tau": 0,
+            "v_rest": 0,
+        }
+        tstart = 500
+        passive_delay = 500
+        passive_amp = -100 / 1e3
+        passive_duration = 1000
+
+        passive_tensor = self.simulate(
+            passive_amp,
+            parameter_names,
+            parameter_values,
+            i_delay=tstart,
+            i_dur=passive_duration,
+        )
+        passive_vec = passive_tensor.detach().numpy()
+
+        index_v_rest = int(((1000 / h.dt) / 1000 * tstart))
+        index_v_final = int(((1000 / h.dt) / 1000 * (tstart + passive_delay)))
+
+        # v rest
+        v_rest = passive_vec[index_v_rest]
+        v_rest_time = index_v_rest / (1 / h.dt)
+
+        # tau/r_in
+        passive_v_final = passive_vec[index_v_final]
+        v_final_time = index_v_final / (1 / h.dt)
+
+        v_diff = v_rest - passive_v_final
+
+        v_t_const = v_rest - (v_diff * 0.632)
+        # Find index of first occurance where the voltage is less than the time constant for tau
+        # index_v_tau = list(filter(lambda i: i < v_t_const, cfir_widget.passive_vec))[0]
+        index_v_tau = next(
+            x for x, val in enumerate(list(passive_vec[index_v_rest:])) if val < v_t_const
+        )
+        time_tau = (index_v_tau / ((1000 / h.dt) / 1000)) 
+        tau = time_tau  # / 1000 (in ms)
+        r_in = (v_diff) / (0 - passive_amp)  # * 1e6  # MegaOhms -> Ohms
+
+        props["v_rest"] = float(v_rest)
+        props["tau"] = float(tau)
+        props["r_in"] = float(r_in)
+
+        return props, passive_vec
 
     def resample_voltage(self, V: torch.Tensor, num_obs: int) -> torch.Tensor:
         resampled_data = []

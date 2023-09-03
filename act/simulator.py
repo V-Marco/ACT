@@ -1,8 +1,5 @@
-import datetime
 import json
 import os
-import sys
-from multiprocessing import Process
 
 import numpy as np
 import pandas as pd
@@ -10,7 +7,7 @@ import torch
 from neuron import h
 
 from act.act_types import SimulationConfig
-from act.analysis import save_mse_corr, save_prediction_plots
+from act.analysis import save_mse_corr, save_plot, save_prediction_plots
 from act.logger import ACTLogger
 from act.metrics import correlation_score, mse_score
 from act.optim import GeneralACTOptimizer
@@ -88,11 +85,32 @@ def _run(config: SimulationConfig):
 
     # Save predictions
     pred_df = pd.DataFrame(dict(zip(params, predictions.detach().numpy())), index=[0])
-    pred_df.to_csv(os.path.join(output_folder, "pred.csv"))
 
+    g_leak_var = optim.cell.gleak_var
+    g_bar_leak = optim.cell.g_bar_leak
+    if g_leak_var and g_bar_leak:  # if the user set the passive properties
+        pred_df.insert(0, g_leak_var, [g_bar_leak])
+
+    pred_df.to_csv(os.path.join(output_folder, "pred.csv"))
     save_mse_corr(target_V, config, predictions, output_folder)
 
+    # save passive properties
+    passive_properties, passive_v = optim.calculate_passive_properties(
+        params, predictions.detach().numpy()
+    )
+    with open(
+        os.path.join(output_folder, "pred_passive_properties.json"),
+        "w",
+        encoding="utf-8",
+    ) as fp:
+        json.dump(passive_properties, fp, indent=2)
+
     if config["output"]["produce_plots"]:
+        # output passive amps don't matter
+        save_plot(
+            -0.1, output_folder, simulated_data=passive_v, output_file="passive_-100nA.png"
+        )
+
         i = 0
         while i < len(config["optimization_parameters"]["amps"]):
             save_prediction_plots(

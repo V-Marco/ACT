@@ -114,15 +114,15 @@ pospischilsPYr_passive: SimulationConfig = {
         "modfiles_folder": "../data/Pospischil/sPyr/seg_modfiles",
         "name": "sPYr",
         "passive_properties": {
-            "v_rest": -60.0,
-            "r_in": 300,
-            "tau": 21.4,
+            "v_rest": -60,
+            "r_in": 393.45,
+            "tau": 117.425,
             "leak_conductance_variable": "g_pas",  # eg: g_leak
             "leak_reversal_variable": "e_pas",  # eg: e_leak
         },
     },
     "simulation_parameters": {
-        "h_v_init": -67.0,  # (mV)
+        "h_v_init": -60.0,  # (mV)
         "h_tstop": 2000,  # (ms)
         "h_i_delay": 500,  # (ms)
         "h_i_dur": 1500,  # (ms)
@@ -137,7 +137,7 @@ pospischilsPYr_passive: SimulationConfig = {
             {"channel": "gcabar_it", "low": 5.0e-04, "high": 2.0e-03},
         ],
         "target_V": None,  # Target voltages
-        "target_params": [1e-5, 0.05, 0.005, 3e-5, 0.001],
+        "target_params": [0.05, 0.005, 3e-5, 0.001],
         "num_repeats": 3,
         "num_amps_to_match": 12,
         "num_epochs": 5000,
@@ -158,6 +158,6 @@ pospischilsPYr_passive: SimulationConfig = {
             "time": [0, 2000],
         },
     ],
-    "output": {"folder": "output_Pospischil_sPYr", "produce_plots": True},
+    "output": {"folder": "output_Pospischil_sPYr_p", "produce_plots": True},
     "run_mode": "segregated",  # "original", "segregated"
 }
