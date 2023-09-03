@@ -144,3 +144,4 @@ special.nrn
 *.csv
 
 *.json
+~lock.*
