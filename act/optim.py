@@ -14,6 +14,7 @@ class ACTOptimizer:
         simulation_config: SimulationConfig,
         logger: object = None,
         reset_cell_params_to_lower_bounds_on_init: bool = True,
+        set_passive_properties = True,
     ):
         self.config = simulation_config
 
@@ -25,9 +26,10 @@ class ACTOptimizer:
             hoc_file=self.config["cell"]["hoc_file"],
             cell_name=self.config["cell"]["name"],
         )
-        self.cell.set_passive_properties(
-            simulation_config["cell"].get("passive_properties")
-        )
+        if set_passive_properties:
+            self.cell.set_passive_properties(
+                simulation_config["cell"].get("passive_properties")
+            )
 
         if reset_cell_params_to_lower_bounds_on_init:
             params = [

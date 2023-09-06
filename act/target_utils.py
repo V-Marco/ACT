@@ -8,7 +8,7 @@ from act.optim import ACTOptimizer
 def get_voltage_trace_from_params(
     simulation_config: SimulationConfig,
 ) -> torch.Tensor:
-    optim = ACTOptimizer(simulation_config=simulation_config)
+    optim = ACTOptimizer(simulation_config=simulation_config, set_passive_properties=False)
     target_V = []
     for amp in simulation_config["optimization_parameters"]["amps"]:
         params = [
