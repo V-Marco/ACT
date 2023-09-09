@@ -73,7 +73,7 @@ DERIVATIVE states {     : exact when v held constant; integrates over dt step
 PROCEDURE rates(v (mV)) { :callable from hoc
         LOCAL a
         a = alpn(v)
-		if (v < -57.5 ) {              ::::::::::::::::::::   -55 (09/07/2023: -55)
+		if (v < -55 ) {              ::::::::::::::::::::   -55
 		ninf = 0
 		} else{
 		ninf = 1 / ( 1 + exp( ( vhalfn - v ) / 11 ) )

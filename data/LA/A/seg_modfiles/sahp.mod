@@ -73,7 +73,7 @@ PROCEDURE rate(v (mV), casi (mM)) {LOCAL  csum, ca, cb
 	ca=calf(v, casi) 
 	cb=cbet(v, casi)		
 	csum = ca+cb
-	if (v < -65 ) {              :::::::::::::::::::::::::::  67.5
+	if (v < -67.5 ) {              :::::::::::::::::::::::::::  67.5 (09/07/2023: -65)
 	cinf = 0
 	} else{
 	cinf = ca/csum

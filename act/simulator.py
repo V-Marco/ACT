@@ -1,4 +1,5 @@
 import json
+from multiprocessing import Process
 import os
 
 import numpy as np
@@ -122,13 +123,18 @@ def _run(config: SimulationConfig):
             )
             i += 5  # should be user variable
 
-    if os.path.exists("x86_64"):
-        os.system("rm -r x86_64")
-
-
-def run(config: SimulationConfig):
-    _run(config)
-    # p = Process(target=_run, args=[config])
-    # p.start()
-    # p.join()
-    # p.terminate()
+    
+def run(config: SimulationConfig, subprocess=True):
+    try:
+        if subprocess:
+            p = Process(target=_run, args=[config])
+            p.start()
+            p.join()
+            p.terminate()
+        else:
+            _run(config)
+    except:
+        raise
+    finally: # always remove this folder
+        if os.path.exists("x86_64"):
+            os.system("rm -r x86_64")

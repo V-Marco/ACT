@@ -98,7 +98,7 @@ PROCEDURE rates(v (mV)) { :callable from hoc
         LOCAL a,qt
         qt=q10^((celsius-24)/10)
         a = alpn(v)
-		if (v < -52.5 ) {                         :::::::::::::::::: -30
+		if (v < -57.5 ) {                         :::::::::::::::::: -30 (09/07/23: -52.5)
 		ninf = 0
 		} else{
         ninf = 1/(1 + a)
