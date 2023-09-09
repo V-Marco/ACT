@@ -71,7 +71,7 @@ PROCEDURE rate(v (mV)) { :callable from hoc
         LOCAL a,qt
         qt=q10^((celsius-33)/10)
         a = alpt(v)
-		if (v > -62.5 ) {
+		if (v > -67.5 ) { ::::::::::::: (09/07/2023: -62.5)
 		linf = 0
 		} else{
         linf = 1/(1 + exp(-(v-vhalfl)/kl))

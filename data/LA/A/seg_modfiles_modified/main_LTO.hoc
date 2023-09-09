@@ -1,0 +1,137 @@
+{load_file("nrngui.hoc")}
+{load_file("onecompartment_template_with_osc.hoc")}
+{load_file("graphics_lib.hoc")}
+
+v_init = -70//-70//-69
+stim_amp = 0.0076/4.6632              // .0025//0.0059//0.0125//0.098//0.0070//0.00485
+objref Cell
+Cell = new Cell_C()
+
+objref stim, stim2, stim3, stim4, stim5, stim6, stim7, stim8, stim9, stim10
+Cell.soma stim = new IClamp(0.5) //creating current clamp in the middle of the soma
+stim.del = 300 // in ms
+stim.dur = 2500//1200 // 600 // in ms
+stim.amp = stim_amp // 0.123 // in nA
+
+Cell.soma stim2 = new IClamp(0.5)
+stim2.del = 400//350 // in ms
+stim2.dur = 2400//1150 // 550 // in ms
+stim2.amp = stim_amp // 0.123 // in nA
+
+Cell.soma stim3 = new IClamp(0.5)
+stim3.del = 500//400 // in ms
+stim3.dur = 2300//1100 // 500 // in ms
+stim3.amp = stim_amp // 0.123 // in nA
+
+Cell.soma stim4 = new IClamp(0.5)
+stim4.del = 600//450 //in ms
+stim4.dur = 2200//1050 // 450 // in ms
+stim4.amp = stim_amp // 0.123 // in nA
+
+Cell.soma stim5 = new IClamp(0.5)
+stim5.del = 700//500 // in ms
+stim5.dur = 2100//1000 // 550 // in ms
+stim5.amp = stim_amp // 0.123 // in nA
+
+Cell.soma stim6 = new IClamp(0.5)
+stim6.del = 800//550 // in ms
+stim6.dur = 2000//950 // 550 // in ms
+stim6.amp = stim_amp // 0.123 // in nA
+
+Cell.soma stim7 = new IClamp(0.5)
+stim7.del = 900//600 // in ms
+stim7.dur = 1900//900 // 550 // in ms
+stim7.amp = stim_amp // 0.123 // in nA
+
+Cell.soma stim8 = new IClamp(0.5)
+stim8.del = 1000//650 // in ms
+stim8.dur = 1800//850 // 550 // in ms
+stim8.amp = stim_amp // 0.123 // in nA
+
+Cell.soma stim9 = new IClamp(0.5)
+stim9.del = 1100//700 // in ms
+stim9.dur = 1700//800 // 550 // in ms
+stim9.amp = stim_amp // 0.123 // in nA
+
+Cell.soma stim10 = new IClamp(0.5)
+stim10.del = 1200//750 // in ms
+stim10.dur = 1600//750 // 550 // in ms
+stim10.amp = stim_amp // 0.123 // in nA
+
+tstop = 3000//2500 // 1000 // in ms
+
+SubVBoxNum = 3
+objref MainHBoxObj,SubVBoxObj[SubVBoxNum]
+
+proc MainBox() { local i
+		MainHBoxObj = new HBox()
+		for i=0,SubVBoxNum-1 SubVBoxObj[i] = new VBox()
+		SubVBoxObj[0].intercept(1)
+			newPlotVoltage()
+			newPlotCurrent() 
+			newPlotCurrent2()
+		SubVBoxObj[0].intercept(0)
+		SubVBoxObj[1].intercept(1)			
+			access Cell.soma
+			nrnsecmenu(.5,1)
+		SubVBoxObj[1].intercept(0)
+		SubVBoxObj[2].intercept(1)
+			nrncontrolmenu()
+			xpanel(" ")
+				xbutton("QUIT","quit()")
+			xpanel(0)
+			nrnpointmenu(stim)	
+		SubVBoxObj[2].intercept(0)
+		MainHBoxObj.intercept(1)
+			for i=0,SubVBoxNum-1 SubVBoxObj[i].map()
+		MainHBoxObj.intercept(0)
+		MainHBoxObj.map("Re-Tune",10,25,800,600)
+}
+
+proc newPlotVoltage() {
+	newPlot(0,tstop,-100,50)
+	graphItem.save_name("graphList[0].")
+	graphList[0].append(graphItem)
+	graphItem.addexpr("Cell.soma.v(.5)")
+	graphItem.label(.08,.925,"mV")
+}
+proc newPlotCurrent() {
+	newPlot(0,tstop,-0.2,0.2)
+	graphItem.save_name("graphList[2].")
+	graphList[1].append(graphItem)
+	graphItem.addexpr("Cell.soma.i_im",1,2)
+	graphItem.addexpr("Cell.soma.i_nap",2,2)
+	graphItem.label(.08,.925,tstr1)
+}
+
+proc newPlotCurrent2() {
+	newPlot(0,tstop,-0.2,0.2)
+	graphItem.save_name("graphList[2].")
+	graphList[1].append(graphItem)
+	graphItem.addexpr("Cell.soma.i_im",1,2)
+	graphItem.addexpr("Cell.soma.i_nap",2,2)
+	//graphItem.addexpr("Cell.soma.i_kap",3,2)
+	//graphItem.addexpr("Cell.soma.i_kdr",4,2)
+	//graphItem.addexpr("Cell.soma.i_sAHP",5,2)
+	//graphItem.addexpr("Cell.soma.i_hd",6,2)
+	//graphItem.addexpr("Cell.soma.i_na3",7,2)
+	//graphItem.addexpr("Cell.soma.i_cadyn",3,2)
+	// graphItem.addexpr("Cell.soma.i_iCat2",4,2)
+	graphItem.addexpr("Cell.soma.il_leak",9,2)
+	graphItem.label(.08,.925,tstr1)
+}
+
+MainBox()
+run()
+
+// nrnpointmenu(stim)
+// nrncontrolmenu()
+// nrnsecmenu(.5,1)
+
+
+
+// Plot1V("Cell")
+
+// MainBox()
+// init()
+// run()
