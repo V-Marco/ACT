@@ -60,4 +60,7 @@ Simulations' parameters are defined as `python` classes in `simulation/simulatio
 
 `examples/Pospischil_sPYr/main.ipynb` example of running `act` on Pospichil's cells
 
-On Google Colab: [Pospischil_sPYr](https://colab.research.google.com/github/V-Marco/ACT/blob/main/examples/Pospischil_sPYr/main.ipynb)
+On Google Colab: 
+
+* [Pospischil_sPYr](https://colab.research.google.com/github/V-Marco/ACT/blob/main/examples/Pospischil_sPYr/main.ipynb)
+* [LA Type A](https://colab.research.google.com/github/V-Marco/ACT/blob/main/examples/LA/Cell_A.ipynb)
