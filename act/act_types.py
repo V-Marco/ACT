@@ -65,6 +65,8 @@ class SegregationModule(TypedDict):
 class Output(TypedDict):
     folder: str
     produce_plots: bool
+    target_label: str
+    simulated_label: str
 
 
 class SimulationConfig(TypedDict):

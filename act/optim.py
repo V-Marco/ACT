@@ -14,7 +14,7 @@ class ACTOptimizer:
         simulation_config: SimulationConfig,
         logger: object = None,
         reset_cell_params_to_lower_bounds_on_init: bool = True,
-        set_passive_properties = True,
+        set_passive_properties=True,
     ):
         self.config = simulation_config
 
@@ -162,9 +162,11 @@ class ACTOptimizer:
         # Find index of first occurance where the voltage is less than the time constant for tau
         # index_v_tau = list(filter(lambda i: i < v_t_const, cfir_widget.passive_vec))[0]
         index_v_tau = next(
-            x for x, val in enumerate(list(passive_vec[index_v_rest:])) if val < v_t_const
+            x
+            for x, val in enumerate(list(passive_vec[index_v_rest:]))
+            if val < v_t_const
         )
-        time_tau = (index_v_tau / ((1000 / h.dt) / 1000)) 
+        time_tau = index_v_tau / ((1000 / h.dt) / 1000)
         tau = time_tau  # / 1000 (in ms)
         r_in = (v_diff) / (0 - passive_amp)  # * 1e6  # MegaOhms -> Ohms
 

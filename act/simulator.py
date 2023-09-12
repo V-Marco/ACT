@@ -1,7 +1,9 @@
 import json
-from multiprocessing import Process
 import os
+import shutil
+from multiprocessing import Process
 
+import h5py
 import numpy as np
 import pandas as pd
 import torch
@@ -20,6 +22,15 @@ def _run(config: SimulationConfig):
         raise ValueError("Number of epochs is expected to be >= 1000.")
 
     output_folder = config["output"]["folder"]
+    run_output_folder_name = f"{config['run_mode']}"
+
+    if not os.path.exists(output_folder):
+        os.mkdir(output_folder)
+
+    output_folder = os.path.join(config["output"]["folder"], run_output_folder_name)
+    # delete old results
+    if os.path.exists(output_folder):
+        shutil.rmtree(output_folder, ignore_errors=True)
     if not os.path.exists(output_folder):
         os.mkdir(output_folder)
 
@@ -76,11 +87,6 @@ def _run(config: SimulationConfig):
 
     predictions = pred_pool[np.argmin(err_pool)]
 
-    run_output_folder_name = f"{config['run_mode']}"
-    output_folder = os.path.join(config["output"]["folder"], run_output_folder_name)
-    if not os.path.exists(output_folder):
-        os.mkdir(output_folder)
-
     with open(os.path.join(output_folder, "config.json"), "w") as file:
         json.dump(config, file, indent=2)
 
@@ -108,22 +114,61 @@ def _run(config: SimulationConfig):
 
     if config["output"]["produce_plots"]:
         # output passive amps don't matter
+        dt = config["simulation_parameters"]["h_dt"]
+        simulated_label = config["output"].get("simulated_label", "Simulated")
         save_plot(
-            -0.1, output_folder, simulated_data=passive_v, output_file="passive_-100nA.png"
+            -0.1,
+            output_folder,
+            simulated_data=passive_v,
+            output_file="passive_-100nA.png",
+            dt=dt,
+            simulated_label=simulated_label,
         )
 
         i = 0
+        amp_out = []
+        simulated_V_out = []
+        target_V_out = []
         while i < len(config["optimization_parameters"]["amps"]):
-            save_prediction_plots(
-                target_V[i].reshape(1, -1),
+            amp_i = config["optimization_parameters"]["amps"][i]
+            target_Vi = target_V[i].reshape(1, -1)
+            simulated_Vi = save_prediction_plots(
+                target_Vi,
                 config["optimization_parameters"]["amps"][i],
                 config,
                 predictions,
                 output_folder,
             )
+            simulated_V_out.append(simulated_Vi)
+            target_V_out.append(target_Vi)
+            amp_out.append(amp_i)
+
             i += 5  # should be user variable
 
-    
+        # Save the voltage traces for debugging
+        target_V_list = [list(t.detach().numpy()[0]) for t in target_V_out]
+        simulated_V_list = [list(t.detach().numpy()[0]) for t in simulated_V_out]
+
+        f = h5py.File(os.path.join(output_folder, "traces.h5"), "w")
+        target_grp = f.create_group("target")
+        simulated_grp = f.create_group("simulated")
+
+        target_grp.create_dataset(
+            "voltage_trace",
+            (len(target_V_list), len(target_V_list[0])),
+            dtype="f",
+            data=target_V_list,
+        )
+        simulated_grp.create_dataset(
+            "voltage_trace",
+            (len(simulated_V_list), len(simulated_V_list[0])),
+            dtype="f",
+            data=simulated_V_list,
+        )
+        f.create_dataset("amps", (len(amp_out)), dtype="f", data=amp_out)
+        f.close()
+
+
 def run(config: SimulationConfig, subprocess=True):
     try:
         if subprocess:
@@ -135,6 +180,6 @@ def run(config: SimulationConfig, subprocess=True):
             _run(config)
     except:
         raise
-    finally: # always remove this folder
+    finally:  # always remove this folder
         if os.path.exists("x86_64"):
             os.system("rm -r x86_64")
