@@ -14,7 +14,7 @@ class SimpleNet(torch.nn.Module):
             torch.nn.Sigmoid(),
         )
 
-    def forward(self, X):
+    def forward(self, X, summary_features):
         return self.model.forward(X)
 
 
@@ -22,7 +22,6 @@ class SimpleNet(torch.nn.Module):
 class BranchingNet(torch.nn.Module):
     def __init__(self, in_channels, out_channels, summary_features):
         super().__init__()
-        self.summary_features = summary_features
         self.voltage_branch = torch.nn.Sequential(
             torch.nn.Linear(in_channels, 256),
             torch.nn.ReLU(),
@@ -35,9 +34,9 @@ class BranchingNet(torch.nn.Module):
         )
         self.sigmoid = torch.nn.Sigmoid()
 
-    def forward(self, X):
+    def forward(self, X, summary_features):
         voltage_out = self.voltage_branch(X)
-        summary_out = self.summary_branch(self.summary_features)
+        summary_out = self.summary_branch(summary_features)
         return self.sigmoid(voltage_out + summary_out)
 
 
@@ -45,7 +44,6 @@ class BranchingNet(torch.nn.Module):
 class EmbeddingNet(torch.nn.Module):
     def __init__(self, in_channels, out_channels, summary_features):
         super().__init__()
-        self.summary_features = summary_features
         self.embedder = torch.nn.Sequential(
             torch.nn.Linear(in_channels, 256),
             torch.nn.ReLU(),
@@ -59,6 +57,6 @@ class EmbeddingNet(torch.nn.Module):
             torch.nn.Sigmoid(),
         )
 
-    def forward(self, X):
+    def forward(self, X, summary_features):
         embedding = self.embedder(X)
-        return self.predictor(torch.cat(embedding, self.summary_features))
+        return self.predictor(torch.cat(embedding, summary_features))

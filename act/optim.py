@@ -6,7 +6,7 @@ from scipy.signal import resample
 from act.act_types import PassiveProperties, SimulationConfig
 from act.cell_model import CellModel
 from act.logger import ACTDummyLogger
-from act.models import SimpleNet
+from act.models import SimpleNet, BranchingNet, EmbeddingNet
 
 
 class ACTOptimizer:
@@ -243,7 +243,7 @@ class GeneralACTOptimizer(ACTOptimizer):
             simulated_interspike_times,
         ) = self.extract_summary_features(simulated_V_for_next_stage)
 
-        summary_features = torch.stack(ampl_next_stage, num_spikes_simulated, simulated_interspike_times)
+        summary_features = torch.stack((ampl_next_stage, num_spikes_simulated, simulated_interspike_times))
 
         self.model = self.init_nn_model(
             in_channels=target_V.shape[1], out_channels=self.num_params, summary_features=None
@@ -258,7 +258,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         highs = [p["high"] for p in self.config["optimization_parameters"]["params"]]
 
         # Train model
-        self.train_model(resampled_data, param_samples_for_next_stage, lows, highs)
+        self.train_model(resampled_data, param_samples_for_next_stage, lows, highs, summary_features=summary_features)
 
         # Predict and take max across ci to prevent underestimating
         predictions = self.predict_with_model(target_V, lows, highs)
@@ -313,7 +313,7 @@ class GeneralACTOptimizer(ACTOptimizer):
             simulated_interspike_times,
         ) = self.extract_summary_features(simulated_V_for_next_stage)
 
-        summary_features = torch.stack(ampl_next_stage, num_spikes_simulated, simulated_interspike_times)
+        summary_features = torch.stack((ampl_next_stage, num_spikes_simulated, simulated_interspike_times))
 
         # Resample to match the length of target data
         resampled_data = self.resample_voltage(
@@ -357,6 +357,7 @@ class GeneralACTOptimizer(ACTOptimizer):
                 param_samples_for_next_stage[:, param_ind],
                 lows=lows,
                 highs=highs,
+                summary_features=summary_features
             )
 
             # Predict and take max across ci to prevent underestimating
@@ -375,7 +376,8 @@ class GeneralACTOptimizer(ACTOptimizer):
         return prediction_pool
 
     def init_nn_model(self, in_channels: int, out_channels: int, summary_features) -> torch.nn.Sequential:
-        model = SimpleNet(in_channels, out_channels)
+        ModelClass = SimpleNet #EmbeddingNet #BranchingNet
+        model = ModelClass(in_channels, out_channels, summary_features) 
         return model
 
     def train_model(
@@ -384,6 +386,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         target_params: torch.Tensor,
         lows,
         highs,
+        summary_features=None
     ) -> None:
         optim = torch.optim.SGD(self.model.parameters(), lr=1e-8)
         sigmoid_mins = torch.tensor(lows)
@@ -401,7 +404,7 @@ class GeneralACTOptimizer(ACTOptimizer):
 
             for ne in range(self.config["optimization_parameters"]["num_epochs"]):
                 pred = (
-                    self.model(voltage_data[i]) * (sigmoid_maxs - sigmoid_mins)
+                    self.model(voltage_data[i], summary_features[i]) * (sigmoid_maxs - sigmoid_mins)
                     + sigmoid_mins
                 )
                 loss = torch.nn.functional.l1_loss(pred, target_params[i])
