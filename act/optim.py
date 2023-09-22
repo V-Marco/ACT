@@ -6,6 +6,7 @@ from scipy.signal import resample
 from act.act_types import PassiveProperties, SimulationConfig
 from act.cell_model import CellModel
 from act.logger import ACTDummyLogger
+from act.models import SimpleNet
 
 
 class ACTOptimizer:
@@ -206,7 +207,7 @@ class GeneralACTOptimizer(ACTOptimizer):
 
     def optimize(self, target_V: torch.Tensor) -> torch.Tensor:
         # Get voltage with characteristics similar to target
-        simulated_V_for_next_stage, param_samples_for_next_stage = self.match_voltage(
+        simulated_V_for_next_stage, param_samples_for_next_stage, ampl_next_stage = self.match_voltage(
             target_V
         )
 
@@ -231,11 +232,21 @@ class GeneralACTOptimizer(ACTOptimizer):
             param_samples_for_next_stage = torch.cat(
                 (param_samples_for_next_stage, param_samples_dist), dim=1
             )
+            ampl_next_stage = torch.cat(
+                (ampl_next_stage, simulated_amps)
+            )
         else:
             print(f"Parametric distribution parameters 'n_slices' not set, skipping.")
 
+        (
+            num_spikes_simulated,
+            simulated_interspike_times,
+        ) = self.extract_summary_features(simulated_V_for_next_stage)
+
+        summary_features = torch.stack(ampl_next_stage, num_spikes_simulated, simulated_interspike_times)
+
         self.model = self.init_nn_model(
-            in_channels=target_V.shape[1], out_channels=self.num_params
+            in_channels=target_V.shape[1], out_channels=self.num_params, summary_features=None
         )
 
         # Resample to match the length of target data
@@ -266,7 +277,7 @@ class GeneralACTOptimizer(ACTOptimizer):
             raise ValueError("segregate_by must be either 'voltage' or 'time'.")
 
         # Get voltage with characteristics similar to target
-        simulated_V_for_next_stage, param_samples_for_next_stage = self.match_voltage(
+        simulated_V_for_next_stage, param_samples_for_next_stage, ampl_next_stage,  = self.match_voltage(
             target_V
         )
 
@@ -291,8 +302,18 @@ class GeneralACTOptimizer(ACTOptimizer):
             param_samples_for_next_stage = torch.cat(
                 (param_samples_for_next_stage, param_samples_dist)
             )
+            ampl_next_stage = torch.cat(
+                (ampl_next_stage, simulated_amps)
+            )
         else:
             print(f"Parametric distribution parameters 'n_slices' not set, skipping.")
+
+        (
+            num_spikes_simulated,
+            simulated_interspike_times,
+        ) = self.extract_summary_features(simulated_V_for_next_stage)
+
+        summary_features = torch.stack(ampl_next_stage, num_spikes_simulated, simulated_interspike_times)
 
         # Resample to match the length of target data
         resampled_data = self.resample_voltage(
@@ -329,7 +350,7 @@ class GeneralACTOptimizer(ACTOptimizer):
 
             # Train a model for this segment
             self.model = self.init_nn_model(
-                in_channels=cut_target_V.shape[1], out_channels=self.num_params
+                in_channels=cut_target_V.shape[1], out_channels=self.num_params, summary_features=summary_features
             )
             self.train_model(
                 cut_target_V,
@@ -353,15 +374,8 @@ class GeneralACTOptimizer(ACTOptimizer):
 
         return prediction_pool
 
-    def init_nn_model(self, in_channels: int, out_channels: int) -> torch.nn.Sequential:
-        model = torch.nn.Sequential(
-            torch.nn.Linear(in_channels, 256),
-            torch.nn.ReLU(),
-            torch.nn.Linear(256, 256),
-            torch.nn.ReLU(),
-            torch.nn.Linear(256, out_channels),
-            torch.nn.Sigmoid(),
-        )
+    def init_nn_model(self, in_channels: int, out_channels: int, summary_features) -> torch.nn.Sequential:
+        model = SimpleNet(in_channels, out_channels)
         return model
 
     def train_model(
@@ -571,13 +585,14 @@ class GeneralACTOptimizer(ACTOptimizer):
 
         simulated_V_for_next_stage = simulated_V_for_next_stage[non_corresp == 0]
         param_samples_for_next_stage = param_samples_for_next_stage[non_corresp == 0]
-        inds_of_ampl_next_stage = np.where(non_corresp == 0)[0].tolist()
-
+        inds_of_next_stage = np.where(non_corresp == 0)[0].tolist()
+        ampl_next_stage = torch.tensor(np.array(self.config['optimization_parameters']['amps'])[inds_of_next_stage])
+        
         self.logger.info(
-            f"Matched amplitudes: {np.array(self.config['optimization_parameters']['amps'])[inds_of_ampl_next_stage]}"
+            f"Matched amplitudes: {ampl_next_stage}"
         )
 
-        return simulated_V_for_next_stage, param_samples_for_next_stage
+        return simulated_V_for_next_stage, param_samples_for_next_stage, ampl_next_stage
 
     def get_match_condition(
         self, target: torch.Tensor, simulated: torch.Tensor, threshold: float

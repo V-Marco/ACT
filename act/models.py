@@ -3,6 +3,21 @@ import torch
 # We can potentially add CNN layers before Linear layers
 
 
+class SimpleNet(torch.nn.Module):
+    def __init__(self, in_channels, out_channels, summary_features):
+        self.model = torch.nn.Sequential(
+            torch.nn.Linear(in_channels, 256),
+            torch.nn.ReLU(),
+            torch.nn.Linear(256, 256),
+            torch.nn.ReLU(),
+            torch.nn.Linear(256, out_channels),
+            torch.nn.Sigmoid(),
+        )
+
+    def forward(self, X):
+        return self.model.forward(X)
+
+
 # @CHECK
 class BranchingNet(torch.nn.Module):
     def __init__(self, in_channels, out_channels, summary_features):
