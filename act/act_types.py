@@ -35,6 +35,11 @@ class OptimizationParam(TypedDict):
     high: float
 
 
+class ParametricDistribution(TypedDict):
+    n_slices: int  # slice each variable min to max, into n equal slices
+    simulations_per_amp: int  # each amp will be split equally
+
+
 class OptimizationParameters(TypedDict):
     amps: List[float]
     params: List[OptimizationParam]
@@ -43,6 +48,7 @@ class OptimizationParameters(TypedDict):
     num_repeats: int
     num_amps_to_match: int
     num_epochs: int
+    parametric_distribution: ParametricDistribution
 
 
 class SummaryFeatures:

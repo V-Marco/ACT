@@ -210,6 +210,30 @@ class GeneralACTOptimizer(ACTOptimizer):
             target_V
         )
 
+        n_slices = (
+            self.config["optimization_parameters"]
+            .get("parametric_distribution", {})
+            .get("n_slices", 0)
+        )
+        simulations_per_amp = (
+            self.config["optimization_parameters"]
+            .get("parametric_distribution", {})
+            .get("simulations_per_amp", 1)
+        )
+        # we should do a parametric sampling of parameters to train network
+        if n_slices > 1:
+            simulated_V_dist, param_samples_dist, simulated_amps = self.get_parametric_distribution(
+                n_slices, simulations_per_amp
+            )
+            simulated_V_for_next_stage = torch.cat(
+                (simulated_V_for_next_stage, simulated_V_dist), dim=1
+            )
+            param_samples_for_next_stage = torch.cat(
+                (param_samples_for_next_stage, param_samples_dist), dim=1
+            )
+        else:
+            print(f"Parametric distribution parameters 'n_slices' not set, skipping.")
+
         self.model = self.init_nn_model(
             in_channels=target_V.shape[1], out_channels=self.num_params
         )
@@ -245,6 +269,30 @@ class GeneralACTOptimizer(ACTOptimizer):
         simulated_V_for_next_stage, param_samples_for_next_stage = self.match_voltage(
             target_V
         )
+
+        n_slices = (
+            self.config["optimization_parameters"]
+            .get("parametric_distribution", {})
+            .get("n_slices", 0)
+        )
+        simulations_per_amp = (
+            self.config["optimization_parameters"]
+            .get("parametric_distribution", {})
+            .get("simulations_per_amp", 1)
+        )
+        # we should do a parametric sampling of parameters to train network
+        if n_slices > 1:
+            simulated_V_dist, param_samples_dist, simulated_amps = self.get_parametric_distribution(
+                n_slices, simulations_per_amp
+            )
+            simulated_V_for_next_stage = torch.cat(
+                (simulated_V_for_next_stage, simulated_V_dist)
+            )
+            param_samples_for_next_stage = torch.cat(
+                (param_samples_for_next_stage, param_samples_dist)
+            )
+        else:
+            print(f"Parametric distribution parameters 'n_slices' not set, skipping.")
 
         # Resample to match the length of target data
         resampled_data = self.resample_voltage(
@@ -365,6 +413,71 @@ class GeneralACTOptimizer(ACTOptimizer):
             outs.append(out.reshape(1, -1))
 
         return torch.cat(outs, dim=0)
+
+    def get_parametric_distribution(self, n_slices, simulations_per_amp) -> tuple:
+        params = [
+            p["channel"] for p in self.config["optimization_parameters"]["params"]
+        ]
+        lows = [p["low"] for p in self.config["optimization_parameters"]["params"]]
+        highs = [p["high"] for p in self.config["optimization_parameters"]["params"]]
+        steps = int(
+            self.config["simulation_parameters"]["h_tstop"]
+            / self.config["simulation_parameters"]["h_dt"]
+        )
+
+        param_samples_for_next_stage = torch.zeros(
+            (self.num_ampl, simulations_per_amp, self.num_params)
+        )
+        simulated_V = torch.zeros(
+            (
+                self.num_ampl,
+                simulations_per_amp,
+                steps,
+            )
+        )
+
+        param_dist = np.array(
+            [
+                np.arange(low, high, (high - low) / n_slices)
+                for low, high in zip(lows, highs)
+            ]
+        ).T
+
+        amps = self.config["optimization_parameters"]["amps"]
+        print(
+            f"Sampling parameter space... this may take a while. {len(amps)} amps * {simulations_per_amp} simulations per amp = {len(amps) * simulations_per_amp}"
+        )
+        s_amps = []
+        for amp_ind, amp in enumerate(amps):
+            print(
+                f"    Generating {simulations_per_amp} simulations_per_amp at {amp:.2f} amps."
+            )
+            for slice_ind in range(simulations_per_amp):
+                # For each current injection amplitude, sample random parameters
+                param_inds = np.random.randint(
+                    0, n_slices, len(params)
+                )  # get random indices for our params
+                param_sample = param_dist.T[
+                    range(len(params)), param_inds
+                ]  # select the params
+                simulated_V[amp_ind][slice_ind] = self.simulate(
+                    amp, params, param_sample
+                )
+                param_samples_for_next_stage[amp_ind][slice_ind] = torch.Tensor(
+                    param_sample
+                )
+
+                s_amps.append(amp)
+
+        s_v = torch.flatten(simulated_V).reshape(
+            [len(amps) * simulations_per_amp, steps]
+        )
+        s_param = torch.flatten(param_samples_for_next_stage).reshape(
+            [len(amps) * simulations_per_amp, len(params)]
+        )
+        s_amps = torch.tensor(s_amps)
+
+        return s_v, s_param, s_amps
 
     def match_voltage(self, target_V: torch.Tensor) -> tuple:
         # Get target voltage summary features
