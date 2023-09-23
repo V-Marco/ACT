@@ -314,7 +314,8 @@ class GeneralACTOptimizer(ACTOptimizer):
         ) = self.extract_summary_features(simulated_V_for_next_stage)
 
         summary_features = torch.stack((ampl_next_stage, torch.flatten(num_spikes_simulated), torch.flatten(simulated_interspike_times)))
-
+        summary_features = torch.transpose(summary_features)
+        
         # Resample to match the length of target data
         resampled_data = self.resample_voltage(
             simulated_V_for_next_stage, target_V.shape[1]
