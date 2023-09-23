@@ -247,7 +247,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         summary_features = torch.transpose(summary_features, 0, 1).float()
 
         self.model = self.init_nn_model(
-            in_channels=target_V.shape[1], out_channels=self.num_params, summary_features=None
+            in_channels=target_V.shape[1], out_channels=self.num_params, summary_features=summary_features
         )
 
         # Resample to match the length of target data
