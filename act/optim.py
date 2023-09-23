@@ -243,7 +243,8 @@ class GeneralACTOptimizer(ACTOptimizer):
             simulated_interspike_times,
         ) = self.extract_summary_features(simulated_V_for_next_stage)
 
-        summary_features = torch.stack((ampl_next_stage, num_spikes_simulated, simulated_interspike_times))
+        summary_features = torch.stack((ampl_next_stage, torch.flatten(num_spikes_simulated), torch.flatten(simulated_interspike_times)))
+        summary_features = torch.transpose(summary_features, 0, 1)
 
         self.model = self.init_nn_model(
             in_channels=target_V.shape[1], out_channels=self.num_params, summary_features=None
@@ -261,7 +262,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         self.train_model(resampled_data, param_samples_for_next_stage, lows, highs, summary_features=summary_features)
 
         # Predict and take max across ci to prevent underestimating
-        predictions = self.predict_with_model(target_V, lows, highs)
+        predictions = self.predict_with_model(target_V, lows, highs, summary_features)
         predictions = torch.max(predictions, dim=0).values
 
         return predictions
@@ -314,8 +315,8 @@ class GeneralACTOptimizer(ACTOptimizer):
         ) = self.extract_summary_features(simulated_V_for_next_stage)
 
         summary_features = torch.stack((ampl_next_stage, torch.flatten(num_spikes_simulated), torch.flatten(simulated_interspike_times)))
-        summary_features = torch.transpose(summary_features)
-        
+        summary_features = torch.transpose(summary_features, 0, 1)
+
         # Resample to match the length of target data
         resampled_data = self.resample_voltage(
             simulated_V_for_next_stage, target_V.shape[1]
@@ -362,7 +363,7 @@ class GeneralACTOptimizer(ACTOptimizer):
             )
 
             # Predict and take max across ci to prevent underestimating
-            predictions = self.predict_with_model(cut_target_V, lows, highs)
+            predictions = self.predict_with_model(cut_target_V, lows, highs, summary_features)
             predictions = torch.max(predictions, dim=0).values
 
             # Update cell model
@@ -377,7 +378,9 @@ class GeneralACTOptimizer(ACTOptimizer):
         return prediction_pool
 
     def init_nn_model(self, in_channels: int, out_channels: int, summary_features) -> torch.nn.Sequential:
-        ModelClass = SimpleNet #EmbeddingNet #BranchingNet
+        #ModelClass = SimpleNet
+        ModelClass = BranchingNet
+        #ModelClass = EmbeddingNet
         model = ModelClass(in_channels, out_channels, summary_features) 
         return model
 
@@ -420,14 +423,14 @@ class GeneralACTOptimizer(ACTOptimizer):
                 loss.backward()
                 optim.step()
 
-    def predict_with_model(self, target_V: torch.Tensor, lows, highs) -> torch.Tensor:
+    def predict_with_model(self, target_V: torch.Tensor, lows, highs, summary_features) -> torch.Tensor:
         sigmoid_mins = torch.tensor(lows)
         sigmoid_maxs = torch.tensor(highs)
 
         self.model.eval()
         outs = []
         for i in range(target_V.shape[0]):
-            out = self.model(target_V[i]) * (sigmoid_maxs - sigmoid_mins) + sigmoid_mins
+            out = self.model(target_V[i], summary_features) * (sigmoid_maxs - sigmoid_mins) + sigmoid_mins
             outs.append(out.reshape(1, -1))
 
         return torch.cat(outs, dim=0)
