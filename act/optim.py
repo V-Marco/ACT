@@ -313,7 +313,7 @@ class GeneralACTOptimizer(ACTOptimizer):
             simulated_interspike_times,
         ) = self.extract_summary_features(simulated_V_for_next_stage)
 
-        summary_features = torch.stack((ampl_next_stage, num_spikes_simulated, simulated_interspike_times))
+        summary_features = torch.stack((ampl_next_stage, torch.flatten(num_spikes_simulated), torch.flatten(simulated_interspike_times)))
 
         # Resample to match the length of target data
         resampled_data = self.resample_voltage(
@@ -386,7 +386,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         target_params: torch.Tensor,
         lows,
         highs,
-        summary_features=None
+        summary_features,
     ) -> None:
         optim = torch.optim.SGD(self.model.parameters(), lr=1e-8)
         sigmoid_mins = torch.tensor(lows)
