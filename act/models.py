@@ -54,10 +54,10 @@ class EmbeddingNet(torch.nn.Module):
         self.predictor = torch.nn.Sequential(
             torch.nn.Linear(64 + summary_features.shape[-1], 256),
             torch.nn.ReLU(),
-            torch.nn.Linear(256, 256),
+            torch.nn.Linear(256, out_channels),
             torch.nn.Sigmoid(),
         )
 
     def forward(self, X, summary_features):
         embedding = self.embedder(X)
-        return self.predictor(torch.cat(embedding, summary_features))
+        return self.predictor(torch.cat((embedding, summary_features)))
