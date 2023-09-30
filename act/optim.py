@@ -278,7 +278,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         )
 
         # Predict and take max across ci to prevent underestimating
-        predictions = self.predict_with_model(target_V, lows, highs, summary_features)
+        predictions = self.predict_with_model(resampled_data, lows, highs, summary_features)
         predictions = torch.max(predictions, dim=0).values
 
         return predictions

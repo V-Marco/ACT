@@ -226,7 +226,7 @@ LA_A_seg = {
         "num_amps_to_match": 12,
         "num_epochs": 5000,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
-            "n_slices": 0,
+            "n_slices": 5,
             "simulations_per_amp": 3,  # randomly select n permutations per amp to train on
         },
     },
@@ -264,4 +264,95 @@ LA_A_seg = {
         "simulated_label": "Model ACT",
     },
     "run_mode": "segregated",  # "original", "segregated"
+}
+
+LA_A_orig = config = {
+    "cell": {
+        "hoc_file": "../data/LA/A/template.hoc",
+        "modfiles_folder": "../data/LA/A/orig_modfiles",
+        "name": "Cell_A",
+    },
+    "simulation_parameters": {
+        "h_v_init": -70.0,  # (mV)
+        "h_tstop": 2000,  # (ms)
+        "h_i_delay": 500,  # (ms)
+        "h_i_dur": 1500,  # (ms)
+        "h_dt": 0.025,
+    },
+    "optimization_parameters": {
+        "amps": list(np.arange(-2, 3, 0.025)),  # list(np.arange(-2, 10, 0.1)),
+        "params": [
+            {"channel": "glbar_leak", "low": 2.75e-5, "high": 1e-4},  # leak, passive
+            {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05},  # hd, passive
+            {
+                "channel": "gbar_nap",
+                "low": 0.000071,
+                "high": 0.000284,
+            },  # nap, lto and hto
+            {"channel": "gmbar_im", "low": 0.001, "high": 0.004},  # im, lto and hto
+            {
+                "channel": "gbar_na3",
+                "low": 0.015,
+                "high": 0.06,
+            },  # na3, spiking/adaptation
+            {
+                "channel": "gkdrbar_kdr",
+                "low": 0.00075,
+                "high": 0.003,
+            },  # kdr, spiking/adaptation
+            {
+                "channel": "gcabar_cadyn",
+                "low": 3e-5,
+                "high": 1.2e-4,
+            },  # cadyn, spiking/adaptation
+            {
+                "channel": "gsAHPbar_sAHP",
+                "low": 0.0045,
+                "high": 0.018,
+            },  # sahp, spiking/adaptation
+        ],
+        "target_V": None,  # Target voltages
+        "target_params": [5.5e-5, 2.3e-05, 0.000142, 0.002, 0.03, 0.0015, 6e-5, 0.009],
+        "num_repeats": 3,
+        "num_amps_to_match": 12,
+        "num_epochs": 5000,
+        "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
+            "n_slices": 0,
+            "simulations_per_amp": 100,  # randomly select n permutations per amp to train on
+        },
+    },
+    "summary_features": {
+        "spike_threshold": 20,  # (mV)
+        # Target-sim match conditions (max abs diff between sim and target)
+        "mc_num_spikes": 1,
+        "mc_interspike_time": 200,  # (ms)
+        "mc_min_v": 1,  # (mV)
+        "mc_mean_v": 2,  # (mV)
+        "mc_max_v": 1,  # (mV)
+    },
+    "segregation": [
+        {  # passive
+            "params": ["glbar_leak", "ghdbar_hd"],
+            "voltage": [-80, -67.5],
+        },
+        {  # lto
+            "params": ["gbar_nap", "gmbar_im"],
+            "voltage": [-67.5, -57.5],
+        },
+        {  # spking / adaptation
+            "params": ["gbar_na3", "gkdrbar_kdr", "gcabar_cadyn", "gsAHPbar_sAHP"],
+            "voltage": [-57.5, 0],
+        },
+        {  # hto
+            "params": ["gbar_nap", "gmbar_im"],
+            "voltage": [-40, -30],
+        },
+    ],
+    "output": {
+        "folder": "output_LA_A",
+        "produce_plots": True,
+        "target_label": "ModelDB Original",
+        "simulated_label": "Model ACT",
+    },
+    "run_mode": "original",  # "original", "segregated"
 }
