@@ -7,6 +7,8 @@ from act.act_types import PassiveProperties, SimulationConfig
 from act.cell_model import CellModel
 from act.logger import ACTDummyLogger
 
+from act.models import EmbeddingNet
+
 
 class ACTOptimizer:
     def __init__(
@@ -235,7 +237,7 @@ class GeneralACTOptimizer(ACTOptimizer):
             print(f"Parametric distribution parameters 'n_slices' not set, skipping.")
 
         self.model = self.init_nn_model(
-            in_channels=target_V.shape[1], out_channels=self.num_params
+            in_channels=target_V.shape[1], out_channels=self.num_params, num_summary_features = 2,
         )
 
         # Resample to match the length of target data
@@ -353,15 +355,16 @@ class GeneralACTOptimizer(ACTOptimizer):
 
         return prediction_pool
 
-    def init_nn_model(self, in_channels: int, out_channels: int) -> torch.nn.Sequential:
-        model = torch.nn.Sequential(
-            torch.nn.Linear(in_channels, 256),
-            torch.nn.ReLU(),
-            torch.nn.Linear(256, 256),
-            torch.nn.ReLU(),
-            torch.nn.Linear(256, out_channels),
-            torch.nn.Sigmoid(),
-        )
+    def init_nn_model(self, in_channels: int, out_channels: int, num_summary_features: torch.Tensor = None) -> torch.nn.Sequential:
+        # model = torch.nn.Sequential(
+        #     torch.nn.Linear(in_channels, 256),
+        #     torch.nn.ReLU(),
+        #     torch.nn.Linear(256, 256),
+        #     torch.nn.ReLU(),
+        #     torch.nn.Linear(256, out_channels),
+        #     torch.nn.Sigmoid(),
+        # )
+        model = EmbeddingNet(in_channels, out_channels, num_summary_features)
         return model
 
     def train_model(
@@ -386,8 +389,14 @@ class GeneralACTOptimizer(ACTOptimizer):
             loss0 = np.inf
 
             for ne in range(self.config["optimization_parameters"]["num_epochs"]):
+                extr = self.extract_summary_features(voltage_data[i].reshape(1, -1))
+                s_f = []
+                for f in extr:
+                    s_f.append(f.flatten())
+                summary_features = torch.cat(s_f)
+
                 pred = (
-                    self.model(voltage_data[i]) * (sigmoid_maxs - sigmoid_mins)
+                    self.model(voltage_data[i], summary_features) * (sigmoid_maxs - sigmoid_mins)
                     + sigmoid_mins
                 )
                 loss = torch.nn.functional.l1_loss(pred, target_params[i])
@@ -409,7 +418,12 @@ class GeneralACTOptimizer(ACTOptimizer):
         self.model.eval()
         outs = []
         for i in range(target_V.shape[0]):
-            out = self.model(target_V[i]) * (sigmoid_maxs - sigmoid_mins) + sigmoid_mins
+            extr = self.extract_summary_features(target_V[i].reshape(1, -1))
+            s_f = []
+            for f in extr:
+                s_f.append(f.flatten())
+            summary_features = torch.cat(s_f)
+            out = self.model(target_V[i], summary_features) * (sigmoid_maxs - sigmoid_mins) + sigmoid_mins
             outs.append(out.reshape(1, -1))
 
         return torch.cat(outs, dim=0)
@@ -599,5 +613,6 @@ class GeneralACTOptimizer(ACTOptimizer):
                     ]
                 ).float()
             )
+            interspike_times[torch.isnan(interspike_times)] = 0
 
         return num_spikes, interspike_times
