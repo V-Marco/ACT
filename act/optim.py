@@ -6,7 +6,7 @@ from scipy.signal import resample
 from act.act_types import PassiveProperties, SimulationConfig
 from act.cell_model import CellModel
 from act.logger import ACTDummyLogger
-from act.models import SimpleNet, BranchingNet, EmbeddingNet
+from act.models import BranchingNet, EmbeddingNet, SimpleNet
 
 
 class ACTOptimizer:
@@ -464,7 +464,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         outs = []
         for i in range(target_V.shape[0]):
             out = (
-                self.model(target_V[i], summary_features)
+                self.model(target_V[i], summary_features[i])
                 * (sigmoid_maxs - sigmoid_mins)
                 + sigmoid_mins
             )

@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 import pandas as pd
-from simulation_configs import pospischilsPYr, pospischilsPYr_passive, LA_A_seg
+from simulation_configs import LA_A_seg, pospischilsPYr, pospischilsPYr_passive
 
 from act import analysis
 
