@@ -1,4 +1,5 @@
-from simulation_configs import LA_A_seg, LA_A_orig, pospischilsPYr, pospischilsPYr_passive
+from simulation_configs import (LA_A_orig, LA_A_seg, pospischilsPYr,
+                                pospischilsPYr_passive)
 
 from act import simulator
 
