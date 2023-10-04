@@ -39,7 +39,7 @@ def cleanup_simulation():
              "run_bionet.py",
              "simulation_act_simulation_config.json",
     ]
-    folders = ["components", "output"]
+    folders = ["components"]
     # TODO Remove
 
 def generate_parametric_traces(config: SimulationConfig):
@@ -84,6 +84,7 @@ def generate_parametric_traces(config: SimulationConfig):
             / config["simulation_parameters"]["h_dt"]
         )
         amps = config["optimization_parameters"]["amps"]
+        amps = list(np.arange(0.0, 3.0, 1.0))
         amp_delay = config["simulation_parameters"]["h_i_delay"]
         amp_duration = config["simulation_parameters"]["h_i_dur"]
 
@@ -99,7 +100,7 @@ def generate_parametric_traces(config: SimulationConfig):
         ).T
 
         param_dist = np.array(param_dist.tolist() + [highs]) # add on the highes values
-        n_cells_per_amp =  param_dist.shape[1]**param_dist.shape[0]
+        n_cells_per_amp =  param_dist.shape[0]**param_dist.shape[1]
         n_cells = len(amps) * n_cells_per_amp
         
         print(f'Number of cells to be generated: {n_cells}  ({len(amps)} amps * {param_dist.shape[1]} parameters ^ {param_dist.shape[0]} splits)')
@@ -122,7 +123,7 @@ def generate_parametric_traces(config: SimulationConfig):
             clamps[pop] = {
                 "input_type": "current_clamp",
                 "module": "IClamp",
-                "node_set": {"population": pop},
+                "node_set": {"pop_name": pop},
                 "amp": amp,
                 "delay": amp_delay,
                 "duration": amp_duration
@@ -179,17 +180,51 @@ def generate_parametric_traces(config: SimulationConfig):
     graph = bionet.BioNetwork.from_config(conf)
     sim = bionet.BioSimulator.from_config(conf, network=graph)
     pop = graph._node_populations['biocell']
+    
+    def get_params(param_dist):
+
+        def _param(params, n_params, n_splits):
+            if len(params) == n_params:
+                return params
+            p_list = []
+            for i in range(n_splits):
+                current_params = params + [i]
+                p = _param(current_params, n_params, n_splits)
+                p_list = p_list + [p]
+            return p_list
+        
+        n_splits, n_params = param_dist.shape
+        p_inds = _param([], n_params, n_splits)
+        p_inds = np.array(p_inds).reshape(n_splits**n_params,n_params)#reshape because appending is weird
+
+        params = []
+        for p_ind in p_inds:
+            param_set = list(param_dist.T[range(param_dist.shape[1]),p_ind])
+            params.append(param_set)
+        return params
 
     cells = graph.get_local_cells()
+
+    parameter_values_list = get_params(param_dist)
+    # for a single node
+    """
     cell_counter = 0
+    
     for amp_i, amp in enumerate(amps):
-        parameter_values = np.zeros(param_dist.shape[1])
-        # TODO DETERMINE VALUES from param dist
-        cell = cells[cell_counter].hobj
-        if not cell_counter%10000:
-            print(f"Setting cell number {cell_counter} parameters.")
-        set_cell_parameters(cell, params, parameter_values)
-        cell_counter+=1
+        for parameter_values in parameter_values_list:
+            cell = cells[cell_counter].hobj
+            if not (cell_counter+1)%10000 or cell_counter+1 == n_cells:
+                print(f"Setting cell number {cell_counter+1}/{n_cells} parameters.")
+            set_cell_parameters(cell, params, parameter_values)
+            cell_counter+=1
+    """
+    # multinode
+    n_param_values = len(parameter_values_list)
+    for c_ind in cells:
+        cell = cells[c_ind]
+        # since we create n_amps number of cells * the parametric distribution we just want to loop around each time the amps change
+        parameter_values = parameter_values_list[cell.gid % n_param_values]
+        set_cell_parameters(cell.hobj, params, parameter_values)
 
     # Run the Simulation
     sim.run()
@@ -201,6 +236,7 @@ def generate_parametric_traces(config: SimulationConfig):
     if MPI_RANK == 0:
         # save to h5
         # TODO
+        import pdb;pdb.set_trace()
 
         # cleanup
         cleanup_simulation()
