@@ -89,8 +89,7 @@ def build_parametric_network(config: SimulationConfig):
     hoc_file = config["cell"]["hoc_file"]
     modfiles_folder = config["cell"]["modfiles_folder"]
 
-    amps = config["optimization_parameters"]["amps"]
-    amps = list(np.arange(0.0, 3.0, 1.0))
+    amps = config["optimization_parameters"]["parametric_distribution"]["amps"]
     amp_delay = config["simulation_parameters"]["h_i_delay"]
     amp_duration = config["simulation_parameters"]["h_i_dur"]
 
@@ -123,7 +122,7 @@ def build_parametric_network(config: SimulationConfig):
         clamps[pop] = {
             "input_type": "current_clamp",
             "module": "IClamp",
-            "node_set": {"pop_name": pop},
+            "node_set": pop,
             "amp": amp,
             "delay": amp_delay,
             "duration": amp_duration,
@@ -171,6 +170,16 @@ def build_parametric_network(config: SimulationConfig):
 
     with open(config_file, "w") as f:
         json.dump(conf_dict, f)
+
+    nodesets_file = 'node_sets.json'
+    node_dict = None
+    with open(nodesets_file) as json_file:
+        node_dict = json.load(json_file)
+        for i, amp in enumerate(amps):
+            pop = f"amp{i}"
+            node_dict[pop] = [i for i in range(n_cells_per_amp*i, n_cells_per_amp*i + n_cells_per_amp)]
+    with open(nodesets_file, "w") as f:
+        json.dump(node_dict, f, indent=2)
 
 def generate_parametric_traces(config: SimulationConfig):
     """

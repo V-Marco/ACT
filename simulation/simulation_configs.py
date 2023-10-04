@@ -227,7 +227,7 @@ LA_A_seg = {
         "num_epochs": 5000,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
-            "simulations_per_amp": 3,  # randomly select n permutations per amp to train on
+            "amps": list(np.arange(0.0, 3.0, 1.0))
         },
     },
     "summary_features": {
@@ -317,8 +317,8 @@ LA_A_orig = config = {
         "num_amps_to_match": 12,
         "num_epochs": 5000,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
-            "n_slices": 0,
-            "simulations_per_amp": 100,  # randomly select n permutations per amp to train on
+            "n_slices": 5,
+            "amps": list(np.arange(0.0, 3.0, 1.0))
         },
     },
     "summary_features": {
