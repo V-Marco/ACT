@@ -15,24 +15,13 @@ from act.logger import ACTLogger
 from act.metrics import correlation_score, mse_score
 from act.optim import GeneralACTOptimizer
 from act.target_utils import get_voltage_trace_from_params
-
+from act import utils
 
 def _run(config: SimulationConfig):
     if config["optimization_parameters"]["num_epochs"] < 1000:
         raise ValueError("Number of epochs is expected to be >= 1000.")
 
-    output_folder = config["output"]["folder"]
-    run_output_folder_name = f"{config['run_mode']}"
-
-    if not os.path.exists(output_folder):
-        os.mkdir(output_folder)
-
-    output_folder = os.path.join(config["output"]["folder"], run_output_folder_name)
-    # delete old results
-    if os.path.exists(output_folder):
-        shutil.rmtree(output_folder, ignore_errors=True)
-    if not os.path.exists(output_folder):
-        os.mkdir(output_folder)
+    output_folder = utils.create_output_folder(config)
 
     os.system(f"nrnivmodl {config['cell']['modfiles_folder']}")
 

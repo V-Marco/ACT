@@ -1,4 +1,4 @@
-from act import simulator
+from act.utils import generate_parametric_traces
 
 from simulation_configs import (
     LA_A_orig,
@@ -10,4 +10,4 @@ from simulation_configs import (
 if __name__ == "__main__":
     config = LA_A_seg
 
-    p = simulator.run(config, subprocess=False)
+    generate_parametric_traces(config)

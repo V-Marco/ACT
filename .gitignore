@@ -145,3 +145,11 @@ special.nrn
 
 *.json
 ~lock.*
+
+simulation/components
+simulation/network
+simulation/output
+simulation/run_bionet.py
+simulation/output_LA_A
+
+examples/LA/output_LA_A

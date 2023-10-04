@@ -1,5 +1,4 @@
 import numpy as np
-
 from act.act_types import SimulationConfig
 
 pospischilsPY: SimulationConfig = {
@@ -183,7 +182,7 @@ LA_A_seg = {
         "h_dt": 0.025,
     },
     "optimization_parameters": {
-        "amps": list(np.arange(-2, 3, 0.025)),
+        "amps": list(np.arange(-0.025, 3, 0.05)),
         "params": [
             # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05}, # hd, passive
             {
@@ -263,7 +262,7 @@ LA_A_seg = {
         "target_label": "ModelDB Segregated",
         "simulated_label": "Model ACT",
     },
-    "run_mode": "segregated",  # "original", "segregated"
+    "run_mode": "original",  # "original", "segregated"
 }
 
 LA_A_orig = config = {
