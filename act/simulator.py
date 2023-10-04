@@ -9,13 +9,14 @@ import pandas as pd
 import torch
 from neuron import h
 
+from act import utils
 from act.act_types import SimulationConfig
 from act.analysis import save_mse_corr, save_plot, save_prediction_plots
 from act.logger import ACTLogger
 from act.metrics import correlation_score, mse_score
 from act.optim import GeneralACTOptimizer
 from act.target_utils import get_voltage_trace_from_params
-from act import utils
+
 
 def _run(config: SimulationConfig):
     if config["optimization_parameters"]["num_epochs"] < 1000:

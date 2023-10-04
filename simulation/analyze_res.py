@@ -2,9 +2,9 @@ import os
 
 import numpy as np
 import pandas as pd
-from act import analysis
-
 from simulation_configs import LA_A_seg, pospischilsPYr, pospischilsPYr_passive
+
+from act import analysis
 
 
 def main():

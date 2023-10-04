@@ -1,4 +1,5 @@
 import numpy as np
+
 from act.act_types import SimulationConfig
 
 pospischilsPY: SimulationConfig = {
