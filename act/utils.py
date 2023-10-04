@@ -174,7 +174,7 @@ def generate_parametric_traces(config: SimulationConfig):
     pc.barrier()
 
     # Build network, modify cell parameters
-    conf = bionet.Config.from_dict(conf_dict, validate=True)
+    conf = bionet.Config.from_json(config_file, validate=True)
     conf.build_env()
 
     graph = bionet.BioNetwork.from_config(conf)
