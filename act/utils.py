@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+import h5
 
 import numpy as np
 from bmtk.builder.networks import NetworkBuilder
@@ -36,6 +37,29 @@ def set_cell_parameters(cell, parameter_list: list, parameter_values: list) -> N
         for index, key in enumerate(parameter_list):
             setattr(sec, key, parameter_values[index])
 
+def get_params(param_dist):
+    def _param(params, n_params, n_splits):
+        if len(params) == n_params:
+            return params
+        p_list = []
+        for i in range(n_splits):
+            current_params = params + [i]
+            p = _param(current_params, n_params, n_splits)
+            p_list = p_list + [p]
+        return p_list
+
+    n_splits, n_params = param_dist.shape
+    p_inds = _param([], n_params, n_splits)
+    p_inds = np.array(p_inds).reshape(
+        n_splits**n_params, n_params
+    )  # reshape because appending is weird
+
+    params = []
+    for p_ind in p_inds:
+        param_set = list(param_dist.T[range(param_dist.shape[1]), p_ind])
+        params.append(param_set)
+    return params
+
 def get_param_dist(config: SimulationConfig):
     # Deterimine the number of cells and their parameters to be set
     lows = [p["low"] for p in config["optimization_parameters"]["params"]]
@@ -59,8 +83,8 @@ def get_param_dist(config: SimulationConfig):
     ).T
 
     param_dist = np.array(param_dist.tolist() + [highs])  # add on the highes values
-
-    return param_dist
+    parameter_values_list = get_params(param_dist)
+    return parameter_values_list
 
 
 def cleanup_simulation():
@@ -77,6 +101,7 @@ def cleanup_simulation():
 def build_parametric_network(config: SimulationConfig):
 
     config_file = "simulation_act_simulation_config.json"
+    params = [p["channel"] for p in config["optimization_parameters"]["params"]]
     param_dist = get_param_dist(config)
 
     network_dir = "network"
@@ -172,6 +197,7 @@ def build_parametric_network(config: SimulationConfig):
         json.dump(conf_dict, f)
 
     nodesets_file = 'node_sets.json'
+    parameter_values_file = 'parameter_values.json'
     node_dict = None
     with open(nodesets_file) as json_file:
         node_dict = json.load(json_file)
@@ -181,6 +207,12 @@ def build_parametric_network(config: SimulationConfig):
     with open(nodesets_file, "w") as f:
         json.dump(node_dict, f, indent=2)
 
+    parameter_values_list = get_param_dist(config)
+    with open(parameter_values_file) as json_file:
+        param_dict = {"params": params,
+                      "parameter_values_list": parameter_values_list}
+        json.dump(param_dict, f, indent=2)
+
 def generate_parametric_traces(config: SimulationConfig):
     """
     This function utilizes BMTK and MPI to generate voltage
@@ -188,8 +220,11 @@ def generate_parametric_traces(config: SimulationConfig):
     file for injestion later.
     """
     config_file = "simulation_act_simulation_config.json"
-    params = [p["channel"] for p in config["optimization_parameters"]["params"]]
-    param_dist = get_param_dist(config)
+    parameter_values_file = "parameter_values.json"
+    with open(parameter_values_file) as f:
+        param_dict = json.load(f)
+        params = param_dict["params"]
+        parameter_values_list = param_dict["parameter_values_list"]
 
     pc.barrier()
 
@@ -200,33 +235,8 @@ def generate_parametric_traces(config: SimulationConfig):
     graph = bionet.BioNetwork.from_config(conf)
     sim = bionet.BioSimulator.from_config(conf, network=graph)
 
-    def get_params(param_dist):
-        def _param(params, n_params, n_splits):
-            if len(params) == n_params:
-                return params
-            p_list = []
-            for i in range(n_splits):
-                current_params = params + [i]
-                p = _param(current_params, n_params, n_splits)
-                p_list = p_list + [p]
-            return p_list
-
-        n_splits, n_params = param_dist.shape
-        p_inds = _param([], n_params, n_splits)
-        p_inds = np.array(p_inds).reshape(
-            n_splits**n_params, n_params
-        )  # reshape because appending is weird
-
-        params = []
-        for p_ind in p_inds:
-            param_set = list(param_dist.T[range(param_dist.shape[1]), p_ind])
-            params.append(param_set)
-        return params
-
     cells = graph.get_local_cells()
 
-    parameter_values_list = get_params(param_dist)
-    
     n_param_values = len(parameter_values_list)
     for c_ind in cells:
         cell = cells[c_ind]
@@ -239,19 +249,19 @@ def generate_parametric_traces(config: SimulationConfig):
     bionet.nrn.quit_execution()
     # Save traces/parameters and cleanup
 
-    pc.barrier()
-
-    if MPI_RANK == 0:
-        # save parameters
-        parameters_dict = {"parameters": parameter_values_list}
-        with open("parameters.json", "w") as f:
-            json.dump(parameters_dict, f)
-
-        # cleanup
-        cleanup_simulation()
-
-
-def load_parametric_traces():
+def load_parametric_traces(config: SimulationConfig):
     """
     Return a torch tensor of all traces in the specified h5 file
     """
+    parameter_values_file = "parameter_values.json"
+    traces_file = 'output/v_report.h5'
+
+    with open(parameter_values_file, "r") as json_file:
+        params_dict = json.load(json_file)
+        params = params_dict["params"]
+        parameter_values_list = params_dict["parameter_values_list"]
+
+    traces = h5.File(traces_file)
+    import torch
+
+    import pdb;pdb.set_trace()
