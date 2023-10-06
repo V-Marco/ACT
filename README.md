@@ -51,10 +51,38 @@ Simulations' parameters are defined as `python` classes in `simulation/simulatio
 
 ### Running a simulation
 
+`simulation/simulation_configs.py` is an example of the simulation configs that can be read by ACT
+
 `simulation/run_simulation.py` is an example script of running `act` on Pospichil's cells.
 
 `simulation/analyze_res.py` is an example script which gives a summary of the model's quality.
 
+ACT can also generate traces over a large parameter space (#amps * #parameter-splits-between-low-high ^ #parameters)
+To do this you must generate a BMTK network, and run using MPI. Eg:
+
+```
+pip install mpi4py bmtk
+
+python generate_traces.py build
+sbatch batch_generate_traces.sh
+#    This will create: 
+#        parameter_values.json which contains every permutation of parameters
+#        output/v_report.h5 which contains the resulting trace
+
+# use screens for training the network (may take a while)
+screen
+python run_simulation.py
+
+# ctrl + A, d  # to detach
+
+# to return to your screen
+screen -ls
+# There is a screen on:
+# 	4063471.pts-3.engr-nelvm-res	(Detached)
+# 1 Socket in /run/screen/S-tbg28.
+
+# screen -r 4063471
+```
 
 ### Examples (Jupyter Notebook)
 
