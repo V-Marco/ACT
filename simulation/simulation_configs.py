@@ -223,7 +223,7 @@ LA_A_seg = {
             0.009,
         ],  # [2.3e-05, 0.000142, 0.002, 0.03, 0.0015, 6e-5, 0.009],
         "num_repeats": 3,
-        "num_amps_to_match": 12,
+        "num_amps_to_match": 1,
         "num_epochs": 5000,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
@@ -266,7 +266,7 @@ LA_A_seg = {
     "run_mode": "original",  # "original", "segregated"
 }
 
-LA_A_orig = config = {
+LA_A_orig = {
     "cell": {
         "hoc_file": "../data/LA/A/template.hoc",
         "modfiles_folder": "../data/LA/A/orig_modfiles",

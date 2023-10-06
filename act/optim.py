@@ -7,7 +7,7 @@ from act.act_types import PassiveProperties, SimulationConfig
 from act.cell_model import CellModel
 from act.logger import ACTDummyLogger
 from act.models import BranchingNet, EmbeddingNet, SimpleNet
-
+from act import utils
 
 class ACTOptimizer:
     def __init__(
@@ -224,21 +224,32 @@ class GeneralACTOptimizer(ACTOptimizer):
             .get("simulations_per_amp", 1)
         )
         # we should do a parametric sampling of parameters to train network
-        if n_slices > 1:
-            (
-                simulated_V_dist,
-                param_samples_dist,
-                simulated_amps,
-            ) = self.get_parametric_distribution(n_slices, simulations_per_amp)
+        # check to see if parametric traces can be loaded
+        (
+            simulated_V_dist,
+            param_samples_dist,
+            simulated_amps,
+        ) = utils.load_parametric_traces(self.config)
+        if simulated_V_dist is None:
+            if n_slices > 1:
+                (
+                    simulated_V_dist,
+                    param_samples_dist,
+                    simulated_amps,
+                ) = self.get_parametric_distribution(n_slices, simulations_per_amp)
+            else:
+                print(f"Parametric distribution parameters 'n_slices' not set, skipping.")
+
+        if simulated_V_dist is not None:
             simulated_V_for_next_stage = torch.cat(
-                (simulated_V_for_next_stage, simulated_V_dist), dim=1
+                (simulated_V_for_next_stage, simulated_V_dist),
             )
             param_samples_for_next_stage = torch.cat(
-                (param_samples_for_next_stage, param_samples_dist), dim=1
+                (param_samples_for_next_stage, param_samples_dist),
             )
             ampl_next_stage = torch.cat((ampl_next_stage, simulated_amps))
         else:
-            print(f"Parametric distribution parameters 'n_slices' not set, skipping.")
+            print(f"Parametric distribution parameters not applied.")
 
         (
             num_spikes_simulated,

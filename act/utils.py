@@ -1,7 +1,7 @@
 import json
 import os
 import shutil
-import h5
+import h5py
 
 import numpy as np
 from bmtk.builder.networks import NetworkBuilder
@@ -122,17 +122,16 @@ def build_parametric_network(config: SimulationConfig):
     tstop = config["simulation_parameters"]["h_tstop"]
     v_init = config["simulation_parameters"]["h_v_init"]
 
-    n_cells_per_amp = param_dist.shape[0] ** param_dist.shape[1]
+    n_cells_per_amp = len(param_dist)
     n_cells = len(amps) * n_cells_per_amp
 
     print(
-        f"Number of cells to be generated: {n_cells}  ({len(amps)} amps * {param_dist.shape[1]} parameters ^ {param_dist.shape[0]} splits)"
+        f"Number of cells to be generated: {n_cells}  ({len(amps)} amps * {n_cells_per_amp} cells per amp (parameters ^ splits))"
     )
 
     # Build a BMTK config to inject and record
 
     clamps = {}
-
     net = NetworkBuilder("biocell")
     # Since these need specified in the config, we split by amp delivered
     for i, amp in enumerate(amps):
@@ -152,6 +151,13 @@ def build_parametric_network(config: SimulationConfig):
             "delay": amp_delay,
             "duration": amp_duration,
         }
+
+    params_list = []
+    amps_list = []
+    for amp in amps:
+        amps_list = amps_list + [amp for _ in range(n_cells_per_amp)]
+        params_list = params_list + param_dist
+
     net.build()
     net.save_nodes(output_dir=network_dir)
     net.save_edges(output_dir=network_dir)
@@ -208,10 +214,11 @@ def build_parametric_network(config: SimulationConfig):
         json.dump(node_dict, f, indent=2)
 
     parameter_values_list = get_param_dist(config)
-    with open(parameter_values_file) as json_file:
-        param_dict = {"params": params,
-                      "parameter_values_list": parameter_values_list}
-        json.dump(param_dict, f, indent=2)
+    with open(parameter_values_file, "w") as json_file:
+        param_dict = {"parameters": params,
+                      "parameter_values_list": params_list,
+                      "amps": list(amps_list)}
+        json.dump(param_dict, json_file, indent=2)
 
 def generate_parametric_traces(config: SimulationConfig):
     """
@@ -256,12 +263,22 @@ def load_parametric_traces(config: SimulationConfig):
     parameter_values_file = "parameter_values.json"
     traces_file = 'output/v_report.h5'
 
+    if not os.path.exists(parameter_values_file) or not os.path.exists(traces_file):
+        return None, None, None
+
     with open(parameter_values_file, "r") as json_file:
         params_dict = json.load(json_file)
-        params = params_dict["params"]
+        params = params_dict["parameters"]
         parameter_values_list = params_dict["parameter_values_list"]
+        amps = params_dict["amps"]
+    
+    print(f"loading large file ({traces_file})")
+    traces_h5 = h5py.File(traces_file)
+    traces = np.array(traces_h5['report']['biocell']['data']).T
+    # reorder to match parameters set
+    order = list(traces_h5['report']['biocell']['mapping']['node_ids'])
+    traces = traces[order]
 
-    traces = h5.File(traces_file)
     import torch
 
-    import pdb;pdb.set_trace()
+    return torch.tensor(traces), torch.tensor(parameter_values_list), torch.tensor(amps)
