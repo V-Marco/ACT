@@ -38,6 +38,7 @@ def set_cell_parameters(cell, parameter_list: list, parameter_values: list) -> N
         for index, key in enumerate(parameter_list):
             setattr(sec, key, parameter_values[index])
 
+
 def get_params(param_dist):
     def _param(params, n_params, n_splits):
         if len(params) == n_params:
@@ -60,6 +61,7 @@ def get_params(param_dist):
         param_set = list(param_dist.T[range(param_dist.shape[1]), p_ind])
         params.append(param_set)
     return params
+
 
 def get_param_dist(config: SimulationConfig):
     # Deterimine the number of cells and their parameters to be set
@@ -99,8 +101,8 @@ def cleanup_simulation():
     folders = ["components"]
     # TODO Remove
 
-def build_parametric_network(config: SimulationConfig):
 
+def build_parametric_network(config: SimulationConfig):
     config_file = "simulation_act_simulation_config.json"
     params = [p["channel"] for p in config["optimization_parameters"]["params"]]
     param_dist = get_param_dist(config)
@@ -203,23 +205,31 @@ def build_parametric_network(config: SimulationConfig):
     with open(config_file, "w") as f:
         json.dump(conf_dict, f)
 
-    nodesets_file = 'node_sets.json'
-    parameter_values_file = 'parameter_values.json'
+    nodesets_file = "node_sets.json"
+    parameter_values_file = "parameter_values.json"
     node_dict = None
     with open(nodesets_file) as json_file:
         node_dict = json.load(json_file)
         for i, amp in enumerate(amps):
             pop = f"amp{i}"
-            node_dict[pop] = [i for i in range(n_cells_per_amp*i, n_cells_per_amp*i + n_cells_per_amp)]
+            node_dict[pop] = [
+                i
+                for i in range(
+                    n_cells_per_amp * i, n_cells_per_amp * i + n_cells_per_amp
+                )
+            ]
     with open(nodesets_file, "w") as f:
         json.dump(node_dict, f, indent=2)
 
     parameter_values_list = get_param_dist(config)
     with open(parameter_values_file, "w") as json_file:
-        param_dict = {"parameters": params,
-                      "parameter_values_list": params_list,
-                      "amps": list(amps_list)}
+        param_dict = {
+            "parameters": params,
+            "parameter_values_list": params_list,
+            "amps": list(amps_list),
+        }
         json.dump(param_dict, json_file, indent=2)
+
 
 def generate_parametric_traces(config: SimulationConfig):
     """
@@ -257,12 +267,13 @@ def generate_parametric_traces(config: SimulationConfig):
     bionet.nrn.quit_execution()
     # Save traces/parameters and cleanup
 
+
 def load_parametric_traces(config: SimulationConfig):
     """
     Return a torch tensor of all traces in the specified h5 file
     """
     parameter_values_file = "parameter_values.json"
-    traces_file = 'output/v_report.h5'
+    traces_file = "output/v_report.h5"
 
     if not os.path.exists(parameter_values_file) or not os.path.exists(traces_file):
         return None, None, None
@@ -272,17 +283,18 @@ def load_parametric_traces(config: SimulationConfig):
         params = params_dict["parameters"]
         parameter_values_list = params_dict["parameter_values_list"]
         amps = params_dict["amps"]
-    
+
     print(f"loading large file ({traces_file})")
     traces_h5 = h5py.File(traces_file)
-    traces = np.array(traces_h5['report']['biocell']['data']).T
+    traces = np.array(traces_h5["report"]["biocell"]["data"]).T
     # reorder to match parameters set
-    order = list(traces_h5['report']['biocell']['mapping']['node_ids'])
+    order = list(traces_h5["report"]["biocell"]["mapping"]["node_ids"])
     traces = traces[order]
 
     import torch
 
     return torch.tensor(traces), torch.tensor(parameter_values_list), torch.tensor(amps)
+
 
 def extract_summary_features(V: torch.Tensor, threshold=0) -> tuple:
     threshold_crossings = torch.diff(V > threshold, dim=1)
@@ -298,12 +310,14 @@ def extract_summary_features(V: torch.Tensor, threshold=0) -> tuple:
 
     return num_spikes, interspike_times
 
+
 def extract_spiking_traces(traces_t, params_t, amps_t, threshold=0, min_spikes=1):
-    num_spikes, interspike_times = extract_summary_features(traces_t, threshold=threshold)
-    spiking_gids = num_spikes.gt(min_spikes-1).nonzero().flatten().detach().tolist()
+    num_spikes, interspike_times = extract_summary_features(
+        traces_t, threshold=threshold
+    )
+    spiking_gids = num_spikes.gt(min_spikes - 1).nonzero().flatten().detach().tolist()
     spiking_traces = traces_t[spiking_gids]
     spiking_params = params_t[spiking_gids]
     spiking_amps = amps_t[spiking_gids]
     print(f"{len(spiking_traces)}/{len(traces_t)} spiking traces extracted.")
     return spiking_traces, spiking_params, spiking_amps
-

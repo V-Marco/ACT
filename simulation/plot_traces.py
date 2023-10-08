@@ -7,6 +7,7 @@ from act import utils
 import torch
 import numpy as np
 
+
 def plot_trace(
     amp: float,
     target_V=None,
@@ -26,6 +27,7 @@ def plot_trace(
 
     plt.show()
 
+
 def stats(traces, params_dict):
     traces_t, params_t, amps_t = utils.load_parametric_traces(None)
     traces, params, amps = (
@@ -39,12 +41,16 @@ def stats(traces, params_dict):
     print(f"{len(traces)} total traces")
     print(f"{amp_list} total amps supplied")
     print(f"{int(len(traces)/len(amp_list))} total unique parameter sets")
-    
-    spiking_traces, spiking_params, spiking_amps = utils.extract_spiking_traces(traces_t, params_t, amps_t)
+
+    spiking_traces, spiking_params, spiking_amps = utils.extract_spiking_traces(
+        traces_t, params_t, amps_t
+    )
     cell_id = 0
     plot_trace(spiking_amps[cell_id], spiking_traces[cell_id], f"Cell {cell_id}")
 
-    import pdb;pdb.set_trace()
+    import pdb
+
+    pdb.set_trace()
 
 
 if __name__ == "__main__":
