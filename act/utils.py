@@ -8,6 +8,7 @@ from bmtk.builder.networks import NetworkBuilder
 from bmtk.simulator import bionet
 from bmtk.utils.sim_setup import build_env_bionet
 from neuron import h
+import torch
 
 from act.act_types import SimulationConfig
 
@@ -230,7 +231,7 @@ def generate_parametric_traces(config: SimulationConfig):
     parameter_values_file = "parameter_values.json"
     with open(parameter_values_file) as f:
         param_dict = json.load(f)
-        params = param_dict["params"]
+        params = param_dict["parameters"]
         parameter_values_list = param_dict["parameter_values_list"]
 
     pc.barrier()
@@ -282,3 +283,27 @@ def load_parametric_traces(config: SimulationConfig):
     import torch
 
     return torch.tensor(traces), torch.tensor(parameter_values_list), torch.tensor(amps)
+
+def extract_summary_features(V: torch.Tensor, threshold=0) -> tuple:
+    threshold_crossings = torch.diff(V > threshold, dim=1)
+    num_spikes = torch.round(torch.sum(threshold_crossings, dim=1) * 0.5)
+    interspike_times = torch.zeros((V.shape[0], 1))
+    for i in range(threshold_crossings.shape[0]):
+        interspike_times[i, :] = torch.mean(
+            torch.diff(
+                torch.arange(threshold_crossings.shape[1])[threshold_crossings[i, :]]
+            ).float()
+        )
+    interspike_times[torch.isnan(interspike_times)] = 0
+
+    return num_spikes, interspike_times
+
+def extract_spiking_traces(traces_t, params_t, amps_t, threshold=0, min_spikes=1):
+    num_spikes, interspike_times = extract_summary_features(traces_t, threshold=threshold)
+    spiking_gids = num_spikes.gt(min_spikes-1).nonzero().flatten().detach().tolist()
+    spiking_traces = traces_t[spiking_gids]
+    spiking_params = params_t[spiking_gids]
+    spiking_amps = amps_t[spiking_gids]
+    print(f"{len(spiking_traces)}/{len(traces_t)} spiking traces extracted.")
+    return spiking_traces, spiking_params, spiking_amps
+

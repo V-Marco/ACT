@@ -180,7 +180,7 @@ LA_A_seg = {
         "h_tstop": 2000,  # (ms)
         "h_i_delay": 500,  # (ms)
         "h_i_dur": 1500,  # (ms)
-        "h_dt": 0.025,
+        "h_dt": 0.1,
     },
     "optimization_parameters": {
         "amps": list(np.arange(-0.025, 3, 0.05)),
@@ -188,29 +188,29 @@ LA_A_seg = {
             # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05}, # hd, passive
             {
                 "channel": "gbar_nap",
-                "low": 0.000071,
-                "high": 0.000284,
+                "low": 4.73333333e-05, #0.000071,
+                "high": 4.26e-04, #0.000284,
             },  # nap, lto and hto
-            {"channel": "gbar_im", "low": 0.001, "high": 0.004},  # im, lto and hto
+            {"channel": "gbar_im", "low": 6.66666667e-04, "high": 6.00e-03},  # im, lto and hto
             {
                 "channel": "gbar_na3",
-                "low": 0.015,
-                "high": 0.06,
+                "low": 1.00000000e-02, #0.015,
+                "high": 9.00e-02,
             },  # na3, spiking/adaptation
             {
                 "channel": "gbar_kdr",
-                "low": 0.00075,
-                "high": 0.003,
+                "low": 5.00000000e-04,
+                "high": 4.50e-03,
             },  # kdr, spiking/adaptation
             {
                 "channel": "gcabar_cadyn",
-                "low": 3e-5,
-                "high": 1.2e-4,
+                "low": 2.00000000e-05,
+                "high": 1.80e-04,
             },  # cadyn, spiking/adaptation
             {
                 "channel": "gsAHPbar_sAHP",
-                "low": 0.0045,
-                "high": 0.018,
+                "low": 3.00000000e-03,
+                "high": 2.70e-02,
             },  # sahp, spiking/adaptation
         ],
         "target_V": None,  # Target voltages
@@ -222,12 +222,12 @@ LA_A_seg = {
             6e-5,
             0.009,
         ],  # [2.3e-05, 0.000142, 0.002, 0.03, 0.0015, 6e-5, 0.009],
-        "num_repeats": 3,
+        "num_repeats": 1,
         "num_amps_to_match": 1,
         "num_epochs": 5000,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
-            "amps": list(np.arange(0.0, 3.0, 1.0))
+            "amps": list(np.arange(0.05,3.5,.75)),#list(np.arange(0.0, 3.0, 1.0))
         },
     },
     "summary_features": {

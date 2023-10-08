@@ -91,6 +91,7 @@ class ACTOptimizer:
         i_delay: float = 0,
     ) -> torch.Tensor:
         h.dt = self.config["simulation_parameters"]["h_dt"]
+        h.steps_per_ms = 1/h.dt
         h.tstop = self.config["simulation_parameters"]["h_tstop"]
         h.v_init = self.config["simulation_parameters"]["h_v_init"]
 
@@ -251,6 +252,8 @@ class GeneralACTOptimizer(ACTOptimizer):
         else:
             print(f"Parametric distribution parameters not applied.")
 
+        # extract only traces that have spikes in them
+        simulated_V_for_next_stage, param_samples_for_next_stage, ampl_next_stage = utils.extract_spiking_traces(simulated_V_for_next_stage, param_samples_for_next_stage, ampl_next_stage)
         (
             num_spikes_simulated,
             simulated_interspike_times,
