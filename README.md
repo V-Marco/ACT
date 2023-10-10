@@ -61,27 +61,20 @@ ACT can also generate traces over a large parameter space (#amps * #parameter-sp
 To do this you must generate a BMTK network, and run using MPI. Eg:
 
 ```
+pip install -e .
+module load mpich-x86_64-nopy
 pip install mpi4py bmtk
 
+cd simulation
 python generate_traces.py build
 sbatch batch_generate_traces.sh
 #    This will create: 
 #        parameter_values.json which contains every permutation of parameters
 #        output/v_report.h5 which contains the resulting trace
 
-# use screens for training the network (may take a while)
-screen
+
 python run_simulation.py
-
-# ctrl + A, d  # to detach
-
-# to return to your screen
-screen -ls
-# There is a screen on:
-# 	4063471.pts-3.engr-nelvm-res	(Detached)
-# 1 Socket in /run/screen/S-tbg28.
-
-# screen -r 4063471
+python analyze_res.py
 ```
 
 ### Examples (Jupyter Notebook)
