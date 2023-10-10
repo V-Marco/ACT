@@ -463,7 +463,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         highs,
         summary_features,
     ) -> None:
-        optim = torch.optim.SGD(self.model.parameters(), lr=1e-8)
+        optim = torch.optim.SGD(self.model.parameters(), lr=1e-8, weight_decay=1e-5)
         sigmoid_mins = torch.tensor(lows)
         sigmoid_maxs = torch.tensor(highs)
 

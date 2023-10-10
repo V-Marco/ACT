@@ -186,12 +186,12 @@ LA_A_seg = {
         "amps": list(np.arange(-0.1, 3, 0.05)),
         "params": [
             # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05}, # hd, passive
-            {"channel": "gbar_nap", "high": 0.00142, "low": 1.4200000000000001e-05},
-            {"channel": "gbar_im", "high": 0.02, "low": 0.0002},
-            {"channel": "gbar_na3", "high": 0.3, "low": 0.003},
-            {"channel": "gbar_kdr", "high": 0.015, "low": 0.00015000000000000001},
-            {"channel": "gcabar_cadyn", "high": 0.0006000000000000001, "low": 6e-06},
-            {"channel": "gsAHPbar_sAHP", "high": 0.09, "low": 0.0009},
+            {"channel": "gbar_nap", "high": 0.000426, "low": 4.736e-05},
+            {"channel": "gbar_im", "high": 0.006, "low": 0.000666},
+            {"channel": "gbar_na3", "high": 0.09, "low": 0.01},
+            {"channel": "gbar_kdr", "high": 0.0045, "low": 0.0005},
+            {"channel": "gcabar_cadyn", "high": 0.00018, "low": 2e-05},
+            {"channel": "gsAHPbar_sAHP", "high": 0.026996, "low": 0.0029996},
         ],
         "skip_match_voltage": True,
         "target_V": None,  # Target voltages
