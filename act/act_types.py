@@ -41,6 +41,7 @@ class ParametricDistribution(TypedDict):
 
 
 class OptimizationParameters(TypedDict):
+    skip_match_voltage: bool
     amps: List[float]
     params: List[OptimizationParam]
     target_V: List[List[float]]  # Target voltage

@@ -315,7 +315,9 @@ def extract_spiking_traces(traces_t, params_t, amps_t, threshold=0, min_spikes=1
     num_spikes, interspike_times = extract_summary_features(
         traces_t, threshold=threshold
     )
-    spiking_gids = num_spikes.gt(min_spikes - 1).nonzero().flatten().detach().tolist()
+    spiking_gids = (
+        num_spikes.gt(min_spikes - 1).nonzero().flatten().cpu().detach().tolist()
+    )
     spiking_traces = traces_t[spiking_gids]
     spiking_params = params_t[spiking_gids]
     spiking_amps = amps_t[spiking_gids]

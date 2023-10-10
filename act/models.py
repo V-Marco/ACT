@@ -50,6 +50,7 @@ class EmbeddingNet(torch.nn.Module):
             torch.nn.ReLU(),
             torch.nn.Linear(256, 64),
             torch.nn.ReLU(),
+            torch.nn.Dropout(0.5),
         )
         self.predictor = torch.nn.Sequential(
             torch.nn.Linear(64 + summary_features.shape[-1], 256),

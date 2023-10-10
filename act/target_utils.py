@@ -38,7 +38,7 @@ def get_voltage_trace_from_params(
                 amp,
                 output_folder,
                 simulated_data=None,
-                target_V=tv.detach().numpy(),
+                target_V=tv.cpu().detach().numpy(),
                 output_file=f"target_{(amp * 1000):.0f}nA.png",
                 dt=dt,
                 simulated_label=simulated_label,

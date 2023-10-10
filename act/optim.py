@@ -146,7 +146,7 @@ class ACTOptimizer:
             i_delay=tstart,
             i_dur=passive_duration,
         )
-        passive_vec = passive_tensor.detach().numpy()
+        passive_vec = passive_tensor.cpu().detach().numpy()
 
         index_v_rest = int(((1000 / h.dt) / 1000 * tstart))
         index_v_final = int(((1000 / h.dt) / 1000 * (tstart + passive_delay)))
@@ -209,11 +209,22 @@ class GeneralACTOptimizer(ACTOptimizer):
 
     def optimize(self, target_V: torch.Tensor) -> torch.Tensor:
         # Get voltage with characteristics similar to target
-        (
-            simulated_V_for_next_stage,
-            param_samples_for_next_stage,
-            ampl_next_stage,
-        ) = self.match_voltage(target_V)
+        if not self.config["optimization_parameters"]["skip_match_voltage"]:
+            (
+                simulated_V_for_next_stage,
+                param_samples_for_next_stage,
+                ampl_next_stage,
+            ) = self.match_voltage(target_V)
+        else:
+            (
+                simulated_V_for_next_stage,
+                param_samples_for_next_stage,
+                ampl_next_stage,
+            ) = (
+                None,
+                None,
+                None,
+            )
 
         n_slices = (
             self.config["optimization_parameters"]
@@ -245,13 +256,18 @@ class GeneralACTOptimizer(ACTOptimizer):
                 )
 
         if simulated_V_dist is not None:
-            simulated_V_for_next_stage = torch.cat(
-                (simulated_V_for_next_stage, simulated_V_dist),
-            )
-            param_samples_for_next_stage = torch.cat(
-                (param_samples_for_next_stage, param_samples_dist),
-            )
-            ampl_next_stage = torch.cat((ampl_next_stage, simulated_amps))
+            if simulated_V_for_next_stage is not None:
+                simulated_V_for_next_stage = torch.cat(
+                    (simulated_V_for_next_stage, simulated_V_dist),
+                )
+                param_samples_for_next_stage = torch.cat(
+                    (param_samples_for_next_stage, param_samples_dist),
+                )
+                ampl_next_stage = torch.cat((ampl_next_stage, simulated_amps))
+            else:
+                simulated_V_for_next_stage = simulated_V_dist
+                param_samples_for_next_stage = param_samples_dist
+                ampl_next_stage = simulated_amps
         else:
             print(f"Parametric distribution parameters not applied.")
 
@@ -470,11 +486,11 @@ class GeneralACTOptimizer(ACTOptimizer):
                 loss = torch.nn.functional.l1_loss(pred, target_params[i])
 
                 if ne % 100 == 0:
-                    self.logger.epoch(ne, "l1_loss", float(loss.detach().numpy()))
+                    self.logger.epoch(ne, "l1_loss", float(loss.cpu().detach().numpy()))
 
-                if loss.detach().numpy() >= loss0:
+                if loss.cpu().detach().numpy() >= loss0:
                     break
-                loss0 = loss.detach().numpy()
+                loss0 = loss.cpu().detach().numpy()
 
                 loss.backward()
                 optim.step()
@@ -654,7 +670,9 @@ class GeneralACTOptimizer(ACTOptimizer):
 
         simulated_V_for_next_stage = simulated_V_for_next_stage[non_corresp == 0]
         param_samples_for_next_stage = param_samples_for_next_stage[non_corresp == 0]
-        inds_of_next_stage = np.where(non_corresp == 0)[0].tolist()
+        inds_of_next_stage = np.where(non_corresp.cpu().detach().numpy() == 0)[
+            0
+        ].tolist()
         ampl_next_stage = torch.tensor(
             np.array(self.config["optimization_parameters"]["amps"])[inds_of_next_stage]
         )

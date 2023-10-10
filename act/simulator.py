@@ -81,7 +81,9 @@ def _run(config: SimulationConfig):
         json.dump(config, file, indent=2)
 
     # Save predictions
-    pred_df = pd.DataFrame(dict(zip(params, predictions.detach().numpy())), index=[0])
+    pred_df = pd.DataFrame(
+        dict(zip(params, predictions.cpu().detach().numpy())), index=[0]
+    )
 
     g_leak_var = optim.cell.gleak_var
     g_bar_leak = optim.cell.g_bar_leak
@@ -93,7 +95,7 @@ def _run(config: SimulationConfig):
 
     # save passive properties
     passive_properties, passive_v = optim.calculate_passive_properties(
-        params, predictions.detach().numpy()
+        params, predictions.cpu().detach().numpy()
     )
     with open(
         os.path.join(output_folder, "pred_passive_properties.json"),
@@ -136,8 +138,8 @@ def _run(config: SimulationConfig):
             i += 5  # should be user variable
 
         # Save the voltage traces for debugging
-        target_V_list = [list(t.detach().numpy()[0]) for t in target_V_out]
-        simulated_V_list = [list(t.detach().numpy()[0]) for t in simulated_V_out]
+        target_V_list = [list(t.cpu().detach().numpy()[0]) for t in target_V_out]
+        simulated_V_list = [list(t.cpu().detach().numpy()[0]) for t in simulated_V_out]
 
         f = h5py.File(os.path.join(output_folder, "traces.h5"), "w")
         target_grp = f.create_group("target")

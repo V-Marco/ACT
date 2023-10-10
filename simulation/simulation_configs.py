@@ -193,6 +193,7 @@ LA_A_seg = {
             {"channel": "gcabar_cadyn", "high": 0.0006000000000000001, "low": 6e-06},
             {"channel": "gsAHPbar_sAHP", "high": 0.09, "low": 0.0009},
         ],
+        "skip_match_voltage": True,
         "target_V": None,  # Target voltages
         "target_params": [
             0.000142,

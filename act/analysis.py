@@ -55,7 +55,7 @@ def save_prediction_plots(
         p["channel"] for p in simulation_config["optimization_parameters"]["params"]
     ]
     simulated_data = optim.simulate(
-        amp, params, predicted_params_values.detach().numpy()
+        amp, params, predicted_params_values.cpu().detach().numpy()
     )
     simulated_data = optim.resample_voltage(
         V=simulated_data.reshape((1, -1)), num_obs=target_V.shape[1]
@@ -90,7 +90,9 @@ def save_mse_corr(
         params = [
             p["channel"] for p in simulation_config["optimization_parameters"]["params"]
         ]
-        sim_data = optim.simulate(amp, params, predicted_params_values.detach().numpy())
+        sim_data = optim.simulate(
+            amp, params, predicted_params_values.cpu().detach().numpy()
+        )
         simulated_data = optim.resample_voltage(
             V=sim_data.reshape((1, -1)), num_obs=target_V.shape[1]
         )
