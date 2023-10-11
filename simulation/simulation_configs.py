@@ -194,6 +194,7 @@ LA_A_seg = {
             {"channel": "gsAHPbar_sAHP", "high": 0.026996, "low": 0.0029996},
         ],
         "skip_match_voltage": True,
+        "decimate_factor": 10,
         "target_V": None,  # Target voltages
         "target_params": [
             0.000142,

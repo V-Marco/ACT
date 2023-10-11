@@ -41,6 +41,18 @@ def _run(config: SimulationConfig):
         target_V = config["optimization_parameters"]["target_V"]
     elif config["optimization_parameters"]["target_params"] is not None:
         target_V = get_voltage_trace_from_params(config)
+        decimate_factor = config["optimization_parameters"].get("decimate_factor")
+        if decimate_factor:
+            print(
+                f"decimate_factor set - reducing generated target voltage by {decimate_factor}x"
+            )
+            from scipy import signal
+
+            traces = signal.decimate(
+                target_V.cpu(), decimate_factor
+            ).copy()  # copy per neg index err
+            target_V = torch.tensor(traces)
+
     else:
         raise ValueError(
             "Must specify either target_V or target_params for optimization_parameters"
@@ -69,6 +81,15 @@ def _run(config: SimulationConfig):
         sims = []
         for amp in config["optimization_parameters"]["amps"]:
             sims.append(optim.simulate(amp, params, predictions).reshape(1, -1))
+        decimate_factor = config["optimization_parameters"].get("decimate_factor")
+        if decimate_factor:
+            print(f"decimate_factor set - reducing sims voltage by {decimate_factor}x")
+            from scipy import signal
+
+            sims = [
+                torch.tensor(signal.decimate(sim.cpu(), decimate_factor).copy())
+                for sim in sims
+            ]
         sims = torch.cat(sims, dim=0)
 
         # Compute composite error
@@ -125,10 +146,10 @@ def _run(config: SimulationConfig):
             amp_i = config["optimization_parameters"]["amps"][i]
             target_Vi = target_V[i].reshape(1, -1)
             simulated_Vi = save_prediction_plots(
-                target_Vi,
+                target_Vi.cpu().detach().numpy(),
                 config["optimization_parameters"]["amps"][i],
                 config,
-                predictions,
+                predictions.cpu().detach().numpy(),
                 output_folder,
             )
             simulated_V_out.append(simulated_Vi)

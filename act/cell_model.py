@@ -38,7 +38,10 @@ class CellModel:
         self.g_bar_leak = None
 
     def set_parameters(self, parameter_list: list, parameter_values: list) -> None:
-        for sec in self.all:
+        return CellModel.set_params(self.all, parameter_list, parameter_values)
+
+    def set_params(sec_list, parameter_list: list, parameter_values: list) -> None:
+        for sec in sec_list:
             for index, key in enumerate(parameter_list):
                 setattr(sec, key, parameter_values[index])
 
@@ -49,6 +52,11 @@ class CellModel:
 
     def set_passive_properties(
         self, passive_properties: act_types.PassiveProperties
+    ) -> None:
+        return CellModel.set_passive_props(self.all, passive_properties, self.soma)
+
+    def set_passive_props(
+        sec_list, passive_properties: act_types.PassiveProperties, soma
     ) -> None:
         if passive_properties:
             v_rest = passive_properties.get("v_rest")  # mV
@@ -62,13 +70,13 @@ class CellModel:
             # ELeak = Vrest
             if v_rest and eleak_var:
                 print(f"Setting {eleak_var} = {v_rest}")
-                self.set_parameters([eleak_var], [v_rest])
+                CellModel.set_params(sec_list, [eleak_var], [v_rest])
             else:
                 print(
                     f"Skipping analytical setting of e_leak variable. Cell v_rest and/or leak_reversal_variable not specified in config."
                 )
 
-            for sec in self.all:
+            for sec in sec_list:
                 # Rin = 1/(Area*g_bar_leak)
                 # g_bar leak = 1/(Rin*Area)
                 area = sec(
@@ -78,7 +86,7 @@ class CellModel:
                     g_bar_leak = 1 / (r_in * area) * 1e2  # area m to cm?
                     print(f"Setting {sec}.{gleak_var} = {g_bar_leak:.8f}")
                     setattr(sec, gleak_var, g_bar_leak)
-                    if sec == self.soma:
+                    if sec == soma:
                         g_bar_leak = g_bar_leak
 
                     if tau:

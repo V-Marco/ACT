@@ -180,11 +180,18 @@ class ACTOptimizer:
         return props, passive_vec
 
     def resample_voltage(self, V: torch.Tensor, num_obs: int) -> torch.Tensor:
-        resampled_data = []
-        for i in range(V.shape[0]):
-            resampled_data.append(resample(x=V[i], num=num_obs))
-        resampled_data = torch.tensor(np.array(resampled_data)).float()
-        return resampled_data
+        if not V.shape[-1] == num_obs:
+            print(
+                f"resampling traces from shape {V.shape[-1]} to {num_obs} to match target shape"
+            )
+            resampled_data = []
+            for i in range(V.shape[0]):
+                resampled_data.append(resample(x=V[i].cpu(), num=num_obs))
+            resampled_data = torch.tensor(np.array(resampled_data)).float()
+            return resampled_data
+        else:
+            print("resampling of traces not needed, same shape as target")
+            return V
 
     def update_param_vars(self) -> None:
         self.num_ampl = len(self.config["optimization_parameters"]["amps"])
@@ -309,7 +316,7 @@ class GeneralACTOptimizer(ACTOptimizer):
 
         # Train model
         self.train_model(
-            resampled_data,
+            resampled_data.float(),
             param_samples_for_next_stage,
             lows,
             highs,
@@ -318,7 +325,7 @@ class GeneralACTOptimizer(ACTOptimizer):
 
         # Predict and take max across ci to prevent underestimating
         predictions = self.predict_with_model(
-            resampled_data, lows, highs, summary_features
+            resampled_data.float(), lows, highs, summary_features
         )
         predictions = torch.max(predictions, dim=0).values
 
@@ -422,7 +429,7 @@ class GeneralACTOptimizer(ACTOptimizer):
                 summary_features=summary_features,
             )
             self.train_model(
-                cut_target_V,
+                cut_target_V.float(),
                 param_samples_for_next_stage[:, param_ind],
                 lows=lows,
                 highs=highs,

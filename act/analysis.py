@@ -54,19 +54,32 @@ def save_prediction_plots(
     params = [
         p["channel"] for p in simulation_config["optimization_parameters"]["params"]
     ]
-    simulated_data = optim.simulate(
-        amp, params, predicted_params_values.cpu().detach().numpy()
+    simulated_data = optim.simulate(amp, params, predicted_params_values)
+    decimate_factor = simulation_config["optimization_parameters"].get(
+        "decimate_factor"
     )
-    simulated_data = optim.resample_voltage(
-        V=simulated_data.reshape((1, -1)), num_obs=target_V.shape[1]
-    )
+    if decimate_factor:
+        print(f"decimate_factor set - reducing sims voltage by {decimate_factor}x")
+        from scipy import signal
+
+        simulated_data = torch.tensor(
+            signal.decimate(simulated_data.cpu(), decimate_factor).copy()
+        )
+    if simulated_data.reshape((1, -1)).shape[1] != target_V.shape[1]:
+        simulated_data = optim.resample_voltage(
+            V=simulated_data.reshape((1, -1)), num_obs=target_V.shape[1]
+        )
+    else:
+        simulated_data = simulated_data.reshape((1, -1))
     dt = simulation_config["simulation_parameters"]["h_dt"]
+    if decimate_factor:
+        dt = dt * decimate_factor
     simulated_label = simulation_config["output"].get("simulated_label", "Simulated")
     target_label = simulation_config["output"].get("target_label", "Target")
     save_plot(
         amp,
         output_folder,
-        simulated_data,
+        simulated_data.cpu().detach().numpy(),
         target_V,
         dt=dt,
         simulated_label=simulated_label,
@@ -93,9 +106,24 @@ def save_mse_corr(
         sim_data = optim.simulate(
             amp, params, predicted_params_values.cpu().detach().numpy()
         )
-        simulated_data = optim.resample_voltage(
-            V=sim_data.reshape((1, -1)), num_obs=target_V.shape[1]
+        decimate_factor = simulation_config["optimization_parameters"].get(
+            "decimate_factor"
         )
+        if decimate_factor:
+            print(f"decimate_factor set - reducing sims voltage by {decimate_factor}x")
+            from scipy import signal
+
+            sim_data = torch.tensor(
+                signal.decimate(sim_data.cpu(), decimate_factor).copy()
+            )
+
+        if sim_data.reshape((1, -1)).shape[1] != target_V.shape[1]:
+            simulated_data = optim.resample_voltage(
+                V=sim_data.reshape((1, -1)), num_obs=target_V.shape[1]
+            )
+        else:
+            simulated_data = sim_data.reshape((1, -1))
+
         mse = mse_score(target_V[ind].reshape(-1, 1), simulated_data.reshape(-1, 1))
         corr = correlation_score(
             target_V[ind].reshape(1, -1), simulated_data.reshape(1, -1)

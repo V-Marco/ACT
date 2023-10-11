@@ -50,6 +50,7 @@ class OptimizationParameters(TypedDict):
     num_amps_to_match: int
     num_epochs: int
     parametric_distribution: ParametricDistribution
+    decimate_factor: int  # reduce voltage traces after simulation
 
 
 class SummaryFeatures:

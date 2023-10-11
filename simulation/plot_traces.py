@@ -7,12 +7,16 @@ from act import utils
 import torch
 import numpy as np
 
+from simulation_configs import LA_A_seg
+
+config = LA_A_seg
+
 
 def plot_trace(
     amp: float,
     target_V=None,
     label="Simulated",
-    dt=0.025,
+    dt=0.1,
 ):
     _, ax = plt.subplots(1, 1, figsize=(10, 10))
     title = f"I = {(amp * 1000):.0f} nA"
@@ -29,7 +33,7 @@ def plot_trace(
 
 
 def stats(traces, params_dict):
-    traces_t, params_t, amps_t = utils.load_parametric_traces(None)
+    traces_t, params_t, amps_t = utils.load_parametric_traces(config)
     traces, params, amps = (
         traces_t.detach().numpy(),
         params_t.detach().numpy(),

@@ -11,6 +11,7 @@ from neuron import h
 import torch
 
 from act.act_types import SimulationConfig
+from act.cell_model import CellModel
 
 pc = h.ParallelContext()  # object to access MPI methods
 MPI_RANK = int(pc.id())
@@ -237,6 +238,7 @@ def generate_parametric_traces(config: SimulationConfig):
     traces for a large collection of cells and generates an h5
     file for injestion later.
     """
+    passive_properties = config.get("cell", {}).get("passive_properties", None)
     config_file = "simulation_act_simulation_config.json"
     parameter_values_file = "parameter_values.json"
     with open(parameter_values_file) as f:
@@ -260,6 +262,10 @@ def generate_parametric_traces(config: SimulationConfig):
         cell = cells[c_ind]
         # since we create n_amps number of cells * the parametric distribution we just want to loop around each time the amps change
         parameter_values = parameter_values_list[cell.gid % n_param_values]
+        if passive_properties:
+            CellModel.set_passive_props(
+                cell.hobj.all, passive_properties, cell.hobj.soma[0]
+            )
         set_cell_parameters(cell.hobj, params, parameter_values)
 
     # Run the Simulation
@@ -290,6 +296,15 @@ def load_parametric_traces(config: SimulationConfig):
     # reorder to match parameters set
     order = list(traces_h5["report"]["biocell"]["mapping"]["node_ids"])
     traces = traces[order]
+
+    decimate_factor = config["optimization_parameters"].get("decimate_factor")
+    if decimate_factor:
+        print(f"decimate_factor set - reducing dataset by {decimate_factor}x")
+        from scipy import signal
+
+        traces = signal.decimate(
+            traces, decimate_factor
+        ).copy()  # copy per neg index err
 
     import torch
 
