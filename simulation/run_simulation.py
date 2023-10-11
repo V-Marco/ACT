@@ -8,6 +8,6 @@ from simulation_configs import (
 from act import simulator
 
 if __name__ == "__main__":
-    config = LA_A_seg
+    config = pospischilsPYr_passive
 
     p = simulator.run(config, subprocess=False)

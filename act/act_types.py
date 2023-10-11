@@ -38,6 +38,7 @@ class OptimizationParam(TypedDict):
 class ParametricDistribution(TypedDict):
     n_slices: int  # slice each variable min to max, into n equal slices
     simulations_per_amp: int  # each amp will be split equally
+    amps: List[float] # used when generating traces
 
 
 class OptimizationParameters(TypedDict):

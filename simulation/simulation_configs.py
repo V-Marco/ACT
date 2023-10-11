@@ -51,7 +51,7 @@ pospischilsPY: SimulationConfig = {
         },
     ],
     "output": {"folder": "output_Pospischil_sPY", "produce_plots": True},
-    "run_mode": "segregated",  # "original", "segregated"
+    "run_mode": "original",  # "original", "segregated"
 }
 
 
@@ -105,7 +105,7 @@ pospischilsPYr: SimulationConfig = {
         },
     ],
     "output": {"folder": "output_Pospischil_sPYr", "produce_plots": True},
-    "run_mode": "segregated",  # "original", "segregated"
+    "run_mode": "original",  # "original", "segregated"
 }
 
 pospischilsPYr_passive: SimulationConfig = {
@@ -141,6 +141,11 @@ pospischilsPYr_passive: SimulationConfig = {
         "num_repeats": 3,
         "num_amps_to_match": 12,
         "num_epochs": 5000,
+        "skip_match_voltage": True,
+        "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
+            "n_slices": 5,
+            "amps": list(np.arange(0.05, 3.5, 0.75)),  # list(np.arange(0.0, 3.0, 1.0))
+        },
     },
     "summary_features": {
         "spike_threshold": 20,  # (mV)
@@ -159,7 +164,7 @@ pospischilsPYr_passive: SimulationConfig = {
         },
     ],
     "output": {"folder": "output_Pospischil_sPYr_p", "produce_plots": True},
-    "run_mode": "segregated",  # "original", "segregated"
+    "run_mode": "original",  # "original", "segregated"
 }
 
 LA_A_seg = {

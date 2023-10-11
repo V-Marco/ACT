@@ -10,7 +10,7 @@ import sys
 from act.utils import build_parametric_network, generate_parametric_traces
 
 if __name__ == "__main__":
-    config = LA_A_seg
+    config = pospischilsPYr_passive
     if "build" in sys.argv:
         build_parametric_network(config)
     else:
