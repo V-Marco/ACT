@@ -1,8 +1,5 @@
 import torch
 
-# We can potentially add CNN layers before Linear layers
-
-
 class SimpleNet(torch.nn.Module):
     def __init__(self, in_channels, out_channels, summary_features):
         super().__init__()
@@ -41,7 +38,6 @@ class BranchingNet(torch.nn.Module):
         return self.sigmoid(voltage_out + summary_out)
 
 
-# @CHECK
 class EmbeddingNet(torch.nn.Module):
     def __init__(self, in_channels, out_channels, summary_features):
         super().__init__()
@@ -61,4 +57,39 @@ class EmbeddingNet(torch.nn.Module):
 
     def forward(self, X, summary_features):
         embedding = self.embedder(X)
+        return self.predictor(torch.cat((embedding, summary_features)))
+    
+
+class ConvolutionEmbeddingNet(torch.nn.Module):
+    def __init__(self, in_channels, out_channels, summary_features):
+        super().__init__()
+        self.embedder = torch.nn.Sequential(
+            torch.nn.Conv1d(in_channels = 1, out_channels = 8, kernel_size = 5, padding = "same"),
+            torch.nn.Conv1d(in_channels = 8, out_channels = 8, kernel_size = 5, padding = "same"),
+            torch.nn.ReLU(),
+            torch.nn.Dropout(0.5),
+            torch.nn.Conv1d(in_channels = 8, out_channels = 8, kernel_size = 5, padding = "same"),
+            torch.nn.Conv1d(in_channels = 8, out_channels = 1, kernel_size = 5, padding = "same"),
+            torch.nn.ReLU(),
+            torch.nn.Flatten(),
+            torch.nn.Linear(in_channels, 64),
+            torch.nn.ReLU()
+        )
+        self.predictor = torch.nn.Sequential(
+            torch.nn.Linear(64 + summary_features.shape[-1], 256),
+            torch.nn.ReLU(),
+            torch.nn.Linear(256, out_channels),
+            torch.nn.Sigmoid(),
+        )
+
+    def forward(self, X, summary_features):
+        # Potentially support batches
+        if len(X.shape) == 1:
+            X = X.reshape(1, 1, X.shape[0])
+        if len(X.shape) == 2:
+            X = X.reshape(X.shape[0], 1, X.shape[1])
+
+        # The embedder's output is (1, ...), flatten for concatenation
+        embedding = self.embedder(X).flatten()
+
         return self.predictor(torch.cat((embedding, summary_features)))

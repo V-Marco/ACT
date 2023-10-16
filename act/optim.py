@@ -6,7 +6,7 @@ from scipy.signal import resample
 from act.act_types import PassiveProperties, SimulationConfig
 from act.cell_model import CellModel
 from act.logger import ACTDummyLogger
-from act.models import BranchingNet, EmbeddingNet, SimpleNet
+from act.models import BranchingNet, EmbeddingNet, SimpleNet, ConvolutionEmbeddingNet
 from act import utils
 
 
@@ -458,7 +458,8 @@ class GeneralACTOptimizer(ACTOptimizer):
     ) -> torch.nn.Sequential:
         # ModelClass = SimpleNet
         # ModelClass = BranchingNet
-        ModelClass = EmbeddingNet
+        # ModelClass = EmbeddingNet
+        ModelClass = ConvolutionEmbeddingNet
         model = ModelClass(in_channels, out_channels, summary_features)
         return model
 
