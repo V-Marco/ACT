@@ -315,24 +315,22 @@ class GeneralACTOptimizer(ACTOptimizer):
                     ampl_next_stage,
                     torch.flatten(num_spikes_simulated),
                     torch.flatten(simulated_interspike_times),
-                    first_n_spikes,
-                    avg_spike_min,
-                    avg_spike_max,
-                    coefs,
+                    avg_spike_min.flatten().T,
+                    avg_spike_max.flatten().T,
                 )
             )
+            summary_features = torch.cat((summary_features.T, first_n_spikes, coefs),dim=1)
         else:
             summary_features = torch.stack(
                 (
                     ampl_next_stage,
                     torch.flatten(num_spikes_simulated),
                     torch.flatten(simulated_interspike_times),
-                    first_n_spikes,
-                    avg_spike_min,
-                    avg_spike_max,
+                    avg_spike_min.flatten().T,
+                    avg_spike_max.flatten().T,
                 )
             )
-        summary_features = torch.transpose(summary_features, 0, 1).float()
+            summary_features = torch.cat((summary_features.T, first_n_spikes),dim=1)
 
         self.model = self.init_nn_model(
             in_channels=target_V.shape[1],
@@ -377,23 +375,22 @@ class GeneralACTOptimizer(ACTOptimizer):
                     ampl_next_stage,
                     torch.flatten(num_spikes_simulated),
                     torch.flatten(simulated_interspike_times),
-                    first_n_spikes,
-                    avg_spike_min,
-                    avg_spike_max,
-                    coefs,
+                    avg_spike_min.flatten().T,
+                    avg_spike_max.flatten().T,
                 )
             )
+            target_summary_features = torch.cat((target_summary_features.T, first_n_spikes, coefs),dim=1)
         else:
             target_summary_features = torch.stack(
                 (
                     ampl_next_stage,
                     torch.flatten(num_spikes_simulated),
                     torch.flatten(simulated_interspike_times),
-                    first_n_spikes,
-                    avg_spike_min,
-                    avg_spike_max,
+                    avg_spike_min.flatten().T,
+                    avg_spike_max.flatten().T,
                 )
             )
+            target_summary_features = torch.cat((target_summary_features.T, first_n_spikes,),dim=1)
 
         predictions = self.predict_with_model(
             resampled_data.float(), lows, highs, target_summary_features
