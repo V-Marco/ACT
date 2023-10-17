@@ -12,7 +12,7 @@ def main():
     #    pospischilsPYr["run_mode"] = mode
     #    analysis.print_run_stats(pospischilsPYr)
 
-    analysis.print_run_stats(LA_A_seg)
+    analysis.print_run_stats(pospischilsPYr_passive)
 
 
 if __name__ == "__main__":

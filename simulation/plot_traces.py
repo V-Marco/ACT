@@ -7,9 +7,9 @@ from act import utils
 import torch
 import numpy as np
 
-from simulation_configs import LA_A_seg
+from simulation_configs import LA_A_seg, pospischilsPYr_passive
 
-config = LA_A_seg
+config = pospischilsPYr_passive
 
 
 def plot_trace(
@@ -18,6 +18,9 @@ def plot_trace(
     label="Simulated",
     dt=0.1,
 ):
+    decimate_factor = config["optimization_parameters"].get("decimate_factor")
+    if decimate_factor:
+        dt = dt * decimate_factor
     _, ax = plt.subplots(1, 1, figsize=(10, 10))
     title = f"I = {(amp * 1000):.0f} nA"
     if target_V is not None:
@@ -35,9 +38,9 @@ def plot_trace(
 def stats(traces, params_dict):
     traces_t, params_t, amps_t = utils.load_parametric_traces(config)
     traces, params, amps = (
-        traces_t.detach().numpy(),
-        params_t.detach().numpy(),
-        amps_t.detach().numpy(),
+        traces_t.cpu().detach().numpy(),
+        params_t.cpu().detach().numpy(),
+        amps_t.cpu().detach().numpy(),
     )
 
     amp_list = list(set(amps))
@@ -50,7 +53,9 @@ def stats(traces, params_dict):
         traces_t, params_t, amps_t
     )
     cell_id = 0
-    plot_trace(spiking_amps[cell_id], spiking_traces[cell_id], f"Cell {cell_id}")
+    plot_trace(
+        spiking_amps[cell_id].cpu(), spiking_traces[cell_id].cpu(), f"Cell {cell_id}"
+    )
 
     import pdb
 

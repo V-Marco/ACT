@@ -13,5 +13,8 @@ dependencies = [
     "NEURON>=8.2.0",
     "numpy",
     "matplotlib",
-    "torch"
+    "torch",
+    "pandas",
+    "timeout_decorator",
+    "statsmodels",
 ]

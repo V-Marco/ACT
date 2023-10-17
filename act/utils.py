@@ -2,13 +2,18 @@ import json
 import os
 import shutil
 import h5py
+from io import StringIO
 
 import numpy as np
 from bmtk.builder.networks import NetworkBuilder
 from bmtk.simulator import bionet
 from bmtk.utils.sim_setup import build_env_bionet
 from neuron import h
+import pandas as pd
+from statsmodels.tsa.arima.model import ARIMA
 import torch
+import timeout_decorator
+import multiprocessing as mp
 
 from act.act_types import SimulationConfig
 from act.cell_model import CellModel
@@ -274,6 +279,20 @@ def generate_parametric_traces(config: SimulationConfig):
     # Save traces/parameters and cleanup
 
 
+def apply_decimate_factor(config: SimulationConfig, traces):
+    decimate_factor = config["optimization_parameters"].get("decimate_factor")
+    if decimate_factor:
+        if isinstance(traces, torch.Tensor):
+            traces = traces.cpu().detach().numpy()
+        print(f"decimate_factor set - reducing dataset by {decimate_factor}x")
+        from scipy import signal
+
+        traces = signal.decimate(
+            traces, decimate_factor
+        ).copy()  # copy per neg index err
+    return torch.tensor(traces)
+
+
 def load_parametric_traces(config: SimulationConfig):
     """
     Return a torch tensor of all traces in the specified h5 file
@@ -297,18 +316,43 @@ def load_parametric_traces(config: SimulationConfig):
     order = list(traces_h5["report"]["biocell"]["mapping"]["node_ids"])
     traces = traces[order]
 
-    decimate_factor = config["optimization_parameters"].get("decimate_factor")
-    if decimate_factor:
-        print(f"decimate_factor set - reducing dataset by {decimate_factor}x")
-        from scipy import signal
-
-        traces = signal.decimate(
-            traces, decimate_factor
-        ).copy()  # copy per neg index err
+    traces = apply_decimate_factor(config, traces)
 
     import torch
 
-    return torch.tensor(traces), torch.tensor(parameter_values_list), torch.tensor(amps)
+    return traces, torch.tensor(parameter_values_list), torch.tensor(amps)
+
+
+def spike_stats(V: torch.Tensor, threshold=0, n_spikes=20):
+    threshold = 0
+    threshold_crossings = torch.diff(V > threshold, dim=1)
+
+    first_n_spikes = torch.zeros((V.shape[0], n_spikes))
+    avg_spike_min = torch.zeros((V.shape[0], 1))
+    avg_spike_max = torch.zeros((V.shape[0], 1))
+    for i in range(threshold_crossings.shape[0]):
+        threshold_crossing_times = torch.arange(threshold_crossings.shape[1])[
+            threshold_crossings[i, :]
+        ]
+        spike_times = []
+        spike_mins = []
+        spike_maxes = []
+        for j in range(0, threshold_crossing_times.shape[0], 2):
+            spike_times.append(threshold_crossing_times[j])
+            ind = threshold_crossing_times[j : j + 2].cpu().tolist()
+            end_ind = ind[1] if len(ind) == 2 else V.shape[1]
+            spike_maxes.append(
+                V[i][max(0, ind[0] - 1) : min(end_ind + 5, V.shape[1])].max()
+            )
+            spike_mins.append(
+                V[i][max(0, ind[0] - 1) : min(end_ind + 5, V.shape[1])].min()
+            )
+        first_n_spikes[i][: min(n_spikes, len(spike_times))] = torch.tensor(
+            spike_times
+        ).flatten()[: min(n_spikes, len(spike_times))]
+        avg_spike_max[i] = torch.mean(torch.tensor(spike_maxes).flatten())
+        avg_spike_min[i] = torch.mean(torch.tensor(spike_mins).flatten())
+    return first_n_spikes / V.shape[1], avg_spike_min, avg_spike_max
 
 
 def extract_summary_features(V: torch.Tensor, threshold=0) -> tuple:
@@ -338,3 +382,70 @@ def extract_spiking_traces(traces_t, params_t, amps_t, threshold=0, min_spikes=1
     spiking_amps = amps_t[spiking_gids]
     print(f"{len(spiking_traces)}/{len(traces_t)} spiking traces extracted.")
     return spiking_traces, spiking_params, spiking_amps
+
+
+def get_arima_coefs(trace: np.array):
+    model = ARIMA(endog=trace, order=(10, 0, 10)).fit()
+    stats_df = pd.read_csv(
+        StringIO(model.summary().tables[1].as_csv()),
+        index_col=0,
+        skiprows=1,
+        names=["coef", "std_err", "z", "significance", "0.025", "0.975"],
+    )
+    stats_df.loc[stats_df["significance"].astype(float) > 0.05, "coef"] = 0
+    coefs = stats_df.coef.tolist()
+    return coefs
+
+
+def arima_processor(trace_dict):
+    @timeout_decorator.timeout(180, use_signals=True, timeout_exception=Exception)
+    def arima_run(trace):
+        return get_arima_coefs(trace)
+
+    cell_id = trace_dict["cell_id"]
+    trace = trace_dict["trace"]
+    total = trace_dict["total"]
+    print(f"processing cell {cell_id+1}/{total}")
+
+    try:
+        coefs = arima_run(trace)
+    except Exception as e:
+        print(f"problem processing cell {cell_id}: {e} | setting all values to 0.0")
+        coefs = [0.0 for _ in range(22)]
+
+    trace_dict["coefs"] = coefs
+    return trace_dict
+
+
+def arima_coefs_proc_map(traces, num_procs=64, output_file="output/arima_stats.json"):
+    trace_list = []
+    traces = traces.cpu().detach().tolist()
+    num_traces = len(traces)
+    for i, trace in enumerate(traces):
+        trace_list.append({"cell_id": i, "trace": trace, "total": num_traces})
+    with mp.Pool(num_procs) as pool:
+        pool_output = pool.map_async(arima_processor, trace_list).get()
+    # ensure ordering
+    pool_dict = {}
+    for out in pool_output:
+        pool_dict[out["cell_id"]] = out["coefs"]
+    coefs_list = []
+    for i in range(num_traces):
+        if pool_dict.get(i):
+            coefs_list.append(pool_dict[i])
+        else:  # we didn't complete that task, was not found
+            coefs_list.append([0 for _ in range(22)])  # TODO static value
+
+    output_dict = {}
+    output_dict["arima_coefs"] = coefs_list
+
+    with open(output_file, "w") as fp:
+        json.dump(output_dict, fp, indent=4)
+
+    return coefs_list
+
+
+def load_arima_coefs(input_file="output/arima_stats.json"):
+    with open(input_file) as json_file:
+        arima_dict = json.load(json_file)
+    return torch.tensor(arima_dict["arima_coefs"])

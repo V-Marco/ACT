@@ -2,6 +2,7 @@ import numpy as np
 import torch
 from neuron import h
 from scipy.signal import resample
+import os
 
 from act.act_types import PassiveProperties, SimulationConfig
 from act.cell_model import CellModel
@@ -222,6 +223,9 @@ class GeneralACTOptimizer(ACTOptimizer):
                 param_samples_for_next_stage,
                 ampl_next_stage,
             ) = self.match_voltage(target_V)
+            simulated_V_for_next_stage = utils.apply_decimate_factor(
+                self.config, simulated_V_for_next_stage
+            )
         else:
             (
                 simulated_V_for_next_stage,
@@ -252,11 +256,17 @@ class GeneralACTOptimizer(ACTOptimizer):
         ) = utils.load_parametric_traces(self.config)
         if simulated_V_dist is None:
             if n_slices > 1:
+                print(
+                    f"n_slices variable set, but no traces have been generated previously"
+                )
+                print(f"Generate parametric traces prior to running")
+                """
                 (
                     simulated_V_dist,
                     param_samples_dist,
                     simulated_amps,
                 ) = self.get_parametric_distribution(n_slices, simulations_per_amp)
+                """
             else:
                 print(
                     f"Parametric distribution parameters 'n_slices' not set, skipping."
@@ -290,14 +300,38 @@ class GeneralACTOptimizer(ACTOptimizer):
             num_spikes_simulated,
             simulated_interspike_times,
         ) = self.extract_summary_features(simulated_V_for_next_stage)
-
-        summary_features = torch.stack(
-            (
-                ampl_next_stage,
-                torch.flatten(num_spikes_simulated),
-                torch.flatten(simulated_interspike_times),
-            )
+        # spike_stats
+        (first_n_spikes, avg_spike_min, avg_spike_max) = utils.spike_stats(
+            simulated_V_for_next_stage
         )
+        coefs_loaded = False
+        if os.path.exists("output/arima_stats.json"):
+            coefs_loaded = True
+            coefs = utils.load_arima_coefs(input_file="output/arima_stats.json")
+
+        if coefs_loaded:
+            summary_features = torch.stack(
+                (
+                    ampl_next_stage,
+                    torch.flatten(num_spikes_simulated),
+                    torch.flatten(simulated_interspike_times),
+                    first_n_spikes,
+                    avg_spike_min,
+                    avg_spike_max,
+                    coefs,
+                )
+            )
+        else:
+            summary_features = torch.stack(
+                (
+                    ampl_next_stage,
+                    torch.flatten(num_spikes_simulated),
+                    torch.flatten(simulated_interspike_times),
+                    first_n_spikes,
+                    avg_spike_min,
+                    avg_spike_max,
+                )
+            )
         summary_features = torch.transpose(summary_features, 0, 1).float()
 
         self.model = self.init_nn_model(
@@ -324,8 +358,45 @@ class GeneralACTOptimizer(ACTOptimizer):
         )
 
         # Predict and take max across ci to prevent underestimating
+        (
+            num_spikes_simulated,
+            simulated_interspike_times,
+        ) = self.extract_summary_features(resampled_data.float())
+        (first_n_spikes, avg_spike_min, avg_spike_max) = utils.spike_stats(
+            resampled_data.float()
+        )
+
+        if coefs_loaded:
+            coefs = []
+            for data in resampled_data.cpu().detach().numpy():
+                coefs.append(utils.get_arima_coefs(data))
+            coefs = torch.tensor(coefs)
+
+            target_summary_features = torch.stack(
+                (
+                    ampl_next_stage,
+                    torch.flatten(num_spikes_simulated),
+                    torch.flatten(simulated_interspike_times),
+                    first_n_spikes,
+                    avg_spike_min,
+                    avg_spike_max,
+                    coefs,
+                )
+            )
+        else:
+            target_summary_features = torch.stack(
+                (
+                    ampl_next_stage,
+                    torch.flatten(num_spikes_simulated),
+                    torch.flatten(simulated_interspike_times),
+                    first_n_spikes,
+                    avg_spike_min,
+                    avg_spike_max,
+                )
+            )
+
         predictions = self.predict_with_model(
-            resampled_data.float(), lows, highs, summary_features
+            resampled_data.float(), lows, highs, target_summary_features
         )
         predictions = torch.max(predictions, dim=0).values
 

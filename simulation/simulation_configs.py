@@ -126,7 +126,7 @@ pospischilsPYr_passive: SimulationConfig = {
         "h_tstop": 2000,  # (ms)
         "h_i_delay": 500,  # (ms)
         "h_i_dur": 1500,  # (ms)
-        "h_dt": 0.025,
+        "h_dt": 0.1,
     },
     "optimization_parameters": {
         "amps": list(np.arange(-2, 10, 0.1)),
@@ -139,13 +139,14 @@ pospischilsPYr_passive: SimulationConfig = {
         "target_V": None,  # Target voltages
         "target_params": [0.05, 0.005, 3e-5, 0.001],
         "num_repeats": 3,
-        "num_amps_to_match": 12,
+        "num_amps_to_match": 1,
         "num_epochs": 5000,
-        "skip_match_voltage": True,
+        "skip_match_voltage": False,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
             "amps": list(np.arange(0.05, 3.5, 0.75)),  # list(np.arange(0.0, 3.0, 1.0))
         },
+        "decimate_factor": 10,
     },
     "summary_features": {
         "spike_threshold": 20,  # (mV)
