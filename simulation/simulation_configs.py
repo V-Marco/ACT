@@ -129,7 +129,7 @@ pospischilsPYr_passive: SimulationConfig = {
         "h_dt": 0.1,
     },
     "optimization_parameters": {
-        "amps": list(np.arange(-2, 10, 0.1)),
+        "amps": list(np.arange(-0.1, 4.1, 0.5)),
         "params": [
             {"channel": "gnabar_hh2", "low": 2.5e-02, "high": 1.0e-01},
             {"channel": "gkbar_hh2", "low": 2.5e-03, "high": 1.0e-02},
@@ -138,10 +138,10 @@ pospischilsPYr_passive: SimulationConfig = {
         ],
         "target_V": None,  # Target voltages
         "target_params": [0.05, 0.005, 3e-5, 0.001],
-        "num_repeats": 3,
+        "num_repeats": 1,
         "num_amps_to_match": 1,
         "num_epochs": 5000,
-        "skip_match_voltage": False,
+        "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
             "amps": list(np.arange(0.05, 3.5, 0.75)),  # list(np.arange(0.0, 3.0, 1.0))

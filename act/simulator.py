@@ -96,7 +96,12 @@ def _run(config: SimulationConfig):
         error = mse_score(target_V, sims) + (1 - abs(correlation_score(target_V, sims)))
         err_pool.append(error)
 
+    print(f"All predictions: {pred_pool}")
+    print(f"Err per prediction: {err_pool}")
+
     predictions = pred_pool[np.argmin(err_pool)]
+
+    print(f"Best prediction: {predictions}")
 
     with open(os.path.join(output_folder, "config.json"), "w") as file:
         json.dump(config, file, indent=2)

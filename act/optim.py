@@ -289,13 +289,13 @@ class GeneralACTOptimizer(ACTOptimizer):
             print(f"Parametric distribution parameters not applied.")
 
         # extract only traces that have spikes in them
-        (
-            simulated_V_for_next_stage,
-            param_samples_for_next_stage,
-            ampl_next_stage,
-        ) = utils.extract_spiking_traces(
-            simulated_V_for_next_stage, param_samples_for_next_stage, ampl_next_stage
-        )
+        # (
+        #    simulated_V_for_next_stage,
+        #    param_samples_for_next_stage,
+        #    ampl_next_stage,
+        # ) = utils.extract_spiking_traces(
+        #    simulated_V_for_next_stage, param_samples_for_next_stage, ampl_next_stage
+        # )
         (
             num_spikes_simulated,
             simulated_interspike_times,
@@ -319,7 +319,9 @@ class GeneralACTOptimizer(ACTOptimizer):
                     avg_spike_max.flatten().T,
                 )
             )
-            summary_features = torch.cat((summary_features.T, first_n_spikes, coefs),dim=1)
+            summary_features = torch.cat(
+                (summary_features.T, first_n_spikes, coefs), dim=1
+            )
         else:
             summary_features = torch.stack(
                 (
@@ -330,7 +332,7 @@ class GeneralACTOptimizer(ACTOptimizer):
                     avg_spike_max.flatten().T,
                 )
             )
-            summary_features = torch.cat((summary_features.T, first_n_spikes),dim=1)
+            summary_features = torch.cat((summary_features.T, first_n_spikes), dim=1)
 
         self.model = self.init_nn_model(
             in_channels=target_V.shape[1],
@@ -346,6 +348,9 @@ class GeneralACTOptimizer(ACTOptimizer):
         lows = [p["low"] for p in self.config["optimization_parameters"]["params"]]
         highs = [p["high"] for p in self.config["optimization_parameters"]["params"]]
 
+        # remove any remaining nan values
+        summary_features[torch.isnan(summary_features)] = 0
+
         # Train model
         self.train_model(
             resampled_data.float(),
@@ -359,27 +364,30 @@ class GeneralACTOptimizer(ACTOptimizer):
         (
             num_spikes_simulated,
             simulated_interspike_times,
-        ) = self.extract_summary_features(resampled_data.float())
+        ) = self.extract_summary_features(target_V.float())
         (first_n_spikes, avg_spike_min, avg_spike_max) = utils.spike_stats(
-            resampled_data.float()
+            target_V.float()
         )
+        ampl_target = torch.tensor(self.config["optimization_parameters"]["amps"])
 
         if coefs_loaded:
             coefs = []
-            for data in resampled_data.cpu().detach().numpy():
+            for data in target_V.cpu().detach().numpy():
                 coefs.append(utils.get_arima_coefs(data))
             coefs = torch.tensor(coefs)
 
             target_summary_features = torch.stack(
                 (
-                    ampl_next_stage,
+                    ampl_target,
                     torch.flatten(num_spikes_simulated),
                     torch.flatten(simulated_interspike_times),
                     avg_spike_min.flatten().T,
                     avg_spike_max.flatten().T,
                 )
             )
-            target_summary_features = torch.cat((target_summary_features.T, first_n_spikes, coefs),dim=1)
+            target_summary_features = torch.cat(
+                (target_summary_features.T, first_n_spikes, coefs), dim=1
+            )
         else:
             target_summary_features = torch.stack(
                 (
@@ -390,10 +398,19 @@ class GeneralACTOptimizer(ACTOptimizer):
                     avg_spike_max.flatten().T,
                 )
             )
-            target_summary_features = torch.cat((target_summary_features.T, first_n_spikes,),dim=1)
+            target_summary_features = torch.cat(
+                (
+                    target_summary_features.T,
+                    first_n_spikes,
+                ),
+                dim=1,
+            )
+
+        # remove any remaining nan values
+        target_summary_features[torch.isnan(target_summary_features)] = 0
 
         predictions = self.predict_with_model(
-            resampled_data.float(), lows, highs, target_summary_features
+            target_V.float(), lows, highs, target_summary_features.float()
         )
         predictions = torch.max(predictions, dim=0).values
 
