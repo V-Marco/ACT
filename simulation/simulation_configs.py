@@ -344,3 +344,6 @@ LA_A_orig = {
     },
     "run_mode": "original",  # "original", "segregated"
 }
+
+
+selected_config = pospischilsPYr_passive

@@ -1,13 +1,7 @@
-from simulation_configs import (
-    LA_A_orig,
-    LA_A_seg,
-    pospischilsPYr,
-    pospischilsPYr_passive,
-)
+from simulation_configs import selected_config
 
 from act import simulator
 
 if __name__ == "__main__":
-    config = pospischilsPYr_passive
 
-    p = simulator.run(config, subprocess=False)
+    p = simulator.run(selected_config, subprocess=False)

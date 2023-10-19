@@ -161,7 +161,7 @@ def _run(config: SimulationConfig):
             target_V_out.append(target_Vi)
             amp_out.append(amp_i)
 
-            i += 5  # should be user variable
+            i += 1  # should be user variable
 
         # Save the voltage traces for debugging
         target_V_list = [list(t.cpu().detach().numpy()[0]) for t in target_V_out]

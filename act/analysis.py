@@ -159,7 +159,7 @@ def print_run_stats(config: SimulationConfig):
             target_passive_json = json.load(fp)
 
     preds = np.array(preds_df)
-    print(output_folder, ":", run_mode)
+    print(output_folder)
     print(f"Med MSE: {metrics['mse'].median():.4f} ({metrics['mse'].std():.4f})")
     print(f"Med Corr: {metrics['corr'].median():.4f} ({metrics['corr'].std():.4f})")
     print()

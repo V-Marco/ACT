@@ -7,9 +7,9 @@ from act import utils
 import torch
 import numpy as np
 
-from simulation_configs import LA_A_seg, pospischilsPYr_passive
+from simulation_configs import selected_config
 
-config = pospischilsPYr_passive
+config = selected_config
 
 
 def plot_trace(
