@@ -273,6 +273,8 @@ def generate_parametric_traces(config: SimulationConfig):
             )
         set_cell_parameters(cell.hobj, params, parameter_values)
 
+    pc.barrier()
+
     # Run the Simulation
     sim.run()
     bionet.nrn.quit_execution()

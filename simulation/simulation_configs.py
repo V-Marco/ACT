@@ -61,7 +61,7 @@ pospischilsPYr_orig: SimulationConfig = {
         "modfiles_folder": "../data/Pospischil/sPyr/orig_modfiles",
         "name": "sPYr",
         "passive_properties": {
-            "v_rest": -60,
+            "v_rest": -80,
             "r_in": 393.45,
             "tau": 117.425,
             "leak_conductance_variable": "g_pas",  # eg: g_leak
@@ -69,11 +69,11 @@ pospischilsPYr_orig: SimulationConfig = {
         },
     },
     "simulation_parameters": {
-        "h_v_init": -60.0,  # (mV)
+        "h_v_init": -80.0,  # (mV)
         "h_tstop": 2000,  # (ms)
         "h_i_delay": 500,  # (ms)
         "h_i_dur": 1500,  # (ms)
-        "h_dt": 0.025,
+        "h_dt": 0.1,
     },
     "optimization_parameters": {
         "amps": list(np.arange(-0.1, 4.1, 0.5)),
@@ -126,7 +126,7 @@ pospischilsPYr_seg: SimulationConfig = {
         "modfiles_folder": "../data/Pospischil/sPyr/seg_modfiles",
         "name": "sPYr",
         "passive_properties": {
-            "v_rest": -60,
+            "v_rest": -80,
             "r_in": 393.45,
             "tau": 117.425,
             "leak_conductance_variable": "g_pas",  # eg: g_leak
@@ -134,7 +134,7 @@ pospischilsPYr_seg: SimulationConfig = {
         },
     },
     "simulation_parameters": {
-        "h_v_init": -60.0,  # (mV)
+        "h_v_init": -80.0,  # (mV)
         "h_tstop": 2000,  # (ms)
         "h_i_delay": 500,  # (ms)
         "h_i_dur": 1500,  # (ms)
@@ -284,7 +284,7 @@ LA_A_orig = {
         "h_tstop": 2000,  # (ms)
         "h_i_delay": 500,  # (ms)
         "h_i_dur": 1500,  # (ms)
-        "h_dt": 0.025,
+        "h_dt": 0.1,
     },
     "optimization_parameters": {
         "amps": list(np.arange(-0.1, 3, 0.1)),  # list(np.arange(-2, 10, 0.1)),
