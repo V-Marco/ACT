@@ -373,7 +373,12 @@ class GeneralACTOptimizer(ACTOptimizer):
         if coefs_loaded:
             coefs = []
             for data in target_V.cpu().detach().numpy():
-                coefs.append(utils.get_arima_coefs(data))
+                try:
+                    c = utils.get_arima_coefs(data)
+                except:
+                    print("ERROR calculating coefs, setting all to 0")
+                    c = np.zeros(22) # will cause an error if coef params are changed
+                coefs.append(c)
             coefs = torch.tensor(coefs)
 
             target_summary_features = torch.stack(
