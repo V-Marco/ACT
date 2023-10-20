@@ -82,7 +82,6 @@ class CellModel:
                 area = sec(
                     0.5
                 ).area()  # have to specify the location to get access to area
-                import pdb;pdb.set_trace()
                 if r_in:
                     g_bar_leak = 1 / (r_in * area) * 1e2  # area m to cm?
                     print(f"Setting {sec}.{gleak_var} = {g_bar_leak:.8f}")

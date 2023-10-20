@@ -374,4 +374,4 @@ LA_A_orig = {
 }
 
 
-selected_config = pospischilsPYr_orig
+selected_config = pospischilsPYr_seg
