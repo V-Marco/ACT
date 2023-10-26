@@ -201,7 +201,7 @@ LA_A_seg = {
         "h_dt": 0.1,
     },
     "optimization_parameters": {
-        "amps": list(np.arange(-0.1, 3, 0.1)),
+        "amps": [-0.1, 0.3, 0.6, 1.2, 1.8],
         "params": [
             # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05}, # hd, passive
             {"channel": "gbar_nap", "high": 0.000426, "low": 4.736e-05},
@@ -226,7 +226,7 @@ LA_A_seg = {
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
-            "amps": list(np.arange(0.05, 3.5, 0.75)),  # list(np.arange(0.0, 3.0, 1.0))
+            "amps": [-0.1, 0.3, 0.6, 1.2, 1.8],  # list(np.arange(0.0, 3.0, 1.0))
         },
         "decimate_factor": 10,
     },
@@ -374,4 +374,4 @@ LA_A_orig = {
 }
 
 
-selected_config = pospischilsPYr_seg
+selected_config = LA_A_seg

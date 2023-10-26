@@ -396,7 +396,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         else:
             target_summary_features = torch.stack(
                 (
-                    ampl_next_stage,
+                    ampl_target,
                     torch.flatten(num_spikes_simulated),
                     torch.flatten(simulated_interspike_times),
                     avg_spike_min.flatten().T,
