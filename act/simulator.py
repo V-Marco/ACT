@@ -64,7 +64,7 @@ def _run(config: SimulationConfig):
     pred_pool = []
     err_pool = []
     params = [p["channel"] for p in config["optimization_parameters"]["params"]]
-    for _ in range(config["optimization_parameters"]["num_repeats"]):
+    for repeat_num in range(config["optimization_parameters"]["num_repeats"]):
         if config["run_mode"] == "original":
             optim = GeneralACTOptimizer(simulation_config=config, logger=logger)
             predictions = optim.optimize(target_V)
@@ -76,25 +76,50 @@ def _run(config: SimulationConfig):
                 "run mode not specified, 'original' or 'segregated' supported."
             )
 
-        pred_pool.append(predictions)
+        pred_pool = pred_pool + predictions.cpu().detach().tolist()
 
         sims = []
-        for amp in config["optimization_parameters"]["amps"]:
-            sims.append(optim.simulate(amp, params, predictions).reshape(1, -1))
+        # we want to simulate each amp with each param predicted
+        # the one with best overall error is our selection
+        for i, pred in enumerate(predictions.cpu().detach().tolist()):
+            sim_list = []
+            for j, amp in enumerate(config["optimization_parameters"]["amps"]):
+                sim_list.append(optim.simulate(amp, params, pred).reshape(1, -1))
+            sims.append(sim_list)
+
         decimate_factor = config["optimization_parameters"].get("decimate_factor")
         if decimate_factor:
             print(f"decimate_factor set - reducing sims voltage by {decimate_factor}x")
             from scipy import signal
 
-            sims = [
-                torch.tensor(signal.decimate(sim.cpu(), decimate_factor).copy())
-                for sim in sims
-            ]
-        sims = torch.cat(sims, dim=0)
+            sims = [[torch.tensor(signal.decimate(sim.cpu(), decimate_factor).copy()) for sim in sim_list] for sim_list in sims]
+        #sims = torch.cat(sims, dim=0)
 
         # Compute composite error
-        error = mse_score(target_V, sims) + (1 - abs(correlation_score(target_V, sims)))
-        err_pool.append(error)
+        for j, pred_sim in enumerate(sims):
+            total_error = 0
+            for i, sim in enumerate(pred_sim):
+                error = mse_score(target_V[i], sim) + (1 - abs(correlation_score(target_V[i], sim)))
+                total_error = total_error + error
+
+                amp = config["optimization_parameters"]["amps"][i]
+                # save prediction plot for debugging
+                save_prediction_plots(
+                    target_V[i].reshape(1,len(target_V[i])).cpu().detach(),
+                    amp,
+                    config,
+                    predictions.cpu().detach()[j],
+                    output_folder,
+                    output_file = f"repeat{repeat_num+1}_pred{j+1}_{(amp * 1000):.0f}nA.png"
+                )
+            err_pool.append(error)
+
+        # save prediction values
+        p_file = os.path.join(output_folder, f"repeat{repeat_num+1}_predictions.json")
+        pred_dict = {"predictions":predictions.cpu().detach().tolist()}
+        with open(p_file, "w") as fp:
+            json.dump(pred_dict , fp) 
+
 
     print(f"All predictions: {pred_pool}")
     print(f"Err per prediction: {err_pool}")
@@ -108,7 +133,7 @@ def _run(config: SimulationConfig):
 
     # Save predictions
     pred_df = pd.DataFrame(
-        dict(zip(params, predictions.cpu().detach().numpy())), index=[0]
+        dict(zip(params, predictions)), index=[0]
     )
 
     g_leak_var = optim.cell.gleak_var
@@ -121,7 +146,7 @@ def _run(config: SimulationConfig):
 
     # save passive properties
     passive_properties, passive_v = optim.calculate_passive_properties(
-        params, predictions.cpu().detach().numpy()
+        params, predictions
     )
     with open(
         os.path.join(output_folder, "pred_passive_properties.json"),
@@ -154,7 +179,7 @@ def _run(config: SimulationConfig):
                 target_Vi.cpu().detach().numpy(),
                 config["optimization_parameters"]["amps"][i],
                 config,
-                predictions.cpu().detach().numpy(),
+                predictions,
                 output_folder,
             )
             simulated_V_out.append(simulated_Vi)

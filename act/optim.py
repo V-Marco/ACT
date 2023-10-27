@@ -254,6 +254,13 @@ class GeneralACTOptimizer(ACTOptimizer):
             param_samples_dist,
             simulated_amps,
         ) = utils.load_parametric_traces(self.config)
+        #REMOVE TODO for testing quickly
+        #num_subs = 3000
+        #subset_target_ind = np.random.default_rng().choice(len(simulated_V_dist), size=num_subs, replace=False).tolist()
+        #simulated_V_dist = simulated_V_dist[subset_target_ind]
+        #param_samples_dist = param_samples_dist[subset_target_ind]
+        #simulated_amps = simulated_amps[subset_target_ind]
+
         if simulated_V_dist is None:
             if n_slices > 1:
                 print(
@@ -307,7 +314,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         coefs_loaded = False
         if os.path.exists("output/arima_stats.json"):
             coefs_loaded = True
-            coefs = utils.load_arima_coefs(input_file="output/arima_stats.json")
+            coefs = utils.load_arima_coefs(input_file="output/arima_stats.json") #[subset_target_ind] # TODO REMOVE for testing quickly
 
         if coefs_loaded:
             summary_features = torch.stack(
@@ -422,7 +429,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         predictions = self.predict_with_model(
             target_V.float(), lows, highs, target_summary_features.float()
         )
-        predictions = torch.max(predictions, dim=0).values
+        #predictions = torch.max(predictions, dim=0).values
 
         return predictions
 

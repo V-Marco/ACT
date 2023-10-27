@@ -25,10 +25,10 @@ def save_plot(
     title = f"I = {(amp * 1000):.0f} nA"
     if simulated_data is not None:
         times = np.arange(0, int(len(simulated_data.flatten()) * dt), dt)
-        ax.plot(times, simulated_data.flatten(), label=simulated_label)
+        ax.plot(times, simulated_data.flatten(), label=simulated_label, alpha=0.7)
     if target_V is not None:
         times = np.arange(0, int(len(target_V.flatten()) * dt), dt)
-        ax.plot(times, target_V.flatten(), label=target_label)
+        ax.plot(times, target_V.flatten(), label=target_label, alpha=0.7)
     ax.set_title(title)
     ax.set_xlabel("Timestamp (ms)")
     ax.set_ylabel("V (mV)")
@@ -49,6 +49,7 @@ def save_prediction_plots(
     simulation_config: SimulationConfig,
     predicted_params_values: torch.Tensor,
     output_folder: str,
+    output_file:str = None,
 ) -> np.ndarray:
     optim = ACTOptimizer(simulation_config=simulation_config)
     params = [
@@ -84,6 +85,7 @@ def save_prediction_plots(
         dt=dt,
         simulated_label=simulated_label,
         target_label=target_label,
+        output_file=output_file,
     )
 
     return simulated_data
@@ -92,7 +94,7 @@ def save_prediction_plots(
 def save_mse_corr(
     target_V: torch.Tensor,
     simulation_config: SimulationConfig,
-    predicted_params_values: torch.Tensor,
+    predicted_params_values: list,
     output_folder: str,
 ) -> None:
     with open(os.path.join(output_folder, "metrics.csv"), "w") as file:
@@ -104,7 +106,7 @@ def save_mse_corr(
             p["channel"] for p in simulation_config["optimization_parameters"]["params"]
         ]
         sim_data = optim.simulate(
-            amp, params, predicted_params_values.cpu().detach().numpy()
+            amp, params, predicted_params_values
         )
         decimate_factor = simulation_config["optimization_parameters"].get(
             "decimate_factor"
