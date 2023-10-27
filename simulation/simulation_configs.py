@@ -232,6 +232,7 @@ LA_A_seg = {
     },
     "summary_features": {
         "spike_threshold": 20,  # (mV)
+        "arima_order": [4,0,4],
         # Target-sim match conditions (max abs diff between sim and target)
         "mc_num_spikes": 1,
         "mc_interspike_time": 200,  # (ms)

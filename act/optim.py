@@ -371,13 +371,18 @@ class GeneralACTOptimizer(ACTOptimizer):
         ampl_target = torch.tensor(self.config["optimization_parameters"]["amps"])
 
         if coefs_loaded:
+            arima_order = (10,0,10)
+            if self.config.get("summary_features",{}).get("arima_order"):
+                arima_order = tuple(self.config["summary_features"]["arima_order"])
+            print(f"ARIMA order set to {arima_order}")
+            total_arima_vals = 2 + arima_order[0] + arima_order[1]
             coefs = []
             for data in target_V.cpu().detach().numpy():
                 try:
-                    c = utils.get_arima_coefs(data)
+                    c = utils.get_arima_coefs(data, order=arima_order)
                 except:
                     print("ERROR calculating coefs, setting all to 0")
-                    c = np.zeros(22) # will cause an error if coef params are changed
+                    c = np.zeros(total_arima_vals)
                 coefs.append(c)
             coefs = torch.tensor(coefs)
 

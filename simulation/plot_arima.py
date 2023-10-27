@@ -7,16 +7,19 @@ from matplotlib import pyplot as plt
 from io import StringIO
 import numpy as np
 from statsmodels.graphics.tsaplots import plot_predict 
+import time
 
 warnings.filterwarnings("ignore")
 
 traces = None
 params = None
 
-def plot_arima(cell_id):
+def plot_arima(cell_id, pq=10):
     trace = traces[cell_id]
     param = params[cell_id]
-    model = ARIMA(endog=trace, order=(10, 0, 10)).fit()
+    start_time = time.time()
+    model = ARIMA(endog=trace, order=(pq, 0, pq)).fit()
+    print("--- took %s seconds to generate fit ---" % (time.time() - start_time))
     stats_df = pd.read_csv(
         StringIO(model.summary().tables[1].as_csv()),
         index_col=0,
@@ -50,5 +53,5 @@ if __name__ == "__main__":
     cell_id = 40000
     plot_arima(cell_id)
 
-    print("pausing for PDB, run `plot_arima(100)` where 100 is the desired cell id, to plot an ARIMA fit for a trace"
+    print("pausing for PDB, run `plot_arima(100)` where 100 is the desired cell id, to plot an ARIMA fit for a trace")
     import pdb;pdb.set_trace()

@@ -56,7 +56,7 @@ class OptimizationParameters(TypedDict):
 
 class SummaryFeatures:
     spike_threshold: int  # (mV)
-
+    arima_order: list
     # Target-sim match conditions (max abs diff between sim and target)
     mc_num_spikes: int
     mc_interspike_time: int  # (ms)

@@ -386,8 +386,8 @@ def extract_spiking_traces(traces_t, params_t, amps_t, threshold=0, min_spikes=1
     return spiking_traces, spiking_params, spiking_amps
 
 
-def get_arima_coefs(trace: np.array):
-    model = ARIMA(endog=trace, order=(10, 0, 10)).fit()
+def get_arima_coefs(trace: np.array, order=(10, 0, 10)):
+    model = ARIMA(endog=trace, order=order).fit()
     stats_df = pd.read_csv(
         StringIO(model.summary().tables[1].as_csv()),
         index_col=0,
@@ -401,30 +401,32 @@ def get_arima_coefs(trace: np.array):
 
 def arima_processor(trace_dict):
     @timeout_decorator.timeout(180, use_signals=True, timeout_exception=Exception)
-    def arima_run(trace):
-        return get_arima_coefs(trace)
+    def arima_run(trace, order):
+        return get_arima_coefs(trace, order)
 
     cell_id = trace_dict["cell_id"]
     trace = trace_dict["trace"]
     total = trace_dict["total"]
+    arima_order = trace_dict["arima_order"]
     print(f"processing cell {cell_id+1}/{total}")
 
     try:
-        coefs = arima_run(trace)
+        coefs = arima_run(trace, arima_order)
     except Exception as e:
         print(f"problem processing cell {cell_id}: {e} | setting all values to 0.0")
-        coefs = [0.0 for _ in range(22)]
+        num_arima_vals = 2 + arima_order[0] + arima_order[2]
+        coefs = [0.0 for _ in range(num_arima_vals)]
 
     trace_dict["coefs"] = coefs
     return trace_dict
 
 
-def arima_coefs_proc_map(traces, num_procs=64, output_file="output/arima_stats.json"):
+def arima_coefs_proc_map(traces, num_procs=64, output_file="output/arima_stats.json", arima_order=(10,0,10)):
     trace_list = []
     traces = traces.cpu().detach().tolist()
     num_traces = len(traces)
     for i, trace in enumerate(traces):
-        trace_list.append({"cell_id": i, "trace": trace, "total": num_traces})
+        trace_list.append({"cell_id": i, "trace": trace, "total": num_traces, "arima_order": arima_order})
     with mp.Pool(num_procs) as pool:
         pool_output = pool.map_async(arima_processor, trace_list).get()
     # ensure ordering
@@ -432,11 +434,12 @@ def arima_coefs_proc_map(traces, num_procs=64, output_file="output/arima_stats.j
     for out in pool_output:
         pool_dict[out["cell_id"]] = out["coefs"]
     coefs_list = []
+    num_arima_vals = 2 + arima_order[0] + arima_order[2]
     for i in range(num_traces):
         if pool_dict.get(i):
             coefs_list.append(pool_dict[i])
         else:  # we didn't complete that task, was not found
-            coefs_list.append([0 for _ in range(22)])  # TODO static value
+            coefs_list.append([0 for _ in range(num_arima_vals)])
 
     output_dict = {}
     output_dict["arima_coefs"] = coefs_list
