@@ -329,7 +329,7 @@ def spike_stats(V: torch.Tensor, threshold=0, n_spikes=20):
     threshold = 0
     threshold_crossings = torch.diff(V > threshold, dim=1)
 
-    first_n_spikes = torch.zeros((V.shape[0], n_spikes))
+    first_n_spikes = torch.ones((V.shape[0], n_spikes)) * V.shape[1]
     avg_spike_min = torch.zeros((V.shape[0], 1))
     avg_spike_max = torch.zeros((V.shape[0], 1))
     for i in range(threshold_crossings.shape[0]):
@@ -421,12 +421,21 @@ def arima_processor(trace_dict):
     return trace_dict
 
 
-def arima_coefs_proc_map(traces, num_procs=64, output_file="output/arima_stats.json", arima_order=(10,0,10)):
+def arima_coefs_proc_map(
+    traces, num_procs=64, output_file="output/arima_stats.json", arima_order=(10, 0, 10)
+):
     trace_list = []
     traces = traces.cpu().detach().tolist()
     num_traces = len(traces)
     for i, trace in enumerate(traces):
-        trace_list.append({"cell_id": i, "trace": trace, "total": num_traces, "arima_order": arima_order})
+        trace_list.append(
+            {
+                "cell_id": i,
+                "trace": trace,
+                "total": num_traces,
+                "arima_order": arima_order,
+            }
+        )
     with mp.Pool(num_procs) as pool:
         pool_output = pool.map_async(arima_processor, trace_list).get()
     # ensure ordering

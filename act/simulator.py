@@ -92,34 +92,41 @@ def _run(config: SimulationConfig):
             print(f"decimate_factor set - reducing sims voltage by {decimate_factor}x")
             from scipy import signal
 
-            sims = [[torch.tensor(signal.decimate(sim.cpu(), decimate_factor).copy()) for sim in sim_list] for sim_list in sims]
-        #sims = torch.cat(sims, dim=0)
+            sims = [
+                [
+                    torch.tensor(signal.decimate(sim.cpu(), decimate_factor).copy())
+                    for sim in sim_list
+                ]
+                for sim_list in sims
+            ]
+        # sims = torch.cat(sims, dim=0)
 
         # Compute composite error
         for j, pred_sim in enumerate(sims):
             total_error = 0
             for i, sim in enumerate(pred_sim):
-                error = mse_score(target_V[i], sim) + (1 - abs(correlation_score(target_V[i], sim)))
+                error = mse_score(target_V[i], sim) + (
+                    1 - abs(correlation_score(target_V[i], sim))
+                )
                 total_error = total_error + error
 
                 amp = config["optimization_parameters"]["amps"][i]
                 # save prediction plot for debugging
                 save_prediction_plots(
-                    target_V[i].reshape(1,len(target_V[i])).cpu().detach(),
+                    target_V[i].reshape(1, len(target_V[i])).cpu().detach(),
                     amp,
                     config,
                     predictions.cpu().detach()[j],
                     output_folder,
-                    output_file = f"repeat{repeat_num+1}_pred{j+1}_{(amp * 1000):.0f}nA.png"
+                    output_file=f"repeat{repeat_num+1}_pred{j+1}_{(amp * 1000):.0f}nA.png",
                 )
             err_pool.append(error)
 
         # save prediction values
         p_file = os.path.join(output_folder, f"repeat{repeat_num+1}_predictions.json")
-        pred_dict = {"predictions":predictions.cpu().detach().tolist()}
+        pred_dict = {"predictions": predictions.cpu().detach().tolist()}
         with open(p_file, "w") as fp:
-            json.dump(pred_dict , fp) 
-
+            json.dump(pred_dict, fp)
 
     print(f"All predictions: {pred_pool}")
     print(f"Err per prediction: {err_pool}")
@@ -132,9 +139,7 @@ def _run(config: SimulationConfig):
         json.dump(config, file, indent=2)
 
     # Save predictions
-    pred_df = pd.DataFrame(
-        dict(zip(params, predictions)), index=[0]
-    )
+    pred_df = pd.DataFrame(dict(zip(params, predictions)), index=[0])
 
     g_leak_var = optim.cell.gleak_var
     g_bar_leak = optim.cell.g_bar_leak

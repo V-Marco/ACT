@@ -232,7 +232,7 @@ LA_A_seg = {
     },
     "summary_features": {
         "spike_threshold": 20,  # (mV)
-        "arima_order": [10,0,10],
+        "arima_order": [10, 0, 10],
         # Target-sim match conditions (max abs diff between sim and target)
         "mc_num_spikes": 1,
         "mc_interspike_time": 200,  # (ms)
@@ -290,34 +290,34 @@ LA_A_orig = {
     "optimization_parameters": {
         "amps": list(np.arange(-0.1, 3, 0.1)),  # list(np.arange(-2, 10, 0.1)),
         "params": [
-            #{"channel": "glbar_leak", "low": 2.75e-5, "high": 1e-4},  # leak, passive
-            #{"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05},  # hd, passive
-            #{
+            # {"channel": "glbar_leak", "low": 2.75e-5, "high": 1e-4},  # leak, passive
+            # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05},  # hd, passive
+            # {
             #    "channel": "gbar_nap",
             #    "low": 0.000071,
             #    "high": 0.000284,
-            #},  # nap, lto and hto
-            #{"channel": "gmbar_im", "low": 0.001, "high": 0.004},  # im, lto and hto
-            #{
+            # },  # nap, lto and hto
+            # {"channel": "gmbar_im", "low": 0.001, "high": 0.004},  # im, lto and hto
+            # {
             #   "channel": "gbar_na3",
             #    "low": 0.015,
             #    "high": 0.06,
-            #},  # na3, spiking/adaptation
-            #{
+            # },  # na3, spiking/adaptation
+            # {
             #    "channel": "gkdrbar_kdr",
             #    "low": 0.00075,
             #    "high": 0.003,
-            #},  # kdr, spiking/adaptation
-            #{
+            # },  # kdr, spiking/adaptation
+            # {
             #    "channel": "gcabar_cadyn",
             #    "low": 3e-5,
             #    "high": 1.2e-4,
-            #},  # cadyn, spiking/adaptation
-            #{
+            # },  # cadyn, spiking/adaptation
+            # {
             #    "channel": "gsAHPbar_sAHP",
             #    "low": 0.0045,
             #    "high": 0.018,
-            #},  # sahp, spiking/adaptation
+            # },  # sahp, spiking/adaptation
             {"channel": "gbar_nap", "high": 0.000426, "low": 4.736e-05},
             {"channel": "gbar_im", "high": 0.006, "low": 0.000666},
             {"channel": "gbar_na3", "high": 0.09, "low": 0.01},
@@ -326,7 +326,7 @@ LA_A_orig = {
             {"channel": "gsAHPbar_sAHP", "high": 0.026996, "low": 0.0029996},
         ],
         "target_V": None,  # Target voltages
-        #"target_params": [5.5e-5, 2.3e-05, 0.000142, 0.002, 0.03, 0.0015, 6e-5, 0.009],
+        # "target_params": [5.5e-5, 2.3e-05, 0.000142, 0.002, 0.03, 0.0015, 6e-5, 0.009],
         "target_params": [0.000142, 0.002, 0.03, 0.0015, 6e-5, 0.009],
         "num_repeats": 1,
         "num_amps_to_match": 12,

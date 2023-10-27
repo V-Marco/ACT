@@ -49,7 +49,7 @@ def save_prediction_plots(
     simulation_config: SimulationConfig,
     predicted_params_values: torch.Tensor,
     output_folder: str,
-    output_file:str = None,
+    output_file: str = None,
 ) -> np.ndarray:
     optim = ACTOptimizer(simulation_config=simulation_config)
     params = [
@@ -105,9 +105,7 @@ def save_mse_corr(
         params = [
             p["channel"] for p in simulation_config["optimization_parameters"]["params"]
         ]
-        sim_data = optim.simulate(
-            amp, params, predicted_params_values
-        )
+        sim_data = optim.simulate(amp, params, predicted_params_values)
         decimate_factor = simulation_config["optimization_parameters"].get(
             "decimate_factor"
         )
