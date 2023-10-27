@@ -1,0 +1,21 @@
+/**********************************************************************
+How to Use This Graphic Library
+	0. dont change/delete/add anything here, except you are sure with your modification
+	1. copy it in the same folder as your main hoc file,
+		then include this in your main hoc file by using {load_file("graphic_library.hoc")}
+	2. Use Commands in your hoc file as:
+		Plot1V("CellA") -- plot only CellA.soma.v(.5)
+		Plot2V("CellA","CellB") -- plot both CellA.soma.v(.5) and CellA.soma.v(.5)
+		Plot1CaPool("CellA") -- plot CellA.soma.cai(.5)
+		Plot1CaPool("CellB") -- plot CellB.soma.cai(.5)
+***********************************************************************/
+
+strdef tstr1,tstr2
+proc Plot1V() {
+	sprint(tstr1,"%s.soma.v(.5)",$s1)
+	newPlot(0,tstop,-80,60)
+	graphItem.save_name("graphList[0].")
+	graphList[0].append(graphItem)
+	graphItem.addexpr(tstr1,3,1)
+}
+

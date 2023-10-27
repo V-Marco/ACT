@@ -1,0 +1,75 @@
+// Created by A. Alturki (2015)
+// 1-compartment LA pyramidal cells template
+
+//load_file("nrngui.hoc")
+//The parameters in this model are based on Type C cell of 3-compartment model 
+
+/////====================/////
+///// Type C cell in LA /////
+////===================/////
+
+begintemplate Cell_C
+
+public soma, connect2target, type
+public all
+objref all
+
+create soma[1]
+public ncl, synlist
+objref ncl, synlist
+strdef type	
+
+     /////biophysical properties/////
+proc init() {
+
+	ncl = new List()
+	synlist =new List()		
+	type = "Cell_C"
+	
+	gUnf_Xsoma = 2.5e-05
+	Rm = 80000 // decreased overall
+	SpineScale = 1.76371308 //2
+	SpineScale_leak = 1.763714578
+	RaAll= 200
+	RaSoma= 146.969697 //200 
+	RaAxIs = 100//100//200
+	Vpas = -70//-65//-69 // -67
+	gna =  0.039//.03*0.6*1.5 //.03*0.6*1.5 /* decreased from 0.03 */
+	AXONM = 3 /*decrease from 2 */
+	gkdr = 0.005*.6 
+	ghd=0.000003 *.7
+	nash=10
+	Vrest = -67
+	celsius = 31.0 
+	gsAHP = 0.0014//0.0005
+	GmC = 0.0096//0.0085//0.006 //0.0035 //0.0006
+	
+	all = new SectionList()
+	for i=0,0 soma[0] {
+		all.append()
+	}
+
+     /////geometrical properties/////
+soma[0] {nseg = 1  L = 25 diam = 24.75} // L = 117.77 diam = 24.5   //// area ratio is 4.6632
+	
+	soma[0] {
+		
+		insert cadyn gcabar_cadyn = 5.5e-4 eca = 120
+		insert leak el_leak= -72 glbar_leak = 5.5e-5 Ra=RaAll cm=2.5 
+		insert hd ghdbar_hd=1.5e-5  78.72884325
+		insert na3 sh_na3=nash ar_na3=1	gbar_na3 = 0.027
+		insert nap gbar_nap= 0.000142
+		insert kdr gbar_kdr=0.0015
+		insert capool taucas = 1000  fcas_capool = 0.05 
+		insert sAHP gsAHPbar_sAHP = 5e-5 // 1e-4
+		insert im gbar_im = 6e-4
+		insert kap gkabar_kap =0.002 //  0.02
+			
+		ena = 45
+		ek = -80
+		if (ismembrane("kdr") || ismembrane("kap") ) {ek=-80} //???
+		if (ismembrane("hd") ) {ehd_hd=-43 } // change from -30 to -50 //???
+		}
+}
+endtemplate Cell_C
+
