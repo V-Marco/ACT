@@ -50,7 +50,7 @@ proc init() {
 	}
 
      /////geometrical properties/////
-soma[0] {nseg = 1  L = 25 diam = 24.75} // L = 117.77 diam = 24.5   //// area ratio is 4.6632
+soma[0] {nseg = 1  L = 117.77 diam = 24.75} // L = 117.77 diam = 24.5   //// area ratio is 4.6632
 	
 	soma[0] {
 		

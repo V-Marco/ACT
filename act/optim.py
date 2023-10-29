@@ -9,6 +9,7 @@ from act.cell_model import CellModel
 from act.logger import ACTDummyLogger
 from act.models import BranchingNet, EmbeddingNet, SimpleNet, ConvolutionEmbeddingNet
 from act import utils
+from sklearn.ensemble import RandomForestRegressor
 
 
 class ACTOptimizer:
@@ -214,6 +215,26 @@ class GeneralACTOptimizer(ACTOptimizer):
 
         self.model = None
         self.model_pool = None
+        self.reg = None  # regressor for random forest
+        self.init_random_forest()
+
+    def init_random_forest(self):
+        params = {
+            "n_estimators": 500,
+            "max_depth": 4,
+            "min_samples_split": 5,
+            "warm_start": True,
+            "oob_score": True,
+            "random_state": 42,
+        }
+        self.reg = RandomForestRegressor(**params)
+
+    def train_random_forest(self, X_train, y_train):
+        self.reg.fit(X_train, y_train)
+
+    def predict_random_forest(self, X_test):
+        y_pred = self.reg.predict(X_test)
+        return y_pred
 
     def optimize(self, target_V: torch.Tensor) -> torch.Tensor:
         # Get voltage with characteristics similar to target
