@@ -105,7 +105,7 @@ UNITSOFF
         beta =  4 * exp(-(v+65)/18)
         sum = alpha + beta
 	    mtau = 1/(q10*sum)
-        if (v < -67.5 ) {
+        if (v < -65 ) {
 	    minf = 0
 	} else{
             minf = alpha/sum
@@ -121,7 +121,7 @@ UNITSOFF
         beta = .125*exp(-(v+65)/80)
 	    sum = alpha + beta
         ntau = 1/(q10*sum)
-        if (v < -55.5 ) {
+        if (v < -65 ) {
 	    ninf = 0
 	} else{
             ninf = alpha/sum

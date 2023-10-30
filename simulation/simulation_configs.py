@@ -232,7 +232,7 @@ LA_A_seg = {
     },
     "summary_features": {
         "spike_threshold": 20,  # (mV)
-        "arima_order": [10, 0, 10],
+        "arima_order": [4, 0, 4],
         # Target-sim match conditions (max abs diff between sim and target)
         "mc_num_spikes": 1,
         "mc_interspike_time": 200,  # (ms)
@@ -340,7 +340,7 @@ LA_A_orig = {
     },
     "summary_features": {
         "spike_threshold": 20,  # (mV)
-        "arima_order": [10, 0, 10],
+        "arima_order": [4, 0, 4],
         # Target-sim match conditions (max abs diff between sim and target)
         "mc_num_spikes": 1,
         "mc_interspike_time": 200,  # (ms)
@@ -427,7 +427,7 @@ LA_C_seg = {
     },
     "summary_features": {
         "spike_threshold": 20,  # (mV)
-        "arima_order": [10, 0, 10],
+        "arima_order": [4, 0, 4],
         # Target-sim match conditions (max abs diff between sim and target)
         "mc_num_spikes": 1,
         "mc_interspike_time": 200,  # (ms)
@@ -535,7 +535,7 @@ LA_C_orig = {
     },
     "summary_features": {
         "spike_threshold": 20,  # (mV)
-        "arima_order": [10, 0, 10],
+        "arima_order": [4, 0, 4],
         # Target-sim match conditions (max abs diff between sim and target)
         "mc_num_spikes": 1,
         "mc_interspike_time": 200,  # (ms)
@@ -571,4 +571,147 @@ LA_C_orig = {
 }
 
 
-selected_config = LA_A_seg
+Simple_Spiker_seg = {
+    "cell": {
+        "hoc_file": "../data/Spiker/seg/template.hoc",
+        "modfiles_folder": "../data/Spiker/seg",
+        "name": "Simple_Spiker",
+        "passive_properties": {
+            "v_rest": -65,
+            "r_in": 192,
+            "tau": 2.575,
+            "leak_conductance_variable": "gl_hh_seg",  # eg: g_leak
+            "leak_reversal_variable": "el_hh_seg",  # eg: e_leak
+        },
+    },
+    "simulation_parameters": {
+        "h_v_init": -65.0,  # (mV)
+        "h_tstop": 2000,  # (ms)
+        "h_i_delay": 500,  # (ms)
+        "h_i_dur": 1500,  # (ms)
+        "h_dt": 0.1,
+    },
+    "optimization_parameters": {
+        "amps": [-0.1, 0.1, 0.2, 0.5, 1.0],
+        "params": [
+            # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05}, # hd, passive
+            {"channel": "gnabar", "high": 0.36, "low": 0.04,},
+            {"channel": "gkbar", "high": .108, "low": 0.012,}
+        ],
+        "target_V": None,  # Target voltages
+        "target_params": [
+            0.12,
+            0.036,
+        ],
+        "num_repeats": 1,
+        "num_amps_to_match": 1,
+        "num_epochs": 5000,
+        "skip_match_voltage": True,
+        "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
+            "n_slices": 5,
+            "amps": [-0.1, 0.1, 0.2, 0.5, 1],  # list(np.arange(0.0, 3.0, 1.0))
+        },
+        "decimate_factor": 10,
+    },
+    "summary_features": {
+        "spike_threshold": 20,  # (mV)
+        "arima_order": [4, 0, 4],
+        # Target-sim match conditions (max abs diff between sim and target)
+        "mc_num_spikes": 1,
+        "mc_interspike_time": 200,  # (ms)
+        "mc_min_v": 1,  # (mV)
+        "mc_mean_v": 2,  # (mV)
+        "mc_max_v": 1,  # (mV)
+    },
+    "segregation": [
+        # { # passive
+        #    "params": ["ghdbar_hd"],
+        #    "voltage": [-80, -67.5],
+        # },
+        {  # lto
+            "params": ["gnabar", "gkbar"],
+            "voltage": [-100, 100],  # [-67.5, 100],  # [-67.5, -57.5],
+        },
+    ],
+    "output": {
+        "folder": "output_Simple_Spiker_seg",
+        "produce_plots": True,
+        "target_label": "ModelDB Segregated",
+        "simulated_label": "Model ACT",
+    },
+    "run_mode": "original",  # "original", "segregated"
+}
+
+Simple_Spiker_orig = {
+    "cell": {
+        "hoc_file": "../data/Spiker/orig/template.hoc",
+        "modfiles_folder": "../data/Spiker/orig",
+        "name": "Simple_Spiker",
+        "passive_properties": {
+            "v_rest": -65,
+            "r_in": 192,
+            "tau": 2.575,
+            "leak_conductance_variable": "gl_hh_seg",  # eg: g_leak
+            "leak_reversal_variable": "el_hh_seg",  # eg: e_leak
+        },
+    },
+    "simulation_parameters": {
+        "h_v_init": -65.0,  # (mV)
+        "h_tstop": 2000,  # (ms)
+        "h_i_delay": 500,  # (ms)
+        "h_i_dur": 1500,  # (ms)
+        "h_dt": 0.1,
+    },
+    "optimization_parameters": {
+        "amps": [-0.1, 0.1, 0.2, 0.5, 1.0],
+        "params": [
+            # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05}, # hd, passive
+            {"channel": "gnabar", "high": 0.36, "low": 0.04,},
+            {"channel": "gkbar", "high": .108, "low": 0.012,}
+        ],
+        "target_V": None,  # Target voltages
+        "target_params": [
+            0.12,
+            0.036,
+        ],
+        "num_repeats": 1,
+        "num_amps_to_match": 1,
+        "num_epochs": 5000,
+        "skip_match_voltage": True,
+        "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
+            "n_slices": 5,
+            "amps": [-0.1, 0.1, 0.2, 0.5, 1],  # list(np.arange(0.0, 3.0, 1.0))
+        },
+        "decimate_factor": 10,
+    },
+    "summary_features": {
+        "spike_threshold": 20,  # (mV)
+        "arima_order": [4, 0, 4],
+        # Target-sim match conditions (max abs diff between sim and target)
+        "mc_num_spikes": 1,
+        "mc_interspike_time": 200,  # (ms)
+        "mc_min_v": 1,  # (mV)
+        "mc_mean_v": 2,  # (mV)
+        "mc_max_v": 1,  # (mV)
+    },
+    "segregation": [
+        # { # passive
+        #    "params": ["ghdbar_hd"],
+        #    "voltage": [-80, -67.5],
+        # },
+        {  # lto
+            "params": ["gnabar", "gkbar"],
+            "voltage": [-100, 100],  # [-67.5, 100],  # [-67.5, -57.5],
+        },
+    ],
+    "output": {
+        "folder": "output_Simple_Spiker_seg",
+        "produce_plots": True,
+        "target_label": "ModelDB Segregated",
+        "simulated_label": "Model ACT",
+    },
+    "run_mode": "original",  # "original", "segregated"
+}
+
+
+selected_config = Simple_Spiker_seg
