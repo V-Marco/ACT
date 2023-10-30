@@ -38,7 +38,9 @@ proc init() {
 
         insert hh_seg
         Ra = 123.0
-		
+        el_hh_seg = -65
+        gl_hh_seg = 0.00046907
+        cm = 1.20784285		
 	}
 }
 endtemplate Simple_Spiker

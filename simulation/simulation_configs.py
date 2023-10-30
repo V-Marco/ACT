@@ -595,8 +595,8 @@ Simple_Spiker_seg = {
         "amps": [-0.1, 0.1, 0.2, 0.5, 1.0],
         "params": [
             # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05}, # hd, passive
-            {"channel": "gnabar", "high": 0.36, "low": 0.04,},
-            {"channel": "gkbar", "high": .108, "low": 0.012,}
+            {"channel": "gnabar_hh_seg", "high": 0.36, "low": 0.04,},
+            {"channel": "gkbar_hh_seg", "high": .108, "low": 0.012,}
         ],
         "target_V": None,  # Target voltages
         "target_params": [
@@ -629,7 +629,7 @@ Simple_Spiker_seg = {
         #    "voltage": [-80, -67.5],
         # },
         {  # lto
-            "params": ["gnabar", "gkbar"],
+            "params": ["gnabar_hh_seg", "gkbar_hh_seg"],
             "voltage": [-100, 100],  # [-67.5, 100],  # [-67.5, -57.5],
         },
     ],
@@ -647,13 +647,13 @@ Simple_Spiker_orig = {
         "hoc_file": "../data/Spiker/orig/template.hoc",
         "modfiles_folder": "../data/Spiker/orig",
         "name": "Simple_Spiker",
-        "passive_properties": {
-            "v_rest": -65,
-            "r_in": 192,
-            "tau": 2.575,
-            "leak_conductance_variable": "gl_hh_seg",  # eg: g_leak
-            "leak_reversal_variable": "el_hh_seg",  # eg: e_leak
-        },
+        #"passive_properties": {
+        #    "v_rest": -65,
+        #    "r_in": 192,
+        #    "tau": 2.575,
+        #    "leak_conductance_variable": "gl_hh_orig",  # eg: g_leak
+        #    "leak_reversal_variable": "el_hh_orig",  # eg: e_leak
+        #},
     },
     "simulation_parameters": {
         "h_v_init": -65.0,  # (mV)
@@ -666,8 +666,8 @@ Simple_Spiker_orig = {
         "amps": [-0.1, 0.1, 0.2, 0.5, 1.0],
         "params": [
             # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05}, # hd, passive
-            {"channel": "gnabar", "high": 0.36, "low": 0.04,},
-            {"channel": "gkbar", "high": .108, "low": 0.012,}
+            {"channel": "gnabar_hh_orig", "high": 0.36, "low": 0.04,},
+            {"channel": "gkbar_hh_orig", "high": .108, "low": 0.012,}
         ],
         "target_V": None,  # Target voltages
         "target_params": [
@@ -700,18 +700,18 @@ Simple_Spiker_orig = {
         #    "voltage": [-80, -67.5],
         # },
         {  # lto
-            "params": ["gnabar", "gkbar"],
+            "params": ["gnabar_hh_orig", "gkbar_hh_orig"],
             "voltage": [-100, 100],  # [-67.5, 100],  # [-67.5, -57.5],
         },
     ],
     "output": {
-        "folder": "output_Simple_Spiker_seg",
+        "folder": "output_Simple_Spiker_orig",
         "produce_plots": True,
-        "target_label": "ModelDB Segregated",
+        "target_label": "ModelDB Original",
         "simulated_label": "Model ACT",
     },
     "run_mode": "original",  # "original", "segregated"
 }
 
 
-selected_config = Simple_Spiker_seg
+selected_config = Simple_Spiker_orig
