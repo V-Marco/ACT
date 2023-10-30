@@ -7,13 +7,18 @@ import torch
 from act.act_types import SimulationConfig
 from act.analysis import save_plot
 from act.optim import ACTOptimizer
+from act.cell_model import CellModel
 
 
 def get_voltage_trace_from_params(
     simulation_config: SimulationConfig,
 ) -> torch.Tensor:
+    target_cell = CellModel(
+            hoc_file=simulation_config["cell"]["hoc_file"],
+            cell_name=simulation_config["cell"]["name"],
+        )
     optim = ACTOptimizer(
-        simulation_config=simulation_config, set_passive_properties=False
+        simulation_config=simulation_config, set_passive_properties=False, cell_override=target_cell
     )
     target_V = []
     output_folder = os.path.join(
@@ -22,7 +27,11 @@ def get_voltage_trace_from_params(
     if not os.path.exists(output_folder):
         os.makedirs(output_folder, exist_ok=True)
 
-    target_params = simulation_config["optimization_parameters"]["target_params"]
+    if simulation_config["optimization_parameters"].get("target_cell_params"):
+        target_params = simulation_config["optimization_parameters"].get("target_cell_params")
+    else:
+        target_params = simulation_config["optimization_parameters"]["target_params"]
+
     dt = simulation_config["simulation_parameters"]["h_dt"]
     simulated_label = simulation_config["output"].get("simulated_label", "Simulated")
     target_label = simulation_config["output"].get("target_label", "Target")
@@ -33,17 +42,16 @@ def get_voltage_trace_from_params(
         tv = optim.simulate(amp, params, target_params).reshape(1, -1)
         target_V.append(tv)
         # write to output folder / mode / target
-        if i % 5 == 0:  # 5 should be user defined
-            save_plot(
-                amp,
-                output_folder,
-                simulated_data=None,
-                target_V=tv.cpu().detach().numpy(),
-                output_file=f"target_{(amp * 1000):.0f}nA.png",
-                dt=dt,
-                simulated_label=simulated_label,
-                target_label=target_label,
-            )
+        save_plot(
+            amp,
+            output_folder,
+            simulated_data=None,
+            target_V=tv.cpu().detach().numpy(),
+            output_file=f"target_{(amp * 1000):.0f}nA.png",
+            dt=dt,
+            simulated_label=simulated_label,
+            target_label=target_label,
+        )
     target_V = torch.cat(target_V, dim=0)
 
     # save passive properties

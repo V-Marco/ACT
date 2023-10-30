@@ -19,6 +19,7 @@ class ACTOptimizer:
         logger: object = None,
         reset_cell_params_to_lower_bounds_on_init: bool = True,
         set_passive_properties=True,
+        cell_override=None
     ):
         self.config = simulation_config
 
@@ -26,10 +27,13 @@ class ACTOptimizer:
         h.load_file("stdrun.hoc")
 
         # Initialize the cell
-        self.cell = CellModel(
-            hoc_file=self.config["cell"]["hoc_file"],
-            cell_name=self.config["cell"]["name"],
-        )
+        if cell_override:
+            self.cell = cell_override
+        else:
+            self.cell = CellModel(
+                hoc_file=self.config["cell"]["hoc_file"],
+                cell_name=self.config["cell"]["name"],
+            )
         if set_passive_properties:
             self.cell.set_passive_properties(
                 simulation_config["cell"].get("passive_properties")

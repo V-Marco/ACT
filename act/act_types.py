@@ -45,6 +45,8 @@ class OptimizationParameters(TypedDict):
     skip_match_voltage: bool
     amps: List[float]
     params: List[OptimizationParam]
+    target_cell: Cell
+    target_cell_params: List[List[float]]
     target_V: List[List[float]]  # Target voltage
     target_params: List[List[float]]
     num_repeats: int

@@ -600,6 +600,15 @@ Simple_Spiker_seg = {
         ],
         "target_V": None,  # Target voltages
         "target_params": [
+            0.0,
+            0.0,
+        ],
+        "target_cell":{
+            "hoc_file": "../data/Spiker/orig/template.hoc",
+            "modfiles_folder": "../data/Spiker/orig",
+            "name": "Simple_Spiker",
+        },
+        "target_cell_params": [
             0.12,
             0.036,
         ],
