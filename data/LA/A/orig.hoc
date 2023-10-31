@@ -14,7 +14,7 @@ nrn_load_dll("./orig_modfiles/x86_64/.libs/libnrnmech.so")
 nrn_load_dll("./orig_modfiles/nrnmech.dll")
 
 // Load Template(s) (some may not be needed if a folder was specified and may cause problems, remove as needed)
-{load_file("./template.hoc")}
+{load_file("./orig_modfiles/template.hoc")}
 
 tstop = 2000
 v_init = -70

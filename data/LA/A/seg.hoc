@@ -10,16 +10,16 @@
 {load_file("nrngui.hoc")}
 
 //Loading mechanisms in other folder
-nrn_load_dll("./seg_modfiles/x86_64/.libs/libnrnmech.so")
-nrn_load_dll("./seg_modfiles/nrnmech.dll")
+nrn_load_dll("./seg_modfiles_modeldb/x86_64/.libs/libnrnmech.so")
+nrn_load_dll("./seg_modfiles_modeldb/nrnmech.dll")
 
 // Load Template(s) (some may not be needed if a folder was specified and may cause problems, remove as needed)
-{load_file("./template.hoc")}
+{load_file("./seg_modfiles_modeldb/template.hoc")}
 
 tstop = 2000
 v_init = -70
 objref Cell // declare the primary cell object
-Cell = new sPYr()
+Cell = new Cell_A()
 //Cell.insert_mechs(123) // COMMENT TO DISABLE 
 
 NumClamps = 1
