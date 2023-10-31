@@ -511,9 +511,9 @@ LA_C_orig = {
             #    "high": 0.018,
             # },  # sahp, spiking/adaptation
             {'channel': 'gbar_nap', 'high': 0.00042, 'low': 4.667e-05},
-            {'channel': 'gbar_im', 'high': 0.003, 'low': 0.00033333},
+            {'channel': 'gmbar_im', 'high': 0.003, 'low': 0.00033333},
             {'channel': 'gbar_na3', 'high': 0.09, 'low': 0.01},
-            {'channel': 'gbar_kdr', 'high': 0.027, 'low': 0.003},
+            {'channel': 'gkdrbar_kdr', 'high': 0.027, 'low': 0.003},
             {'channel': 'gcabar_cadyn', 'high': 0.00021, 'low': 2.333e-05},
             {'channel': 'gsAHPbar_sAHP', 'high': 0.00075, 'low': 8.333e-05}
         ],
