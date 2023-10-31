@@ -19,7 +19,7 @@ class ACTOptimizer:
         logger: object = None,
         reset_cell_params_to_lower_bounds_on_init: bool = True,
         set_passive_properties=True,
-        cell_override=None
+        cell_override=None,
     ):
         self.config = simulation_config
 

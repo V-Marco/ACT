@@ -575,7 +575,7 @@ Simple_Spiker_seg = {
     "cell": {
         "hoc_file": "../data/Spiker/seg/template.hoc",
         "modfiles_folder": "../data/Spiker/seg",
-        "name": "Simple_Spiker",
+        "name": "Simple_Spiker_seg",
         "passive_properties": {
             "v_rest": -65,
             "r_in": 192,
@@ -595,18 +595,26 @@ Simple_Spiker_seg = {
         "amps": [-0.1, 0.1, 0.2, 0.5, 1.0],
         "params": [
             # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05}, # hd, passive
-            {"channel": "gnabar_hh_seg", "high": 0.36, "low": 0.04,},
-            {"channel": "gkbar_hh_seg", "high": .108, "low": 0.012,}
+            {
+                "channel": "gnabar_hh_seg",
+                "high": 0.36,
+                "low": 0.04,
+            },
+            {
+                "channel": "gkbar_hh_seg",
+                "high": 0.108,
+                "low": 0.012,
+            },
         ],
         "target_V": None,  # Target voltages
         "target_params": [
             0.0,
             0.0,
         ],
-        "target_cell":{
+        "target_cell": {
             "hoc_file": "../data/Spiker/orig/template.hoc",
             "modfiles_folder": "../data/Spiker/orig",
-            "name": "Simple_Spiker",
+            "name": "Simple_Spiker_orig",
         },
         "target_cell_params": [
             0.12,
@@ -655,14 +663,14 @@ Simple_Spiker_orig = {
     "cell": {
         "hoc_file": "../data/Spiker/orig/template.hoc",
         "modfiles_folder": "../data/Spiker/orig",
-        "name": "Simple_Spiker",
-        #"passive_properties": {
+        "name": "Simple_Spiker_orig",
+        # "passive_properties": {
         #    "v_rest": -65,
         #    "r_in": 192,
         #    "tau": 2.575,
         #    "leak_conductance_variable": "gl_hh_orig",  # eg: g_leak
         #    "leak_reversal_variable": "el_hh_orig",  # eg: e_leak
-        #},
+        # },
     },
     "simulation_parameters": {
         "h_v_init": -65.0,  # (mV)
@@ -674,12 +682,21 @@ Simple_Spiker_orig = {
     "optimization_parameters": {
         "amps": [-0.1, 0.1, 0.2, 0.5, 1.0],
         "params": [
-            # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05}, # hd, passive
-            {"channel": "gnabar_hh_orig", "high": 0.36, "low": 0.04,},
-            {"channel": "gkbar_hh_orig", "high": .108, "low": 0.012,}
+            {"channel": "gl_hh_orig", "low": 0.0001, "high": 0.009},  # hd, passive
+            {
+                "channel": "gnabar_hh_orig",
+                "high": 0.36,
+                "low": 0.04,
+            },
+            {
+                "channel": "gkbar_hh_orig",
+                "high": 0.108,
+                "low": 0.012,
+            },
         ],
         "target_V": None,  # Target voltages
         "target_params": [
+            0.0003,
             0.12,
             0.036,
         ],

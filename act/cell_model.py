@@ -31,7 +31,8 @@ class CellModel:
 
         # Init injection
         self.inj = h.IClamp(self.soma[0](0.5))
-        self.I = h.Vector().record(h._ref_i)
+        # import pdb;pdb.set_trace()
+        # self.I = h.Vector().record(h._ref_i)
 
         # Passive properties
         self.gleak_var = None

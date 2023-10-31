@@ -19,6 +19,7 @@ from act.target_utils import get_voltage_trace_from_params
 
 temp_modfiles_dir = "temp_modfiles"
 
+
 def _run(config: SimulationConfig):
     if config["optimization_parameters"]["num_epochs"] < 1000:
         raise ValueError("Number of epochs is expected to be >= 1000.")
@@ -27,13 +28,19 @@ def _run(config: SimulationConfig):
 
     # if there is a target_cell specified then use it too
     os.mkdir(temp_modfiles_dir)
-    shutil.copytree(config['cell']['modfiles_folder'], temp_modfiles_dir)
+    shutil.copytree(
+        config["cell"]["modfiles_folder"], temp_modfiles_dir, dirs_exist_ok=True
+    )
     # Watch out for name collisions, typically not recommended to have this target cell specified
-    if config["optimization_parameters"].get("target_cell",{}).get("modfiles_folder"):
-        shutil.copytree(config["optimization_parameters"]["target_cell"]["modfiles_folder"], temp_modfiles_dir)
+    if config["optimization_parameters"].get("target_cell", {}).get("modfiles_folder"):
+        shutil.copytree(
+            config["optimization_parameters"]["target_cell"]["modfiles_folder"],
+            temp_modfiles_dir,
+            dirs_exist_ok=True,
+        )
 
     os.system(f"nrnivmodl {temp_modfiles_dir}")
-    
+
     logger = ACTLogger()
     logger.info(
         f"Number of amplitudes: {len(config['optimization_parameters']['amps'])}"

@@ -13,12 +13,20 @@ from act.cell_model import CellModel
 def get_voltage_trace_from_params(
     simulation_config: SimulationConfig,
 ) -> torch.Tensor:
-    target_cell = CellModel(
-            hoc_file=simulation_config["cell"]["hoc_file"],
-            cell_name=simulation_config["cell"]["name"],
+    if simulation_config["optimization_parameters"].get("target_cell"):
+        target_cell = CellModel(
+            hoc_file=simulation_config["optimization_parameters"]["target_cell"][
+                "hoc_file"
+            ],
+            cell_name=simulation_config["optimization_parameters"]["target_cell"][
+                "name"
+            ],
         )
+    target_cell = None
     optim = ACTOptimizer(
-        simulation_config=simulation_config, set_passive_properties=False, cell_override=target_cell
+        simulation_config=simulation_config,
+        set_passive_properties=False,
+        cell_override=target_cell,
     )
     target_V = []
     output_folder = os.path.join(
@@ -28,7 +36,9 @@ def get_voltage_trace_from_params(
         os.makedirs(output_folder, exist_ok=True)
 
     if simulation_config["optimization_parameters"].get("target_cell_params"):
-        target_params = simulation_config["optimization_parameters"].get("target_cell_params")
+        target_params = simulation_config["optimization_parameters"].get(
+            "target_cell_params"
+        )
     else:
         target_params = simulation_config["optimization_parameters"]["target_params"]
 

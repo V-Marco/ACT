@@ -8,7 +8,7 @@
 ///// Type C cell in LA /////
 ////===================/////
 
-begintemplate Simple_Spiker
+begintemplate Simple_Spiker_orig
 
 public soma, connect2target, type
 public all
@@ -41,5 +41,5 @@ proc init() {
 		
 	}
 }
-endtemplate Simple_Spiker
+endtemplate Simple_Spiker_orig
 
