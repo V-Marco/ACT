@@ -318,12 +318,12 @@ LA_A_orig = {
             #    "low": 0.0045,
             #    "high": 0.018,
             # },  # sahp, spiking/adaptation
-            [{'channel': 'gbar_nap', 'high': 0.0009, 'low': 0.0001},
-            {'channel': 'gbar_im', 'high': 0.006, 'low': 0.00066667},
+            {'channel': 'gbar_nap', 'high': 0.0009, 'low': 0.0001},
+            {'channel': 'gmbar_im', 'high': 0.006, 'low': 0.00066667},
             {'channel': 'gbar_na3', 'high': 0.09, 'low': 0.01},
             {'channel': 'gkdrbar_kdr', 'high': 0.09, 'low': 0.01},
             {'channel': 'gcabar_cadyn', 'high': 0.00018, 'low': 2e-05},
-            {'channel': 'gsAHPbar_sAHP', 'high': 0.027, 'low': 0.003}],
+            {'channel': 'gsAHPbar_sAHP', 'high': 0.027, 'low': 0.003},
         ],
         "target_V": None,  # Target voltages
         # "target_params": [5.5e-5, 2.3e-05, 0.000142, 0.002, 0.03, 0.0015, 6e-5, 0.009],
@@ -510,12 +510,12 @@ LA_C_orig = {
             #    "low": 0.0045,
             #    "high": 0.018,
             # },  # sahp, spiking/adaptation
-            [{'channel': 'gbar_nap', 'high': 0.00042, 'low': 4.667e-05},
+            {'channel': 'gbar_nap', 'high': 0.00042, 'low': 4.667e-05},
             {'channel': 'gbar_im', 'high': 0.003, 'low': 0.00033333},
             {'channel': 'gbar_na3', 'high': 0.09, 'low': 0.01},
             {'channel': 'gbar_kdr', 'high': 0.027, 'low': 0.003},
             {'channel': 'gcabar_cadyn', 'high': 0.00021, 'low': 2.333e-05},
-            {'channel': 'gsAHPbar_sAHP', 'high': 0.00075, 'low': 8.333e-05}]
+            {'channel': 'gsAHPbar_sAHP', 'high': 0.00075, 'low': 8.333e-05}
         ],
         "target_V": None,  # Target voltages
         # "target_params": [5.5e-5, 2.3e-05, 0.000142, 0.002, 0.03, 0.0015, 6e-5, 0.009],
