@@ -463,3 +463,48 @@ def load_arima_coefs(input_file="output/arima_stats.json"):
     with open(input_file) as json_file:
         arima_dict = json.load(json_file)
     return torch.tensor(arima_dict["arima_coefs"])
+
+
+
+def extract_summary_features(V: torch.Tensor, spike_threshold=0) -> tuple:
+    threshold_crossings = torch.diff(
+        V > spike_threshold, dim=1
+    )
+    num_spikes = torch.round(torch.sum(threshold_crossings, dim=1) * 0.5)
+    interspike_times = torch.zeros((V.shape[0], 1))
+    for i in range(threshold_crossings.shape[0]):
+        interspike_times[i, :] = torch.mean(
+            torch.diff(
+                torch.arange(threshold_crossings.shape[1])[
+                    threshold_crossings[i, :]
+                ]
+            ).float()
+        )
+    interspike_times[torch.isnan(interspike_times)] = 0
+    return num_spikes, interspike_times
+
+def get_fi_curve_error(simulated_traces, target_traces, amps, ignore_negative=True, dt=1):
+    """
+    Returns the average spike count error over the entire trace.
+    """
+    target_spikes, target_interspike_times = extract_summary_features(target_traces)
+    simulated_spikes, simulated_interspike_times = extract_summary_features(simulated_traces)
+
+    if ignore_negative:
+        non_neg_idx = (amps>0).nonzero().flatten()
+        amps = amps[amps>0]
+        target_spikes = target_spikes[non_neg_idx]
+        simulated_spikes = simulated_spikes[non_neg_idx]
+
+    error = round(float(((simulated_spikes - target_spikes)/target_spikes).sum()/len(amps)),4)
+
+    return error
+
+def load_final_traces(trace_file):
+    traces_h5 = h5py.File(trace_file)
+    amps = torch.tensor(np.array(traces_h5['amps']))
+    simulated_traces = torch.tensor(np.array(traces_h5['simulated']['voltage_trace']))
+    target_traces = torch.tensor(np.array(traces_h5['target']['voltage_trace']))
+
+    return simulated_traces, target_traces, amps
+
