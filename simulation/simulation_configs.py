@@ -91,7 +91,6 @@ pospischilsPYr_orig: SimulationConfig = {
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
-            "amps": list(np.arange(0.05, 3.5, 0.75)),  # list(np.arange(0.0, 3.0, 1.0))
         },
         "decimate_factor": 10,
     },
@@ -156,7 +155,6 @@ pospischilsPYr_seg: SimulationConfig = {
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
-            "amps": list(np.arange(0.05, 3.5, 0.75)),  # list(np.arange(0.0, 3.0, 1.0))
         },
         "decimate_factor": 10,
     },
@@ -226,7 +224,6 @@ LA_A_seg = {
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
-            "amps": [-0.1, 0.3, 0.6, 1.2, 1.8],  # list(np.arange(0.0, 3.0, 1.0))
         },
         "decimate_factor": 10,
     },
@@ -334,7 +331,6 @@ LA_A_orig = {
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
-            "amps": [-0.1, 0.3, 0.6, 1.2, 1.8],  # list(np.arange(0.0, 3.0, 1.0))
         },
         "decimate_factor": 10,
     },
@@ -418,7 +414,6 @@ LA_C_seg = {
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
-            "amps": [-0.1, 0.1, 0.3, 0.7, 1],  # list(np.arange(0.0, 3.0, 1.0))
         },
         "decimate_factor": 10,
     },
@@ -526,7 +521,6 @@ LA_C_orig = {
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
-            "amps": [-0.1, 0.1, 0.3, 0.7, 1],  # list(np.arange(0.0, 3.0, 1.0))
         },
         "decimate_factor": 10,
     },
@@ -608,6 +602,8 @@ Simple_Spiker_seg = {
             0.0,
             0.0,
         ],
+        # ======================================================
+        "target_V_file": './target_v.json',
         "target_cell": {
             "hoc_file": "../data/Spiker/orig/template.hoc",
             "modfiles_folder": "../data/Spiker/orig",
@@ -617,13 +613,13 @@ Simple_Spiker_seg = {
             0.12,
             0.036,
         ],
+        # ======================================================
         "num_repeats": 1,
         "num_amps_to_match": 1,
         "num_epochs": 5000,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
-            "amps": [-0.1, 0.1, 0.2, 0.5, 1],  # list(np.arange(0.0, 3.0, 1.0))
         },
         "decimate_factor": 10,
     },
@@ -703,7 +699,6 @@ Simple_Spiker_orig = {
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
-            "amps": [-0.1, 0.1, 0.2, 0.5, 1],  # list(np.arange(0.0, 3.0, 1.0))
         },
         "decimate_factor": 10,
     },

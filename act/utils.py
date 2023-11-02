@@ -123,7 +123,7 @@ def build_parametric_network(config: SimulationConfig):
     hoc_file = config["cell"]["hoc_file"]
     modfiles_folder = config["cell"]["modfiles_folder"]
 
-    amps = config["optimization_parameters"]["parametric_distribution"]["amps"]
+    amps = config["optimization_parameters"]["amps"]
     amp_delay = config["simulation_parameters"]["h_i_delay"]
     amp_duration = config["simulation_parameters"]["h_i_dur"]
 

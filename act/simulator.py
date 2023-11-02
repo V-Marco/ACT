@@ -15,7 +15,7 @@ from act.analysis import save_mse_corr, save_plot, save_prediction_plots
 from act.logger import ACTLogger
 from act.metrics import correlation_score, mse_score
 from act.optim import GeneralACTOptimizer
-from act.target_utils import get_voltage_trace_from_params
+from act.target_utils import get_voltage_trace_from_params, load_target_traces
 
 temp_modfiles_dir = "temp_modfiles"
 
@@ -54,24 +54,26 @@ def _run(config: SimulationConfig):
     # Get target voltage
     if config["optimization_parameters"]["target_V"] is not None:
         target_V = config["optimization_parameters"]["target_V"]
+    elif config["optimization_parameters"]["target_V_file"] is not None:
+        target_V = load_target_traces(config["optimization_parameters"]["target_V_file"])
     elif config["optimization_parameters"]["target_params"] is not None:
         target_V = get_voltage_trace_from_params(config)
-        decimate_factor = config["optimization_parameters"].get("decimate_factor")
-        if decimate_factor:
-            print(
-                f"decimate_factor set - reducing generated target voltage by {decimate_factor}x"
-            )
-            from scipy import signal
-
-            traces = signal.decimate(
-                target_V.cpu(), decimate_factor
-            ).copy()  # copy per neg index err
-            target_V = torch.tensor(traces)
-
     else:
         raise ValueError(
             "Must specify either target_V or target_params for optimization_parameters"
         )
+    
+    decimate_factor = config["optimization_parameters"].get("decimate_factor")
+    if decimate_factor:
+        print(
+            f"decimate_factor set - reducing generated target voltage by {decimate_factor}x"
+        )
+        from scipy import signal
+
+        traces = signal.decimate(
+            target_V.cpu(), decimate_factor
+        ).copy()  # copy per neg index err
+        target_V = torch.tensor(traces)
 
     logger.info(f"Target voltage shape: {target_V.shape}")
 

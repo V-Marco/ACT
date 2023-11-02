@@ -9,10 +9,12 @@ from act.analysis import save_plot
 from act.optim import ACTOptimizer
 from act.cell_model import CellModel
 
+DEFAULT_TARGET_V_FILE = "./target_v.json"
 
 def get_voltage_trace_from_params(
     simulation_config: SimulationConfig,
 ) -> torch.Tensor:
+    # If we specify a target cell then we should simulate that target 
     if simulation_config["optimization_parameters"].get("target_cell"):
         target_cell = CellModel(
             hoc_file=simulation_config["optimization_parameters"]["target_cell"][
@@ -22,32 +24,44 @@ def get_voltage_trace_from_params(
                 "name"
             ],
         )
-    target_cell = None
+    # otherwise, just use the default config["cell"], loaded by ACTOptimizer
+    else:
+        target_cell = None
+
+    # get our parameters and targets
+    if simulation_config["optimization_parameters"].get("target_cell_params"):
+        target_params = simulation_config["optimization_parameters"].get(
+            "target_cell_target_params"
+        )
+        params = simulation_config["optimization_parameters"]["target_cell_params"]
+    else:
+        target_params = simulation_config["optimization_parameters"]["target_params"]
+        params = simulation_config["optimization_parameters"]["params"]
+
+    # create the optimizer
     optim = ACTOptimizer(
         simulation_config=simulation_config,
         set_passive_properties=False,
         cell_override=target_cell,
     )
     target_V = []
+
+    # create output folders
     output_folder = os.path.join(
         simulation_config["output"]["folder"], simulation_config["run_mode"], "target"
     )
     if not os.path.exists(output_folder):
         os.makedirs(output_folder, exist_ok=True)
 
-    if simulation_config["optimization_parameters"].get("target_cell_params"):
-        target_params = simulation_config["optimization_parameters"].get(
-            "target_cell_params"
-        )
-    else:
-        target_params = simulation_config["optimization_parameters"]["target_params"]
-
+    # get extra sim info
     dt = simulation_config["simulation_parameters"]["h_dt"]
     simulated_label = simulation_config["output"].get("simulated_label", "Simulated")
     target_label = simulation_config["output"].get("target_label", "Target")
+
+    # generate data per amp
     for i, amp in enumerate(simulation_config["optimization_parameters"]["amps"]):
         params = [
-            p["channel"] for p in simulation_config["optimization_parameters"]["params"]
+            p["channel"] for p in params
         ]
         tv = optim.simulate(amp, params, target_params).reshape(1, -1)
         target_V.append(tv)
@@ -85,3 +99,26 @@ def get_voltage_trace_from_params(
     )
 
     return target_V
+
+def save_target_traces(
+        simulation_config: SimulationConfig,
+) -> torch.Tensor:
+    target_V = get_voltage_trace_from_params(simulation_config)
+
+    target_v_file = simulation_config["optimization_parameters"].get("target_V_file", DEFAULT_TARGET_V_FILE)
+    target_v_dict = {"traces":target_V.cpu().detach().tolist()}
+
+    with open(target_v_file, "w") as fp:
+        json.dump(target_v_dict, fp) 
+
+    return target_V
+
+
+def load_target_traces(simulation_config: SimulationConfig,
+) -> torch.Tensor:
+    target_v_file = simulation_config["optimization_parameters"].get("target_V_file", DEFAULT_TARGET_V_FILE)
+    
+    with open(target_v_file, "w") as fp:
+        target_v_dict = json.load(fp) 
+
+    return torch.tensor(target_v_dict["traces"])
