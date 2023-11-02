@@ -15,10 +15,22 @@ from act.analysis import save_mse_corr, save_plot, save_prediction_plots
 from act.logger import ACTLogger
 from act.metrics import correlation_score, mse_score
 from act.optim import GeneralACTOptimizer
-from act.target_utils import get_voltage_trace_from_params, load_target_traces
+from act.target_utils import get_voltage_trace_from_params, save_target_traces, load_target_traces
 
 temp_modfiles_dir = "temp_modfiles"
 
+def _run_generate_target_traces(config: SimulationConfig):
+    # if there is a target_cell specified then use it too
+    os.mkdir(temp_modfiles_dir)
+    shutil.copytree(
+        config["cell"]["modfiles_folder"], temp_modfiles_dir, dirs_exist_ok=True
+    )
+
+    os.system(f"nrnivmodl {temp_modfiles_dir}")
+
+    save_target_traces(config)
+
+    return
 
 def _run(config: SimulationConfig):
     if config["optimization_parameters"]["num_epochs"] < 1000:
@@ -31,13 +43,6 @@ def _run(config: SimulationConfig):
     shutil.copytree(
         config["cell"]["modfiles_folder"], temp_modfiles_dir, dirs_exist_ok=True
     )
-    # Watch out for name collisions, typically not recommended to have this target cell specified
-    if config["optimization_parameters"].get("target_cell", {}).get("modfiles_folder"):
-        shutil.copytree(
-            config["optimization_parameters"]["target_cell"]["modfiles_folder"],
-            temp_modfiles_dir,
-            dirs_exist_ok=True,
-        )
 
     os.system(f"nrnivmodl {temp_modfiles_dir}")
 
@@ -232,6 +237,24 @@ def _run(config: SimulationConfig):
         )
         f.create_dataset("amps", (len(amp_out)), dtype="f", data=amp_out)
         f.close()
+
+
+def run_generate_target_traces(config: SimulationConfig, subprocess=True):
+    try:
+        if subprocess:
+            p = Process(target=_run, args=[config])
+            p.start()
+            p.join()
+            p.terminate()
+        else:
+            _run_generate_target_traces(config)
+    except:
+        raise
+    finally:  # always remove this folder
+        if os.path.exists("x86_64"):
+            os.system("rm -r x86_64")
+        if os.path.exists(temp_modfiles_dir):
+            os.system("rm -r " + temp_modfiles_dir)
 
 
 def run(config: SimulationConfig, subprocess=True):
