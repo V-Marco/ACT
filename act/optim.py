@@ -17,7 +17,6 @@ class ACTOptimizer:
         self,
         simulation_config: SimulationConfig,
         logger: object = None,
-        reset_cell_params_to_lower_bounds_on_init: bool = True,
         set_passive_properties=True,
         cell_override=None,
     ):
@@ -38,13 +37,6 @@ class ACTOptimizer:
             self.cell.set_passive_properties(
                 simulation_config["cell"].get("passive_properties")
             )
-
-        if reset_cell_params_to_lower_bounds_on_init:
-            params = [
-                p["channel"] for p in self.config["optimization_parameters"]["params"]
-            ]
-            lows = [p["low"] for p in self.config["optimization_parameters"]["params"]]
-            self.cell.set_parameters(params, lows)
 
         # For convenience
         self.update_param_vars()
@@ -209,12 +201,10 @@ class GeneralACTOptimizer(ACTOptimizer):
         self,
         simulation_config: SimulationConfig,
         logger: object = None,
-        reset_cell_params_to_lower_bounds_on_init: bool = True,
     ):
         super().__init__(
             simulation_config=simulation_config,
             logger=logger,
-            reset_cell_params_to_lower_bounds_on_init=reset_cell_params_to_lower_bounds_on_init,
         )
 
         self.model = None

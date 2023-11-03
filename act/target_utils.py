@@ -30,13 +30,16 @@ def get_voltage_trace_from_params(
 
     # get our parameters and targets
     if simulation_config["optimization_parameters"].get("target_cell_params"):
+        params = simulation_config["optimization_parameters"]["target_cell_params"]
+    else:
+        params = simulation_config["optimization_parameters"]["params"]
+
+    if simulation_config["optimization_parameters"].get("target_cell_target_params"):
         target_params = simulation_config["optimization_parameters"].get(
             "target_cell_target_params"
         )
-        params = simulation_config["optimization_parameters"]["target_cell_params"]
     else:
         target_params = simulation_config["optimization_parameters"]["target_params"]
-        params = simulation_config["optimization_parameters"]["params"]
 
     # create the optimizer
     optim = ACTOptimizer(
@@ -60,10 +63,11 @@ def get_voltage_trace_from_params(
 
     # generate data per amp
     for i, amp in enumerate(simulation_config["optimization_parameters"]["amps"]):
-        params = [
+        print(f"Generating trace for {float(amp)*1000} nA")
+        parameters = [
             p["channel"] for p in params
         ]
-        tv = optim.simulate(amp, params, target_params).reshape(1, -1)
+        tv = optim.simulate(amp, parameters, target_params).reshape(1, -1)
         target_V.append(tv)
         # write to output folder / mode / target
         save_plot(
@@ -80,7 +84,7 @@ def get_voltage_trace_from_params(
 
     # save passive properties
     passive_properties, passive_v = optim.calculate_passive_properties(
-        params, target_params
+        parameters, target_params
     )
     with open(
         os.path.join(output_folder, "target_passive_properties.json"),
@@ -118,7 +122,7 @@ def load_target_traces(simulation_config: SimulationConfig,
 ) -> torch.Tensor:
     target_v_file = simulation_config["optimization_parameters"].get("target_V_file", DEFAULT_TARGET_V_FILE)
     
-    with open(target_v_file, "w") as fp:
+    with open(target_v_file, "r") as fp:
         target_v_dict = json.load(fp) 
-
+    print(f"Loading {target_v_file} for target traces")
     return torch.tensor(target_v_dict["traces"])

@@ -357,7 +357,7 @@ def spike_stats(V: torch.Tensor, threshold=0, n_spikes=20):
     return first_n_spikes / V.shape[1], avg_spike_min, avg_spike_max
 
 
-def extract_summary_features(V: torch.Tensor, threshold=0) -> tuple:
+def extract_summary_features(V: torch.Tensor, threshold=-40) -> tuple:
     threshold_crossings = torch.diff(V > threshold, dim=1)
     num_spikes = torch.round(torch.sum(threshold_crossings, dim=1) * 0.5)
     interspike_times = torch.zeros((V.shape[0], 1))
@@ -372,7 +372,7 @@ def extract_summary_features(V: torch.Tensor, threshold=0) -> tuple:
     return num_spikes, interspike_times
 
 
-def extract_spiking_traces(traces_t, params_t, amps_t, threshold=0, min_spikes=1):
+def extract_spiking_traces(traces_t, params_t, amps_t, threshold=-40, min_spikes=1):
     num_spikes, interspike_times = extract_summary_features(
         traces_t, threshold=threshold
     )
@@ -483,7 +483,7 @@ def extract_summary_features(V: torch.Tensor, spike_threshold=0) -> tuple:
     interspike_times[torch.isnan(interspike_times)] = 0
     return num_spikes, interspike_times
 
-def get_fi_curve_error(simulated_traces, target_traces, amps, ignore_negative=True, dt=1):
+def get_fi_curve_error(simulated_traces, target_traces, amps, ignore_negative=True, dt=1, print_info=False):
     """
     Returns the average spike count error over the entire trace.
     """
@@ -495,6 +495,10 @@ def get_fi_curve_error(simulated_traces, target_traces, amps, ignore_negative=Tr
         amps = amps[amps>0]
         target_spikes = target_spikes[non_neg_idx]
         simulated_spikes = simulated_spikes[non_neg_idx]
+    if print_info:
+        print(f"target spikes: {target_spikes}")
+        print(f"simulated spikes: {simulated_spikes}")
+        print(f"diff: {simulated_spikes - target_spikes}")
 
     error = round(float(((simulated_spikes - target_spikes)/target_spikes).sum()/len(amps)),4)
 
@@ -505,6 +509,5 @@ def load_final_traces(trace_file):
     amps = torch.tensor(np.array(traces_h5['amps']))
     simulated_traces = torch.tensor(np.array(traces_h5['simulated']['voltage_trace']))
     target_traces = torch.tensor(np.array(traces_h5['target']['voltage_trace']))
-
     return simulated_traces, target_traces, amps
 

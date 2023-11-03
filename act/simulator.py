@@ -21,12 +21,23 @@ temp_modfiles_dir = "temp_modfiles"
 
 def _run_generate_target_traces(config: SimulationConfig):
     # if there is a target_cell specified then use it too
-    os.mkdir(temp_modfiles_dir)
+
+    if config["optimization_parameters"].get("target_cell"):
+        modfolder = config["optimization_parameters"].get("target_cell").get("modfiles_folder")
+    else: 
+        modfolder = config["cell"]["modfiles_folder"]
+
     shutil.copytree(
-        config["cell"]["modfiles_folder"], temp_modfiles_dir, dirs_exist_ok=True
+        modfolder, temp_modfiles_dir, dirs_exist_ok=True
     )
 
     os.system(f"nrnivmodl {temp_modfiles_dir}")
+
+    logger = ACTLogger()
+    try:
+        h.nrn_load_dll("./x86_64/.libs/libnrnmech.so")
+    except:
+        logger.info("Mod files already loaded. Continuing.")
 
     save_target_traces(config)
 
@@ -60,12 +71,12 @@ def _run(config: SimulationConfig):
     if config["optimization_parameters"]["target_V"] is not None:
         target_V = config["optimization_parameters"]["target_V"]
     elif config["optimization_parameters"]["target_V_file"] is not None:
-        target_V = load_target_traces(config["optimization_parameters"]["target_V_file"])
+        target_V = load_target_traces(config)
     elif config["optimization_parameters"]["target_params"] is not None:
         target_V = get_voltage_trace_from_params(config)
     else:
         raise ValueError(
-            "Must specify either target_V or target_params for optimization_parameters"
+            "Must specify either target_V, target_V_file or target_params for optimization_parameters"
         )
     
     decimate_factor = config["optimization_parameters"].get("decimate_factor")
@@ -85,6 +96,7 @@ def _run(config: SimulationConfig):
     # Run the optimizer
     pred_pool = []
     err_pool = []
+    fi_err_pool = []
     params = [p["channel"] for p in config["optimization_parameters"]["params"]]
     for repeat_num in range(config["optimization_parameters"]["num_repeats"]):
         if config["run_mode"] == "original":
@@ -124,15 +136,18 @@ def _run(config: SimulationConfig):
         # sims = torch.cat(sims, dim=0)
 
         # Compute composite error
+        # for each prediction
+        amps_list = config["optimization_parameters"]["amps"]
         for j, pred_sim in enumerate(sims):
             total_error = 0
+            # for each amp
             for i, sim in enumerate(pred_sim):
                 error = mse_score(target_V[i], sim) + (
                     1 - abs(correlation_score(target_V[i], sim))
                 )
                 total_error = total_error + error
 
-                amp = config["optimization_parameters"]["amps"][i]
+                amp = amps_list[i]
                 # save prediction plot for debugging
                 save_prediction_plots(
                     target_V[i].reshape(1, len(target_V[i])).cpu().detach(),
@@ -142,7 +157,10 @@ def _run(config: SimulationConfig):
                     output_folder,
                     output_file=f"repeat{repeat_num+1}_pred{j+1}_{(amp * 1000):.0f}nA.png",
                 )
+            fi_error = utils.get_fi_curve_error(torch.cat(pred_sim), target_V, torch.tensor(amps_list))
+
             err_pool.append(error)
+            fi_err_pool.append(fi_error)
 
         # save prediction values
         p_file = os.path.join(output_folder, f"repeat{repeat_num+1}_predictions.json")
@@ -152,8 +170,11 @@ def _run(config: SimulationConfig):
 
     print(f"All predictions: {pred_pool}")
     print(f"Err per prediction: {err_pool}")
+    print(f"FI Err per prediction: {fi_err_pool}")
 
-    predictions = pred_pool[np.argmin(err_pool)]
+    # old way, error was not reliable, a flat line beats spikes offset by a few ms
+    #predictions = pred_pool[np.argmin(err_pool)]
+    predictions = pred_pool[np.argmin(fi_err_pool)]
 
     print(f"Best prediction: {predictions}")
 
@@ -242,7 +263,7 @@ def _run(config: SimulationConfig):
 def run_generate_target_traces(config: SimulationConfig, subprocess=True):
     try:
         if subprocess:
-            p = Process(target=_run, args=[config])
+            p = Process(target=_run_generate_target_traces, args=[config])
             p.start()
             p.join()
             p.terminate()

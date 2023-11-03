@@ -9,7 +9,7 @@ import torch
 from act.act_types import SimulationConfig
 from act.metrics import correlation_score, mse_score
 from act.optim import ACTOptimizer
-
+from act import utils
 
 def save_plot(
     amp: float,
@@ -184,3 +184,9 @@ def print_run_stats(config: SimulationConfig):
         print(f"{target_label} Passive properties:")
         print(json.dumps(target_passive_json, indent=2))
         print("----------\n")
+
+
+    traces_file = os.path.join(config['output']['folder'], config['run_mode'], 'traces.h5')
+    simulated_traces, target_traces, amps = utils.load_final_traces(traces_file)
+    error  = utils.get_fi_curve_error(simulated_traces, target_traces, amps, print_info=True)
+    print(f"Simulated and target FI curve error [SUM((simulated-target)/target)/n]: {error}")
