@@ -190,3 +190,19 @@ def print_run_stats(config: SimulationConfig):
     simulated_traces, target_traces, amps = utils.load_final_traces(traces_file)
     error  = utils.get_fi_curve_error(simulated_traces, target_traces, amps, print_info=True)
     print(f"Simulated and target FI curve error [SUM((simulated-target)/target)/n]: {error}")
+
+
+def plot_fi_curves(spike_counts_list, amps, labels, title="FI Curves", ignore_negative=True):
+
+    if ignore_negative:
+        amps = amps[amps>0]
+
+    for spike_counts, label in zip(spike_counts_list, labels):
+        plt.plot(amps*1e3, spike_counts, label=label, alpha=0.75)
+
+    #plt.ylim((0,np.max(np.array(spike_counts))))
+    plt.legend()
+    plt.title(title)
+    plt.ylabel('# spikes')
+    plt.xlabel('nA')
+    plt.show()

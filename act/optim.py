@@ -376,7 +376,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         summary_features[torch.isnan(summary_features)] = 0
 
         # Train model
-        self.train_model(
+        train_stats = self.train_model(
             resampled_data.float(),
             param_samples_for_next_stage,
             lows,
@@ -448,7 +448,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         )
         # predictions = torch.max(predictions, dim=0).values
 
-        return predictions
+        return predictions, train_stats
 
     def optimize_with_segregation(
         self, target_V: torch.Tensor, segregate_by: str = "voltage"
@@ -600,27 +600,26 @@ class GeneralACTOptimizer(ACTOptimizer):
         )
 
         self.model.train(True)
-        for i in range(voltage_data.shape[0]):
-            # Track loss to stop if it starts to go up
-            loss0 = np.inf
 
-            for ne in range(self.config["optimization_parameters"]["num_epochs"]):
+        stats = {
+            'loss': []
+        }
+
+        for ne in range(self.config["optimization_parameters"]["num_epochs"]):
+            for i in range(voltage_data.shape[0]):
                 pred = (
                     self.model(voltage_data[i], summary_features[i])
                     * (sigmoid_maxs - sigmoid_mins)
                     + sigmoid_mins
                 )
                 loss = torch.nn.functional.l1_loss(pred, target_params[i])
-
-                if ne % 100 == 0:
-                    self.logger.epoch(ne, "l1_loss", float(loss.cpu().detach().numpy()))
-
-                if loss.cpu().detach().numpy() >= loss0:
-                    break
-                loss0 = loss.cpu().detach().numpy()
+                stats['loss'].append(float(loss.cpu().detach().numpy()))
 
                 loss.backward()
                 optim.step()
+                if i % 100 == 0:
+                    self.logger.info(f"Epoch: {ne} | Loss: {stats['loss'][-1]}")
+        return stats
 
     def predict_with_model(
         self, target_V: torch.Tensor, lows, highs, summary_features

@@ -44,8 +44,8 @@ def _run_generate_target_traces(config: SimulationConfig):
     return
 
 def _run(config: SimulationConfig):
-    if config["optimization_parameters"]["num_epochs"] < 1000:
-        raise ValueError("Number of epochs is expected to be >= 1000.")
+    if config["optimization_parameters"]["num_epochs"] < 1:
+        raise ValueError("Number of epochs is expected to be >= 1.")
 
     output_folder = utils.create_output_folder(config)
 
@@ -101,14 +101,18 @@ def _run(config: SimulationConfig):
     for repeat_num in range(config["optimization_parameters"]["num_repeats"]):
         if config["run_mode"] == "original":
             optim = GeneralACTOptimizer(simulation_config=config, logger=logger)
-            predictions = optim.optimize(target_V)
+            predictions, train_stats = optim.optimize(target_V)
         elif config["run_mode"] == "segregated":
             optim = GeneralACTOptimizer(simulation_config=config, logger=logger)
-            predictions = optim.optimize_with_segregation(target_V, "voltage")
+            predictions, train_stats = optim.optimize_with_segregation(target_V, "voltage")
         else:
             raise ValueError(
                 "run mode not specified, 'original' or 'segregated' supported."
             )
+
+        # output train stats
+        with open(f'train_stats_repeat_{repeat_num}.json', 'w') as fp:
+            json.dump(train_stats, fp)
 
         pred_pool = pred_pool + predictions.cpu().detach().tolist()
 
@@ -174,7 +178,7 @@ def _run(config: SimulationConfig):
 
     # old way, error was not reliable, a flat line beats spikes offset by a few ms
     #predictions = pred_pool[np.argmin(err_pool)]
-    predictions = pred_pool[np.argmin(fi_err_pool)]
+    predictions = pred_pool[np.argmin(np.abs(fi_err_pool))]
 
     print(f"Best prediction: {predictions}")
 

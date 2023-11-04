@@ -583,7 +583,7 @@ Simple_Spiker_seg = {
         "h_dt": 0.1,
     },
     "optimization_parameters": {
-        "amps": [-0.1, 0.1, 0.2, 0.5, 1.0],
+        "amps": [-0.1, 0.1, 0.2, 0.3, 0.4],
         "params": [
             # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05}, # hd, passive
             {
@@ -610,6 +610,15 @@ Simple_Spiker_seg = {
             "name": "Simple_Spiker_orig",
         },
         "target_cell_params": [
+            # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05}, # hd, passive
+            {
+                "channel": "gnabar_hh_orig",
+            },
+            {
+                "channel": "gkbar_hh_orig",
+            },
+        ],
+        "target_cell_target_params": [
             0.12,
             0.036,
         ],
@@ -624,7 +633,7 @@ Simple_Spiker_seg = {
         "decimate_factor": 10,
     },
     "summary_features": {
-        "spike_threshold": 20,  # (mV)
+        "spike_threshold": -30,  # (mV)
         "arima_order": [4, 0, 4],
         # Target-sim match conditions (max abs diff between sim and target)
         "mc_num_spikes": 1,
@@ -646,8 +655,8 @@ Simple_Spiker_seg = {
     "output": {
         "folder": "output_Simple_Spiker_seg",
         "produce_plots": True,
-        "target_label": "ModelDB Segregated",
-        "simulated_label": "Model ACT",
+        "target_label": "User Trace",
+        "simulated_label": "Model ACT-Segregated",
     },
     "run_mode": "original",  # "original", "segregated"
 }
@@ -657,13 +666,13 @@ Simple_Spiker_orig = {
         "hoc_file": "../data/Spiker/orig/template.hoc",
         "modfiles_folder": "../data/Spiker/orig",
         "name": "Simple_Spiker_orig",
-        # "passive_properties": {
-        #    "v_rest": -65,
-        #    "r_in": 192,
-        #    "tau": 2.575,
-        #    "leak_conductance_variable": "gl_hh_orig",  # eg: g_leak
-        #    "leak_reversal_variable": "el_hh_orig",  # eg: e_leak
-        # },
+         "passive_properties": {
+            "v_rest": -65,
+            "r_in": 192,
+            "tau": 2.575,
+            "leak_conductance_variable": "gl_hh_orig",  # eg: g_leak
+            "leak_reversal_variable": "el_hh_orig",  # eg: e_leak
+         },
     },
     "simulation_parameters": {
         "h_v_init": -65.0,  # (mV)
@@ -673,7 +682,7 @@ Simple_Spiker_orig = {
         "h_dt": 0.1,
     },
     "optimization_parameters": {
-        "amps": [-0.1, 0.1, 0.2, 0.5, 1.0],
+        "amps": [-0.1, 0.1, 0.2, 0.3, 0.4],
         "params": [
             #{"channel": "gl_hh_orig", "low": 0.0001, "high": 0.009},  # hd, passive
             {
@@ -693,9 +702,10 @@ Simple_Spiker_orig = {
             0.12,
             0.036,
         ],
+        "target_V_file": './target_v.json',
         "num_repeats": 1,
         "num_amps_to_match": 1,
-        "num_epochs": 5000,
+        "num_epochs": 300,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
@@ -703,7 +713,7 @@ Simple_Spiker_orig = {
         "decimate_factor": 10,
     },
     "summary_features": {
-        "spike_threshold": 20,  # (mV)
+        "spike_threshold": -30,  # (mV)
         "arima_order": [4, 0, 4],
         # Target-sim match conditions (max abs diff between sim and target)
         "mc_num_spikes": 1,
@@ -725,8 +735,8 @@ Simple_Spiker_orig = {
     "output": {
         "folder": "output_Simple_Spiker_orig",
         "produce_plots": True,
-        "target_label": "ModelDB Original",
-        "simulated_label": "Model ACT",
+        "target_label": "User Trace",
+        "simulated_label": "Model ACT-Original",
     },
     "run_mode": "original",  # "original", "segregated"
 }

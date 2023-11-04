@@ -483,18 +483,27 @@ def extract_summary_features(V: torch.Tensor, spike_threshold=0) -> tuple:
     interspike_times[torch.isnan(interspike_times)] = 0
     return num_spikes, interspike_times
 
-def get_fi_curve_error(simulated_traces, target_traces, amps, ignore_negative=True, dt=1, print_info=False):
+def get_fi_curve(traces, amps, ignore_negative=True):
     """
-    Returns the average spike count error over the entire trace.
+    Returns the spike counts per amp.
     """
-    target_spikes, target_interspike_times = extract_summary_features(target_traces)
-    simulated_spikes, simulated_interspike_times = extract_summary_features(simulated_traces)
+    spikes, interspike_times = extract_summary_features(traces)
 
     if ignore_negative:
         non_neg_idx = (amps>0).nonzero().flatten()
         amps = amps[amps>0]
-        target_spikes = target_spikes[non_neg_idx]
-        simulated_spikes = simulated_spikes[non_neg_idx]
+        spikes = spikes[non_neg_idx]
+
+    return spikes
+
+
+def get_fi_curve_error(simulated_traces, target_traces, amps, ignore_negative=True, dt=1, print_info=False):
+    """
+    Returns the average spike count error over the entire trace.
+    """
+    simulated_spikes = get_fi_curve(simulated_traces, amps, ignore_negative=ignore_negative)
+    target_spikes = get_fi_curve(target_traces, amps, ignore_negative=ignore_negative) 
+
     if print_info:
         print(f"target spikes: {target_spikes}")
         print(f"simulated spikes: {simulated_spikes}")
