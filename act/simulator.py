@@ -111,14 +111,18 @@ def _run(config: SimulationConfig):
             )
 
         # output train stats
-        with open(f'train_stats_repeat_{repeat_num}.json', 'w') as fp:
+        print(f"writing training run stats for repeat {repeat_num+1}")
+        with open(f'train_stats_repeat_{repeat_num+1}.json', 'w') as fp:
             json.dump(train_stats, fp)
+        print("done")
 
+        print(f"{repeat_num+1} predictions: {predictions.cpu().detach().tolist()}")
         pred_pool = pred_pool + predictions.cpu().detach().tolist()
 
         sims = []
         # we want to simulate each amp with each param predicted
         # the one with best overall error is our selection
+        print(f"Calculating error...")
         for i, pred in enumerate(predictions.cpu().detach().tolist()):
             sim_list = []
             for j, amp in enumerate(config["optimization_parameters"]["amps"]):

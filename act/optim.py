@@ -13,6 +13,37 @@ from act.models import BranchingNet, EmbeddingNet, SimpleNet, ConvolutionEmbeddi
 from act import utils
 from sklearn.ensemble import RandomForestRegressor
 
+class TorchStandardScaler:
+
+    def __init__(self):
+        self._is_fit = False
+
+    def fit(self, x):
+        self.mean = x.mean(0, keepdim=True)
+        self.std = x.std(0, unbiased=False, keepdim=True)
+        self._is_fit = True
+
+    def transform(self, x):
+        if self._is_fit:
+            x -= self.mean
+            x /= (self.std + 1e-7)
+        return x
+
+class TorchMinMaxScaler:
+
+    def __init__(self):
+        self._is_fit = False
+
+    def fit(self, x):
+        self.min = x.min()
+        self.max = x.max()
+        self._is_fit = True
+
+    def transform(self, x):
+        if self._is_fit:
+            x = (x-self.min+1e-7)/(self.max-self.min)
+        return x 
+
 
 class ACTOptimizer:
     def __init__(
@@ -213,6 +244,10 @@ class GeneralACTOptimizer(ACTOptimizer):
         self.model_pool = None
         self.reg = None  # regressor for random forest
         self.init_random_forest()
+
+        self.voltage_data_scaler = TorchMinMaxScaler()
+        self.summary_feature_scaler = TorchStandardScaler()
+        self.target_param_scaler = TorchStandardScaler()
 
     def init_random_forest(self):
         params = {
@@ -592,10 +627,12 @@ class GeneralACTOptimizer(ACTOptimizer):
         highs,
         summary_features,
         train_test_split=0.9,
-        batch_size=2,
+        batch_size=16,
     ) -> None:
 
-        optim = torch.optim.SGD(self.model.parameters(), lr=1e-3, weight_decay=1e-5)
+        optim = torch.optim.Adam(self.model.parameters(), lr=1e-4, weight_decay=1e-6)
+        loss_fn = torch.nn.MSELoss() #torch.nn.functional.l1_loss
+
         sigmoid_mins = torch.tensor(lows)
         sigmoid_maxs = torch.tensor(highs)
 
@@ -613,7 +650,7 @@ class GeneralACTOptimizer(ACTOptimizer):
             'train_size': 0,
             'test_size':0,
         }
-        
+
         # shuffle the training data
         indexes = torch.randperm(voltage_data.shape[0])
         split_point = int(voltage_data.shape[0]*train_test_split)
@@ -632,6 +669,15 @@ class GeneralACTOptimizer(ACTOptimizer):
         target_params_train = target_params[train_ind]
         target_params_test = target_params[test_ind]
 
+        # Fit the training data, transform both train and test.
+        # The fit is not applied to original dataset due to the possibility of data leakage
+        self.voltage_data_scaler.fit(voltage_data_train)
+        self.summary_feature_scaler.fit(summary_features_train)
+
+        voltage_data_train = self.voltage_data_scaler.transform(voltage_data_train)
+        voltage_data_test = self.voltage_data_scaler.transform(voltage_data_test)
+        summary_features_train = self.summary_feature_scaler.transform(summary_features_train)
+        summary_features_test = self.summary_feature_scaler.transform(summary_features_test)
         batch_start = torch.arange(0, len(voltage_data_train), batch_size)
 
         # Hold the best model
@@ -639,7 +685,6 @@ class GeneralACTOptimizer(ACTOptimizer):
         best_weights = None
         
         num_epochs = self.config["optimization_parameters"]["num_epochs"]
-        loss_fn =  torch.nn.functional.l1_loss
 
         for epoch in range(num_epochs):
             self.model.train()
@@ -704,9 +749,11 @@ class GeneralACTOptimizer(ACTOptimizer):
 
         self.model.eval()
         outs = []
+        target_V_fit = self.voltage_data_scaler.transform(target_V)
+        summary_features_fit = self.summary_feature_scaler.transform(summary_features)
         for i in range(target_V.shape[0]):
             out = (
-                self.model(target_V[i].reshape(1,-1), summary_features[i].reshape(1,-1))
+                self.model(target_V_fit[i].reshape(1,-1), summary_features_fit[i].reshape(1,-1))
                 * (sigmoid_maxs - sigmoid_mins)
                 + sigmoid_mins
             )
