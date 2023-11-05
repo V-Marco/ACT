@@ -94,11 +94,10 @@ class ConvolutionEmbeddingNet(torch.nn.Module):
     def forward(self, X, summary_features):
         # Potentially support batches
         if len(X.shape) == 1:
-            X = X.reshape(1, 1, X.shape[0])
+            X_res = X.reshape(1, 1, X.shape[0])
         if len(X.shape) == 2:
-            X = X.reshape(X.shape[0], 1, X.shape[1])
+            X_res = X.reshape(X.shape[0], 1, X.shape[1])
 
         # The embedder's output is (1, ...), flatten for concatenation
-        embedding = self.embedder(X).flatten()
-
-        return self.predictor(torch.cat((embedding, summary_features)))
+        embedding = self.embedder(X_res)
+        return self.predictor(torch.cat((summary_features,embedding), axis=1))

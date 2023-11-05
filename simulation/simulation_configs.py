@@ -583,7 +583,7 @@ Simple_Spiker_seg = {
         "h_dt": 0.1,
     },
     "optimization_parameters": {
-        "amps": [-0.1, 0.1, 0.2, 0.3, 0.4],
+        "amps": [0.1, 0.2, 0.3, 0.4],
         "params": [
             # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05}, # hd, passive
             {
@@ -625,7 +625,7 @@ Simple_Spiker_seg = {
         # ======================================================
         "num_repeats": 1,
         "num_amps_to_match": 1,
-        "num_epochs": 5000,
+        "num_epochs": 300,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
@@ -682,7 +682,7 @@ Simple_Spiker_orig = {
         "h_dt": 0.1,
     },
     "optimization_parameters": {
-        "amps": [-0.1, 0.1, 0.2, 0.3, 0.4],
+        "amps": [0.1, 0.2, 0.3, 0.4],
         "params": [
             #{"channel": "gl_hh_orig", "low": 0.0001, "high": 0.009},  # hd, passive
             {

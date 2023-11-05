@@ -4,6 +4,8 @@
 All together
 
 ```
+# 0. Updated your selected_config in simulation_configs.py
+
 # 1. Generate target traces
 python generate_target_traces.py
 
@@ -16,13 +18,21 @@ python generate_traces.py build
 python generate_traces.py
 
 # 4. Generate ARIMA summary statistics
-NOCUDA=1 python generate_arma_stats.py
+python generate_arma_stats.py
 
 # 5. Run the simulation
 python run_simulation.py
 
 # 6. View runs statistics
 python analyze_res.py
+python plot_fi.py 
 
+# can also plot additional fi curve to compare seg and orig
+# python plot_fi.py --extra-trace-file ../othersimulation/output_Simple_Spiker_seg/original/traces.h5 --extra-trace-label 'Model ACT-Segregated'
 
+```
+
+One line
+```
+python generate_target_traces.py && python generate_traces.py build && python generate_traces.py && python generate_arma_stats.py && python run_simulation.py && python analyze_res.py && python plot_fi.py
 ```

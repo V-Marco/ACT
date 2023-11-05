@@ -167,10 +167,18 @@ def _run(config: SimulationConfig):
             fi_err_pool.append(fi_error)
 
         # save prediction values
+        mean = np.mean(predictions.cpu().detach().tolist(),axis=0).tolist()
+        variance = np.var(predictions.cpu().detach().tolist(),axis=0).tolist()
+        
         p_file = os.path.join(output_folder, f"repeat{repeat_num+1}_predictions.json")
-        pred_dict = {"predictions": predictions.cpu().detach().tolist()}
+        pred_dict = {"predictions": predictions.cpu().detach().tolist(),
+                "mean": mean,
+                "var": variance,
+                }
         with open(p_file, "w") as fp:
-            json.dump(pred_dict, fp)
+            json.dump(pred_dict, fp, indent=4)
+
+        print(f"Repeat {repeat_num+1} mean: {mean} | variance: {variance}")
 
     print(f"All predictions: {pred_pool}")
     print(f"Err per prediction: {err_pool}")

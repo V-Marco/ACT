@@ -3,6 +3,8 @@ import torch
 from neuron import h
 from scipy.signal import resample
 import os
+import copy
+import tqdm
 
 from act.act_types import PassiveProperties, SimulationConfig
 from act.cell_model import CellModel
@@ -589,8 +591,11 @@ class GeneralACTOptimizer(ACTOptimizer):
         lows,
         highs,
         summary_features,
+        train_test_split=0.9,
+        batch_size=2,
     ) -> None:
-        optim = torch.optim.SGD(self.model.parameters(), lr=1e-8, weight_decay=1e-5)
+
+        optim = torch.optim.SGD(self.model.parameters(), lr=1e-4, weight_decay=1e-5)
         sigmoid_mins = torch.tensor(lows)
         sigmoid_maxs = torch.tensor(highs)
 
@@ -599,26 +604,96 @@ class GeneralACTOptimizer(ACTOptimizer):
             f"Number of trainable parameters: {sum(p.numel() for p in self.model.parameters() if p.requires_grad)}"
         )
 
-        self.model.train(True)
+        #self.model.train(True)
 
         stats = {
-            'loss': []
+            'train_loss_batches': [],
+            'train_loss': [],
+            'test_loss': [],
+            'train_size': 0,
+            'test_size':0,
         }
+        
+        # shuffle the training data
+        indexes = torch.randperm(voltage_data.shape[0])
+        split_point = int(voltage_data.shape[0]*train_test_split)
 
-        for ne in range(self.config["optimization_parameters"]["num_epochs"]):
-            for i in range(voltage_data.shape[0]):
-                pred = (
-                    self.model(voltage_data[i], summary_features[i])
+        train_ind = indexes[:split_point]
+        test_ind = indexes[split_point:]
+        stats['train_size'] = len(train_ind)
+        stats['test_size'] = len(test_ind)
+
+        voltage_data_train = voltage_data[train_ind]
+        voltage_data_test = voltage_data[test_ind]
+        
+        summary_features_train = summary_features[train_ind]
+        summary_features_test = summary_features[test_ind]
+
+        target_params_train = target_params[train_ind]
+        target_params_test = target_params[test_ind]
+
+        batch_start = torch.arange(0, len(voltage_data_train), batch_size)
+
+        # Hold the best model
+        best_mse = np.inf   # init to infinity
+        best_weights = None
+        
+        num_epochs = self.config["optimization_parameters"]["num_epochs"]
+        loss_fn =  torch.nn.functional.l1_loss
+
+        for epoch in range(num_epochs):
+            self.model.train()
+            with tqdm.tqdm(batch_start, unit="batch", mininterval=0, disable=False) as bar:
+                bar.set_description(f"Epoch {epoch}/{num_epochs}")
+                for start in bar:
+
+                    voltage_data_batch = voltage_data_train[start:start+batch_size]
+                    summary_features_batch = summary_features_train[start:start+batch_size]
+                    target_params_batch = target_params_train[start:start+batch_size]
+
+                    # forward pass
+
+                    pred = ( 
+                        self.model(voltage_data_batch, summary_features_batch)
+                        * (sigmoid_maxs - sigmoid_mins)
+                        + sigmoid_mins
+                    )
+                    loss = loss_fn(pred, target_params_batch)
+                    stats['train_loss_batches'].append(float(loss.cpu().detach().numpy()))
+                
+                    # backward pass
+                    optim.zero_grad() # this line is new, wasn't in last round
+                    loss.backward()
+
+                    # update weights
+                    optim.step()
+
+                    # print process
+                    bar.set_postfix(mse=float(loss))
+            # evaluate accuracy at end of each epoch
+            self.model.eval()
+            y_pred = (self.model(voltage_data_train, summary_features_train)
                     * (sigmoid_maxs - sigmoid_mins)
                     + sigmoid_mins
-                )
-                loss = torch.nn.functional.l1_loss(pred, target_params[i])
-                stats['loss'].append(float(loss.cpu().detach().numpy()))
+            )
+            mse = loss_fn(y_pred, target_params_train)
+            mse = float(mse)
+            stats['train_loss'].append(mse)
 
-                loss.backward()
-                optim.step()
-                if i % 100 == 0:
-                    self.logger.info(f"Epoch: {ne} | Loss: {stats['loss'][-1]}")
+            y_pred = (self.model(voltage_data_test, summary_features_test)
+                    * (sigmoid_maxs - sigmoid_mins)
+                    + sigmoid_mins
+            )
+            mse = loss_fn(y_pred, target_params_test)
+            mse = float(mse)
+            stats['test_loss'].append(mse)
+            if mse < best_mse:
+                best_mse = mse
+                best_weights = copy.deepcopy(self.model.state_dict())
+
+        # restore model and return best accuracy
+        self.model.load_state_dict(best_weights)
+
         return stats
 
     def predict_with_model(
@@ -631,7 +706,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         outs = []
         for i in range(target_V.shape[0]):
             out = (
-                self.model(target_V[i], summary_features[i])
+                self.model(target_V[i].reshape(1,-1), summary_features[i].reshape(1,-1))
                 * (sigmoid_maxs - sigmoid_mins)
                 + sigmoid_mins
             )
