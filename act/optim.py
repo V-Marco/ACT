@@ -9,7 +9,7 @@ import tqdm
 from act.act_types import PassiveProperties, SimulationConfig
 from act.cell_model import CellModel
 from act.logger import ACTDummyLogger
-from act.models import BranchingNet, EmbeddingNet, SimpleNet, ConvolutionEmbeddingNet
+from act.models import BranchingNet, EmbeddingNet, SimpleNet, ConvolutionEmbeddingNet, SummaryNet
 from act import utils
 from sklearn.ensemble import RandomForestRegressor
 
@@ -28,6 +28,21 @@ class TorchStandardScaler:
             x -= self.mean
             x /= (self.std + 1e-7)
         return x
+
+class TorchMinMaxColScaler:
+    def __init__(self):
+        self._is_fit = False
+
+    def fit(self, x):
+        self.min = x.min(dim=0)[0]
+        self.max = x.max(dim=0)[0]
+        self._is_fit = True
+
+    def transform(self, x):
+        if self._is_fit:
+            x = (x-self.min+1e-7)/(self.max+1e-7-self.min)
+        return x
+
 
 class TorchMinMaxScaler:
 
@@ -246,7 +261,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         self.init_random_forest()
 
         self.voltage_data_scaler = TorchMinMaxScaler()
-        self.summary_feature_scaler = TorchStandardScaler()
+        self.summary_feature_scaler = TorchMinMaxColScaler()
         self.target_param_scaler = TorchStandardScaler()
 
     def init_random_forest(self):
@@ -615,7 +630,8 @@ class GeneralACTOptimizer(ACTOptimizer):
         # ModelClass = SimpleNet
         # ModelClass = BranchingNet
         # ModelClass = EmbeddingNet
-        ModelClass = ConvolutionEmbeddingNet
+        # ModelClass = ConvolutionEmbeddingNet
+        ModelClass = SummaryNet
         model = ModelClass(in_channels, out_channels, summary_features)
         return model
 

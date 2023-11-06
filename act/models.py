@@ -101,3 +101,19 @@ class ConvolutionEmbeddingNet(torch.nn.Module):
         # The embedder's output is (1, ...), flatten for concatenation
         embedding = self.embedder(X_res)
         return self.predictor(torch.cat((summary_features,embedding), axis=1))
+
+
+class SummaryNet(torch.nn.Module):
+    def __init__(self, in_channels, out_channels, summary_features):
+        super().__init__()
+        self.predictor = torch.nn.Sequential(
+            torch.nn.Linear(summary_features.shape[-1], 15),
+            torch.nn.ReLU(),
+            torch.nn.Linear(15,15),
+            torch.nn.ReLU(),
+            torch.nn.Linear(15, out_channels),
+            torch.nn.Sigmoid(),
+        )
+
+    def forward(self, X, summary_features):
+        return self.predictor(summary_features)
