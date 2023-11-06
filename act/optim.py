@@ -649,9 +649,9 @@ class GeneralACTOptimizer(ACTOptimizer):
         highs,
         summary_features,
         train_test_split=0.9,
-        batch_size=16,
+        batch_size=8,
     ) -> None:
-        optim = torch.optim.Adam(self.model.parameters(), lr=1e-4, weight_decay=1e-6)
+        optim = torch.optim.Adam(self.model.parameters(), lr=2e-5, weight_decay=1e-4)
         loss_fn = torch.nn.MSELoss()  # torch.nn.functional.l1_loss
 
         sigmoid_mins = torch.tensor(lows)
