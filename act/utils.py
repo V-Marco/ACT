@@ -465,23 +465,19 @@ def load_arima_coefs(input_file="output/arima_stats.json"):
     return torch.tensor(arima_dict["arima_coefs"])
 
 
-
 def extract_summary_features(V: torch.Tensor, spike_threshold=0) -> tuple:
-    threshold_crossings = torch.diff(
-        V > spike_threshold, dim=1
-    )
+    threshold_crossings = torch.diff(V > spike_threshold, dim=1)
     num_spikes = torch.round(torch.sum(threshold_crossings, dim=1) * 0.5)
     interspike_times = torch.zeros((V.shape[0], 1))
     for i in range(threshold_crossings.shape[0]):
         interspike_times[i, :] = torch.mean(
             torch.diff(
-                torch.arange(threshold_crossings.shape[1])[
-                    threshold_crossings[i, :]
-                ]
+                torch.arange(threshold_crossings.shape[1])[threshold_crossings[i, :]]
             ).float()
         )
     interspike_times[torch.isnan(interspike_times)] = 0
     return num_spikes, interspike_times
+
 
 def get_fi_curve(traces, amps, ignore_negative=True):
     """
@@ -490,33 +486,39 @@ def get_fi_curve(traces, amps, ignore_negative=True):
     spikes, interspike_times = extract_summary_features(traces)
 
     if ignore_negative:
-        non_neg_idx = (amps>0).nonzero().flatten()
-        amps = amps[amps>0]
+        non_neg_idx = (amps > 0).nonzero().flatten()
+        amps = amps[amps > 0]
         spikes = spikes[non_neg_idx]
 
     return spikes
 
 
-def get_fi_curve_error(simulated_traces, target_traces, amps, ignore_negative=True, dt=1, print_info=False):
+def get_fi_curve_error(
+    simulated_traces, target_traces, amps, ignore_negative=True, dt=1, print_info=False
+):
     """
     Returns the average spike count error over the entire trace.
     """
-    simulated_spikes = get_fi_curve(simulated_traces, amps, ignore_negative=ignore_negative)
-    target_spikes = get_fi_curve(target_traces, amps, ignore_negative=ignore_negative) 
+    simulated_spikes = get_fi_curve(
+        simulated_traces, amps, ignore_negative=ignore_negative
+    )
+    target_spikes = get_fi_curve(target_traces, amps, ignore_negative=ignore_negative)
 
     if print_info:
         print(f"target spikes: {target_spikes}")
         print(f"simulated spikes: {simulated_spikes}")
         print(f"diff: {simulated_spikes - target_spikes}")
 
-    error = round(float(((simulated_spikes - target_spikes)/target_spikes).sum()/len(amps)),4)
+    error = round(
+        float(((simulated_spikes - target_spikes) / target_spikes).sum() / len(amps)), 4
+    )
 
     return error
 
+
 def load_final_traces(trace_file):
     traces_h5 = h5py.File(trace_file)
-    amps = torch.tensor(np.array(traces_h5['amps']))
-    simulated_traces = torch.tensor(np.array(traces_h5['simulated']['voltage_trace']))
-    target_traces = torch.tensor(np.array(traces_h5['target']['voltage_trace']))
+    amps = torch.tensor(np.array(traces_h5["amps"]))
+    simulated_traces = torch.tensor(np.array(traces_h5["simulated"]["voltage_trace"]))
+    target_traces = torch.tensor(np.array(traces_h5["target"]["voltage_trace"]))
     return simulated_traces, target_traces, amps
-

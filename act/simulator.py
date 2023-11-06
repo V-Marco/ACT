@@ -15,21 +15,26 @@ from act.analysis import save_mse_corr, save_plot, save_prediction_plots
 from act.logger import ACTLogger
 from act.metrics import correlation_score, mse_score
 from act.optim import GeneralACTOptimizer
-from act.target_utils import get_voltage_trace_from_params, save_target_traces, load_target_traces
+from act.target_utils import (
+    get_voltage_trace_from_params,
+    save_target_traces,
+    load_target_traces,
+)
 
 temp_modfiles_dir = "temp_modfiles"
+
 
 def _run_generate_target_traces(config: SimulationConfig):
     # if there is a target_cell specified then use it too
 
     if config["optimization_parameters"].get("target_cell"):
-        modfolder = config["optimization_parameters"].get("target_cell").get("modfiles_folder")
-    else: 
+        modfolder = (
+            config["optimization_parameters"].get("target_cell").get("modfiles_folder")
+        )
+    else:
         modfolder = config["cell"]["modfiles_folder"]
 
-    shutil.copytree(
-        modfolder, temp_modfiles_dir, dirs_exist_ok=True
-    )
+    shutil.copytree(modfolder, temp_modfiles_dir, dirs_exist_ok=True)
 
     os.system(f"nrnivmodl {temp_modfiles_dir}")
 
@@ -42,6 +47,7 @@ def _run_generate_target_traces(config: SimulationConfig):
     save_target_traces(config)
 
     return
+
 
 def _run(config: SimulationConfig):
     if config["optimization_parameters"]["num_epochs"] < 1:
@@ -78,7 +84,7 @@ def _run(config: SimulationConfig):
         raise ValueError(
             "Must specify either target_V, target_V_file or target_params for optimization_parameters"
         )
-    
+
     decimate_factor = config["optimization_parameters"].get("decimate_factor")
     if decimate_factor:
         print(
@@ -104,7 +110,9 @@ def _run(config: SimulationConfig):
             predictions, train_stats = optim.optimize(target_V)
         elif config["run_mode"] == "segregated":
             optim = GeneralACTOptimizer(simulation_config=config, logger=logger)
-            predictions, train_stats = optim.optimize_with_segregation(target_V, "voltage")
+            predictions, train_stats = optim.optimize_with_segregation(
+                target_V, "voltage"
+            )
         else:
             raise ValueError(
                 "run mode not specified, 'original' or 'segregated' supported."
@@ -112,7 +120,7 @@ def _run(config: SimulationConfig):
 
         # output train stats
         print(f"writing training run stats for repeat {repeat_num+1}")
-        with open(f'train_stats_repeat_{repeat_num+1}.json', 'w') as fp:
+        with open(f"train_stats_repeat_{repeat_num+1}.json", "w") as fp:
             json.dump(train_stats, fp)
         print("done")
 
@@ -165,20 +173,23 @@ def _run(config: SimulationConfig):
                     output_folder,
                     output_file=f"repeat{repeat_num+1}_pred{j+1}_{(amp * 1000):.0f}nA.png",
                 )
-            fi_error = utils.get_fi_curve_error(torch.cat(pred_sim), target_V, torch.tensor(amps_list))
+            fi_error = utils.get_fi_curve_error(
+                torch.cat(pred_sim), target_V, torch.tensor(amps_list)
+            )
 
             err_pool.append(error)
             fi_err_pool.append(fi_error)
 
         # save prediction values
-        mean = np.mean(predictions.cpu().detach().tolist(),axis=0).tolist()
-        variance = np.var(predictions.cpu().detach().tolist(),axis=0).tolist()
-        
+        mean = np.mean(predictions.cpu().detach().tolist(), axis=0).tolist()
+        variance = np.var(predictions.cpu().detach().tolist(), axis=0).tolist()
+
         p_file = os.path.join(output_folder, f"repeat{repeat_num+1}_predictions.json")
-        pred_dict = {"predictions": predictions.cpu().detach().tolist(),
-                "mean": mean,
-                "var": variance,
-                }
+        pred_dict = {
+            "predictions": predictions.cpu().detach().tolist(),
+            "mean": mean,
+            "var": variance,
+        }
         with open(p_file, "w") as fp:
             json.dump(pred_dict, fp, indent=4)
 
@@ -189,7 +200,7 @@ def _run(config: SimulationConfig):
     print(f"FI Err per prediction: {fi_err_pool}")
 
     # old way, error was not reliable, a flat line beats spikes offset by a few ms
-    #predictions = pred_pool[np.argmin(err_pool)]
+    # predictions = pred_pool[np.argmin(err_pool)]
     predictions = pred_pool[np.argmin(np.abs(fi_err_pool))]
 
     print(f"Best prediction: {predictions}")

@@ -11,6 +11,7 @@ from act.metrics import correlation_score, mse_score
 from act.optim import ACTOptimizer
 from act import utils
 
+
 def save_plot(
     amp: float,
     output_folder: str,
@@ -185,24 +186,30 @@ def print_run_stats(config: SimulationConfig):
         print(json.dumps(target_passive_json, indent=2))
         print("----------\n")
 
-
-    traces_file = os.path.join(config['output']['folder'], config['run_mode'], 'traces.h5')
+    traces_file = os.path.join(
+        config["output"]["folder"], config["run_mode"], "traces.h5"
+    )
     simulated_traces, target_traces, amps = utils.load_final_traces(traces_file)
-    error  = utils.get_fi_curve_error(simulated_traces, target_traces, amps, print_info=True)
-    print(f"Simulated and target FI curve error [SUM((simulated-target)/target)/n]: {error}")
+    error = utils.get_fi_curve_error(
+        simulated_traces, target_traces, amps, print_info=True
+    )
+    print(
+        f"Simulated and target FI curve error [SUM((simulated-target)/target)/n]: {error}"
+    )
 
 
-def plot_fi_curves(spike_counts_list, amps, labels, title="FI Curves", ignore_negative=True):
-
+def plot_fi_curves(
+    spike_counts_list, amps, labels, title="FI Curves", ignore_negative=True
+):
     if ignore_negative:
-        amps = amps[amps>0]
+        amps = amps[amps > 0]
 
     for spike_counts, label in zip(spike_counts_list, labels):
-        plt.plot(amps*1e3, spike_counts, label=label, alpha=0.75)
+        plt.plot(amps * 1e3, spike_counts, label=label, alpha=0.75)
 
-    #plt.ylim((0,np.max(np.array(spike_counts))))
+    # plt.ylim((0,np.max(np.array(spike_counts))))
     plt.legend()
     plt.title(title)
-    plt.ylabel('# spikes')
-    plt.xlabel('nA')
+    plt.ylabel("# spikes")
+    plt.xlabel("nA")
     plt.show()

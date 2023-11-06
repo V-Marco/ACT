@@ -11,10 +11,11 @@ from act.cell_model import CellModel
 
 DEFAULT_TARGET_V_FILE = "./target_v.json"
 
+
 def get_voltage_trace_from_params(
     simulation_config: SimulationConfig,
 ) -> torch.Tensor:
-    # If we specify a target cell then we should simulate that target 
+    # If we specify a target cell then we should simulate that target
     if simulation_config["optimization_parameters"].get("target_cell"):
         target_cell = CellModel(
             hoc_file=simulation_config["optimization_parameters"]["target_cell"][
@@ -64,9 +65,7 @@ def get_voltage_trace_from_params(
     # generate data per amp
     for i, amp in enumerate(simulation_config["optimization_parameters"]["amps"]):
         print(f"Generating trace for {float(amp)*1000} nA")
-        parameters = [
-            p["channel"] for p in params
-        ]
+        parameters = [p["channel"] for p in params]
         tv = optim.simulate(amp, parameters, target_params).reshape(1, -1)
         target_V.append(tv)
         # write to output folder / mode / target
@@ -104,25 +103,31 @@ def get_voltage_trace_from_params(
 
     return target_V
 
+
 def save_target_traces(
-        simulation_config: SimulationConfig,
+    simulation_config: SimulationConfig,
 ) -> torch.Tensor:
     target_V = get_voltage_trace_from_params(simulation_config)
 
-    target_v_file = simulation_config["optimization_parameters"].get("target_V_file", DEFAULT_TARGET_V_FILE)
-    target_v_dict = {"traces":target_V.cpu().detach().tolist()}
+    target_v_file = simulation_config["optimization_parameters"].get(
+        "target_V_file", DEFAULT_TARGET_V_FILE
+    )
+    target_v_dict = {"traces": target_V.cpu().detach().tolist()}
 
     with open(target_v_file, "w") as fp:
-        json.dump(target_v_dict, fp) 
+        json.dump(target_v_dict, fp)
 
     return target_V
 
 
-def load_target_traces(simulation_config: SimulationConfig,
+def load_target_traces(
+    simulation_config: SimulationConfig,
 ) -> torch.Tensor:
-    target_v_file = simulation_config["optimization_parameters"].get("target_V_file", DEFAULT_TARGET_V_FILE)
-    
+    target_v_file = simulation_config["optimization_parameters"].get(
+        "target_V_file", DEFAULT_TARGET_V_FILE
+    )
+
     with open(target_v_file, "r") as fp:
-        target_v_dict = json.load(fp) 
+        target_v_dict = json.load(fp)
     print(f"Loading {target_v_file} for target traces")
     return torch.tensor(target_v_dict["traces"])

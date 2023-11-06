@@ -269,13 +269,13 @@ LA_A_orig = {
         "hoc_file": "../data/LA/A/orig_modfiles/template.hoc",
         "modfiles_folder": "../data/LA/A/orig_modfiles",
         "name": "Cell_A",
-        #"passive_properties": {
+        # "passive_properties": {
         #    "v_rest": -70,
         #    "r_in": 141,
         #    "tau": 30.88,
         #    "leak_conductance_variable": "glbar_leak",  # eg: g_leak
         #    "leak_reversal_variable": "el_leak",  # eg: e_leak
-        #},
+        # },
     },
     "simulation_parameters": {
         "h_v_init": -70.0,  # (mV)
@@ -315,12 +315,12 @@ LA_A_orig = {
             #    "low": 0.0045,
             #    "high": 0.018,
             # },  # sahp, spiking/adaptation
-            {'channel': 'gbar_nap', 'high': 0.0009, 'low': 0.0001},
-            {'channel': 'gmbar_im', 'high': 0.006, 'low': 0.00066667},
-            {'channel': 'gbar_na3', 'high': 0.09, 'low': 0.01},
-            {'channel': 'gkdrbar_kdr', 'high': 0.09, 'low': 0.01},
-            {'channel': 'gcabar_cadyn', 'high': 0.00018, 'low': 2e-05},
-            {'channel': 'gsAHPbar_sAHP', 'high': 0.027, 'low': 0.003},
+            {"channel": "gbar_nap", "high": 0.0009, "low": 0.0001},
+            {"channel": "gmbar_im", "high": 0.006, "low": 0.00066667},
+            {"channel": "gbar_na3", "high": 0.09, "low": 0.01},
+            {"channel": "gkdrbar_kdr", "high": 0.09, "low": 0.01},
+            {"channel": "gcabar_cadyn", "high": 0.00018, "low": 2e-05},
+            {"channel": "gsAHPbar_sAHP", "high": 0.027, "low": 0.003},
         ],
         "target_V": None,  # Target voltages
         # "target_params": [5.5e-5, 2.3e-05, 0.000142, 0.002, 0.03, 0.0015, 6e-5, 0.009],
@@ -393,12 +393,14 @@ LA_C_seg = {
     },
     "optimization_parameters": {
         "amps": [-0.1, 0.1, 0.3, 0.7, 1],
-        "params": [{'channel': 'gbar_nap', 'high': 0.000426, 'low': 4.733e-05},
-            {'channel': 'gbar_im', 'high': 0.0018, 'low': 0.0002},
-            {'channel': 'gbar_na3', 'high': 0.081, 'low': 0.009},
-            {'channel': 'gbar_kdr', 'high': 0.0045, 'low': 0.0005},
-            {'channel': 'gcabar_cadyn', 'high': 0.00165, 'low': 0.00018333},
-            {'channel': 'gsAHPbar_sAHP', 'high': 0.00015, 'low': 1.667e-05}],
+        "params": [
+            {"channel": "gbar_nap", "high": 0.000426, "low": 4.733e-05},
+            {"channel": "gbar_im", "high": 0.0018, "low": 0.0002},
+            {"channel": "gbar_na3", "high": 0.081, "low": 0.009},
+            {"channel": "gbar_kdr", "high": 0.0045, "low": 0.0005},
+            {"channel": "gcabar_cadyn", "high": 0.00165, "low": 0.00018333},
+            {"channel": "gsAHPbar_sAHP", "high": 0.00015, "low": 1.667e-05},
+        ],
         "target_V": None,  # Target voltages
         "target_params": [
             0.000142,
@@ -459,13 +461,13 @@ LA_C_orig = {
         "hoc_file": "../data/LA/C/orig_modfiles/template.hoc",
         "modfiles_folder": "../data/LA/C/orig_modfiles",
         "name": "Cell_C",
-        #"passive_properties": {
+        # "passive_properties": {
         #    "v_rest": -67,
         #    "r_in": 141,
         #    "tau": 30.88,
         #    "leak_conductance_variable": "glbar_leak",  # eg: g_leak
         #    "leak_reversal_variable": "el_leak",  # eg: e_leak
-        #},
+        # },
     },
     "simulation_parameters": {
         "h_v_init": -67.0,  # (mV)
@@ -505,12 +507,12 @@ LA_C_orig = {
             #    "low": 0.0045,
             #    "high": 0.018,
             # },  # sahp, spiking/adaptation
-            {'channel': 'gbar_nap', 'high': 0.00042, 'low': 4.667e-05},
-            {'channel': 'gmbar_im', 'high': 0.003, 'low': 0.00033333},
-            {'channel': 'gbar_na3', 'high': 0.09, 'low': 0.01},
-            {'channel': 'gkdrbar_kdr', 'high': 0.027, 'low': 0.003},
-            {'channel': 'gcabar_cadyn', 'high': 0.00021, 'low': 2.333e-05},
-            {'channel': 'gsAHPbar_sAHP', 'high': 0.00075, 'low': 8.333e-05}
+            {"channel": "gbar_nap", "high": 0.00042, "low": 4.667e-05},
+            {"channel": "gmbar_im", "high": 0.003, "low": 0.00033333},
+            {"channel": "gbar_na3", "high": 0.09, "low": 0.01},
+            {"channel": "gkdrbar_kdr", "high": 0.027, "low": 0.003},
+            {"channel": "gcabar_cadyn", "high": 0.00021, "low": 2.333e-05},
+            {"channel": "gsAHPbar_sAHP", "high": 0.00075, "low": 8.333e-05},
         ],
         "target_V": None,  # Target voltages
         # "target_params": [5.5e-5, 2.3e-05, 0.000142, 0.002, 0.03, 0.0015, 6e-5, 0.009],
@@ -603,7 +605,7 @@ Simple_Spiker_seg = {
             0.0,
         ],
         # ======================================================
-        "target_V_file": './target_v.json',
+        "target_V_file": "./target_v.json",
         "target_cell": {
             "hoc_file": "../data/Spiker/orig/template.hoc",
             "modfiles_folder": "../data/Spiker/orig",
@@ -666,13 +668,13 @@ Simple_Spiker_orig = {
         "hoc_file": "../data/Spiker/orig/template.hoc",
         "modfiles_folder": "../data/Spiker/orig",
         "name": "Simple_Spiker_orig",
-         "passive_properties": {
+        "passive_properties": {
             "v_rest": -65,
             "r_in": 192,
             "tau": 2.575,
             "leak_conductance_variable": "gl_hh_orig",  # eg: g_leak
             "leak_reversal_variable": "el_hh_orig",  # eg: e_leak
-         },
+        },
     },
     "simulation_parameters": {
         "h_v_init": -65.0,  # (mV)
@@ -684,7 +686,7 @@ Simple_Spiker_orig = {
     "optimization_parameters": {
         "amps": [0.1, 0.2, 0.3, 0.4],
         "params": [
-            #{"channel": "gl_hh_orig", "low": 0.0001, "high": 0.009},  # hd, passive
+            # {"channel": "gl_hh_orig", "low": 0.0001, "high": 0.009},  # hd, passive
             {
                 "channel": "gnabar_hh_orig",
                 "high": 0.36,
@@ -698,11 +700,11 @@ Simple_Spiker_orig = {
         ],
         "target_V": None,  # Target voltages
         "target_params": [
-            #0.0003,
+            # 0.0003,
             0.12,
             0.036,
         ],
-        "target_V_file": './target_v.json',
+        "target_V_file": "./target_v.json",
         "num_repeats": 1,
         "num_amps_to_match": 1,
         "num_epochs": 300,

@@ -9,12 +9,18 @@ import tqdm
 from act.act_types import PassiveProperties, SimulationConfig
 from act.cell_model import CellModel
 from act.logger import ACTDummyLogger
-from act.models import BranchingNet, EmbeddingNet, SimpleNet, ConvolutionEmbeddingNet, SummaryNet
+from act.models import (
+    BranchingNet,
+    EmbeddingNet,
+    SimpleNet,
+    ConvolutionEmbeddingNet,
+    SummaryNet,
+)
 from act import utils
 from sklearn.ensemble import RandomForestRegressor
 
-class TorchStandardScaler:
 
+class TorchStandardScaler:
     def __init__(self):
         self._is_fit = False
 
@@ -26,8 +32,9 @@ class TorchStandardScaler:
     def transform(self, x):
         if self._is_fit:
             x -= self.mean
-            x /= (self.std + 1e-7)
+            x /= self.std + 1e-7
         return x
+
 
 class TorchMinMaxColScaler:
     def __init__(self):
@@ -40,12 +47,11 @@ class TorchMinMaxColScaler:
 
     def transform(self, x):
         if self._is_fit:
-            x = (x-self.min+1e-7)/(self.max+1e-7-self.min)
+            x = (x - self.min + 1e-7) / (self.max + 1e-7 - self.min)
         return x
 
 
 class TorchMinMaxScaler:
-
     def __init__(self):
         self._is_fit = False
 
@@ -56,8 +62,8 @@ class TorchMinMaxScaler:
 
     def transform(self, x):
         if self._is_fit:
-            x = (x-self.min+1e-7)/(self.max-self.min)
-        return x 
+            x = (x - self.min + 1e-7) / (self.max - self.min)
+        return x
 
 
 class ACTOptimizer:
@@ -630,8 +636,8 @@ class GeneralACTOptimizer(ACTOptimizer):
         # ModelClass = SimpleNet
         # ModelClass = BranchingNet
         # ModelClass = EmbeddingNet
-        # ModelClass = ConvolutionEmbeddingNet
-        ModelClass = SummaryNet
+        ModelClass = ConvolutionEmbeddingNet
+        # ModelClass = SummaryNet
         model = ModelClass(in_channels, out_channels, summary_features)
         return model
 
@@ -645,9 +651,8 @@ class GeneralACTOptimizer(ACTOptimizer):
         train_test_split=0.9,
         batch_size=16,
     ) -> None:
-
         optim = torch.optim.Adam(self.model.parameters(), lr=1e-4, weight_decay=1e-6)
-        loss_fn = torch.nn.MSELoss() #torch.nn.functional.l1_loss
+        loss_fn = torch.nn.MSELoss()  # torch.nn.functional.l1_loss
 
         sigmoid_mins = torch.tensor(lows)
         sigmoid_maxs = torch.tensor(highs)
@@ -657,28 +662,28 @@ class GeneralACTOptimizer(ACTOptimizer):
             f"Number of trainable parameters: {sum(p.numel() for p in self.model.parameters() if p.requires_grad)}"
         )
 
-        #self.model.train(True)
+        # self.model.train(True)
 
         stats = {
-            'train_loss_batches': [],
-            'train_loss': [],
-            'test_loss': [],
-            'train_size': 0,
-            'test_size':0,
+            "train_loss_batches": [],
+            "train_loss": [],
+            "test_loss": [],
+            "train_size": 0,
+            "test_size": 0,
         }
 
         # shuffle the training data
         indexes = torch.randperm(voltage_data.shape[0])
-        split_point = int(voltage_data.shape[0]*train_test_split)
+        split_point = int(voltage_data.shape[0] * train_test_split)
 
         train_ind = indexes[:split_point]
         test_ind = indexes[split_point:]
-        stats['train_size'] = len(train_ind)
-        stats['test_size'] = len(test_ind)
+        stats["train_size"] = len(train_ind)
+        stats["test_size"] = len(test_ind)
 
         voltage_data_train = voltage_data[train_ind]
         voltage_data_test = voltage_data[test_ind]
-        
+
         summary_features_train = summary_features[train_ind]
         summary_features_test = summary_features[test_ind]
 
@@ -692,38 +697,49 @@ class GeneralACTOptimizer(ACTOptimizer):
 
         voltage_data_train = self.voltage_data_scaler.transform(voltage_data_train)
         voltage_data_test = self.voltage_data_scaler.transform(voltage_data_test)
-        summary_features_train = self.summary_feature_scaler.transform(summary_features_train)
-        summary_features_test = self.summary_feature_scaler.transform(summary_features_test)
+        summary_features_train = self.summary_feature_scaler.transform(
+            summary_features_train
+        )
+        summary_features_test = self.summary_feature_scaler.transform(
+            summary_features_test
+        )
         batch_start = torch.arange(0, len(voltage_data_train), batch_size)
 
         # Hold the best model
-        best_mse = np.inf   # init to infinity
+        best_mse = np.inf  # init to infinity
         best_weights = None
-        
+
         num_epochs = self.config["optimization_parameters"]["num_epochs"]
 
         for epoch in range(num_epochs):
             self.model.train()
-            with tqdm.tqdm(batch_start, unit="batch", mininterval=0, disable=False) as bar:
+            with tqdm.tqdm(
+                batch_start, unit="batch", mininterval=0, disable=False
+            ) as bar:
                 bar.set_description(f"Epoch {epoch}/{num_epochs}")
                 for start in bar:
-
-                    voltage_data_batch = voltage_data_train[start:start+batch_size]
-                    summary_features_batch = summary_features_train[start:start+batch_size]
-                    target_params_batch = target_params_train[start:start+batch_size]
+                    voltage_data_batch = voltage_data_train[start : start + batch_size]
+                    summary_features_batch = summary_features_train[
+                        start : start + batch_size
+                    ]
+                    target_params_batch = target_params_train[
+                        start : start + batch_size
+                    ]
 
                     # forward pass
 
-                    pred = ( 
+                    pred = (
                         self.model(voltage_data_batch, summary_features_batch)
                         * (sigmoid_maxs - sigmoid_mins)
                         + sigmoid_mins
                     )
                     loss = loss_fn(pred, target_params_batch)
-                    stats['train_loss_batches'].append(float(loss.cpu().detach().numpy()))
-                
+                    stats["train_loss_batches"].append(
+                        float(loss.cpu().detach().numpy())
+                    )
+
                     # backward pass
-                    optim.zero_grad() # this line is new, wasn't in last round
+                    optim.zero_grad()  # this line is new, wasn't in last round
                     loss.backward()
 
                     # update weights
@@ -733,21 +749,23 @@ class GeneralACTOptimizer(ACTOptimizer):
                     bar.set_postfix(mse=float(loss))
             # evaluate accuracy at end of each epoch
             self.model.eval()
-            y_pred = (self.model(voltage_data_train, summary_features_train)
-                    * (sigmoid_maxs - sigmoid_mins)
-                    + sigmoid_mins
+            y_pred = (
+                self.model(voltage_data_train, summary_features_train)
+                * (sigmoid_maxs - sigmoid_mins)
+                + sigmoid_mins
             )
             mse = loss_fn(y_pred, target_params_train)
             mse = float(mse)
-            stats['train_loss'].append(mse)
+            stats["train_loss"].append(mse)
 
-            y_pred = (self.model(voltage_data_test, summary_features_test)
-                    * (sigmoid_maxs - sigmoid_mins)
-                    + sigmoid_mins
+            y_pred = (
+                self.model(voltage_data_test, summary_features_test)
+                * (sigmoid_maxs - sigmoid_mins)
+                + sigmoid_mins
             )
             mse = loss_fn(y_pred, target_params_test)
             mse = float(mse)
-            stats['test_loss'].append(mse)
+            stats["test_loss"].append(mse)
             if mse < best_mse:
                 best_mse = mse
                 best_weights = copy.deepcopy(self.model.state_dict())
@@ -769,7 +787,10 @@ class GeneralACTOptimizer(ACTOptimizer):
         summary_features_fit = self.summary_feature_scaler.transform(summary_features)
         for i in range(target_V.shape[0]):
             out = (
-                self.model(target_V_fit[i].reshape(1,-1), summary_features_fit[i].reshape(1,-1))
+                self.model(
+                    target_V_fit[i].reshape(1, -1),
+                    summary_features_fit[i].reshape(1, -1),
+                )
                 * (sigmoid_maxs - sigmoid_mins)
                 + sigmoid_mins
             )

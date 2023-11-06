@@ -47,7 +47,7 @@ class OptimizationParameters(TypedDict):
     target_cell: Cell
     target_cell_params: List[OptimizationParam]
     target_cell_target_params: List[List[float]]
-    target_V_file: str # location of voltage traces, stored as a json {"traces":[[],]}
+    target_V_file: str  # location of voltage traces, stored as a json {"traces":[[],]}
     target_V: List[List[float]]  # Target voltage
     target_params: List[List[float]]
     num_repeats: int
