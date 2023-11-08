@@ -102,6 +102,39 @@ class ConvolutionEmbeddingNet(torch.nn.Module):
         embedding = self.embedder(X_res)
         return self.predictor(torch.cat((summary_features, embedding), axis=1))
 
+class ConvolutionNet(torch.nn.Module):
+    def __init__(self, in_channels, out_channels, summary_features):
+        super().__init__()
+        self.embedder = torch.nn.Sequential(
+            torch.nn.Conv1d(
+                in_channels=1, out_channels=8, kernel_size=5, padding="same"
+            ),
+            torch.nn.Conv1d(
+                in_channels=8, out_channels=8, kernel_size=5, padding="same"
+            ),
+            torch.nn.ReLU(),
+            torch.nn.Dropout(0.5),
+            torch.nn.Conv1d(
+                in_channels=8, out_channels=8, kernel_size=5, padding="same"
+            ),
+            torch.nn.Conv1d(
+                in_channels=8, out_channels=1, kernel_size=5, padding="same"
+            ),
+            torch.nn.ReLU(),
+            torch.nn.Flatten(),
+            torch.nn.Linear(in_channels, out_channels),
+            torch.nn.Sigmoid(),
+        )
+
+    def forward(self, X, summary_features):
+        # Potentially support batches
+        if len(X.shape) == 1:
+            X_res = X.reshape(1, 1, X.shape[0])
+        if len(X.shape) == 2:
+            X_res = X.reshape(X.shape[0], 1, X.shape[1])
+
+        # The embedder's output is (1, ...), flatten for concatenation
+        return self.embedder(X_res)
 
 class SummaryNet(torch.nn.Module):
     def __init__(self, in_channels, out_channels, summary_features):

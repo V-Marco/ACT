@@ -27,6 +27,7 @@ class SimulationParameters(TypedDict):
     h_i_delay: int  # (ms)
     h_i_dur: int  # (ms)
     h_dt: float
+    h_celsius: float
 
 
 class OptimizationParam(TypedDict):

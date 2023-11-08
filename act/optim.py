@@ -15,6 +15,7 @@ from act.models import (
     SimpleNet,
     ConvolutionEmbeddingNet,
     SummaryNet,
+    ConvolutionNet,
 )
 from act import utils
 from sklearn.ensemble import RandomForestRegressor
@@ -78,7 +79,7 @@ class ACTOptimizer:
 
         # Initialize standard run
         h.load_file("stdrun.hoc")
-
+        
         # Initialize the cell
         if cell_override:
             self.cell = cell_override
@@ -147,6 +148,8 @@ class ACTOptimizer:
         h.steps_per_ms = 1 / h.dt
         h.tstop = self.config["simulation_parameters"]["h_tstop"]
         h.v_init = self.config["simulation_parameters"]["h_v_init"]
+        h.celsius = self.config["simulation_parameters"].get("h_celsius", 31.0)
+        print(f"h.celsius set to {h.celsius}")
 
         self.cell.set_parameters(parameter_names, parameter_values)
         if not i_dur:
@@ -263,6 +266,7 @@ class GeneralACTOptimizer(ACTOptimizer):
 
         self.model = None
         self.model_pool = None
+        self.use_random_forest=False # just for testing
         self.reg = None  # regressor for random forest
         self.init_random_forest()
 
@@ -272,8 +276,8 @@ class GeneralACTOptimizer(ACTOptimizer):
 
     def init_random_forest(self):
         params = {
-            "n_estimators": 500,
-            "max_depth": 4,
+            "n_estimators": 5000,
+            "max_depth": 8,
             "min_samples_split": 5,
             "warm_start": True,
             "oob_score": True,
@@ -282,7 +286,9 @@ class GeneralACTOptimizer(ACTOptimizer):
         self.reg = RandomForestRegressor(**params)
 
     def train_random_forest(self, X_train, y_train):
+        print("Fitting random forest")
         self.reg.fit(X_train, y_train)
+        print("Done fitting random forest")
 
     def predict_random_forest(self, X_test):
         y_pred = self.reg.predict(X_test)
@@ -638,6 +644,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         # ModelClass = EmbeddingNet
         ModelClass = ConvolutionEmbeddingNet
         # ModelClass = SummaryNet
+        # ModelClass = ConvolutionNet
         model = ModelClass(in_channels, out_channels, summary_features)
         return model
 
@@ -648,7 +655,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         lows,
         highs,
         summary_features,
-        train_test_split=0.9,
+        train_test_split=0.85,
         batch_size=8,
     ) -> None:
         optim = torch.optim.Adam(self.model.parameters(), lr=2e-5, weight_decay=1e-4)
@@ -703,75 +710,80 @@ class GeneralACTOptimizer(ACTOptimizer):
         summary_features_test = self.summary_feature_scaler.transform(
             summary_features_test
         )
-        batch_start = torch.arange(0, len(voltage_data_train), batch_size)
 
-        # Hold the best model
-        best_mse = np.inf  # init to infinity
-        best_weights = None
 
-        num_epochs = self.config["optimization_parameters"]["num_epochs"]
+        if self.use_random_forest: # use the random forest
+            self.train_random_forest(summary_features_train.cpu().numpy(), target_params_train.cpu().numpy())
+        else:
+            batch_start = torch.arange(0, len(voltage_data_train), batch_size)
 
-        for epoch in range(num_epochs):
-            self.model.train()
-            with tqdm.tqdm(
-                batch_start, unit="batch", mininterval=0, disable=False
-            ) as bar:
-                bar.set_description(f"Epoch {epoch}/{num_epochs}")
-                for start in bar:
-                    voltage_data_batch = voltage_data_train[start : start + batch_size]
-                    summary_features_batch = summary_features_train[
-                        start : start + batch_size
-                    ]
-                    target_params_batch = target_params_train[
-                        start : start + batch_size
-                    ]
+            # Hold the best model
+            best_mse = np.inf  # init to infinity
+            best_weights = None
 
-                    # forward pass
+            num_epochs = self.config["optimization_parameters"]["num_epochs"]
 
-                    pred = (
-                        self.model(voltage_data_batch, summary_features_batch)
-                        * (sigmoid_maxs - sigmoid_mins)
-                        + sigmoid_mins
-                    )
-                    loss = loss_fn(pred, target_params_batch)
-                    stats["train_loss_batches"].append(
-                        float(loss.cpu().detach().numpy())
-                    )
+            for epoch in range(num_epochs):
+                self.model.train()
+                with tqdm.tqdm(
+                    batch_start, unit="batch", mininterval=0, disable=False
+                ) as bar:
+                    bar.set_description(f"Epoch {epoch}/{num_epochs}")
+                    for start in bar:
+                        voltage_data_batch = voltage_data_train[start : start + batch_size]
+                        summary_features_batch = summary_features_train[
+                            start : start + batch_size
+                        ]
+                        target_params_batch = target_params_train[
+                            start : start + batch_size
+                        ]
 
-                    # backward pass
-                    optim.zero_grad()  # this line is new, wasn't in last round
-                    loss.backward()
+                        # forward pass
 
-                    # update weights
-                    optim.step()
+                        pred = (
+                            self.model(voltage_data_batch, summary_features_batch)
+                            * (sigmoid_maxs - sigmoid_mins)
+                            + sigmoid_mins
+                        )
+                        loss = loss_fn(pred, target_params_batch)
+                        stats["train_loss_batches"].append(
+                            float(loss.cpu().detach().numpy())
+                        )
 
-                    # print process
-                    bar.set_postfix(mse=float(loss))
-            # evaluate accuracy at end of each epoch
-            self.model.eval()
-            y_pred = (
-                self.model(voltage_data_train, summary_features_train)
-                * (sigmoid_maxs - sigmoid_mins)
-                + sigmoid_mins
-            )
-            mse = loss_fn(y_pred, target_params_train)
-            mse = float(mse)
-            stats["train_loss"].append(mse)
+                        # backward pass
+                        optim.zero_grad()  # this line is new, wasn't in last round
+                        loss.backward()
 
-            y_pred = (
-                self.model(voltage_data_test, summary_features_test)
-                * (sigmoid_maxs - sigmoid_mins)
-                + sigmoid_mins
-            )
-            mse = loss_fn(y_pred, target_params_test)
-            mse = float(mse)
-            stats["test_loss"].append(mse)
-            if mse < best_mse:
-                best_mse = mse
-                best_weights = copy.deepcopy(self.model.state_dict())
+                        # update weights
+                        optim.step()
 
-        # restore model and return best accuracy
-        self.model.load_state_dict(best_weights)
+                        # print process
+                        bar.set_postfix(mse=float(loss))
+                # evaluate accuracy at end of each epoch
+                self.model.eval()
+                y_pred = (
+                    self.model(voltage_data_train, summary_features_train)
+                    * (sigmoid_maxs - sigmoid_mins)
+                    + sigmoid_mins
+                )
+                mse = loss_fn(y_pred, target_params_train)
+                mse = float(mse)
+                stats["train_loss"].append(mse)
+
+                y_pred = (
+                    self.model(voltage_data_test, summary_features_test)
+                    * (sigmoid_maxs - sigmoid_mins)
+                    + sigmoid_mins
+                )
+                mse = loss_fn(y_pred, target_params_test)
+                mse = float(mse)
+                stats["test_loss"].append(mse)
+                if mse < best_mse:
+                    best_mse = mse
+                    best_weights = copy.deepcopy(self.model.state_dict())
+
+            # restore model and return best accuracy
+            self.model.load_state_dict(best_weights)
 
         return stats
 
@@ -781,22 +793,25 @@ class GeneralACTOptimizer(ACTOptimizer):
         sigmoid_mins = torch.tensor(lows)
         sigmoid_maxs = torch.tensor(highs)
 
-        self.model.eval()
-        outs = []
-        target_V_fit = self.voltage_data_scaler.transform(target_V)
-        summary_features_fit = self.summary_feature_scaler.transform(summary_features)
-        for i in range(target_V.shape[0]):
-            out = (
-                self.model(
-                    target_V_fit[i].reshape(1, -1),
-                    summary_features_fit[i].reshape(1, -1),
+        if self.use_random_forest: # use random forest
+            return torch.tensor(self.predict_random_forest(summary_features.cpu().numpy()))
+        else:
+            self.model.eval()
+            outs = []
+            target_V_fit = self.voltage_data_scaler.transform(target_V)
+            summary_features_fit = self.summary_feature_scaler.transform(summary_features)
+            for i in range(target_V.shape[0]):
+                out = (
+                    self.model(
+                        target_V_fit[i].reshape(1, -1),
+                        summary_features_fit[i].reshape(1, -1),
+                    )
+                    * (sigmoid_maxs - sigmoid_mins)
+                    + sigmoid_mins
                 )
-                * (sigmoid_maxs - sigmoid_mins)
-                + sigmoid_mins
-            )
-            outs.append(out.reshape(1, -1))
+                outs.append(out.reshape(1, -1))
 
-        return torch.cat(outs, dim=0)
+            return torch.cat(outs, dim=0)
 
     def get_parametric_distribution(self, n_slices, simulations_per_amp) -> tuple:
         params = [

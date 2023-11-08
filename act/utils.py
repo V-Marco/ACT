@@ -130,6 +130,13 @@ def build_parametric_network(config: SimulationConfig):
     dt = config["simulation_parameters"]["h_dt"]
     tstop = config["simulation_parameters"]["h_tstop"]
     v_init = config["simulation_parameters"]["h_v_init"]
+    celsius = config["simulation_parameters"].get("h_celsius")
+    if not celsius:
+        print("Setting celsius to default value of 31.0")
+        celsius = 31.0
+    else:
+        print(f"Celsius set to {celsius}")
+        
 
     n_cells_per_amp = len(param_dist)
     n_cells = len(amps) * n_cells_per_amp
@@ -179,7 +186,7 @@ def build_parametric_network(config: SimulationConfig):
         dL=9999999.9,
         report_vars=["v"],
         v_init=v_init,
-        celsius=31.0,
+        celsius=celsius,
         components_dir="components",
         config_file="act_simulation_config.json",
         compile_mechanisms=False,
@@ -271,6 +278,7 @@ def generate_parametric_traces(config: SimulationConfig):
             CellModel.set_passive_props(
                 cell.hobj.all, passive_properties, cell.hobj.soma[0]
             )
+        print(f"Setting cell {cell.gid} parameters {params} = {parameter_values}")
         set_cell_parameters(cell.hobj, params, parameter_values)
 
     pc.barrier()
@@ -510,7 +518,7 @@ def get_fi_curve_error(
         print(f"diff: {simulated_spikes - target_spikes}")
 
     error = round(
-        float(((simulated_spikes - target_spikes) / target_spikes).sum() / len(amps)), 4
+        float((torch.abs(simulated_spikes - target_spikes)).sum() / len(amps)), 4
     )
 
     return error
