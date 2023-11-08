@@ -375,14 +375,16 @@ class GeneralACTOptimizer(ACTOptimizer):
             print(f"Parametric distribution parameters not applied.")
 
         # extract only traces that have spikes in them
-        (
-           simulated_V_for_next_stage,
-           param_samples_for_next_stage,
-           ampl_next_stage,
-           spiking_ind
-        ) = utils.extract_spiking_traces(
-            simulated_V_for_next_stage, param_samples_for_next_stage, ampl_next_stage
-        )
+        spiking_only = False
+        if spiking_only:
+            (
+                simulated_V_for_next_stage,
+                param_samples_for_next_stage,
+                ampl_next_stage,
+                spiking_ind
+            ) = utils.extract_spiking_traces(
+                simulated_V_for_next_stage, param_samples_for_next_stage, ampl_next_stage
+            )  
         (
             num_spikes_simulated,
             simulated_interspike_times,
@@ -396,7 +398,10 @@ class GeneralACTOptimizer(ACTOptimizer):
             coefs_loaded = True
             coefs = utils.load_arima_coefs(
                 input_file="output/arima_stats.json"
-            )[spiking_ind]  # [subset_target_ind] # TODO REMOVE for testing quickly
+            )  # [subset_target_ind] # TODO REMOVE for testing quickly
+
+            if spiking_only:
+                coefs = coefs[spiking_ind]
 
         if coefs_loaded:
             summary_features = torch.stack(
@@ -762,21 +767,31 @@ class GeneralACTOptimizer(ACTOptimizer):
                         bar.set_postfix(mse=float(loss))
                 # evaluate accuracy at end of each epoch
                 self.model.eval()
+                y_out = self.model(voltage_data_train, summary_features_train)
                 y_pred = (
-                    self.model(voltage_data_train, summary_features_train)
+                    y_out
                     * (sigmoid_maxs - sigmoid_mins)
                     + sigmoid_mins
                 )
-                mse = loss_fn(y_pred, target_params_train)
+                target_params_train_norm = (
+                    (target_params_train - sigmoid_mins) / (sigmoid_maxs - sigmoid_mins)
+                )
+                #mse = loss_fn(y_pred, target_params_train)
+                mse = loss_fn(y_out, target_params_train_norm)
                 mse = float(mse)
                 stats["train_loss"].append(mse)
 
+                y_out = self.model(voltage_data_test, summary_features_test)
                 y_pred = (
-                    self.model(voltage_data_test, summary_features_test)
+                    y_out
                     * (sigmoid_maxs - sigmoid_mins)
                     + sigmoid_mins
                 )
-                mse = loss_fn(y_pred, target_params_test)
+                target_params_test_norm = (
+                    (target_params_test - sigmoid_mins) / (sigmoid_maxs - sigmoid_mins)
+                )
+                #mse = loss_fn(y_pred, target_params_test)
+                mse = loss_fn(y_out, target_params_test_norm)
                 mse = float(mse)
                 stats["test_loss"].append(mse)
                 if mse < best_mse:
