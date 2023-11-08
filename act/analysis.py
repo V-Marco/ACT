@@ -211,6 +211,6 @@ def plot_fi_curves(
     # plt.ylim((0,np.max(np.array(spike_counts))))
     plt.legend()
     plt.title(title)
-    plt.ylabel("# spikes")
+    plt.ylabel("Hz")
     plt.xlabel("nA")
     plt.show()
