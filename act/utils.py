@@ -382,7 +382,7 @@ def extract_summary_features(V: torch.Tensor, threshold=-40) -> tuple:
 
 def extract_spiking_traces(traces_t, params_t, amps_t, threshold=-40, min_spikes=1):
     num_spikes, interspike_times = extract_summary_features(
-        traces_t, threshold=threshold
+        traces_t
     )
     spiking_gids = (
         num_spikes.gt(min_spikes - 1).nonzero().flatten().cpu().detach().tolist()
@@ -391,7 +391,7 @@ def extract_spiking_traces(traces_t, params_t, amps_t, threshold=-40, min_spikes
     spiking_params = params_t[spiking_gids]
     spiking_amps = amps_t[spiking_gids]
     print(f"{len(spiking_traces)}/{len(traces_t)} spiking traces extracted.")
-    return spiking_traces, spiking_params, spiking_amps
+    return spiking_traces, spiking_params, spiking_amps, spiking_gids
 
 
 def get_arima_coefs(trace: np.array, order=(10, 0, 10)):

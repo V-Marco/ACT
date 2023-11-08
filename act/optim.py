@@ -375,13 +375,14 @@ class GeneralACTOptimizer(ACTOptimizer):
             print(f"Parametric distribution parameters not applied.")
 
         # extract only traces that have spikes in them
-        # (
-        #    simulated_V_for_next_stage,
-        #    param_samples_for_next_stage,
-        #    ampl_next_stage,
-        # ) = utils.extract_spiking_traces(
-        #    simulated_V_for_next_stage, param_samples_for_next_stage, ampl_next_stage
-        # )
+        (
+           simulated_V_for_next_stage,
+           param_samples_for_next_stage,
+           ampl_next_stage,
+           spiking_ind
+        ) = utils.extract_spiking_traces(
+            simulated_V_for_next_stage, param_samples_for_next_stage, ampl_next_stage
+        )
         (
             num_spikes_simulated,
             simulated_interspike_times,
@@ -395,7 +396,7 @@ class GeneralACTOptimizer(ACTOptimizer):
             coefs_loaded = True
             coefs = utils.load_arima_coefs(
                 input_file="output/arima_stats.json"
-            )  # [subset_target_ind] # TODO REMOVE for testing quickly
+            )[spiking_ind]  # [subset_target_ind] # TODO REMOVE for testing quickly
 
         if coefs_loaded:
             summary_features = torch.stack(
