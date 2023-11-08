@@ -154,6 +154,7 @@ def _run(config: SimulationConfig):
         # Compute composite error
         # for each prediction
         amps_list = config["optimization_parameters"]["amps"]
+        inj_dur = config["simulation_parameters"]["h_i_dur"]
         for j, pred_sim in enumerate(sims):
             total_error = 0
             # for each amp
@@ -174,7 +175,7 @@ def _run(config: SimulationConfig):
                     output_file=f"repeat{repeat_num+1}_pred{j+1}_{(amp * 1000):.0f}nA.png",
                 )
             fi_error = utils.get_fi_curve_error(
-                torch.cat(pred_sim), target_V, torch.tensor(amps_list)
+                torch.cat(pred_sim), target_V, torch.tensor(amps_list), inj_dur=inj_dur
             )
 
             err_pool.append(error)

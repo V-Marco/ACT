@@ -1,0 +1,542 @@
+numprocs=48
+NEURON -- VERSION 8.2.3 HEAD (f0ed37010) 2023-09-14
+Duke, Yale, and the BlueBrain Project -- Copyright 1984-2022
+See http://neuron.yale.edu/neuron/credits
+
+2023-10-29 22:32:51,025 [INFO] Created log file
+2023-10-29 22:32:51,068 [INFO] Running NEURON with mpi (48 cores).
+Additional mechanisms from files
+ "cadyn.mod" "capool.mod" "currentclamp.mod" "hh.mod" "h.mod" "im.mod" "kaprox.mod" "kdrca1DA.mod" "kdrca1.mod" "leakDA.mod" "leak.mod" "na3DA.mod" "na3.mod" "nap.mod" "nat.mod" "sahp.mod" "sahpNE.mod"
+2023-10-29 22:32:51,123 [INFO] Building cells.
+2023-10-29 22:32:51,180 [INFO] Building recurrent connections
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Setting el_hh_seg = -65
+Setting Simple_Spiker[0].soma[0].gl_hh_seg = 0.00046907
+Setting Simple_Spiker[0].soma[0].cm = 1.20784285
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Traceback (most recent call last):
+  File "generate_traces.py", line 11, in <module>
+    generate_parametric_traces(selected_config)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 274, in generate_parametric_traces
+    set_cell_parameters(cell.hobj, params, parameter_values)
+  File "/home/tbg28/git_stage/act/act/utils.py", line 45, in set_cell_parameters
+    setattr(sec, key, parameter_values[index])
+AttributeError: 'nrn.Section' object has no attribute 'gnabar'
+Start: Sun Oct 29 22:32:35 CDT 2023 
+End:   Sun Oct 29 22:32:53 CDT 2023
+Done running model at Sun Oct 29 22:32:53 CDT 2023

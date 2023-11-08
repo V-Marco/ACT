@@ -143,10 +143,11 @@ class ACTOptimizer:
         parameter_values: np.ndarray,
         i_dur: float = 0,
         i_delay: float = 0,
+        tstop = None
     ) -> torch.Tensor:
         h.dt = self.config["simulation_parameters"]["h_dt"]
         h.steps_per_ms = 1 / h.dt
-        h.tstop = self.config["simulation_parameters"]["h_tstop"]
+        h.tstop = tstop or self.config["simulation_parameters"]["h_tstop"]
         h.v_init = self.config["simulation_parameters"]["h_v_init"]
         h.celsius = self.config["simulation_parameters"].get("h_celsius", 31.0)
         print(f"h.celsius set to {h.celsius}")
@@ -194,12 +195,15 @@ class ACTOptimizer:
         passive_amp = -100 / 1e3
         passive_duration = 1000
 
+        tstop = tstart+passive_duration
+
         passive_tensor = self.simulate(
             passive_amp,
             parameter_names,
             parameter_values,
             i_delay=tstart,
             i_dur=passive_duration,
+            tstop=tstop
         )
         passive_vec = passive_tensor.cpu().detach().numpy()
 

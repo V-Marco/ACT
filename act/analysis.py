@@ -205,7 +205,7 @@ def plot_fi_curves(
         amps = amps[amps > 0]
 
     for spike_counts, label in zip(spike_counts_list, labels):
-        print(f"{label}: {amps*1e3} nA : {spike_counts} spikes")
+        print(f"{label}: {amps*1e3} nA : {spike_counts} Hz")
         plt.plot(amps * 1e3, spike_counts, label=label, alpha=0.75)
 
     # plt.ylim((0,np.max(np.array(spike_counts))))

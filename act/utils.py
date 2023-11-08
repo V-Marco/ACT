@@ -487,9 +487,10 @@ def extract_summary_features(V: torch.Tensor, spike_threshold=0) -> tuple:
     return num_spikes, interspike_times
 
 
-def get_fi_curve(traces, amps, ignore_negative=True):
+def get_fi_curve(traces, amps, ignore_negative=True, inj_dur=1000):
     """
     Returns the spike counts per amp.
+    inj_dur is the duration of the current injection
     """
     spikes, interspike_times = extract_summary_features(traces)
 
@@ -498,19 +499,21 @@ def get_fi_curve(traces, amps, ignore_negative=True):
         amps = amps[amps > 0]
         spikes = spikes[non_neg_idx]
 
+    spikes = (1000.0/inj_dur) * spikes # Convert to Hz
+
     return spikes
 
 
 def get_fi_curve_error(
-    simulated_traces, target_traces, amps, ignore_negative=True, dt=1, print_info=False
+    simulated_traces, target_traces, amps, ignore_negative=True, dt=1, print_info=False, inj_dur=1000,
 ):
     """
     Returns the average spike count error over the entire trace.
     """
     simulated_spikes = get_fi_curve(
-        simulated_traces, amps, ignore_negative=ignore_negative
+        simulated_traces, amps, ignore_negative=ignore_negative, inj_dur=inj_dur,
     )
-    target_spikes = get_fi_curve(target_traces, amps, ignore_negative=ignore_negative)
+    target_spikes = get_fi_curve(target_traces, amps, ignore_negative=ignore_negative, inj_dur=inj_dur)
 
     if print_info:
         print(f"target spikes: {target_spikes}")
