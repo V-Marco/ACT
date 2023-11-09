@@ -26,10 +26,10 @@ def main(extra_trace, extra_trace_label, title=None):
     simulated_label = simulated_label + f" (err: {err1})"
 
     curves_list = [
-        target_curve.cpu().detach().numpy(),
         simulated_curve.cpu().detach().numpy(),
+        target_curve.cpu().detach().numpy(),
     ]
-    labels = [target_label, simulated_label]
+    labels = [simulated_label, target_label]
 
     if extra_trace is not None:
         extra_trace_fi = utils.get_fi_curve(extra_trace, amps, inj_dur=inj_dur)
