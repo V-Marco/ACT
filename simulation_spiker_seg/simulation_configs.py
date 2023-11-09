@@ -586,7 +586,7 @@ Simple_Spiker_seg = {
         "h_celsius": 6.3,
     },
     "optimization_parameters": {
-        "amps": [0.075, 0.1, 0.15, 0.2, 0.25],
+        "amps": [0.075, 0.1, 0.125, 0.15, 0.175, 0.2],
         "params": [
             # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05}, # hd, passive
             {
@@ -686,7 +686,7 @@ Simple_Spiker_orig = {
         "h_celsius": 6.3,
     },
     "optimization_parameters": {
-        "amps": [0.1, 0.2, 0.3, 0.4],
+        "amps": [0.075, 0.1, 0.125, 0.15, 0.175, 0.2],
         "params": [
             # {"channel": "gl_hh_orig", "low": 0.0001, "high": 0.009},  # hd, passive
             {
