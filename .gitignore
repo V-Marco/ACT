@@ -153,3 +153,5 @@ simulation/run_bionet.py
 simulation/output_LA_A
 
 examples/LA/output_LA_A
+
+*.h5

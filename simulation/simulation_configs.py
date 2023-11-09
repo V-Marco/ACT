@@ -579,14 +579,14 @@ Simple_Spiker_seg = {
     },
     "simulation_parameters": {
         "h_v_init": -65.0,  # (mV)
-        "h_tstop": 2000,  # (ms)
-        "h_i_delay": 500,  # (ms)
-        "h_i_dur": 1500,  # (ms)
+        "h_tstop": 1000,  # (ms)
+        "h_i_delay": 250,  # (ms)
+        "h_i_dur": 500,  # (ms)
         "h_dt": 0.1,
         "h_celsius": 6.3,
     },
     "optimization_parameters": {
-        "amps": [0.075, 0.1, 0.15, 0.2, 0.25],
+        "amps": [0.075, 0.1, 0.125, 0.15, 0.175, 0.2],
         "params": [
             # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05}, # hd, passive
             {
@@ -628,7 +628,7 @@ Simple_Spiker_seg = {
         # ======================================================
         "num_repeats": 1,
         "num_amps_to_match": 1,
-        "num_epochs": 500,
+        "num_epochs": 2500,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
@@ -679,14 +679,14 @@ Simple_Spiker_orig = {
     },
     "simulation_parameters": {
         "h_v_init": -65.0,  # (mV)
-        "h_tstop": 2000,  # (ms)
-        "h_i_delay": 500,  # (ms)
-        "h_i_dur": 1500,  # (ms)
+        "h_tstop": 1000,  # (ms)
+        "h_i_delay": 250,  # (ms)
+        "h_i_dur": 500,  # (ms)
         "h_dt": 0.1,
         "h_celsius": 6.3,
     },
     "optimization_parameters": {
-        "amps": [0.1, 0.2, 0.3, 0.4],
+        "amps": [0.075, 0.1, 0.125, 0.15, 0.175, 0.2],
         "params": [
             # {"channel": "gl_hh_orig", "low": 0.0001, "high": 0.009},  # hd, passive
             {
@@ -709,7 +709,7 @@ Simple_Spiker_orig = {
         "target_V_file": "./target_v.json",
         "num_repeats": 1,
         "num_amps_to_match": 1,
-        "num_epochs": 300,
+        "num_epochs": 2500,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
@@ -746,4 +746,4 @@ Simple_Spiker_orig = {
 }
 
 
-selected_config = Simple_Spiker_seg
+selected_config = Simple_Spiker_orig
