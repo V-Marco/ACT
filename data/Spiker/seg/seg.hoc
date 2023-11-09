@@ -20,7 +20,7 @@ tstop = 2000
 v_init = -67
 celsius=6.3
 objref Cell // declare the primary cell object
-Cell = new Simple_Spiker()
+Cell = new Simple_Spiker_seg()
 //Cell.insert_mechs(123) // COMMENT TO DISABLE 
 
 NumClamps = 1

@@ -377,7 +377,7 @@ LA_C_seg = {
         "modfiles_folder": "../data/LA/A/seg_modfiles_modeldb",
         "name": "Cell_C",
         "passive_properties": {
-            "v_rest": -69.17387,
+            "v_rest": -67,#-69.17387,
             "r_in": 141,
             "tau": 30.88,
             "leak_conductance_variable": "glbar_leak",  # eg: g_leak
@@ -386,13 +386,14 @@ LA_C_seg = {
     },
     "simulation_parameters": {
         "h_v_init": -67.0,  # (mV)
-        "h_tstop": 2000,  # (ms)
-        "h_i_delay": 500,  # (ms)
-        "h_i_dur": 1500,  # (ms)
+        "h_tstop": 1000,  # (ms)
+        "h_i_delay": 250,  # (ms)
+        "h_i_dur": 500,  # (ms)
         "h_dt": 0.1,
+        "h_celsius": 31.0,
     },
     "optimization_parameters": {
-        "amps": [-0.1, 0.1, 0.3, 0.7, 1],
+        "amps": [0.1, 0.2, 0.3, 0.4, 0.5],
         "params": [
             {"channel": "gbar_nap", "high": 0.000426, "low": 4.733e-05},
             {"channel": "gbar_im", "high": 0.0018, "low": 0.0002},
@@ -401,18 +402,35 @@ LA_C_seg = {
             {"channel": "gcabar_cadyn", "high": 0.00165, "low": 0.00018333},
             {"channel": "gsAHPbar_sAHP", "high": 0.00015, "low": 1.667e-05},
         ],
+        # ======================================================
+        "target_V_file": "./target_v.json",
+        "target_cell": {
+            "hoc_file": "../data/LA/C/orig_modfiles/template.hoc",
+            "modfiles_folder": "../data/LA/C/orig_modfiles",
+            "name": "Cell_C",
+        },
+        "target_cell_params": [
+           {"channel": "gbar_nap"},
+            {"channel": "gmbar_im"},
+            {"channel": "gbar_na3"},
+            {"channel": "gkdrbar_kdr"},
+            {"channel": "gcabar_cadyn"},
+            {"channel": "gsAHPbar_sAHP"},
+        ],
+        "target_cell_target_params": [0.00014, 0.001, 0.03, 0.009, 7e-5, 0.00025],
+        # ======================================================
         "target_V": None,  # Target voltages
         "target_params": [
-            0.000142,
-            0.0006,
-            0.027,
-            0.0015,
-            0.00055,
-            0.00005,
+            0, #0.000142,
+            0, #0.0006,
+            0, #0.027,
+            0, #0.0015,
+            0, #0.00055,
+            0, #0.00005,
         ],  # [2.3e-05, 0.000142, 0.002, 0.03, 0.0015, 6e-5, 0.009],
         "num_repeats": 1,
         "num_amps_to_match": 1,
-        "num_epochs": 5000,
+        "num_epochs": 2500,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
@@ -420,7 +438,7 @@ LA_C_seg = {
         "decimate_factor": 10,
     },
     "summary_features": {
-        "spike_threshold": 20,  # (mV)
+        "spike_threshold": -20,  # (mV)
         "arima_order": [4, 0, 4],
         # Target-sim match conditions (max abs diff between sim and target)
         "mc_num_spikes": 1,
@@ -461,23 +479,24 @@ LA_C_orig = {
         "hoc_file": "../data/LA/C/orig_modfiles/template.hoc",
         "modfiles_folder": "../data/LA/C/orig_modfiles",
         "name": "Cell_C",
-        # "passive_properties": {
-        #    "v_rest": -67,
-        #    "r_in": 141,
-        #    "tau": 30.88,
-        #    "leak_conductance_variable": "glbar_leak",  # eg: g_leak
-        #    "leak_reversal_variable": "el_leak",  # eg: e_leak
-        # },
+        "passive_properties": {
+           "v_rest": -67,
+           "r_in": 141,
+           "tau": 30.88,
+           "leak_conductance_variable": "glbar_leak",  # eg: g_leak
+           "leak_reversal_variable": "el_leak",  # eg: e_leak
+        },
     },
     "simulation_parameters": {
         "h_v_init": -67.0,  # (mV)
-        "h_tstop": 2000,  # (ms)
-        "h_i_delay": 500,  # (ms)
-        "h_i_dur": 1500,  # (ms)
+        "h_tstop": 1000,  # (ms)
+        "h_i_delay": 250,  # (ms)
+        "h_i_dur": 500,  # (ms)
         "h_dt": 0.1,
+        "h_celsius": 31.0,
     },
     "optimization_parameters": {
-        "amps": [-0.1, 0.1, 0.3, 0.7, 1],  # list(np.arange(-2, 10, 0.1)),
+        "amps": [0.1, 0.2, 0.3, 0.4, 0.5],  # list(np.arange(-2, 10, 0.1)),
         "params": [
             # {"channel": "glbar_leak", "low": 2.75e-5, "high": 1e-4},  # leak, passive
             # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05},  # hd, passive
@@ -514,12 +533,15 @@ LA_C_orig = {
             {"channel": "gcabar_cadyn", "high": 0.00021, "low": 2.333e-05},
             {"channel": "gsAHPbar_sAHP", "high": 0.00075, "low": 8.333e-05},
         ],
+        # ======================================================
+        "target_V_file": "./target_v.json",
+        # ======================================================
         "target_V": None,  # Target voltages
         # "target_params": [5.5e-5, 2.3e-05, 0.000142, 0.002, 0.03, 0.0015, 6e-5, 0.009],
         "target_params": [0.00014, 0.001, 0.03, 0.009, 7e-5, 0.00025],
         "num_repeats": 1,
         "num_amps_to_match": 12,
-        "num_epochs": 5000,
+        "num_epochs": 2500,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
@@ -527,7 +549,7 @@ LA_C_orig = {
         "decimate_factor": 10,
     },
     "summary_features": {
-        "spike_threshold": 20,  # (mV)
+        "spike_threshold": -20,  # (mV)
         "arima_order": [4, 0, 4],
         # Target-sim match conditions (max abs diff between sim and target)
         "mc_num_spikes": 1,
@@ -579,14 +601,14 @@ Simple_Spiker_seg = {
     },
     "simulation_parameters": {
         "h_v_init": -65.0,  # (mV)
-        "h_tstop": 2000,  # (ms)
-        "h_i_delay": 500,  # (ms)
-        "h_i_dur": 1500,  # (ms)
+        "h_tstop": 1000,  # (ms)
+        "h_i_delay": 250,  # (ms)
+        "h_i_dur": 500,  # (ms)
         "h_dt": 0.1,
         "h_celsius": 6.3,
     },
     "optimization_parameters": {
-        "amps": [0.075, 0.1, 0.15, 0.2, 0.25],
+        "amps": [0.075, 0.1, 0.125, 0.15, 0.175, 0.2],
         "params": [
             # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05}, # hd, passive
             {
@@ -628,7 +650,7 @@ Simple_Spiker_seg = {
         # ======================================================
         "num_repeats": 1,
         "num_amps_to_match": 1,
-        "num_epochs": 500,
+        "num_epochs": 2500,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
@@ -686,7 +708,7 @@ Simple_Spiker_orig = {
         "h_celsius": 6.3,
     },
     "optimization_parameters": {
-        "amps": [0.1, 0.2, 0.3, 0.4],
+        "amps": [0.075, 0.1, 0.125, 0.15, 0.175, 0.2],
         "params": [
             # {"channel": "gl_hh_orig", "low": 0.0001, "high": 0.009},  # hd, passive
             {
@@ -746,4 +768,4 @@ Simple_Spiker_orig = {
 }
 
 
-selected_config = Simple_Spiker_seg
+selected_config = Simple_Spiker_orig
