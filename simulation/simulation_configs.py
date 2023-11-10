@@ -184,7 +184,7 @@ LA_A_seg = {
         "modfiles_folder": "../data/LA/A/seg_modfiles_modeldb",
         "name": "Cell_A",
         "passive_properties": {
-            "v_rest": -69.17387,
+            "v_rest": -71.486,
             "r_in": 141,
             "tau": 30.88,
             "leak_conductance_variable": "glbar_leak",  # eg: g_leak
@@ -193,13 +193,13 @@ LA_A_seg = {
     },
     "simulation_parameters": {
         "h_v_init": -70.0,  # (mV)
-        "h_tstop": 2000,  # (ms)
-        "h_i_delay": 500,  # (ms)
-        "h_i_dur": 1500,  # (ms)
+        "h_tstop": 1000,  # (ms)
+        "h_i_delay": 250,  # (ms)
+        "h_i_dur": 500,  # (ms)
         "h_dt": 0.1,
     },
     "optimization_parameters": {
-        "amps": [-0.1, 0.3, 0.6, 1.2, 1.8],
+        "amps": [0.1, 0.25, 0.5, 0.75, 1.0],
         "params": [
             # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05}, # hd, passive
             {"channel": "gbar_nap", "high": 0.000426, "low": 4.736e-05},
@@ -209,18 +209,35 @@ LA_A_seg = {
             {"channel": "gcabar_cadyn", "high": 0.00018, "low": 2e-05},
             {"channel": "gsAHPbar_sAHP", "high": 0.026996, "low": 0.0029996},
         ],
+        # ======================================================
+        "target_V_file": "./target_v.json",
+        "target_cell": {
+            "hoc_file": "../data/LA/A/orig_modfiles/template.hoc",
+            "modfiles_folder": "../data/LA/A/orig_modfiles",
+            "name": "Cell_A",
+        },
+        "target_cell_params": [
+           {"channel": "gbar_nap"},
+            {"channel": "gmbar_im"},
+            {"channel": "gbar_na3"},
+            {"channel": "gkdrbar_kdr"},
+            {"channel": "gcabar_cadyn"},
+            {"channel": "gsAHPbar_sAHP"},
+        ],
+        "target_cell_target_params": [0.0003, 0.002, 0.03, 0.03, 6e-5, 0.009],
+        # ======================================================
         "target_V": None,  # Target voltages
         "target_params": [
-            0.000142,
-            0.002,
-            0.03,
-            0.0015,
-            6e-5,
-            0.009,
+            0.0, #0.000142,
+            0.0, #0.002,
+            0.0, #0.03,
+            0.0, #0.0015,
+            0.0, #6e-5,
+            0.0, #0.009,
         ],  # [2.3e-05, 0.000142, 0.002, 0.03, 0.0015, 6e-5, 0.009],
         "num_repeats": 1,
         "num_amps_to_match": 1,
-        "num_epochs": 5000,
+        "num_epochs": 10,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
@@ -228,7 +245,7 @@ LA_A_seg = {
         "decimate_factor": 10,
     },
     "summary_features": {
-        "spike_threshold": 20,  # (mV)
+        "spike_threshold": -20,  # (mV)
         "arima_order": [4, 0, 4],
         # Target-sim match conditions (max abs diff between sim and target)
         "mc_num_spikes": 1,
@@ -258,8 +275,8 @@ LA_A_seg = {
     "output": {
         "folder": "output_LA_A_seg",
         "produce_plots": True,
-        "target_label": "ModelDB Segregated",
-        "simulated_label": "Model ACT",
+        "target_label": "User Trace",
+        "simulated_label": "Model ACT-Segregated",
     },
     "run_mode": "original",  # "original", "segregated"
 }
@@ -269,23 +286,23 @@ LA_A_orig = {
         "hoc_file": "../data/LA/A/orig_modfiles/template.hoc",
         "modfiles_folder": "../data/LA/A/orig_modfiles",
         "name": "Cell_A",
-        # "passive_properties": {
-        #    "v_rest": -70,
-        #    "r_in": 141,
-        #    "tau": 30.88,
-        #    "leak_conductance_variable": "glbar_leak",  # eg: g_leak
-        #    "leak_reversal_variable": "el_leak",  # eg: e_leak
-        # },
+         "passive_properties": {
+            "v_rest": -70,
+            "r_in": 141,
+            "tau": 30.88,
+            "leak_conductance_variable": "glbar_leak",  # eg: g_leak
+            "leak_reversal_variable": "el_leak",  # eg: e_leak
+         },
     },
     "simulation_parameters": {
         "h_v_init": -70.0,  # (mV)
-        "h_tstop": 2000,  # (ms)
-        "h_i_delay": 500,  # (ms)
-        "h_i_dur": 1500,  # (ms)
+        "h_tstop": 1000,  # (ms)
+        "h_i_delay": 250,  # (ms)
+        "h_i_dur": 500,  # (ms)
         "h_dt": 0.1,
     },
     "optimization_parameters": {
-        "amps": [-0.1, 0.3, 0.6, 1.2, 1.8],  # list(np.arange(-2, 10, 0.1)),
+        "amps": [0.1, 0.25, 0.5, 0.75, 1.0],
         "params": [
             # {"channel": "glbar_leak", "low": 2.75e-5, "high": 1e-4},  # leak, passive
             # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05},  # hd, passive
@@ -322,12 +339,13 @@ LA_A_orig = {
             {"channel": "gcabar_cadyn", "high": 0.00018, "low": 2e-05},
             {"channel": "gsAHPbar_sAHP", "high": 0.027, "low": 0.003},
         ],
+        "target_V_file": "./target_v.json",
         "target_V": None,  # Target voltages
         # "target_params": [5.5e-5, 2.3e-05, 0.000142, 0.002, 0.03, 0.0015, 6e-5, 0.009],
         "target_params": [0.0003, 0.002, 0.03, 0.03, 6e-5, 0.009],
         "num_repeats": 1,
         "num_amps_to_match": 12,
-        "num_epochs": 5000,
+        "num_epochs": 10,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
@@ -335,7 +353,7 @@ LA_A_orig = {
         "decimate_factor": 10,
     },
     "summary_features": {
-        "spike_threshold": 20,  # (mV)
+        "spike_threshold": -20,  # (mV)
         "arima_order": [4, 0, 4],
         # Target-sim match conditions (max abs diff between sim and target)
         "mc_num_spikes": 1,
@@ -365,8 +383,8 @@ LA_A_orig = {
     "output": {
         "folder": "output_LA_A_orig",
         "produce_plots": True,
-        "target_label": "ModelDB Original",
-        "simulated_label": "Model ACT",
+        "target_label": "User Trace",
+        "simulated_label": "Model ACT-Original",
     },
     "run_mode": "original",  # "original", "segregated"
 }
