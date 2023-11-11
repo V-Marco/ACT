@@ -202,7 +202,7 @@ def plot_fi_curves(
     spike_counts_list, amps, labels, title="FI Curves", ignore_negative=True
 ):
     if ignore_negative:
-        amps = amps[amps > 0]
+        amps = amps[amps >= 0]
 
     for spike_counts, label in zip(spike_counts_list, labels):
         print(f"{label}: {amps*1e3} nA : {spike_counts} Hz")
