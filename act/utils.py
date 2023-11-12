@@ -2,6 +2,7 @@ import json
 import os
 import shutil
 import h5py
+import shutil
 from io import StringIO
 
 import numpy as np
@@ -176,6 +177,10 @@ def build_parametric_network(config: SimulationConfig):
     parameter_values_file = "parameter_values.json"
 
     params = [p["channel"] for p in config["optimization_parameters"]["params"]]
+
+    if os.path.exists('components'):
+        print(f"./components dir exists, removing")
+        shutil.rmtree('components')
 
     learned_params = {} # keep track for future, not writing anything in this script
     preset_params = {} # will set some to 0 and others to what was determined before
@@ -372,14 +377,13 @@ def generate_parametric_traces(config: SimulationConfig):
     for c_ind in cells:
         cell = cells[c_ind]
         # since we create n_amps number of cells * the parametric distribution we just want to loop around each time the amps change
-        parameter_values = parameter_values_list[cell.gid % n_param_values]
+        parameter_values = parameter_values_list[cell.gid]
         if passive_properties:
             CellModel.set_passive_props(
                 cell.hobj.all, passive_properties, cell.hobj.soma[0]
             )
         print(f"Setting cell {cell.gid} parameters {params} = {parameter_values}")
         set_cell_parameters(cell.hobj, params, parameter_values)
-
     pc.barrier()
 
     # Run the Simulation

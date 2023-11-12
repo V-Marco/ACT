@@ -392,10 +392,10 @@ LA_A_orig = {
 LA_C_seg = {
     "cell": {
         "hoc_file": "../data/LA/C/seg_modfiles/template.hoc",
-        "modfiles_folder": "../data/LA/A/seg_modfiles_modeldb",
+        "modfiles_folder": "../data/LA/C/seg_modfiles",
         "name": "Cell_C",
         "passive_properties": {
-            "v_rest": 70.52, #-67,#-69.17387,
+            "v_rest": -70.52, #-67,#-69.17387,
             "r_in": 141,
             "tau": 30.88,
             "leak_conductance_variable": "glbar_leak",  # eg: g_leak

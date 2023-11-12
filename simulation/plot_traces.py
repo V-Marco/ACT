@@ -36,7 +36,7 @@ def plot_trace(
     ax.legend()
     ax.grid()
 
-    plt.show()
+    #plt.show()
 
 
 def stats(traces, params_dict):
@@ -56,9 +56,25 @@ def stats(traces, params_dict):
     spiking_traces, spiking_params, spiking_amps, spiking_ind = utils.extract_spiking_traces(
         traces_t, params_t, amps_t
     )
-    cell_id = 0
-    plot_trace(spiking_amps[cell_id].cpu(), spiking_traces[cell_id].cpu(), spiking_params[cell_id].cpu().tolist(), cell_id)
+    nonsaturated_only = True
+    if nonsaturated_only:
+            drop_dur = 200
+            end_of_drop = 750
+            start_of_drop = end_of_drop - drop_dur
+            threshold_drop = -50
 
+            traces_end = spiking_traces[:,start_of_drop:end_of_drop].mean(dim=1)
+            bad_ind = (traces_end>threshold_drop).nonzero().flatten().tolist()
+            nonsaturated_ind = (traces_end<=threshold_drop).nonzero().flatten().tolist()
+
+            print(f"Dropping {len(bad_ind)} traces, mean value >{threshold_drop} between {start_of_drop}:{end_of_drop}ms")
+            spiking_traces = spiking_traces[nonsaturated_ind]
+            spiking_params = spiking_params[nonsaturated_ind]
+            spiking_amps = spiking_amps[nonsaturated_ind]
+
+    for cell_id in [2,15,23]:
+        plot_trace(spiking_amps[cell_id].cpu(), spiking_traces[cell_id].cpu(), spiking_params[cell_id].cpu().tolist(), cell_id)
+    plt.show()
     import pdb
 
     pdb.set_trace()
