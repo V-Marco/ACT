@@ -253,8 +253,17 @@ class ACTOptimizer:
             return V
 
     def update_param_vars(self) -> None:
+
+        self.preset_params = {}
+        self.params = [param["channel"] for param in self.config["optimization_parameters"]["params"]]
+
+        if self.config["run_mode"] == "segregated":
+            self.preset_params = utils.load_preset_params(self.config)
+            self.num_params = len(self.params) - len(self.preset_params) # don't count those that will be set
+        else:
+            self.num_params = len(self.params)
+
         self.num_ampl = len(self.config["optimization_parameters"]["amps"])
-        self.num_params = len(self.config["optimization_parameters"]["params"])
 
 
 class GeneralACTOptimizer(ACTOptimizer):
@@ -543,128 +552,7 @@ class GeneralACTOptimizer(ACTOptimizer):
 
         return predictions, train_stats
 
-    def optimize_with_segregation(
-        self, target_V: torch.Tensor, segregate_by: str = "voltage"
-    ) -> torch.Tensor:
-        if segregate_by == "voltage":
-            cut_func = self.cut_voltage_region
-        elif segregate_by == "time":
-            cut_func = self.cut_time_region
-        else:
-            raise ValueError("segregate_by must be either 'voltage' or 'time'.")
-
-        # Get voltage with characteristics similar to target
-        (
-            simulated_V_for_next_stage,
-            param_samples_for_next_stage,
-            ampl_next_stage,
-        ) = self.match_voltage(target_V)
-
-        n_slices = (
-            self.config["optimization_parameters"]
-            .get("parametric_distribution", {})
-            .get("n_slices", 0)
-        )
-        simulations_per_amp = (
-            self.config["optimization_parameters"]
-            .get("parametric_distribution", {})
-            .get("simulations_per_amp", 1)
-        )
-        # we should do a parametric sampling of parameters to train network
-        if n_slices > 1:
-            (
-                simulated_V_dist,
-                param_samples_dist,
-                simulated_amps,
-            ) = self.get_parametric_distribution(n_slices, simulations_per_amp)
-            simulated_V_for_next_stage = torch.cat(
-                (simulated_V_for_next_stage, simulated_V_dist)
-            )
-            param_samples_for_next_stage = torch.cat(
-                (param_samples_for_next_stage, param_samples_dist)
-            )
-            ampl_next_stage = torch.cat((ampl_next_stage, simulated_amps))
-        else:
-            print(f"Parametric distribution parameters 'n_slices' not set, skipping.")
-
-        (
-            num_spikes_simulated,
-            simulated_interspike_times,
-        ) = self.extract_summary_features(simulated_V_for_next_stage)
-
-        summary_features = torch.stack(
-            (
-                ampl_next_stage,
-                torch.flatten(num_spikes_simulated),
-                torch.flatten(simulated_interspike_times),
-            )
-        )
-        summary_features = torch.transpose(summary_features, 0, 1).float()
-
-        # Resample to match the length of target data
-        resampled_data = self.resample_voltage(
-            simulated_V_for_next_stage, target_V.shape[1]
-        )
-
-        # Store original params to restore later
-        orig_params = {
-            p["channel"]: p for p in self.config["optimization_parameters"]["params"]
-        }
-
-        self.model_pool = []
-        prediction_pool = []
-
-        for segregation in self.config["segregation"]:
-            seg_params = segregation["params"]
-            bounds = segregation[segregate_by]
-
-            # Set the parameters
-            param_ind = [
-                i for i, (c, _) in enumerate(orig_params.items()) if c in seg_params
-            ]
-
-            lows = [
-                p["low"] for channel, p in orig_params.items() if channel in seg_params
-            ]
-            highs = [
-                p["high"] for channel, p in orig_params.items() if channel in seg_params
-            ]
-            self.num_params = len(seg_params)
-
-            # Cut the required segment
-            cut_target_V = cut_func(resampled_data, bounds)
-
-            # Train a model for this segment
-            self.model = self.init_nn_model(
-                in_channels=cut_target_V.shape[1],
-                out_channels=self.num_params,
-                summary_features=summary_features,
-            )
-            self.train_model(
-                cut_target_V.float(),
-                param_samples_for_next_stage[:, param_ind],
-                lows=lows,
-                highs=highs,
-                summary_features=summary_features,
-            )
-
-            # Predict and take max across ci to prevent underestimating
-            predictions = self.predict_with_model(
-                cut_target_V, lows, highs, summary_features
-            )
-            predictions = torch.max(predictions, dim=0).values
-
-            # Update cell model
-            self.cell.set_parameters(seg_params, predictions)
-
-            # Update the pools
-            prediction_pool.append(predictions)
-            self.model_pool.append(self.model)
-
-        prediction_pool = torch.cat(prediction_pool, dim=0)
-
-        return prediction_pool
-
+    
     def init_nn_model(
         self, in_channels: int, out_channels: int, summary_features
     ) -> torch.nn.Sequential:
@@ -698,8 +586,6 @@ class GeneralACTOptimizer(ACTOptimizer):
             f"Number of trainable parameters: {sum(p.numel() for p in self.model.parameters() if p.requires_grad)}"
         )
 
-        # self.model.train(True)
-
         stats = {
             "train_loss_batches": [],
             "train_loss": [],
@@ -707,6 +593,18 @@ class GeneralACTOptimizer(ACTOptimizer):
             "train_size": 0,
             "test_size": 0,
         }
+
+        # cut the target_params for segregation
+        if self.config["run_mode"] == "segregated":
+            # get all the indicies that we want to keep
+            keep_ind = []
+            for i, param in enumerate(self.params):
+                if param not in self.preset_params:
+                    keep_ind.append(i)
+            print(f"Training target param indicies {keep_ind} only for segregation")
+            target_params = target_params[:,keep_ind]
+            sigmoid_mins = sigmoid_mins[keep_ind]
+            sigmoid_maxs = sigmoid_maxs[keep_ind]
 
         # shuffle the training data
         indexes = torch.randperm(voltage_data.shape[0])
@@ -768,7 +666,6 @@ class GeneralACTOptimizer(ACTOptimizer):
                         ]
 
                         # forward pass
-
                         pred = (
                             self.model(voltage_data_batch, summary_features_batch)
                             * (sigmoid_maxs - sigmoid_mins)
@@ -832,8 +729,17 @@ class GeneralACTOptimizer(ACTOptimizer):
         sigmoid_mins = torch.tensor(lows)
         sigmoid_maxs = torch.tensor(highs)
 
+        if self.config["run_mode"] == "segregated":
+            output_ind = [] # these are the indices that the network returned
+            for i, param in enumerate(self.params):
+                if param not in self.preset_params:
+                    output_ind.append(i)
+            sigmoid_mins = sigmoid_mins[output_ind]
+            sigmoid_maxs = sigmoid_maxs[output_ind]
+
+        ret = None
         if self.use_random_forest: # use random forest
-            return torch.tensor(self.predict_random_forest(summary_features.cpu().numpy()))
+            ret = torch.tensor(self.predict_random_forest(summary_features.cpu().numpy()))
         else:
             self.model.eval()
             outs = []
@@ -850,7 +756,18 @@ class GeneralACTOptimizer(ACTOptimizer):
                 )
                 outs.append(out.reshape(1, -1))
 
-            return torch.cat(outs, dim=0)
+            ret = torch.cat(outs, dim=0)
+
+        # return with preset params
+        if self.config["run_mode"] == "segregated":
+            seg_ret = torch.zeros((ret.shape[0],len(self.params)))
+            seg_ret[:,output_ind] = ret
+            for param_ind, param in enumerate(self.params):
+                if param in self.preset_params:
+                    seg_ret[:,param_ind] = self.preset_params[param]
+            return seg_ret
+        else:
+            return ret
 
     def get_parametric_distribution(self, n_slices, simulations_per_amp) -> tuple:
         params = [

@@ -123,6 +123,28 @@ def cleanup_simulation():
     folders = ["components"]
     # TODO Remove
 
+def load_preset_params(config: SimulationConfig):
+    # Returns a dict of learned params from segregation
+    # if segregation is not used then returns an empty dict
+    parameter_values_file = "parameter_values.json"
+
+    if config["run_mode"] != "segregated":
+        return {}
+    if not os.path.exists(parameter_values_file):
+        return {}
+    with open(parameter_values_file, "r") as fp:
+        parameter_values_dict = json.load(fp)
+    segregation_index = parameter_values_dict["segregation_index"]
+
+    preset_params = parameter_values_dict["learned_params"]
+    # everything after the current index should be zero
+    total_segregations = len(config["segregation"])
+    for i in range(segregation_index+1,total_segregations):
+        for seg_p in config["segregation"][i]["params"]:
+            print(f"Setting {seg_p} = 0 for future segregation")
+            preset_params[seg_p] = 0
+    
+    return preset_params
 
 def update_segregation(config: SimulationConfig, learned_params):
     # This function accepts the learned parameters for the network
@@ -170,20 +192,16 @@ def build_parametric_network(config: SimulationConfig):
                 parameter_values_dict = json.load(fp)
             segregation_index = parameter_values_dict["segregation_index"]
 
-            if segregation_index > 0:
+            if segregation_index > 0 and segregation_index < total_segregations:
                 learned_params = parameter_values_dict["learned_params"]
-                preset_params = parameter_values_dict["learned_params"]
-                print(f"Learned parameters loaded {learned_params}")
-                # everything after the current index should be zero
-                total_segregations = len(config["segregation"])
-                for i in range(segregation_index+1,total_segregations):
-                    for seg_p in config["segregation"][i]["params"]:
-                        print(f"Setting {seg_p} = 0 for future segregation")
-                        preset_params[seg_p] = 0
+                preset_params = load_preset_params(config)
             else:
+                print(f"Segregation stage 1/{total_segregations} started.")
+                segregation_index = 0
                 segregation_params = config["segregation"][segregation_index]["params"]
                 preset_params = {p:0 for p in params if p not in segregation_params}
-
+                print(f"Segregation parameters selected: {segregation_params}")
+                print(f"Setting all else to zero: {preset_params}")
         else: # this is the first run, and we've not loaded before
             print(f"Segregation stage 1/{total_segregations} started.")
             # Everything but the first set of parameters should be set to zero
