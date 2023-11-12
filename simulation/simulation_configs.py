@@ -395,7 +395,7 @@ LA_C_seg = {
         "modfiles_folder": "../data/LA/A/seg_modfiles_modeldb",
         "name": "Cell_C",
         "passive_properties": {
-            "v_rest": -67,#-69.17387,
+            "v_rest": 70.52, #-67,#-69.17387,
             "r_in": 141,
             "tau": 30.88,
             "leak_conductance_variable": "glbar_leak",  # eg: g_leak
@@ -448,7 +448,7 @@ LA_C_seg = {
         ],  # [2.3e-05, 0.000142, 0.002, 0.03, 0.0015, 6e-5, 0.009],
         "num_repeats": 1,
         "num_amps_to_match": 1,
-        "num_epochs": 2500,
+        "num_epochs": 10,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
@@ -469,27 +469,33 @@ LA_C_seg = {
         # { # passive
         #    "params": ["ghdbar_hd"],
         #    "voltage": [-80, -67.5],
-        # },
-        {  # lto
-            "params": ["gbar_nap", "gbar_im"],
-            "voltage": [-100, 100],  # [-67.5, 100],  # [-67.5, -57.5],
+        
+        #{  # lto
+        #    "params": ["gbar_nap", "gbar_im"],
+        #    "voltage": [-100, 100],  # [-67.5, 100],  # [-67.5, -57.5],
+        #},
+        #{  # spking / adaptation
+        #    "params": ["gbar_na3", "gbar_kdr", "gcabar_cadyn", "gsAHPbar_sAHP"],
+        #    "voltage": [-100, 100],  # [-57.5, 100],  # [-57.5, 0],
+        #},
+        #{  # hto
+        #    "params": ["gbar_nap", "gbar_im"],
+        #    "voltage": [-100, 100],  # [-40, 100],  # [-40, -30],
+        #},
+        {
+            "params": ["gbar_na3", "gbar_kdr"]
         },
-        {  # spking / adaptation
-            "params": ["gbar_na3", "gbar_kdr", "gcabar_cadyn", "gsAHPbar_sAHP"],
-            "voltage": [-100, 100],  # [-57.5, 100],  # [-57.5, 0],
-        },
-        {  # hto
-            "params": ["gbar_nap", "gbar_im"],
-            "voltage": [-100, 100],  # [-40, 100],  # [-40, -30],
-        },
+        {
+            "params": ["gbar_nap", "gbar_im", "gcabar_cadyn", "gsAHPbar_sAHP"]
+        }
     ],
     "output": {
         "folder": "output_LA_C_seg",
         "produce_plots": True,
-        "target_label": "ModelDB Segregated",
-        "simulated_label": "Model ACT",
+        "target_label": "User Trace",
+        "simulated_label": "Model ACT-Segregated",
     },
-    "run_mode": "original",  # "original", "segregated"
+    "run_mode": "segregated",  # "original", "segregated"
 }
 
 LA_C_orig = {
@@ -559,7 +565,7 @@ LA_C_orig = {
         "target_params": [0.00014, 0.001, 0.03, 0.009, 7e-5, 0.00025],
         "num_repeats": 1,
         "num_amps_to_match": 12,
-        "num_epochs": 2500,
+        "num_epochs": 10,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
@@ -597,8 +603,8 @@ LA_C_orig = {
     "output": {
         "folder": "output_LA_C_orig",
         "produce_plots": True,
-        "target_label": "ModelDB Original",
-        "simulated_label": "Model ACT",
+        "target_label": "User Trace",
+        "simulated_label": "Model ACT-Original",
     },
     "run_mode": "original",  # "original", "segregated"
 }
@@ -786,4 +792,4 @@ Simple_Spiker_orig = {
 }
 
 
-selected_config = Simple_Spiker_orig
+selected_config = LA_C_seg

@@ -69,10 +69,13 @@ def get_params(param_dist):
     return params
 
 
-def get_param_dist(config: SimulationConfig):
+def get_param_dist(config: SimulationConfig, preset_params={}):
     # Deterimine the number of cells and their parameters to be set
-    lows = [p["low"] for p in config["optimization_parameters"]["params"]]
-    highs = [p["high"] for p in config["optimization_parameters"]["params"]]
+    preset_channels = [k for k,v in preset_params.items()]
+    all_channels = [p["channel"] for p in config["optimization_parameters"]["params"]]
+    channels = [p["channel"] for p in config["optimization_parameters"]["params"] if p["channel"] not in preset_channels]
+    lows = [p["low"] for p in config["optimization_parameters"]["params"] if p["channel"] not in preset_channels]
+    highs = [p["high"] for p in config["optimization_parameters"]["params"] if p["channel"] not in preset_channels]
 
     n_slices = (
         config["optimization_parameters"]
@@ -93,7 +96,20 @@ def get_param_dist(config: SimulationConfig):
 
     param_dist = np.array(param_dist.tolist() + [highs])  # add on the highes values
     parameter_values_list = get_params(param_dist)
-    return parameter_values_list
+
+    if config["run_mode"] == "segregated":
+        # need to add in the preset channels to each of the generated parametric sets
+        parameter_values_list_updated = []
+        for parameter_values in parameter_values_list: # for each parameter set
+            for channel,value in zip(channels,parameter_values): # update the preset_channels dict to include the current parameter set
+                preset_params[channel] = value
+            current_parameter_values_list = []
+            for channel in all_channels:
+                current_parameter_values_list.append(preset_params[channel])
+            parameter_values_list_updated.append(current_parameter_values_list)
+        return parameter_values_list_updated
+    else:
+        return parameter_values_list
 
 
 def cleanup_simulation():
@@ -108,10 +124,76 @@ def cleanup_simulation():
     # TODO Remove
 
 
+def update_segregation(config: SimulationConfig, learned_params):
+    # This function accepts the learned parameters for the network
+    # And updates the parameter_values.json if that parameter was
+    # in the current segregation index 
+    # learned_params = {'channel'(str):value(float),}
+    parameter_values_file = "parameter_values.json"
+    if os.path.exists(parameter_values_file):
+        print(f"Updating {parameter_values_file} for learned parameters")
+        with open(parameter_values_file, "r") as fp:
+            parameter_values_dict = json.load(fp)
+        segregation_index = parameter_values_dict["segregation_index"]
+        current_segregation_params = config["segregation"][segregation_index]["params"]
+        for learned_param, value in learned_params.items():
+            if learned_param in current_segregation_params:
+                parameter_values_dict["learned_params"][learned_param] = value
+                print(f"Segregation parameter {learned_param} updated to {value}")
+
+        parameter_values_dict["segregation_index"] += 1
+        print(f"Segregation stage {segregation_index+1}/{len(config['segregation'])} complete.")
+        with open(parameter_values_file, "w") as fp:
+            json.dump(parameter_values_dict, fp, indent=4)
+    else:
+        print(f"{parameter_values_file} file not found - unable to update learned params")
+    
+
 def build_parametric_network(config: SimulationConfig):
     config_file = "simulation_act_simulation_config.json"
+    parameter_values_file = "parameter_values.json"
+
     params = [p["channel"] for p in config["optimization_parameters"]["params"]]
-    param_dist = get_param_dist(config)
+
+    learned_params = {} # keep track for future, not writing anything in this script
+    preset_params = {} # will set some to 0 and others to what was determined before
+    segregation_index = 0 # looping through each of the segregations in the config
+    # check if we're running in segregated mode
+    # we keep track of the segregated state
+    if config["run_mode"] == "segregated":
+        print("Segregation mode selected.")
+        total_segregations = len(config["segregation"])
+        # we're segregated and have run the simulation before
+        if os.path.exists(parameter_values_file):
+            print(f"Loading {parameter_values_file} for learned parameters")
+            with open(parameter_values_file, "r") as fp:
+                parameter_values_dict = json.load(fp)
+            segregation_index = parameter_values_dict["segregation_index"]
+
+            if segregation_index > 0:
+                learned_params = parameter_values_dict["learned_params"]
+                preset_params = parameter_values_dict["learned_params"]
+                print(f"Learned parameters loaded {learned_params}")
+                # everything after the current index should be zero
+                total_segregations = len(config["segregation"])
+                for i in range(segregation_index+1,total_segregations):
+                    for seg_p in config["segregation"][i]["params"]:
+                        print(f"Setting {seg_p} = 0 for future segregation")
+                        preset_params[seg_p] = 0
+            else:
+                segregation_params = config["segregation"][segregation_index]["params"]
+                preset_params = {p:0 for p in params if p not in segregation_params}
+
+        else: # this is the first run, and we've not loaded before
+            print(f"Segregation stage 1/{total_segregations} started.")
+            # Everything but the first set of parameters should be set to zero
+            segregation_params = config["segregation"][segregation_index]["params"]
+            preset_params = {p:0 for p in params if p not in segregation_params}
+            print(f"Segregation parameters selected: {segregation_params}")
+            print(f"Setting all else to zero: {preset_params}")
+        
+
+    param_dist = get_param_dist(config, preset_params=preset_params)
 
     network_dir = "network"
     # remove everything from prior runs
@@ -136,7 +218,6 @@ def build_parametric_network(config: SimulationConfig):
         celsius = 31.0
     else:
         print(f"Celsius set to {celsius}")
-        
 
     n_cells_per_amp = len(param_dist)
     n_cells = len(amps) * n_cells_per_amp
@@ -219,7 +300,6 @@ def build_parametric_network(config: SimulationConfig):
         json.dump(conf_dict, f)
 
     nodesets_file = "node_sets.json"
-    parameter_values_file = "parameter_values.json"
     node_dict = None
     with open(nodesets_file) as json_file:
         node_dict = json.load(json_file)
@@ -234,12 +314,13 @@ def build_parametric_network(config: SimulationConfig):
     with open(nodesets_file, "w") as f:
         json.dump(node_dict, f, indent=2)
 
-    parameter_values_list = get_param_dist(config)
     with open(parameter_values_file, "w") as json_file:
         param_dict = {
             "parameters": params,
             "parameter_values_list": params_list,
             "amps": list(amps_list),
+            "segregation_index": segregation_index,
+            "learned_params": learned_params
         }
         json.dump(param_dict, json_file, indent=2)
 
