@@ -391,12 +391,11 @@ class GeneralACTOptimizer(ACTOptimizer):
             ) = utils.extract_spiking_traces(
                 simulated_V_for_next_stage, param_samples_for_next_stage, ampl_next_stage
             )
-
         if nonsaturated_only:
             drop_dur = 200
             end_of_drop = 750
             start_of_drop = end_of_drop - drop_dur
-            threshold_drop = -60
+            threshold_drop = -50
 
             traces_end = simulated_V_for_next_stage[:,start_of_drop:end_of_drop].mean(dim=1)
             bad_ind = (traces_end>threshold_drop).nonzero().flatten().tolist()
@@ -406,7 +405,6 @@ class GeneralACTOptimizer(ACTOptimizer):
             simulated_V_for_next_stage = simulated_V_for_next_stage[nonsaturated_ind]
             param_samples_for_next_stage = param_samples_for_next_stage[nonsaturated_ind]
             ampl_next_stage = ampl_next_stage[nonsaturated_ind]
-
 
         (
             num_spikes_simulated,
@@ -689,9 +687,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         train_test_split=0.85,
         batch_size=8,
     ) -> None:
-        optim = torch.optim.Adam(self.model.parameters(), lr=1e-6, weight_decay=1e-6)
-        # spiker and LA C work well with
-        #optim = torch.optim.Adam(self.model.parameters(), lr=2e-5, weight_decay=1e-4)
+        optim = torch.optim.Adam(self.model.parameters(), lr=2e-5, weight_decay=1e-4)
         loss_fn = torch.nn.MSELoss()  # torch.nn.functional.l1_loss
 
         sigmoid_mins = torch.tensor(lows)

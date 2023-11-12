@@ -105,14 +105,14 @@ def _run(config: SimulationConfig):
     fi_err_pool = []
     params = [p["channel"] for p in config["optimization_parameters"]["params"]]
     for repeat_num in range(config["optimization_parameters"]["num_repeats"]):
-        if config["run_mode"] == "original":
+        if config["run_mode"] == "original" or config["run_mode"] == "segregated":
             optim = GeneralACTOptimizer(simulation_config=config, logger=logger)
             predictions, train_stats = optim.optimize(target_V)
-        elif config["run_mode"] == "segregated":
-            optim = GeneralACTOptimizer(simulation_config=config, logger=logger)
-            predictions, train_stats = optim.optimize_with_segregation(
-                target_V, "voltage"
-            )
+        #elif config["run_mode"] == "segregated":
+        #    optim = GeneralACTOptimizer(simulation_config=config, logger=logger)
+        #    predictions, train_stats = optim.optimize_with_segregation(
+        #        target_V, "voltage"
+        #    )
         else:
             raise ValueError(
                 "run mode not specified, 'original' or 'segregated' supported."
@@ -287,6 +287,9 @@ def _run(config: SimulationConfig):
         f.create_dataset("amps", (len(amp_out)), dtype="f", data=amp_out)
         f.close()
 
+    if config['run_mode'] == "segregated":
+        learned_params = {param:predict for param,predict in zip(params, predictions)}
+        utils.update_segregation(config, learned_params)
 
 def run_generate_target_traces(config: SimulationConfig, subprocess=True):
     try:

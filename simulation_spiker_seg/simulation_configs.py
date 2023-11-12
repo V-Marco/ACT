@@ -452,18 +452,25 @@ LA_C_seg = {
         #    "params": ["ghdbar_hd"],
         #    "voltage": [-80, -67.5],
         # },
-        {  # lto
-            "params": ["gbar_nap", "gbar_im"],
-            "voltage": [-100, 100],  # [-67.5, 100],  # [-67.5, -57.5],
+        
+        #{  # lto
+        #    "params": ["gbar_nap", "gbar_im"],
+        #    "voltage": [-100, 100],  # [-67.5, 100],  # [-67.5, -57.5],
+        #},
+        #{  # spking / adaptation
+        #    "params": ["gbar_na3", "gbar_kdr", "gcabar_cadyn", "gsAHPbar_sAHP"],
+        #    "voltage": [-100, 100],  # [-57.5, 100],  # [-57.5, 0],
+        #},
+        #{  # hto
+        #    "params": ["gbar_nap", "gbar_im"],
+        #    "voltage": [-100, 100],  # [-40, 100],  # [-40, -30],
+        #},
+        {
+            "params": ["gbar_na3", "gbar_kdr"]
         },
-        {  # spking / adaptation
-            "params": ["gbar_na3", "gbar_kdr", "gcabar_cadyn", "gsAHPbar_sAHP"],
-            "voltage": [-100, 100],  # [-57.5, 100],  # [-57.5, 0],
-        },
-        {  # hto
-            "params": ["gbar_nap", "gbar_im"],
-            "voltage": [-100, 100],  # [-40, 100],  # [-40, -30],
-        },
+        {
+            "params": ["gbar_nap", "gbar_im", "gcabar_cadyn", "gsAHPbar_sAHP"]
+        }
     ],
     "output": {
         "folder": "output_LA_C_seg",
@@ -471,7 +478,7 @@ LA_C_seg = {
         "target_label": "ModelDB Segregated",
         "simulated_label": "Model ACT",
     },
-    "run_mode": "original",  # "original", "segregated"
+    "run_mode": "segregated",  # "original", "segregated"
 }
 
 LA_C_orig = {
@@ -768,4 +775,4 @@ Simple_Spiker_orig = {
 }
 
 
-selected_config = Simple_Spiker_seg
+selected_config = LA_C_seg

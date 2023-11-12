@@ -15,9 +15,13 @@ config = selected_config
 def plot_trace(
     amp: float,
     target_V=None,
-    label="Simulated",
+    params=None,
+    cell_id=0,
     dt=0.1,
 ):
+    channels = [c["channel"] for c in config["optimization_parameters"]["params"]]
+    pdict = {c:round(p,4) for c,p in zip(channels, params)}
+    label = f"Cell {cell_id} | {pdict}"
     decimate_factor = config["optimization_parameters"].get("decimate_factor")
     if decimate_factor:
         dt = dt * decimate_factor
@@ -49,13 +53,11 @@ def stats(traces, params_dict):
     print(f"{amp_list} total amps supplied")
     print(f"{int(len(traces)/len(amp_list))} total unique parameter sets")
 
-    spiking_traces, spiking_params, spiking_amps = utils.extract_spiking_traces(
+    spiking_traces, spiking_params, spiking_amps, spiking_ind = utils.extract_spiking_traces(
         traces_t, params_t, amps_t
     )
     cell_id = 0
-    plot_trace(
-        spiking_amps[cell_id].cpu(), spiking_traces[cell_id].cpu(), f"Cell {cell_id}"
-    )
+    plot_trace(spiking_amps[cell_id].cpu(), spiking_traces[cell_id].cpu(), spiking_params[cell_id].cpu().tolist(), cell_id)
 
     import pdb
 
