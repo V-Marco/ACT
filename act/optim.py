@@ -664,7 +664,6 @@ class GeneralACTOptimizer(ACTOptimizer):
                         target_params_batch = target_params_train[
                             start : start + batch_size
                         ]
-
                         # forward pass
                         pred = (
                             self.model(voltage_data_batch, summary_features_batch)

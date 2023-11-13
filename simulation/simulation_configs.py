@@ -237,7 +237,7 @@ LA_A_seg = {
         ],  # [2.3e-05, 0.000142, 0.002, 0.03, 0.0015, 6e-5, 0.009],
         "num_repeats": 1,
         "num_amps_to_match": 1,
-        "num_epochs": 10,
+        "num_epochs": 1000,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
@@ -259,18 +259,25 @@ LA_A_seg = {
         #    "params": ["ghdbar_hd"],
         #    "voltage": [-80, -67.5],
         # },
-        {  # lto
-            "params": ["gbar_nap", "gbar_im"],
-            "voltage": [-100, 100],  # [-67.5, 100],  # [-67.5, -57.5],
+        #{  # lto
+        #    "params": ["gbar_nap", "gbar_im"],
+        #    "voltage": [-100, 100],  # [-67.5, 100],  # [-67.5, -57.5],
+        #},
+        #{  # spking / adaptation
+        #    "params": ["gbar_na3", "gbar_kdr", "gcabar_cadyn", "gsAHPbar_sAHP"],
+        #    "voltage": [-100, 100],  # [-57.5, 100],  # [-57.5, 0],
+        #},
+        #{  # hto
+        #    "params": ["gbar_nap", "gbar_im"],
+        #    "voltage": [-100, 100],  # [-40, 100],  # [-40, -30],
+        #},
+        {
+            "params": ["gbar_na3", "gbar_kdr"]
         },
-        {  # spking / adaptation
-            "params": ["gbar_na3", "gbar_kdr", "gcabar_cadyn", "gsAHPbar_sAHP"],
-            "voltage": [-100, 100],  # [-57.5, 100],  # [-57.5, 0],
-        },
-        {  # hto
-            "params": ["gbar_nap", "gbar_im"],
-            "voltage": [-100, 100],  # [-40, 100],  # [-40, -30],
-        },
+        {
+            "params": ["gbar_nap", "gbar_im", "gcabar_cadyn", "gsAHPbar_sAHP"]
+        }
+
     ],
     "output": {
         "folder": "output_LA_A_seg",
@@ -278,7 +285,7 @@ LA_A_seg = {
         "target_label": "User Trace",
         "simulated_label": "Model ACT-Segregated",
     },
-    "run_mode": "original",  # "original", "segregated"
+    "run_mode": "segregated",  # "original", "segregated"
 }
 
 LA_A_orig = {
@@ -363,22 +370,28 @@ LA_A_orig = {
         "mc_max_v": 1,  # (mV)
     },
     "segregation": [
-        {  # passive
-            "params": ["glbar_leak", "ghdbar_hd"],
-            "voltage": [-80, -67.5],
+        #{  # passive
+        #    "params": ["glbar_leak", "ghdbar_hd"],
+        #    "voltage": [-80, -67.5],
+        #},
+        #{  # lto
+        #    "params": ["gbar_nap", "gmbar_im"],
+        #    "voltage": [-67.5, -57.5],
+        #},
+        #{  # spking / adaptation
+        #    "params": ["gbar_na3", "gkdrbar_kdr", "gcabar_cadyn", "gsAHPbar_sAHP"],
+        #    "voltage": [-57.5, 0],
+        #},
+        #{  # hto
+        #    "params": ["gbar_nap", "gmbar_im"],
+        #    "voltage": [-40, -30],
+        #},
+        {
+            "params": ["gbar_na3", "gkdrbar_kdr"]
         },
-        {  # lto
-            "params": ["gbar_nap", "gmbar_im"],
-            "voltage": [-67.5, -57.5],
-        },
-        {  # spking / adaptation
-            "params": ["gbar_na3", "gkdrbar_kdr", "gcabar_cadyn", "gsAHPbar_sAHP"],
-            "voltage": [-57.5, 0],
-        },
-        {  # hto
-            "params": ["gbar_nap", "gmbar_im"],
-            "voltage": [-40, -30],
-        },
+        {
+            "params": ["gbar_nap", "gmbar_im", "gcabar_cadyn", "gsAHPbar_sAHP"]
+        }
     ],
     "output": {
         "folder": "output_LA_A_orig",
@@ -448,7 +461,7 @@ LA_C_seg = {
         ],  # [2.3e-05, 0.000142, 0.002, 0.03, 0.0015, 6e-5, 0.009],
         "num_repeats": 1,
         "num_amps_to_match": 1,
-        "num_epochs": 1000,
+        "num_epochs": 10,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
@@ -483,7 +496,8 @@ LA_C_seg = {
         #    "voltage": [-100, 100],  # [-40, 100],  # [-40, -30],
         #},
         {
-            "params": ["gbar_na3", "gbar_kdr"]
+            "params": ["gbar_na3", "gbar_kdr"],
+            "num_epochs": 1000
         },
         {
             "params": ["gbar_nap", "gbar_im", "gcabar_cadyn", "gsAHPbar_sAHP"]
@@ -792,4 +806,4 @@ Simple_Spiker_orig = {
 }
 
 
-selected_config = LA_C_seg
+selected_config = LA_A_seg
