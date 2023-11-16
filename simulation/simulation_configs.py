@@ -237,7 +237,7 @@ LA_A_seg = {
         ],  # [2.3e-05, 0.000142, 0.002, 0.03, 0.0015, 6e-5, 0.009],
         "num_repeats": 1,
         "num_amps_to_match": 1,
-        "num_epochs": 1000,
+        "num_epochs": 10,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
@@ -271,12 +271,29 @@ LA_A_seg = {
         #    "params": ["gbar_nap", "gbar_im"],
         #    "voltage": [-100, 100],  # [-40, 100],  # [-40, -30],
         #},
+        ######### TAKE 2 ##########
+        #{
+        #    "params": ["gbar_na3", "gbar_kdr"]
+        #},
+        #{
+        #    "params": ["gbar_nap", "gbar_im", "gcabar_cadyn", "gsAHPbar_sAHP"]
+        #},
+        ######### TAKE 3 ##########
         {
-            "params": ["gbar_na3", "gbar_kdr"]
+            "params": ["gbar_nap", "gbar_im"],
+            "model_class": "ConvolutionNet",
+            "selection_metric": "mse",
         },
         {
-            "params": ["gbar_nap", "gbar_im", "gcabar_cadyn", "gsAHPbar_sAHP"]
-        }
+            "params": ["gbar_na3", "gbar_kdr"],
+            "model_class": "ConvolutionEmbeddingNet",
+            "selection_metric": "fi_error",
+        },
+        {
+            "params": ["gcabar_cadyn", "gsAHPbar_sAHP"],
+            "model_class": "ConvolutionEmbeddingNet",
+            "selection_metric": "fi_error",
+        },
 
     ],
     "output": {

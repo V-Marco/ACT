@@ -73,7 +73,10 @@ class SegregationModule(TypedDict):
     params: List[str]
     voltage: List[int]
     time: List[int]
-
+    model_class: str # what kind of neural network should we use (optional)
+    learning_rate: float
+    weight_decay: float:
+    selection_metric: str # fi_error or mse should be enum
 
 class Output(TypedDict):
     folder: str

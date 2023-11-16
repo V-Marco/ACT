@@ -124,6 +124,19 @@ def cleanup_simulation():
     folders = ["components"]
     # TODO Remove
 
+def get_segregation_index(config: SimulationConfig):
+    parameter_values_file = "parameter_values.json"
+
+    if config["run_mode"] != "segregated":
+        return -1
+    if not os.path.exists(parameter_values_file):
+        return -1
+    with open(parameter_values_file, "r") as fp:
+        parameter_values_dict = json.load(fp)
+    segregation_index = parameter_values_dict["segregation_index"]
+
+    return segregation_index
+
 def load_preset_params(config: SimulationConfig):
     # Returns a dict of learned params from segregation
     # if segregation is not used then returns an empty dict

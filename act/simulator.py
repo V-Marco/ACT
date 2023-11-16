@@ -108,6 +108,8 @@ def _run(config: SimulationConfig):
         if config["run_mode"] == "original" or config["run_mode"] == "segregated":
             optim = GeneralACTOptimizer(simulation_config=config, logger=logger)
             predictions, train_stats = optim.optimize(target_V)
+            predictions_amps = predictions[:,-1].reshape(-1,1)
+            predictions = predictions[:,:-1]
         #elif config["run_mode"] == "segregated":
         #    optim = GeneralACTOptimizer(simulation_config=config, logger=logger)
         #    predictions, train_stats = optim.optimize_with_segregation(
@@ -201,8 +203,14 @@ def _run(config: SimulationConfig):
     print(f"FI Err per prediction: {fi_err_pool}")
 
     # old way, error was not reliable, a flat line beats spikes offset by a few ms
-    # predictions = pred_pool[np.argmin(err_pool)]
-    predictions = pred_pool[np.argmin(np.abs(fi_err_pool))]
+    
+    if config["run_mode"] == segregated:
+        if config["segregation"][segregation_index].get("selection_metric") == "mse":
+            predictions = pred_pool[np.argmin(err_pool)]
+        else:
+            predictions = pred_pool[np.argmin(np.abs(fi_err_pool))]
+    else:# by default I want fi error
+        predictions = pred_pool[np.argmin(np.abs(fi_err_pool))]
 
     print(f"Best prediction: {predictions}")
 
