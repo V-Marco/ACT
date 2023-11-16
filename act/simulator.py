@@ -297,6 +297,13 @@ def _run(config: SimulationConfig):
 
     if config['run_mode'] == "segregated":
         learned_params = {param:predict for param,predict in zip(params, predictions)}
+        
+        # save a copy of the outputs for future development
+        base_output_folder = config["output"]["folder"]
+        run_output_folder_name = f"{config['run_mode']}"
+        seg_folder = os.path.join(base_output_folder, f"run_output_folder_name_seg{segregation_index+1}")
+        shutil.copytree(output_folder, seg_folder, dirs_exist_ok=True)
+
         utils.update_segregation(config, learned_params)
 
 def run_generate_target_traces(config: SimulationConfig, subprocess=True):

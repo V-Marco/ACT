@@ -311,13 +311,22 @@ class GeneralACTOptimizer(ACTOptimizer):
 
     def optimize(self, target_V: torch.Tensor) -> torch.Tensor:
 
+        # extract only traces that have spikes in them
+        spiking_only = True
+        nonsaturated_only = True
+
         model_class = None
         learning_rate = 0
         weight_decay = 0
+        num_epochs = 0
         if self.config["run_mode"] == "segregated":
-            learning_rate = config["segregation"][segregation_index].get("learning_rate",0)
-            weight_decay = config["segregation"][segregation_index].get("weight_decay",0)
-            model_class = config["segregation"][segregation_index].get("model_class",None)
+            learning_rate = self.config["segregation"][self.segregation_index].get("learning_rate",0)
+            weight_decay = self.config["segregation"][self.segregation_index].get("weight_decay",0)
+            model_class = self.config["segregation"][self.segregation_index].get("model_class",None)
+            num_epochs = self.config["segregation"][self.segregation_index].get("num_epochs",0)
+            spiking_only = self.config["segregation"][self.segregation_index].get("train_spiking_only",True)
+        if not num_epochs:
+            num_epochs = self.config["optimization_parameters"].get("num_epochs")
 
         # Get voltage with characteristics similar to target
         if not self.config["optimization_parameters"]["skip_match_voltage"]:
@@ -397,10 +406,6 @@ class GeneralACTOptimizer(ACTOptimizer):
                 ampl_next_stage = simulated_amps
         else:
             print(f"Parametric distribution parameters not applied.")
-
-        # extract only traces that have spikes in them
-        spiking_only = True
-        nonsaturated_only = True
 
         if spiking_only:
             (
@@ -502,7 +507,8 @@ class GeneralACTOptimizer(ACTOptimizer):
             highs,
             summary_features=summary_features,
             learning_rate=learning_rate,
-            weight_decay=weight_decay
+            weight_decay=weight_decay,
+            num_epochs=num_epochs,
         )
 
         # Predict and take max across ci to prevent underestimating
@@ -600,7 +606,8 @@ class GeneralACTOptimizer(ACTOptimizer):
         train_test_split=0.85,
         batch_size=8,
         learning_rate=2e-5,
-        weight_decay=1e-4
+        weight_decay=1e-4,
+        num_epochs=0,
     ) -> None:
         if not learning_rate:
             learning_rate = 2e-5
@@ -679,8 +686,6 @@ class GeneralACTOptimizer(ACTOptimizer):
             # Hold the best model
             best_mse = np.inf  # init to infinity
             best_weights = None
-
-            num_epochs = self.config["optimization_parameters"]["num_epochs"]
 
             for epoch in range(num_epochs):
                 self.model.train()

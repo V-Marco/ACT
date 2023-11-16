@@ -181,6 +181,8 @@ def update_segregation(config: SimulationConfig, learned_params):
         print(f"Segregation stage {segregation_index+1}/{len(config['segregation'])} complete.")
         with open(parameter_values_file, "w") as fp:
             json.dump(parameter_values_dict, fp, indent=4)
+        if segregation_index == len(config["segregation"]):
+            shutil.move(parameter_values_file,'./parameter_values_seg_complete.json')
     else:
         print(f"{parameter_values_file} file not found - unable to update learned params")
     

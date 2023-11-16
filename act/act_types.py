@@ -75,8 +75,10 @@ class SegregationModule(TypedDict):
     time: List[int]
     model_class: str # what kind of neural network should we use (optional)
     learning_rate: float
-    weight_decay: float:
+    weight_decay: float
     selection_metric: str # fi_error or mse should be enum
+    num_epochs: int
+    train_spiking_only: bool
 
 class Output(TypedDict):
     folder: str

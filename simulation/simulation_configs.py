@@ -199,7 +199,7 @@ LA_A_seg = {
         "h_dt": 0.1,
     },
     "optimization_parameters": {
-        "amps": [0.1, 0.25, 0.5, 0.75, 1.0],
+        "amps": [0.0, 0.1, 0.25, 0.5, 0.75, 1.0],
         "params": [
             # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05}, # hd, passive
             {"channel": "gbar_nap", "high": 0.000426, "low": 4.736e-05},
@@ -283,16 +283,20 @@ LA_A_seg = {
             "params": ["gbar_nap", "gbar_im"],
             "model_class": "ConvolutionNet",
             "selection_metric": "mse",
+            "num_epochs": 15,
+            "train_spiking_only": False,
         },
         {
             "params": ["gbar_na3", "gbar_kdr"],
             "model_class": "ConvolutionEmbeddingNet",
             "selection_metric": "fi_error",
+            "num_epochs": 20,
         },
         {
             "params": ["gcabar_cadyn", "gsAHPbar_sAHP"],
             "model_class": "ConvolutionEmbeddingNet",
             "selection_metric": "fi_error",
+            "num_epochs": 10,
         },
 
     ],
