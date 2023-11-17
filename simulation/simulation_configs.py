@@ -283,20 +283,20 @@ LA_A_seg = {
             "params": ["gbar_nap", "gbar_im"],
             "model_class": "ConvolutionNet",
             "selection_metric": "mse",
-            "num_epochs": 15,
+            "num_epochs": 150,
             "train_spiking_only": False,
         },
         {
             "params": ["gbar_na3", "gbar_kdr"],
             "model_class": "ConvolutionEmbeddingNet",
             "selection_metric": "fi_error",
-            "num_epochs": 20,
+            "num_epochs": 200,
         },
         {
             "params": ["gcabar_cadyn", "gsAHPbar_sAHP"],
             "model_class": "ConvolutionEmbeddingNet",
             "selection_metric": "fi_error",
-            "num_epochs": 10,
+            "num_epochs": 100,
         },
 
     ],

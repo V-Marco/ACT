@@ -99,6 +99,7 @@ def _run(config: SimulationConfig):
 
     logger.info(f"Target voltage shape: {target_V.shape}")
 
+    segregation_index = utils.get_segregation_index(config)# if needed
     # Run the optimizer
     pred_pool = []
     err_pool = []
@@ -204,10 +205,12 @@ def _run(config: SimulationConfig):
 
     # old way, error was not reliable, a flat line beats spikes offset by a few ms
     
-    if config["run_mode"] == segregated:
+    if config["run_mode"] == "segregated":
         if config["segregation"][segregation_index].get("selection_metric") == "mse":
+            print("MSE error selected for parameter selection")
             predictions = pred_pool[np.argmin(err_pool)]
         else:
+            print(f"FI error selected for parameter selection")
             predictions = pred_pool[np.argmin(np.abs(fi_err_pool))]
     else:# by default I want fi error
         predictions = pred_pool[np.argmin(np.abs(fi_err_pool))]

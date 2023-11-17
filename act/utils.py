@@ -613,8 +613,8 @@ def get_fi_curve(traces, amps, ignore_negative=True, inj_dur=1000):
     spikes, interspike_times = extract_summary_features(traces)
 
     if ignore_negative:
-        non_neg_idx = (amps > 0).nonzero().flatten()
-        amps = amps[amps > 0]
+        non_neg_idx = (amps >= 0).nonzero().flatten()
+        amps = amps[amps >= 0]
         spikes = spikes[non_neg_idx]
 
     spikes = (1000.0/inj_dur) * spikes # Convert to Hz
