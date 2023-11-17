@@ -304,7 +304,7 @@ def _run(config: SimulationConfig):
         # save a copy of the outputs for future development
         base_output_folder = config["output"]["folder"]
         run_output_folder_name = f"{config['run_mode']}"
-        seg_folder = os.path.join(base_output_folder, f"run_output_folder_name_seg{segregation_index+1}")
+        seg_folder = os.path.join(base_output_folder, f"{run_output_folder_name}_seg{segregation_index+1}")
         shutil.copytree(output_folder, seg_folder, dirs_exist_ok=True)
 
         utils.update_segregation(config, learned_params)
