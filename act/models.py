@@ -16,6 +16,21 @@ class SimpleNet(torch.nn.Module):
     def forward(self, X, summary_features):
         return self.model.forward(X)
 
+class SimpleSummaryNet(torch.nn.Module):
+    def __init__(self, in_channels, out_channels, summary_features):
+        super().__init__()
+        self.model = torch.nn.Sequential(
+            torch.nn.Linear(summary_features.shape[-1], 32),
+            torch.nn.ReLU(),
+            torch.nn.Linear(32, 32),
+            torch.nn.ReLU(),
+            torch.nn.Linear(32, out_channels),
+            torch.nn.Sigmoid(),
+        )
+
+    def forward(self, X, summary_features):
+        return self.model.forward(summary_features)
+
 
 # @CHECK
 class BranchingNet(torch.nn.Module):

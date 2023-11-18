@@ -13,6 +13,7 @@ from act.models import (
     BranchingNet,
     EmbeddingNet,
     SimpleNet,
+    SimpleSummaryNet,
     ConvolutionEmbeddingNet,
     SummaryNet,
     ConvolutionNet,
@@ -285,7 +286,6 @@ class GeneralACTOptimizer(ACTOptimizer):
 
         self.voltage_data_scaler = TorchMinMaxScaler()
         self.summary_feature_scaler = TorchMinMaxColScaler()
-        self.target_param_scaler = TorchStandardScaler()
 
         self.segregation_index = utils.get_segregation_index(simulation_config)
         
@@ -319,12 +319,16 @@ class GeneralACTOptimizer(ACTOptimizer):
         learning_rate = 0
         weight_decay = 0
         num_epochs = 0
+        use_spike_summary_stats = True
+        segregation_arima_order = None
         if self.config["run_mode"] == "segregated":
             learning_rate = self.config["segregation"][self.segregation_index].get("learning_rate",0)
             weight_decay = self.config["segregation"][self.segregation_index].get("weight_decay",0)
             model_class = self.config["segregation"][self.segregation_index].get("model_class",None)
             num_epochs = self.config["segregation"][self.segregation_index].get("num_epochs",0)
             spiking_only = self.config["segregation"][self.segregation_index].get("train_spiking_only",True)
+            use_spike_summary_stats = self.config["segregation"][self.segregation_index].get("use_spike_summary_stats",True)
+            segregation_arima_order = self.config["segregation"][self.segregation_index].get("arima_order",None)
         if not num_epochs:
             num_epochs = self.config["optimization_parameters"].get("num_epochs")
 
@@ -461,10 +465,15 @@ class GeneralACTOptimizer(ACTOptimizer):
                     avg_spike_max.flatten().T,
                 )
             )
-            summary_features = torch.cat(
-                (summary_features.T, first_n_spikes, coefs), dim=1
-            )
+            if use_spike_summary_stats:
+                summary_features = torch.cat(
+                    (summary_features.T, first_n_spikes, coefs), dim=1
+                )
+            else:
+                summary_features = coefs
         else:
+            if not use_spike_summary_stats:
+                raise Exception("Unable to drop spike summary stats (use_spike_summary_stats=False), no summary stats to use... This can be set to true and you can use a network that ignores summary stats.")
             summary_features = torch.stack(
                 (
                     #ampl_next_stage,
@@ -525,6 +534,8 @@ class GeneralACTOptimizer(ACTOptimizer):
             arima_order = (10, 0, 10)
             if self.config.get("summary_features", {}).get("arima_order"):
                 arima_order = tuple(self.config["summary_features"]["arima_order"])
+            if segregation_arima_order:
+                arima_order = segregation_arima_order
             print(f"ARIMA order set to {arima_order}")
             total_arima_vals = 2 + arima_order[0] + arima_order[1]
             coefs = []
@@ -546,10 +557,15 @@ class GeneralACTOptimizer(ACTOptimizer):
                     avg_spike_max.flatten().T,
                 )
             )
-            target_summary_features = torch.cat(
-                (target_summary_features.T, first_n_spikes, coefs), dim=1
-            )
+            if use_spike_summary_stats:
+                target_summary_features = torch.cat(
+                    (target_summary_features.T, first_n_spikes, coefs), dim=1
+                )
+            else:
+                target_summary_features = coefs
         else:
+            if not use_spike_summary_stats:
+                raise Exception("Unable to drop spike summary stats (use_spike_summary_stats=False), no summary stats to use... This can be set to true and you can use a network that ignores summary stats.")
             target_summary_features = torch.stack(
                 (
                     #ampl_target,

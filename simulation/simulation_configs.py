@@ -283,11 +283,13 @@ LA_A_seg = {
         ######### TAKE 3 ##########
         {
             "params": ["gbar_nap", "gbar_im"],
-            "model_class": "ConvolutionEmbeddingNet",
+            "model_class": "SimpleSummaryNet",
             "selection_metric": "mse",
             "num_epochs": 1000,
             "train_spiking_only": False,
             "use_lto_amps": True,
+            "use_spike_summary_stats": False, # don't use spike summary stats for training
+            "arima_order": [10, 0, 10], # custom arima settings
         },
         {
             "params": ["gbar_na3", "gbar_kdr"],

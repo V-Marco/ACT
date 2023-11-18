@@ -126,6 +126,12 @@ def _run(config: SimulationConfig):
             raise ValueError(
                 "run mode not specified, 'original' or 'segregated' supported."
             )
+        np_amps = np.array(amps)
+        np_predictions_amps = predictions_amps.cpu().detach().flatten().numpy()
+        print(f"Amps supplied: {np_amps.tolist()}")
+        print(f"Amps predicted: {np_predictions_amps.tolist()}")
+        print(f"Amps error: {(np_amps-np_predictions_amps).tolist()}")
+        print(f"Amps error sum: {(np_amps-np_predictions_amps).sum()}")
 
         # output train stats
         print(f"writing training run stats for repeat {repeat_num+1}")
