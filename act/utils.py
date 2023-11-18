@@ -124,6 +124,19 @@ def cleanup_simulation():
     folders = ["components"]
     # TODO Remove
 
+def get_segregation_index(config: SimulationConfig):
+    parameter_values_file = "parameter_values.json"
+
+    if config["run_mode"] != "segregated":
+        return -1
+    if not os.path.exists(parameter_values_file):
+        return 0
+    with open(parameter_values_file, "r") as fp:
+        parameter_values_dict = json.load(fp)
+    segregation_index = parameter_values_dict["segregation_index"]
+
+    return segregation_index
+
 def load_preset_params(config: SimulationConfig):
     # Returns a dict of learned params from segregation
     # if segregation is not used then returns an empty dict
@@ -168,6 +181,8 @@ def update_segregation(config: SimulationConfig, learned_params):
         print(f"Segregation stage {segregation_index+1}/{len(config['segregation'])} complete.")
         with open(parameter_values_file, "w") as fp:
             json.dump(parameter_values_dict, fp, indent=4)
+        if segregation_index == len(config["segregation"]):
+            shutil.move(parameter_values_file,'./parameter_values_seg_complete.json')
     else:
         print(f"{parameter_values_file} file not found - unable to update learned params")
     
@@ -227,8 +242,12 @@ def build_parametric_network(config: SimulationConfig):
     cell_name = config["cell"]["name"]
     hoc_file = config["cell"]["hoc_file"]
     modfiles_folder = config["cell"]["modfiles_folder"]
-
-    amps = config["optimization_parameters"]["amps"]
+    
+    if config["run_mode"] == "segregated" and config["segregation"][segregation_index].get("use_lto_amps", False):
+        print(f"Using LTO Amps for current segregation (use_lto_amps set)")
+        amps = config["optimization_parameters"]["lto_amps"]
+    else:
+        amps = config["optimization_parameters"]["amps"]
     amp_delay = config["simulation_parameters"]["h_i_delay"]
     amp_duration = config["simulation_parameters"]["h_i_dur"]
 
@@ -598,8 +617,8 @@ def get_fi_curve(traces, amps, ignore_negative=True, inj_dur=1000):
     spikes, interspike_times = extract_summary_features(traces)
 
     if ignore_negative:
-        non_neg_idx = (amps > 0).nonzero().flatten()
-        amps = amps[amps > 0]
+        non_neg_idx = (amps >= 0).nonzero().flatten()
+        amps = amps[amps >= 0]
         spikes = spikes[non_neg_idx]
 
     spikes = (1000.0/inj_dur) * spikes # Convert to Hz

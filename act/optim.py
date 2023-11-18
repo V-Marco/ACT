@@ -287,6 +287,8 @@ class GeneralACTOptimizer(ACTOptimizer):
         self.summary_feature_scaler = TorchMinMaxColScaler()
         self.target_param_scaler = TorchStandardScaler()
 
+        self.segregation_index = utils.get_segregation_index(simulation_config)
+        
     def init_random_forest(self):
         params = {
             "n_estimators": 5000,
@@ -308,6 +310,24 @@ class GeneralACTOptimizer(ACTOptimizer):
         return y_pred
 
     def optimize(self, target_V: torch.Tensor) -> torch.Tensor:
+
+        # extract only traces that have spikes in them
+        spiking_only = True
+        nonsaturated_only = True
+
+        model_class = None
+        learning_rate = 0
+        weight_decay = 0
+        num_epochs = 0
+        if self.config["run_mode"] == "segregated":
+            learning_rate = self.config["segregation"][self.segregation_index].get("learning_rate",0)
+            weight_decay = self.config["segregation"][self.segregation_index].get("weight_decay",0)
+            model_class = self.config["segregation"][self.segregation_index].get("model_class",None)
+            num_epochs = self.config["segregation"][self.segregation_index].get("num_epochs",0)
+            spiking_only = self.config["segregation"][self.segregation_index].get("train_spiking_only",True)
+        if not num_epochs:
+            num_epochs = self.config["optimization_parameters"].get("num_epochs")
+
         # Get voltage with characteristics similar to target
         if not self.config["optimization_parameters"]["skip_match_voltage"]:
             (
@@ -387,10 +407,6 @@ class GeneralACTOptimizer(ACTOptimizer):
         else:
             print(f"Parametric distribution parameters not applied.")
 
-        # extract only traces that have spikes in them
-        spiking_only = True
-        nonsaturated_only = True
-
         if spiking_only:
             (
                 simulated_V_for_next_stage,
@@ -438,7 +454,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         if coefs_loaded:
             summary_features = torch.stack(
                 (
-                    ampl_next_stage,
+                    #ampl_next_stage,
                     torch.flatten(num_spikes_simulated),
                     torch.flatten(simulated_interspike_times),
                     avg_spike_min.flatten().T,
@@ -451,7 +467,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         else:
             summary_features = torch.stack(
                 (
-                    ampl_next_stage,
+                    #ampl_next_stage,
                     torch.flatten(num_spikes_simulated),
                     torch.flatten(simulated_interspike_times),
                     avg_spike_min.flatten().T,
@@ -460,10 +476,14 @@ class GeneralACTOptimizer(ACTOptimizer):
             )
             summary_features = torch.cat((summary_features.T, first_n_spikes), dim=1)
 
+        # make amp output a learned parameter
+        param_samples_for_next_stage = torch.cat((param_samples_for_next_stage,ampl_next_stage.reshape((-1,1))),dim=1)
+        
         self.model = self.init_nn_model(
             in_channels=target_V.shape[1],
-            out_channels=self.num_params,
+            out_channels=self.num_params + 1, # +1 to learn amp input
             summary_features=summary_features,
+            model_class=model_class
         )
 
         # Resample to match the length of target data
@@ -474,6 +494,8 @@ class GeneralACTOptimizer(ACTOptimizer):
         lows = [p["low"] for p in self.config["optimization_parameters"]["params"]]
         highs = [p["high"] for p in self.config["optimization_parameters"]["params"]]
 
+        lows.append(round(float(ampl_next_stage.min()),4))
+        highs.append(round(float(ampl_next_stage.max()),4))
         # remove any remaining nan values
         summary_features[torch.isnan(summary_features)] = 0
 
@@ -484,6 +506,9 @@ class GeneralACTOptimizer(ACTOptimizer):
             lows,
             highs,
             summary_features=summary_features,
+            learning_rate=learning_rate,
+            weight_decay=weight_decay,
+            num_epochs=num_epochs,
         )
 
         # Predict and take max across ci to prevent underestimating
@@ -514,7 +539,7 @@ class GeneralACTOptimizer(ACTOptimizer):
 
             target_summary_features = torch.stack(
                 (
-                    ampl_target,
+                    #ampl_target,
                     torch.flatten(num_spikes_simulated),
                     torch.flatten(simulated_interspike_times),
                     avg_spike_min.flatten().T,
@@ -527,7 +552,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         else:
             target_summary_features = torch.stack(
                 (
-                    ampl_target,
+                    #ampl_target,
                     torch.flatten(num_spikes_simulated),
                     torch.flatten(simulated_interspike_times),
                     avg_spike_min.flatten().T,
@@ -554,14 +579,20 @@ class GeneralACTOptimizer(ACTOptimizer):
 
     
     def init_nn_model(
-        self, in_channels: int, out_channels: int, summary_features
+            self, in_channels: int, out_channels: int, summary_features, model_class=None
     ) -> torch.nn.Sequential:
-        # ModelClass = SimpleNet
-        # ModelClass = BranchingNet
-        # ModelClass = EmbeddingNet
-        ModelClass = ConvolutionEmbeddingNet
-        # ModelClass = SummaryNet
-        # ModelClass = ConvolutionNet
+        if model_class:
+            print(f"Overriding model class to {model_class}")
+            ModelClass = eval(model_class) #dangerous but ok
+        else:
+            print(f"Using ConvolutionEmbeddingNet for model class")
+            # ModelClass = SimpleNet
+            # ModelClass = BranchingNet
+            # ModelClass = EmbeddingNet
+            ModelClass = ConvolutionEmbeddingNet
+            # ModelClass = SummaryNet
+            # ModelClass = ConvolutionNet
+
         model = ModelClass(in_channels, out_channels, summary_features)
         return model
 
@@ -574,8 +605,15 @@ class GeneralACTOptimizer(ACTOptimizer):
         summary_features,
         train_test_split=0.85,
         batch_size=8,
+        learning_rate=2e-5,
+        weight_decay=1e-4,
+        num_epochs=0,
     ) -> None:
-        optim = torch.optim.Adam(self.model.parameters(), lr=2e-5, weight_decay=1e-4)
+        if not learning_rate:
+            learning_rate = 2e-5
+        if not weight_decay:
+            weight_decay = 1e-4
+        optim = torch.optim.Adam(self.model.parameters(), lr=learning_rate, weight_decay=weight_decay)
         loss_fn = torch.nn.MSELoss()  # torch.nn.functional.l1_loss
 
         sigmoid_mins = torch.tensor(lows)
@@ -602,6 +640,8 @@ class GeneralACTOptimizer(ACTOptimizer):
                 if param not in self.preset_params:
                     keep_ind.append(i)
             print(f"Training target param indicies {keep_ind} only for segregation")
+            keep_ind.append(-1) # we want to also keep the last element for amps
+            print(f"With amps {keep_ind}")
             target_params = target_params[:,keep_ind]
             sigmoid_mins = sigmoid_mins[keep_ind]
             sigmoid_maxs = sigmoid_maxs[keep_ind]
@@ -638,7 +678,6 @@ class GeneralACTOptimizer(ACTOptimizer):
             summary_features_test
         )
 
-
         if self.use_random_forest: # use the random forest
             self.train_random_forest(summary_features_train.cpu().numpy(), target_params_train.cpu().numpy())
         else:
@@ -647,8 +686,6 @@ class GeneralACTOptimizer(ACTOptimizer):
             # Hold the best model
             best_mse = np.inf  # init to infinity
             best_weights = None
-
-            num_epochs = self.config["optimization_parameters"]["num_epochs"]
 
             for epoch in range(num_epochs):
                 self.model.train()
@@ -733,6 +770,7 @@ class GeneralACTOptimizer(ACTOptimizer):
             for i, param in enumerate(self.params):
                 if param not in self.preset_params:
                     output_ind.append(i)
+            output_ind.append(-1)
             sigmoid_mins = sigmoid_mins[output_ind]
             sigmoid_maxs = sigmoid_maxs[output_ind]
 
@@ -759,7 +797,7 @@ class GeneralACTOptimizer(ACTOptimizer):
 
         # return with preset params
         if self.config["run_mode"] == "segregated":
-            seg_ret = torch.zeros((ret.shape[0],len(self.params)))
+            seg_ret = torch.zeros((ret.shape[0],len(self.params)+1))
             seg_ret[:,output_ind] = ret
             for param_ind, param in enumerate(self.params):
                 if param in self.preset_params:

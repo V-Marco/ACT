@@ -53,8 +53,8 @@ def stats(traces, params_dict):
     print(f"{amp_list} total amps supplied")
     print(f"{int(len(traces)/len(amp_list))} total unique parameter sets")
 
-    spiking_traces, spiking_params, spiking_amps, spiking_ind = utils.extract_spiking_traces(
-        traces_t, params_t, amps_t
+    spiking_traces, spiking_params, spiking_amps, spiking_ind = (#utils.extract_spiking_traces(
+        traces_t, params_t, amps_t, [i for i in range(len(traces_t))]
     )
     nonsaturated_only = True
     if nonsaturated_only:
@@ -72,7 +72,7 @@ def stats(traces, params_dict):
             spiking_params = spiking_params[nonsaturated_ind]
             spiking_amps = spiking_amps[nonsaturated_ind]
 
-    for cell_id in [2,15,23]:
+    for cell_id in [45, 55,65,75,90,110,120]:
         plot_trace(spiking_amps[cell_id].cpu(), spiking_traces[cell_id].cpu(), spiking_params[cell_id].cpu().tolist(), cell_id)
     plt.show()
     import pdb

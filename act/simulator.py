@@ -64,8 +64,15 @@ def _run(config: SimulationConfig):
     os.system(f"nrnivmodl {temp_modfiles_dir}")
 
     logger = ACTLogger()
+    segregation_index = utils.get_segregation_index(config)# if needed
+    if config["run_mode"] == "segregated" and config["segregation"][segregation_index].get("use_lto_amps", False):
+        print(f"Using LTO Amps for current segregation (use_lto_amps set)")
+        amps = config["optimization_parameters"]["lto_amps"]
+    else:
+        amps = config["optimization_parameters"]["amps"]
+
     logger.info(
-        f"Number of amplitudes: {len(config['optimization_parameters']['amps'])}"
+        f"Number of amplitudes: {len(amps)}"
     )
 
     try:
@@ -108,6 +115,8 @@ def _run(config: SimulationConfig):
         if config["run_mode"] == "original" or config["run_mode"] == "segregated":
             optim = GeneralACTOptimizer(simulation_config=config, logger=logger)
             predictions, train_stats = optim.optimize(target_V)
+            predictions_amps = predictions[:,-1].reshape(-1,1)
+            predictions = predictions[:,:-1]
         #elif config["run_mode"] == "segregated":
         #    optim = GeneralACTOptimizer(simulation_config=config, logger=logger)
         #    predictions, train_stats = optim.optimize_with_segregation(
@@ -133,7 +142,7 @@ def _run(config: SimulationConfig):
         print(f"Calculating error...")
         for i, pred in enumerate(predictions.cpu().detach().tolist()):
             sim_list = []
-            for j, amp in enumerate(config["optimization_parameters"]["amps"]):
+            for j, amp in enumerate(amps):
                 sim_list.append(optim.simulate(amp, params, pred).reshape(1, -1))
             sims.append(sim_list)
 
@@ -153,7 +162,6 @@ def _run(config: SimulationConfig):
 
         # Compute composite error
         # for each prediction
-        amps_list = config["optimization_parameters"]["amps"]
         inj_dur = config["simulation_parameters"]["h_i_dur"]
         for j, pred_sim in enumerate(sims):
             total_error = 0
@@ -164,7 +172,7 @@ def _run(config: SimulationConfig):
                 )
                 total_error = total_error + error
 
-                amp = amps_list[i]
+                amp = amps[i]
                 # save prediction plot for debugging
                 save_prediction_plots(
                     target_V[i].reshape(1, len(target_V[i])).cpu().detach(),
@@ -175,7 +183,7 @@ def _run(config: SimulationConfig):
                     output_file=f"repeat{repeat_num+1}_pred{j+1}_{(amp * 1000):.0f}nA.png",
                 )
             fi_error = utils.get_fi_curve_error(
-                torch.cat(pred_sim), target_V, torch.tensor(amps_list), inj_dur=inj_dur
+                torch.cat(pred_sim), target_V, torch.tensor(amps), inj_dur=inj_dur
             )
 
             err_pool.append(error)
@@ -201,8 +209,16 @@ def _run(config: SimulationConfig):
     print(f"FI Err per prediction: {fi_err_pool}")
 
     # old way, error was not reliable, a flat line beats spikes offset by a few ms
-    # predictions = pred_pool[np.argmin(err_pool)]
-    predictions = pred_pool[np.argmin(np.abs(fi_err_pool))]
+    
+    if config["run_mode"] == "segregated":
+        if config["segregation"][segregation_index].get("selection_metric") == "mse":
+            print("MSE error selected for parameter selection")
+            predictions = pred_pool[np.argmin(err_pool)]
+        else:
+            print(f"FI error selected for parameter selection")
+            predictions = pred_pool[np.argmin(np.abs(fi_err_pool))]
+    else:# by default I want fi error
+        predictions = pred_pool[np.argmin(np.abs(fi_err_pool))]
 
     print(f"Best prediction: {predictions}")
 
@@ -248,12 +264,12 @@ def _run(config: SimulationConfig):
         amp_out = []
         simulated_V_out = []
         target_V_out = []
-        while i < len(config["optimization_parameters"]["amps"]):
-            amp_i = config["optimization_parameters"]["amps"][i]
+        while i < len(amps):
+            amp_i = amps[i]
             target_Vi = target_V[i].reshape(1, -1)
             simulated_Vi = save_prediction_plots(
                 target_Vi.cpu().detach().numpy(),
-                config["optimization_parameters"]["amps"][i],
+                amps[i],
                 config,
                 predictions,
                 output_folder,
@@ -289,6 +305,13 @@ def _run(config: SimulationConfig):
 
     if config['run_mode'] == "segregated":
         learned_params = {param:predict for param,predict in zip(params, predictions)}
+        
+        # save a copy of the outputs for future development
+        base_output_folder = config["output"]["folder"]
+        run_output_folder_name = f"{config['run_mode']}"
+        seg_folder = os.path.join(base_output_folder, f"{run_output_folder_name}_seg{segregation_index+1}")
+        shutil.copytree(output_folder, seg_folder, dirs_exist_ok=True)
+
         utils.update_segregation(config, learned_params)
 
 def run_generate_target_traces(config: SimulationConfig, subprocess=True):

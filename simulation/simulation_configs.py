@@ -199,7 +199,8 @@ LA_A_seg = {
         "h_dt": 0.1,
     },
     "optimization_parameters": {
-        "amps": [0.1, 0.25, 0.5, 0.75, 1.0],
+        "amps": [0.0, 0.1, 0.25, 0.5, 0.75, 1.0],
+        "lto_amps": [0.0, 0.025, 0.05, 0.075, 0.1, 0.125, 0.15],
         "params": [
             # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05}, # hd, passive
             {"channel": "gbar_nap", "high": 0.000426, "low": 4.736e-05},
@@ -225,6 +226,7 @@ LA_A_seg = {
             {"channel": "gsAHPbar_sAHP"},
         ],
         "target_cell_target_params": [0.0003, 0.002, 0.03, 0.03, 6e-5, 0.009],
+        "target_cell_lto_block_channels": ["gbar_na3","gkdrbar_kdr","gcabar_cadyn","gsAHPbar_sAHP"],
         # ======================================================
         "target_V": None,  # Target voltages
         "target_params": [
@@ -237,7 +239,7 @@ LA_A_seg = {
         ],  # [2.3e-05, 0.000142, 0.002, 0.03, 0.0015, 6e-5, 0.009],
         "num_repeats": 1,
         "num_amps_to_match": 1,
-        "num_epochs": 1000,
+        "num_epochs": 10,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
@@ -271,12 +273,34 @@ LA_A_seg = {
         #    "params": ["gbar_nap", "gbar_im"],
         #    "voltage": [-100, 100],  # [-40, 100],  # [-40, -30],
         #},
+        ######### TAKE 2 ##########
+        #{
+        #    "params": ["gbar_na3", "gbar_kdr"]
+        #},
+        #{
+        #    "params": ["gbar_nap", "gbar_im", "gcabar_cadyn", "gsAHPbar_sAHP"]
+        #},
+        ######### TAKE 3 ##########
         {
-            "params": ["gbar_na3", "gbar_kdr"]
+            "params": ["gbar_nap", "gbar_im"],
+            "model_class": "ConvolutionEmbeddingNet",
+            "selection_metric": "mse",
+            "num_epochs": 1000,
+            "train_spiking_only": False,
+            "use_lto_amps": True,
         },
         {
-            "params": ["gbar_nap", "gbar_im", "gcabar_cadyn", "gsAHPbar_sAHP"]
-        }
+            "params": ["gbar_na3", "gbar_kdr"],
+            "model_class": "ConvolutionEmbeddingNet",
+            "selection_metric": "fi_error",
+            "num_epochs": 200,
+        },
+        {
+            "params": ["gcabar_cadyn", "gsAHPbar_sAHP"],
+            "model_class": "ConvolutionEmbeddingNet",
+            "selection_metric": "fi_error",
+            "num_epochs": 100,
+        },
 
     ],
     "output": {

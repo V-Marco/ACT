@@ -8,6 +8,7 @@ from act.act_types import SimulationConfig
 from act.analysis import save_plot
 from act.optim import ACTOptimizer
 from act.cell_model import CellModel
+from act import utils
 
 DEFAULT_TARGET_V_FILE = "./target_v.json"
 
@@ -35,10 +36,24 @@ def get_voltage_trace_from_params(
     else:
         params = simulation_config["optimization_parameters"]["params"]
 
+    segregation_index = utils.get_segregation_index(simulation_config)
     if simulation_config["optimization_parameters"].get("target_cell_target_params"):
         target_params = simulation_config["optimization_parameters"].get(
             "target_cell_target_params"
         )
+        if simulation_config["run_mode"] == "segregated" and simulation_config["segregation"][segregation_index].get("use_lto_amps", False):
+            print("Checking to see if channels need blocked for lto")
+            if simulation_config["optimization_parameters"].get("target_cell_lto_block_channels"):
+                block_channels = simulation_config["optimization_parameters"].get("target_cell_lto_block_channels")
+                target_params_new = []
+                params_list = [p["channel"] for p in params]
+                for p,name in zip(target_params,params_list):
+                    if name not in block_channels:
+                        target_params_new.append(p)
+                    else:
+                        target_params_new.append(0) # block the channel
+                        print(f"blocking channel {name} | {name} = 0.0")
+                target_params = target_params_new
     else:
         target_params = simulation_config["optimization_parameters"]["target_params"]
 
@@ -62,8 +77,14 @@ def get_voltage_trace_from_params(
     simulated_label = simulation_config["output"].get("simulated_label", "Simulated")
     target_label = simulation_config["output"].get("target_label", "Target")
 
+    if simulation_config["run_mode"] == "segregated" and simulation_config["segregation"][segregation_index].get("use_lto_amps", False):
+        print(f"Using LTO Amps for current segregation (use_lto_amps set)")
+        amps = simulation_config["optimization_parameters"]["lto_amps"]
+    else:
+        amps = simulation_config["optimization_parameters"]["amps"]    
+
     # generate data per amp
-    for i, amp in enumerate(simulation_config["optimization_parameters"]["amps"]):
+    for i, amp in enumerate(amps):
         print(f"Generating trace for {float(amp)*1000} nA")
         parameters = [p["channel"] for p in params]
         tv = optim.simulate(amp, parameters, target_params).reshape(1, -1)
