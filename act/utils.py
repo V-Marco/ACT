@@ -130,7 +130,7 @@ def get_segregation_index(config: SimulationConfig):
     if config["run_mode"] != "segregated":
         return -1
     if not os.path.exists(parameter_values_file):
-        return -1
+        return 0
     with open(parameter_values_file, "r") as fp:
         parameter_values_dict = json.load(fp)
     segregation_index = parameter_values_dict["segregation_index"]
@@ -242,8 +242,12 @@ def build_parametric_network(config: SimulationConfig):
     cell_name = config["cell"]["name"]
     hoc_file = config["cell"]["hoc_file"]
     modfiles_folder = config["cell"]["modfiles_folder"]
-
-    amps = config["optimization_parameters"]["amps"]
+    
+    if config["run_mode"] == "segregated" and config["segregation"][segregation_index].get("use_lto_amps", False):
+        print(f"Using LTO Amps for current segregation (use_lto_amps set)")
+        amps = config["optimization_parameters"]["lto_amps"]
+    else:
+        amps = config["optimization_parameters"]["amps"]
     amp_delay = config["simulation_parameters"]["h_i_delay"]
     amp_duration = config["simulation_parameters"]["h_i_dur"]
 

@@ -88,7 +88,7 @@ class ConvolutionEmbeddingNet(torch.nn.Module):
             torch.nn.Linear(64 + summary_features.shape[-1], 256),
             torch.nn.Tanh(),
             torch.nn.Linear(256, out_channels),
-            torch.nn.Sigmoid(),
+            torch.nn.Tanh(),
         )
 
     def forward(self, X, summary_features):
@@ -123,7 +123,7 @@ class ConvolutionNet(torch.nn.Module):
             torch.nn.ReLU(),
             torch.nn.Flatten(),
             torch.nn.Linear(in_channels, out_channels),
-            torch.nn.Sigmoid(),
+            torch.nn.Tanh(),
         )
 
     def forward(self, X, summary_features):

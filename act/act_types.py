@@ -44,10 +44,12 @@ class ParametricDistribution(TypedDict):
 class OptimizationParameters(TypedDict):
     skip_match_voltage: bool
     amps: List[float]
+    lto_amps: List[float]
     params: List[OptimizationParam]
     target_cell: Cell
     target_cell_params: List[OptimizationParam]
     target_cell_target_params: List[List[float]]
+    target_cell_lto_block_channels: List[str]
     target_V_file: str  # location of voltage traces, stored as a json {"traces":[[],]}
     target_V: List[List[float]]  # Target voltage
     target_params: List[List[float]]
@@ -73,12 +75,15 @@ class SegregationModule(TypedDict):
     params: List[str]
     voltage: List[int]
     time: List[int]
-    model_class: str # what kind of neural network should we use (optional)
+    model_class: str # what kind of neural network should we use (optional) in act.models, just specify class name as string
     learning_rate: float
     weight_decay: float
     selection_metric: str # fi_error or mse should be enum
-    num_epochs: int
-    train_spiking_only: bool
+    num_epochs: int # change the number of epochs that we can train for overrides global num_epochs
+    train_spiking_only: bool # only train on spiking, true by default
+    adjustment_percent: float # a percentage that future seg modules will be allowed to modify the suggested param
+    adjustment_n_slices: int # n_splits for the adjustment, will use default parametric distribution n_splits if this doesn't exist
+    use_lto_amps: bool # use lto amps instead of amps
 
 class Output(TypedDict):
     folder: str
