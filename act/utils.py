@@ -459,7 +459,7 @@ def spike_stats(V: torch.Tensor, threshold=0, n_spikes=20):
     threshold = 0
     threshold_crossings = torch.diff(V > threshold, dim=1)
 
-    first_n_spikes = torch.ones((V.shape[0], n_spikes)) * V.shape[1]
+    first_n_spikes = torch.zeros((V.shape[0], n_spikes)) * V.shape[1]
     avg_spike_min = torch.zeros((V.shape[0], 1))
     avg_spike_max = torch.zeros((V.shape[0], 1))
     for i in range(threshold_crossings.shape[0]):
@@ -484,7 +484,8 @@ def spike_stats(V: torch.Tensor, threshold=0, n_spikes=20):
         ).flatten()[: min(n_spikes, len(spike_times))]
         avg_spike_max[i] = torch.mean(torch.tensor(spike_maxes).flatten())
         avg_spike_min[i] = torch.mean(torch.tensor(spike_mins).flatten())
-    return first_n_spikes / V.shape[1], avg_spike_min, avg_spike_max
+        first_n_spikes_scaled = first_n_spikes / V.shape[1] # may be good to return this
+    return first_n_spikes_scaled, avg_spike_min, avg_spike_max
 
 
 def extract_summary_features(V: torch.Tensor, threshold=-40) -> tuple:

@@ -249,6 +249,7 @@ LA_A_seg = {
     "summary_features": {
         "spike_threshold": -20,  # (mV)
         "arima_order": [4, 0, 4],
+        "num_first_spikes": 6,
         # Target-sim match conditions (max abs diff between sim and target)
         "mc_num_spikes": 1,
         "mc_interspike_time": 200,  # (ms)
@@ -283,7 +284,7 @@ LA_A_seg = {
         ######### TAKE 3 ##########
         {
             "params": ["gbar_nap", "gbar_im"],
-            "model_class": "SimpleSummaryNet",
+            "model_class": "RandomForest", #"SimpleSummaryNet",
             "selection_metric": "mse",
             "num_epochs": 1000,
             "train_spiking_only": False,
@@ -293,7 +294,7 @@ LA_A_seg = {
         },
         {
             "params": ["gbar_na3", "gbar_kdr"],
-            "model_class": "ConvolutionEmbeddingNet",
+            "model_class": "RandomForest", #"ConvolutionEmbeddingNet",
             "selection_metric": "fi_error",
             "num_epochs": 200,
         },

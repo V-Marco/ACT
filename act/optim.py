@@ -1,4 +1,6 @@
 import numpy as np
+from numpy import mean
+from numpy import std
 import torch
 from neuron import h
 from scipy.signal import resample
@@ -20,7 +22,8 @@ from act.models import (
 )
 from act import utils
 from sklearn.ensemble import RandomForestRegressor
-
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import RepeatedKFold
 
 class TorchStandardScaler:
     def __init__(self):
@@ -285,15 +288,15 @@ class GeneralACTOptimizer(ACTOptimizer):
         self.init_random_forest()
 
         self.voltage_data_scaler = TorchMinMaxScaler()
-        self.summary_feature_scaler = TorchStandardScaler() #TorchMinMaxColScaler()
+        self.summary_feature_scaler = TorchMinMaxColScaler()
 
         self.segregation_index = utils.get_segregation_index(simulation_config)
         
     def init_random_forest(self):
         params = {
             "n_estimators": 5000,
-            "max_depth": 8,
-            "min_samples_split": 5,
+            "max_depth": 32,
+            "min_samples_split": 2,
             "warm_start": True,
             "oob_score": True,
             "random_state": 42,
@@ -302,6 +305,11 @@ class GeneralACTOptimizer(ACTOptimizer):
 
     def train_random_forest(self, X_train, y_train):
         print("Fitting random forest")
+        # evaluate the model
+        cv = RepeatedKFold(n_splits=10, n_repeats=3, random_state=1)
+        n_scores = cross_val_score(self.reg, X_train, y_train, scoring='neg_mean_absolute_error', cv=cv, n_jobs=-1, error_score='raise')
+        # report performance
+        print('MAE: %.4f (%.4f)' % (mean(n_scores), std(n_scores)))
         self.reg.fit(X_train, y_train)
         print("Done fitting random forest")
 
@@ -331,6 +339,9 @@ class GeneralACTOptimizer(ACTOptimizer):
             segregation_arima_order = self.config["segregation"][self.segregation_index].get("arima_order",None)
         if not num_epochs:
             num_epochs = self.config["optimization_parameters"].get("num_epochs")
+
+        num_first_spikes = self.config["summary_features"].get("num_first_spikes",20)
+        print(f"Extracting first {num_first_spikes} spikes for summary features")
 
         # Get voltage with characteristics similar to target
         if not self.config["optimization_parameters"]["skip_match_voltage"]:
@@ -441,7 +452,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         ) = self.extract_summary_features(simulated_V_for_next_stage)
         # spike_stats
         (first_n_spikes, avg_spike_min, avg_spike_max) = utils.spike_stats(
-            simulated_V_for_next_stage
+            simulated_V_for_next_stage, n_spikes=num_first_spikes
         )
         coefs_loaded = False
         if os.path.exists("output/arima_stats.json"):
@@ -526,7 +537,7 @@ class GeneralACTOptimizer(ACTOptimizer):
             simulated_interspike_times,
         ) = self.extract_summary_features(target_V.float())
         (first_n_spikes, avg_spike_min, avg_spike_max) = utils.spike_stats(
-            target_V.float()
+            target_V.float(), n_spikes=num_first_spikes
         )
         ampl_target = torch.tensor(self.config["optimization_parameters"]["amps"])
 
@@ -599,7 +610,11 @@ class GeneralACTOptimizer(ACTOptimizer):
     ) -> torch.nn.Sequential:
         if model_class:
             print(f"Overriding model class to {model_class}")
-            ModelClass = eval(model_class) #dangerous but ok
+            if model_class.lower() == "randomforest":
+                self.use_random_forest = True
+                return None
+            else:
+                ModelClass = eval(model_class) #dangerous but ok
         else:
             print(f"Using ConvolutionEmbeddingNet for model class")
             # ModelClass = SimpleNet
@@ -629,16 +644,9 @@ class GeneralACTOptimizer(ACTOptimizer):
             learning_rate = 2e-5
         if not weight_decay:
             weight_decay = 1e-4
-        optim = torch.optim.Adam(self.model.parameters(), lr=learning_rate, weight_decay=weight_decay)
-        loss_fn = torch.nn.MSELoss()  # torch.nn.functional.l1_loss
 
         sigmoid_mins = torch.tensor(lows)
         sigmoid_maxs = torch.tensor(highs)
-
-        self.logger.info("Training a model with SGD optimizer and lr = 1e-8.")
-        self.logger.info(
-            f"Number of trainable parameters: {sum(p.numel() for p in self.model.parameters() if p.requires_grad)}"
-        )
 
         stats = {
             "train_loss_batches": [],
@@ -697,6 +705,15 @@ class GeneralACTOptimizer(ACTOptimizer):
         if self.use_random_forest: # use the random forest
             self.train_random_forest(summary_features_train.cpu().numpy(), target_params_train.cpu().numpy())
         else:
+            optim = torch.optim.Adam(self.model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+            loss_fn = torch.nn.MSELoss()  # torch.nn.functional.l1_loss
+
+            self.logger.info(f"Training a model with {optim} optimizer | lr = {learning_rate} | weight_decay = {weight_decay}.")
+            self.logger.info(
+                f"Number of trainable parameters: {sum(p.numel() for p in self.model.parameters() if p.requires_grad)}"
+            )
+
+
             batch_start = torch.arange(0, len(voltage_data_train), batch_size)
 
             # Hold the best model
@@ -792,7 +809,7 @@ class GeneralACTOptimizer(ACTOptimizer):
 
         ret = None
         if self.use_random_forest: # use random forest
-            ret = torch.tensor(self.predict_random_forest(summary_features.cpu().numpy()))
+            ret = torch.tensor(self.predict_random_forest(summary_features.cpu().numpy())).float()
         else:
             self.model.eval()
             outs = []
@@ -814,6 +831,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         # return with preset params
         if self.config["run_mode"] == "segregated":
             seg_ret = torch.zeros((ret.shape[0],len(self.params)+1))
+
             seg_ret[:,output_ind] = ret
             for param_ind, param in enumerate(self.params):
                 if param in self.preset_params:
