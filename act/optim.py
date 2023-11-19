@@ -285,7 +285,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         self.init_random_forest()
 
         self.voltage_data_scaler = TorchMinMaxScaler()
-        self.summary_feature_scaler = TorchMinMaxColScaler()
+        self.summary_feature_scaler = TorchStandardScaler() #TorchMinMaxColScaler()
 
         self.segregation_index = utils.get_segregation_index(simulation_config)
         
@@ -748,8 +748,8 @@ class GeneralACTOptimizer(ACTOptimizer):
                 target_params_train_norm = (
                     (target_params_train - sigmoid_mins) / (sigmoid_maxs - sigmoid_mins)
                 )
-                #mse = loss_fn(y_pred, target_params_train)
-                mse = loss_fn(y_out, target_params_train_norm)
+                mse = loss_fn(y_pred, target_params_train)
+                #mse = loss_fn(y_out, target_params_train_norm)
                 mse = float(mse)
                 stats["train_loss"].append(mse)
 
@@ -762,8 +762,8 @@ class GeneralACTOptimizer(ACTOptimizer):
                 target_params_test_norm = (
                     (target_params_test - sigmoid_mins) / (sigmoid_maxs - sigmoid_mins)
                 )
-                #mse = loss_fn(y_pred, target_params_test)
-                mse = loss_fn(y_out, target_params_test_norm)
+                mse = loss_fn(y_pred, target_params_test)
+                #mse = loss_fn(y_out, target_params_test_norm)
                 mse = float(mse)
                 stats["test_loss"].append(mse)
                 if mse < best_mse:
