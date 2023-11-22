@@ -5,6 +5,7 @@ import torch
 from neuron import h
 from scipy.signal import resample
 import os
+import pprint
 import copy
 import tqdm
 
@@ -303,15 +304,26 @@ class GeneralACTOptimizer(ACTOptimizer):
         }
         self.reg = RandomForestRegressor(**params)
 
-    def train_random_forest(self, X_train, y_train):
+    def train_random_forest(self, X_train, y_train, columns=[]) -> dict:
+        """
+        Returns the feature importances for stats storing
+        """
         print("Fitting random forest")
         # evaluate the model
         cv = RepeatedKFold(n_splits=10, n_repeats=3, random_state=1)
         n_scores = cross_val_score(self.reg, X_train, y_train, scoring='neg_mean_absolute_error', cv=cv, n_jobs=-1, error_score='raise')
         # report performance
-        print('MAE: %.4f (%.4f)' % (mean(n_scores), std(n_scores)))
+        print('MAE: %.6f (%.6f)' % (mean(n_scores), std(n_scores)))
         self.reg.fit(X_train, y_train)
         print("Done fitting random forest")
+        print('Feature importance')
+        if not columns:
+            columns = [f"feature_{i+1}" for i in range(X_train.shape[1])]
+        f = dict(zip(columns,np.around(self.reg.feature_importances_*100,2)))
+        sf = {k: v for k, v in sorted(f.items(), key=lambda item:item[1],reverse=True)}
+        for k,v in sf.items():
+            print(k + " : " + str(v))
+        return sf
 
     def predict_random_forest(self, X_test):
         y_pred = self.reg.predict(X_test)
@@ -329,6 +341,9 @@ class GeneralACTOptimizer(ACTOptimizer):
         num_epochs = 0
         use_spike_summary_stats = True
         segregation_arima_order = None
+
+        summary_feature_columns = []
+
         if self.config["run_mode"] == "segregated":
             learning_rate = self.config["segregation"][self.segregation_index].get("learning_rate",0)
             weight_decay = self.config["segregation"][self.segregation_index].get("weight_decay",0)
@@ -466,6 +481,9 @@ class GeneralACTOptimizer(ACTOptimizer):
             if nonsaturated_only:
                 coefs = coefs[nonsaturated_ind]
 
+        def generate_arima_columns(coefs):
+            return [f"arima{i}" for i in range(coefs.shape[1])]
+
         if coefs_loaded:
             summary_features = torch.stack(
                 (
@@ -476,12 +494,21 @@ class GeneralACTOptimizer(ACTOptimizer):
                     avg_spike_max.flatten().T,
                 )
             )
+            summary_feature_columns.append("Num Spikes")
+            summary_feature_columns.append("Interspike Interval")
+            summary_feature_columns.append("Avg Min Spike Height")
+            summary_feature_columns.append("Avg Max Spike Height")
+
             if use_spike_summary_stats:
                 summary_features = torch.cat(
                     (summary_features.T, first_n_spikes, coefs), dim=1
                 )
+                for i in range(first_n_spikes.shape[1]):
+                    summary_feature_columns.append(f"Spike {i+1} time")
+                summary_feature_columns = summary_feature_columns + generate_arima_columns(coefs)
             else:
                 summary_features = coefs
+                summary_feature_columns = generate_arima_columns(coefs)
         else:
             if not use_spike_summary_stats:
                 raise Exception("Unable to drop spike summary stats (use_spike_summary_stats=False), no summary stats to use... This can be set to true and you can use a network that ignores summary stats.")
@@ -495,6 +522,13 @@ class GeneralACTOptimizer(ACTOptimizer):
                 )
             )
             summary_features = torch.cat((summary_features.T, first_n_spikes), dim=1)
+            summary_feature_columns.append("Num Spikes")
+            summary_feature_columns.append("Interspike Interval")
+            summary_feature_columns.append("Avg Min Spike Height")
+            summary_feature_columns.append("Avg Max Spike Height")
+            for i in range(first_n_spikes.shape[1]):
+                summary_feature_columns.append(f"Spike {i+1} time")
+
 
         # make amp output a learned parameter
         param_samples_for_next_stage = torch.cat((param_samples_for_next_stage,ampl_next_stage.reshape((-1,1))),dim=1)
@@ -529,6 +563,7 @@ class GeneralACTOptimizer(ACTOptimizer):
             learning_rate=learning_rate,
             weight_decay=weight_decay,
             num_epochs=num_epochs,
+            summary_feature_columns=summary_feature_columns,
         )
 
         # Predict and take max across ci to prevent underestimating
@@ -634,6 +669,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         lows,
         highs,
         summary_features,
+        summary_feature_columns=[],
         train_test_split=0.85,
         batch_size=8,
         learning_rate=2e-5,
@@ -654,6 +690,7 @@ class GeneralACTOptimizer(ACTOptimizer):
             "test_loss": [],
             "train_size": 0,
             "test_size": 0,
+            "feature_importance": {},
         }
 
         # cut the target_params for segregation
@@ -703,7 +740,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         )
 
         if self.use_random_forest: # use the random forest
-            self.train_random_forest(summary_features_train.cpu().numpy(), target_params_train.cpu().numpy())
+            stats["feature_importance"] = self.train_random_forest(summary_features_train.cpu().numpy(), target_params_train.cpu().numpy(),columns=summary_feature_columns)
         else:
             optim = torch.optim.Adam(self.model.parameters(), lr=learning_rate, weight_decay=weight_decay)
             loss_fn = torch.nn.MSELoss()  # torch.nn.functional.l1_loss

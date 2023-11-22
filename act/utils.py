@@ -87,10 +87,9 @@ def get_param_dist(config: SimulationConfig, preset_params={}):
         raise ValueError(
             'config["optimization_parameters"]["parametric_distribution"]["n_slices"] must be > 2 to generate a distribution.'
         )
-
     param_dist = np.array(
         [
-            np.arange(low, high, (high - low) / (n_slices - 1))
+            np.arange(low, high-1e-15, (high - low) / (n_slices - 1)) # -1e-15 because we really don't want the last one since we're adding it back in, can lead to inhomogenous shapes if ommited
             for low, high in zip(lows, highs)
         ]
     ).T
@@ -503,13 +502,17 @@ def extract_summary_features(V: torch.Tensor, threshold=-40) -> tuple:
     return num_spikes, interspike_times
 
 
-def extract_spiking_traces(traces_t, params_t, amps_t, threshold=-40, min_spikes=1):
+def extract_spiking_traces(traces_t, params_t, amps_t, threshold=-40, min_spikes=1, keep_zero_amps=True):
     num_spikes, interspike_times = extract_summary_features(
         traces_t
     )
     spiking_gids = (
         num_spikes.gt(min_spikes - 1).nonzero().flatten().cpu().detach().tolist()
     )
+    if keep_zero_amps:
+        zero_amps_gids = amps_t.eq(0.0).nonzero().flatten().cpu().detach().tolist()
+        spiking_gids = list(set(set(zero_amps_gids) | set(spiking_gids)))
+
     spiking_traces = traces_t[spiking_gids]
     spiking_params = params_t[spiking_gids]
     spiking_amps = amps_t[spiking_gids]

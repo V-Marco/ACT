@@ -203,12 +203,12 @@ LA_A_seg = {
         "lto_amps": [0.0, 0.025, 0.05, 0.075, 0.1, 0.125, 0.15],
         "params": [
             # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05}, # hd, passive
-            {"channel": "gbar_nap", "high": 0.000426, "low": 4.736e-05},
-            {"channel": "gbar_im", "high": 0.006, "low": 0.000666},
-            {"channel": "gbar_na3", "high": 0.09, "low": 0.01},
-            {"channel": "gbar_kdr", "high": 0.0045, "low": 0.0005},
-            {"channel": "gcabar_cadyn", "high": 0.00018, "low": 2e-05},
-            {"channel": "gsAHPbar_sAHP", "high": 0.026996, "low": 0.0029996},
+            {"channel": "gbar_nap", "high": 0.000284, "low": 0.000000}, #"high": 0.000213, "low": 0.000071}, #"high": 0.000426, "low": 4.736e-05},
+            {"channel": "gbar_im", "high": 0.004000, "low": 0.000000}, #"high": 0.003000, "low": 0.001000}, #"high": 0.006, "low": 0.000666},
+            {"channel": "gbar_na3", "high": 0.060000, "low": 0.000000}, #"high": 0.045000, "low": 0.015000}, #"high": 0.09, "low": 0.01},
+            {"channel": "gbar_kdr", "high": 0.003000, "low": 0.000000}, #"high": 0.002250, "low": 0.000750}, #"high": 0.0045, "low": 0.0005},
+            {"channel": "gcabar_cadyn", "high": 0.000120, "low": 0.000000}, #"high": 0.000090, "low": 0.000030}, #"high": 0.00018, "low": 2e-05},
+            {"channel": "gsAHPbar_sAHP", "high": 0.018000, "low": 0.000000}, #"high": 0.013500, "low": 0.004500}, #"high": 0.026996, "low": 0.0029996},
         ],
         # ======================================================
         "target_V_file": "./target_v.json",
@@ -242,7 +242,7 @@ LA_A_seg = {
         "num_epochs": 10,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
-            "n_slices": 5,
+            "n_slices": 8,
         },
         "decimate_factor": 10,
     },
@@ -300,7 +300,7 @@ LA_A_seg = {
         },
         {
             "params": ["gcabar_cadyn", "gsAHPbar_sAHP"],
-            "model_class": "ConvolutionEmbeddingNet",
+            "model_class": "RandomForest", #"ConvolutionEmbeddingNet",
             "selection_metric": "fi_error",
             "num_epochs": 100,
         },
