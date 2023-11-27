@@ -58,7 +58,7 @@ class OptimizationParameters(TypedDict):
     num_epochs: int
     parametric_distribution: ParametricDistribution
     decimate_factor: int  # reduce voltage traces after simulation
-
+    use_random_forest: bool
 
 class SummaryFeatures:
     spike_threshold: int  # (mV)
@@ -82,11 +82,14 @@ class SegregationModule(TypedDict):
     selection_metric: str # fi_error or mse should be enum
     num_epochs: int # change the number of epochs that we can train for overrides global num_epochs
     train_spiking_only: bool # only train on spiking, true by default
+    train_amplitude_frequency: bool # train using freqency/amplitude - only useful for lto/hto, finds peaks and counts, with mean value for peaks
     adjustment_percent: float # a percentage that future seg modules will be allowed to modify the suggested param
     adjustment_n_slices: int # n_splits for the adjustment, will use default parametric distribution n_splits if this doesn't exist
     use_lto_amps: bool # use lto amps instead of amps
     use_spike_summary_stats: bool # if set to false, then don't train on spike interval, spike times, etc... 
     arima_order: List[int] # use a custom arima order for this segregation index
+    learned_variability: float #allow the previously learned  parameters to vary by the specified percentage
+    n_splits: int # custom number of splits
 
 class Output(TypedDict):
     folder: str

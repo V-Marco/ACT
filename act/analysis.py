@@ -97,12 +97,14 @@ def save_mse_corr(
     simulation_config: SimulationConfig,
     predicted_params_values: list,
     output_folder: str,
+    amps = None,
 ) -> None:
     with open(os.path.join(output_folder, "metrics.csv"), "w") as file:
         file.write(f"amp,mse,corr\n")
-
+    if not amps:
+        amps = simulation_config["optimization_parameters"]["amps"]
     optim = ACTOptimizer(simulation_config=simulation_config)
-    for ind, amp in enumerate(simulation_config["optimization_parameters"]["amps"]):
+    for ind, amp in enumerate(amps):
         params = [
             p["channel"] for p in simulation_config["optimization_parameters"]["params"]
         ]
@@ -141,9 +143,6 @@ def print_run_stats(config: SimulationConfig):
     pred_passive_json_path = os.path.join(
         output_folder, run_mode, "pred_passive_properties.json"
     )
-    target_passive_json_path = os.path.join(
-        output_folder, run_mode, "target", "target_passive_properties.json"
-    )
 
     metrics = pd.read_csv(os.path.join(output_folder, run_mode, "metrics.csv"))
     preds_df = pd.read_csv(
@@ -155,9 +154,10 @@ def print_run_stats(config: SimulationConfig):
             pred_passive_json = json.load(fp)
 
     target_passive_json = None
-    if os.path.isfile(target_passive_json_path):
-        with open(target_passive_json_path, "r") as fp:
-            target_passive_json = json.load(fp)
+    if config["cell"].get("passive_properties"):
+        target_passive_json = config["cell"]["passive_properties"]
+        if config["optimization_parameters"].get("target_passive_properties"):
+            target_passive_json = config["optimization_parameters"]["target_passive_properties"]
 
     preds = np.array(preds_df)
     print(output_folder)
@@ -184,6 +184,13 @@ def print_run_stats(config: SimulationConfig):
         target_label = config["output"].get("target_label", "Target")
         print(f"{target_label} Passive properties:")
         print(json.dumps(target_passive_json, indent=2))
+        print("----------\n")
+    if pred_passive_json and target_passive_json:
+        print()
+        print("Passive properties errror")
+        print(f"v_rest: {(pred_passive_json['v_rest']-target_passive_json['v_rest']):.2f}")
+        print(f"r_in: {(pred_passive_json['r_in']-target_passive_json['r_in']):.2f}")
+        print(f"tau: {(pred_passive_json['tau']-target_passive_json['tau']):.2f}")
         print("----------\n")
 
     traces_file = os.path.join(

@@ -15,6 +15,7 @@ from statsmodels.tsa.arima.model import ARIMA
 import torch
 import timeout_decorator
 import multiprocessing as mp
+from scipy import signal
 
 from act.act_types import SimulationConfig
 from act.cell_model import CellModel
@@ -70,19 +71,43 @@ def get_params(param_dist):
     return params
 
 
-def get_param_dist(config: SimulationConfig, preset_params={}):
+def get_param_dist(config: SimulationConfig, preset_params={}, learned_params={}, learned_variability=0, n_slices=0):
     # Deterimine the number of cells and their parameters to be set
     preset_channels = [k for k,v in preset_params.items()]
     all_channels = [p["channel"] for p in config["optimization_parameters"]["params"]]
+    if learned_variability > 0: # we should remove them from learned since we're going to want to re-learn them
+        preset_channels = [p for p in preset_channels if p not in learned_params]
+
     channels = [p["channel"] for p in config["optimization_parameters"]["params"] if p["channel"] not in preset_channels]
     lows = [p["low"] for p in config["optimization_parameters"]["params"] if p["channel"] not in preset_channels]
     highs = [p["high"] for p in config["optimization_parameters"]["params"] if p["channel"] not in preset_channels]
 
-    n_slices = (
-        config["optimization_parameters"]
-        .get("parametric_distribution", {})
-        .get("n_slices", 0)
-    )
+    if learned_variability > 0:
+        print(f"learned variability set to {learned_variability}")
+        # we need to adjust the high and low values to be around the learned value by a percentage
+        new_lows = []
+        new_highs = []
+        for channel, low, high in zip(channels, lows, highs):
+            if channel in learned_params:
+                new_lows.append(learned_params[channel] * (1-learned_variability))
+                new_highs.append(learned_params[channel] * (1+learned_variability))
+            else:
+                new_lows.append(low)
+                new_highs.append(high)
+        print(f"channels set this segregation {channels}")
+        print(f"old lows: {lows}")
+        print(f"old highs: {highs}")
+        lows = new_lows
+        highs = new_highs
+        print(f"new lows: {lows}")
+        print(f"new highs: {highs}")
+
+    if not n_slices:
+        n_slices = (
+            config["optimization_parameters"]
+            .get("parametric_distribution", {})
+            .get("n_slices", 0)
+        )
     if n_slices <= 1:
         raise ValueError(
             'config["optimization_parameters"]["parametric_distribution"]["n_slices"] must be > 2 to generate a distribution.'
@@ -154,10 +179,34 @@ def load_preset_params(config: SimulationConfig):
     total_segregations = len(config["segregation"])
     for i in range(segregation_index+1,total_segregations):
         for seg_p in config["segregation"][i]["params"]:
-            print(f"Setting {seg_p} = 0 for future segregation")
+            #print(f"Setting {seg_p} = 0 for future segregation")
             preset_params[seg_p] = 0
     
     return preset_params
+
+def load_learned_params(config: SimulationConfig):
+    # Returns a dict of learned params from segregation
+    # if segregation is not used then returns an empty dict
+    parameter_values_file = "parameter_values.json"
+
+    if config["run_mode"] != "segregated":
+        return {}
+    if not os.path.exists(parameter_values_file):
+        return {}
+    with open(parameter_values_file, "r") as fp:
+        parameter_values_dict = json.load(fp)
+    learned_params = parameter_values_dict.get("learned_params",{})
+    return learned_params
+
+def get_learned_variability(config: SimulationConfig):
+    parameter_values_file = "parameter_values.json"
+    lv = 0
+    if os.path.exists(parameter_values_file):
+        with open(parameter_values_file, "r") as fp:
+            parameter_values_dict = json.load(fp)
+        segregation_index = parameter_values_dict["segregation_index"]
+        lv = config["segregation"][segregation_index].get("learned_variability",0)
+    return lv
 
 def update_segregation(config: SimulationConfig, learned_params):
     # This function accepts the learned parameters for the network
@@ -170,7 +219,13 @@ def update_segregation(config: SimulationConfig, learned_params):
         with open(parameter_values_file, "r") as fp:
             parameter_values_dict = json.load(fp)
         segregation_index = parameter_values_dict["segregation_index"]
-        current_segregation_params = config["segregation"][segregation_index]["params"]
+        current_segregation_params = []
+        if config["segregation"][segregation_index].get("learned_variability",0)>0:
+            for i in range(segregation_index): # we should add previous params to our list
+                current_segregation_params = current_segregation_params + [p for p in config["segregation"][i]["params"] if p not in current_segregation_params]
+
+        current_segregation_params = current_segregation_params + config["segregation"][segregation_index]["params"]
+
         for learned_param, value in learned_params.items():
             if learned_param in current_segregation_params:
                 parameter_values_dict["learned_params"][learned_param] = value
@@ -199,6 +254,8 @@ def build_parametric_network(config: SimulationConfig):
     learned_params = {} # keep track for future, not writing anything in this script
     preset_params = {} # will set some to 0 and others to what was determined before
     segregation_index = 0 # looping through each of the segregations in the config
+    n_slices = 0
+    learned_variability = 0
     # check if we're running in segregated mode
     # we keep track of the segregated state
     if config["run_mode"] == "segregated":
@@ -228,9 +285,11 @@ def build_parametric_network(config: SimulationConfig):
             preset_params = {p:0 for p in params if p not in segregation_params}
             print(f"Segregation parameters selected: {segregation_params}")
             print(f"Setting all else to zero: {preset_params}")
-        
 
-    param_dist = get_param_dist(config, preset_params=preset_params)
+        learned_variability = config["segregation"][segregation_index].get("learned_variability",0)*1e-1
+        n_slices = config["segregation"][segregation_index].get("n_slices",0)
+
+    param_dist = get_param_dist(config, preset_params=preset_params, learned_params=learned_params, learned_variability=learned_variability, n_slices=n_slices)
 
     network_dir = "network"
     # remove everything from prior runs
@@ -652,6 +711,25 @@ def get_fi_curve_error(
 
     return error
 
+def get_amplitude_frequency(traces, inj_dur, inj_start, fs=1000):
+    amplitudes = []
+    frequencies = []
+    for idx in range(traces.shape[0]):
+        x = traces[idx].cpu().numpy()[inj_start:inj_start+inj_dur]
+        secs = len(x)/fs
+        peaks = signal.find_peaks(x,prominence=0.1)[0].tolist()
+        amplitude = x[peaks].mean()
+        frequency = int(len(peaks)/(secs))
+        amplitudes.append(amplitude)
+        frequencies.append(frequency)
+
+    amplitudes = torch.tensor(amplitudes)
+    frequencies = torch.tensor(frequencies)
+
+    amplitudes[torch.isnan(amplitudes)] = 0
+    frequencies[torch.isnan(frequencies)] = 0
+
+    return amplitudes, frequencies
 
 def load_final_traces(trace_file):
     traces_h5 = h5py.File(trace_file)

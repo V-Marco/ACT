@@ -110,6 +110,8 @@ def _run(config: SimulationConfig):
     pred_pool = []
     err_pool = []
     fi_err_pool = []
+    af_err_pool = []
+
     params = [p["channel"] for p in config["optimization_parameters"]["params"]]
     for repeat_num in range(config["optimization_parameters"]["num_repeats"]):
         if config["run_mode"] == "original" or config["run_mode"] == "segregated":
@@ -169,6 +171,8 @@ def _run(config: SimulationConfig):
         # Compute composite error
         # for each prediction
         inj_dur = config["simulation_parameters"]["h_i_dur"]
+        inj_start = config["simulation_parameters"]["h_i_delay"]
+
         for j, pred_sim in enumerate(sims):
             total_error = 0
             # for each amp
@@ -179,21 +183,30 @@ def _run(config: SimulationConfig):
                 total_error = total_error + error
 
                 amp = amps[i]
-                # save prediction plot for debugging
-                save_prediction_plots(
-                    target_V[i].reshape(1, len(target_V[i])).cpu().detach(),
-                    amp,
-                    config,
-                    predictions.cpu().detach()[j],
-                    output_folder,
-                    output_file=f"repeat{repeat_num+1}_pred{j+1}_{(amp * 1000):.0f}nA.png",
-                )
+                if False: # save prediction plot for debugging
+                    save_prediction_plots(
+                       target_V[i].reshape(1, len(target_V[i])).cpu().detach(),
+                        amp,
+                        config,
+                        predictions.cpu().detach()[j],
+                        output_folder,
+                        output_file=f"repeat{repeat_num+1}_pred{j+1}_{(amp * 1000):.0f}nA.png",
+                    )
             fi_error = utils.get_fi_curve_error(
                 torch.cat(pred_sim), target_V, torch.tensor(amps), inj_dur=inj_dur
             )
+            pred_ampl, pred_freq = utils.get_amplitude_frequency(
+                torch.cat(pred_sim), inj_dur=inj_dur, inj_start=inj_start
+            )
+            target_ampl, target_freq = utils.get_amplitude_frequency(
+                target_V, inj_dur=inj_dur, inj_start=inj_start
+            )
+    
+            af_error = float((pred_freq - target_freq).abs().sum().cpu())
 
             err_pool.append(error)
             fi_err_pool.append(fi_error)
+            af_err_pool.append(af_error)
 
         # save prediction values
         mean = np.mean(predictions.cpu().detach().tolist(), axis=0).tolist()
@@ -213,10 +226,14 @@ def _run(config: SimulationConfig):
     print(f"All predictions: {pred_pool}")
     print(f"Err per prediction: {err_pool}")
     print(f"FI Err per prediction: {fi_err_pool}")
+    print(f"Amplitude/Frequency err per prediction {af_err_pool}")
 
     # old way, error was not reliable, a flat line beats spikes offset by a few ms
     
     if config["run_mode"] == "segregated":
+        if config["segregation"][segregation_index].get("selection_metric") == "amplitude_frequency_error":
+            print("Minimal Amplitude and Frequency error selected for parameter selection")
+            predictions = pred_pool[np.argmin(af_err_pool)]
         if config["segregation"][segregation_index].get("selection_metric") == "mse":
             print("MSE error selected for parameter selection")
             predictions = pred_pool[np.argmin(err_pool)]
@@ -240,7 +257,7 @@ def _run(config: SimulationConfig):
         pred_df.insert(0, g_leak_var, [g_bar_leak])
 
     pred_df.to_csv(os.path.join(output_folder, "pred.csv"))
-    save_mse_corr(target_V, config, predictions, output_folder)
+    save_mse_corr(target_V, config, predictions, output_folder, amps=amps)
 
     # save passive properties
     passive_properties, passive_v = optim.calculate_passive_properties(

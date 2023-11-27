@@ -200,15 +200,15 @@ LA_A_seg = {
     },
     "optimization_parameters": {
         "amps": [0.0, 0.1, 0.25, 0.5, 0.75, 1.0],
-        "lto_amps": [0.0, 0.025, 0.05, 0.075, 0.1, 0.125, 0.15],
+        "lto_amps": [0.0, 0.025, 0.05, 0.075, 0.1],
         "params": [
             # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05}, # hd, passive
-            {"channel": "gbar_nap", "high": 0.000284, "low": 0.000000}, #"high": 0.000213, "low": 0.000071}, #"high": 0.000426, "low": 4.736e-05},
-            {"channel": "gbar_im", "high": 0.004000, "low": 0.000000}, #"high": 0.003000, "low": 0.001000}, #"high": 0.006, "low": 0.000666},
-            {"channel": "gbar_na3", "high": 0.060000, "low": 0.000000}, #"high": 0.045000, "low": 0.015000}, #"high": 0.09, "low": 0.01},
-            {"channel": "gbar_kdr", "high": 0.003000, "low": 0.000000}, #"high": 0.002250, "low": 0.000750}, #"high": 0.0045, "low": 0.0005},
-            {"channel": "gcabar_cadyn", "high": 0.000120, "low": 0.000000}, #"high": 0.000090, "low": 0.000030}, #"high": 0.00018, "low": 2e-05},
-            {"channel": "gsAHPbar_sAHP", "high": 0.018000, "low": 0.000000}, #"high": 0.013500, "low": 0.004500}, #"high": 0.026996, "low": 0.0029996},
+            {"channel": "gbar_nap", "high": 0.000284, "low": 0.0}, #"high": 0.000213, "low": 0.000071}, #"high": 0.000426, "low": 4.736e-05},
+            {"channel": "gbar_im", "high": 0.004000, "low": 0.0}, #"high": 0.003000, "low": 0.001000}, #"high": 0.006, "low": 0.000666},
+            {"channel": "gbar_na3", "high": 0.060000, "low": 0.0}, #"high": 0.060000, "low": 0.000000}, #"high": 0.045000, "low": 0.015000}, #"high": 0.09, "low": 0.01},
+            {"channel": "gbar_kdr", "high": 0.003000, "low": 0.0}, #"high": 0.002250, "low": 0.000750}, #"high": 0.0045, "low": 0.0005},
+            {"channel": "gcabar_cadyn", "high": 0.000120, "low": 0.0}, #"high": 0.000090, "low": 0.000030}, #"high": 0.00018, "low": 2e-05},
+            {"channel": "gsAHPbar_sAHP", "high": 0.018000, "low": 0.0}, #"high": 0.013500, "low": 0.004500}, #"high": 0.026996, "low": 0.0029996},
         ],
         # ======================================================
         "target_V_file": "./target_v.json",
@@ -225,17 +225,24 @@ LA_A_seg = {
             {"channel": "gcabar_cadyn"},
             {"channel": "gsAHPbar_sAHP"},
         ],
+        "target_passive_properties": {
+            "v_rest": -70,
+            "r_in": 141,
+            "tau": 30.88,
+            "leak_conductance_variable": "glbar_leak",  # eg: g_leak
+            "leak_reversal_variable": "el_leak",  # eg: e_leak
+         },
         "target_cell_target_params": [0.0003, 0.002, 0.03, 0.03, 6e-5, 0.009],
         "target_cell_lto_block_channels": ["gbar_na3","gkdrbar_kdr","gcabar_cadyn","gsAHPbar_sAHP"],
         # ======================================================
         "target_V": None,  # Target voltages
-        "target_params": [
-            0.0, #0.000142,
-            0.0, #0.002,
-            0.0, #0.03,
-            0.0, #0.0015,
-            0.0, #6e-5,
-            0.0, #0.009,
+        "target_params": [ # will not be used, except for analyzing error
+            0.000142,
+            0.002,
+            0.03,
+            0.0015,
+            6e-5,
+            0.009,
         ],  # [2.3e-05, 0.000142, 0.002, 0.03, 0.0015, 6e-5, 0.009],
         "num_repeats": 1,
         "num_amps_to_match": 1,
@@ -281,13 +288,14 @@ LA_A_seg = {
         #{
         #    "params": ["gbar_nap", "gbar_im", "gcabar_cadyn", "gsAHPbar_sAHP"]
         #},
-        ######### TAKE 3 ##########
+        ######### TAKE 3 ########## GOOD RESULTS
         {
             "params": ["gbar_nap", "gbar_im"],
             "model_class": "RandomForest", #"SimpleSummaryNet",
-            "selection_metric": "mse",
+            "selection_metric": "amplitude_frequency_error", #"mse", 
             "num_epochs": 1000,
             "train_spiking_only": False,
+            "train_amplitude_frequency": True,
             "use_lto_amps": True,
             "use_spike_summary_stats": False, # don't use spike summary stats for training
             "arima_order": [10, 0, 10], # custom arima settings
@@ -297,6 +305,7 @@ LA_A_seg = {
             "model_class": "RandomForest", #"ConvolutionEmbeddingNet",
             "selection_metric": "fi_error",
             "num_epochs": 200,
+            "learned_variability": 0.5,
         },
         {
             "params": ["gcabar_cadyn", "gsAHPbar_sAHP"],
@@ -304,7 +313,23 @@ LA_A_seg = {
             "selection_metric": "fi_error",
             "num_epochs": 100,
         },
-
+        ######## TAKE 4 ######### Combine 2 and 3 seg modules
+        #{
+        #    "params": ["gbar_nap", "gbar_im"],
+        #    "model_class": "RandomForest", #"SimpleSummaryNet",
+        #    "selection_metric": "mse",
+        #    "num_epochs": 1000,
+        #    "train_spiking_only": False,
+        #    "use_lto_amps": True,
+        #    "use_spike_summary_stats": False, # don't use spike summary stats for training
+        #    "arima_order": [10, 0, 10], # custom arima settings
+        #},
+        #{
+        #    "params": ["gbar_na3", "gbar_kdr", "gcabar_cadyn", "gsAHPbar_sAHP"],
+        #    "model_class": "RandomForest", #"ConvolutionEmbeddingNet",
+        #    "selection_metric": "fi_error",
+        #    "num_epochs": 200,
+        #},
     ],
     "output": {
         "folder": "output_LA_A_seg",
@@ -320,7 +345,7 @@ LA_A_orig = {
         "hoc_file": "../data/LA/A/orig_modfiles/template.hoc",
         "modfiles_folder": "../data/LA/A/orig_modfiles",
         "name": "Cell_A",
-         "passive_properties": {
+        "passive_properties": {
             "v_rest": -70,
             "r_in": 141,
             "tau": 30.88,
@@ -336,7 +361,7 @@ LA_A_orig = {
         "h_dt": 0.1,
     },
     "optimization_parameters": {
-        "amps": [0.1, 0.25, 0.5, 0.75, 1.0],
+        "amps": [0.0, 0.1, 0.25, 0.5, 0.75, 1.0],
         "params": [
             # {"channel": "glbar_leak", "low": 2.75e-5, "high": 1e-4},  # leak, passive
             # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05},  # hd, passive
@@ -366,12 +391,12 @@ LA_A_orig = {
             #    "low": 0.0045,
             #    "high": 0.018,
             # },  # sahp, spiking/adaptation
-            {"channel": "gbar_nap", "high": 0.0009, "low": 0.0001},
-            {"channel": "gmbar_im", "high": 0.006, "low": 0.00066667},
-            {"channel": "gbar_na3", "high": 0.09, "low": 0.01},
-            {"channel": "gkdrbar_kdr", "high": 0.09, "low": 0.01},
-            {"channel": "gcabar_cadyn", "high": 0.00018, "low": 2e-05},
-            {"channel": "gsAHPbar_sAHP", "high": 0.027, "low": 0.003},
+            {"channel": "gbar_nap", "high": 0.0006, "low": 0.00015},
+            {"channel": "gmbar_im", "high": 0.004, "low": 0.001},
+            {"channel": "gbar_na3", "high": 0.06, "low": 0.015},
+            {"channel": "gkdrbar_kdr", "high": 0.06, "low": 0.015},
+            {"channel": "gcabar_cadyn", "high": 0.00012, "low": 0.00003},
+            {"channel": "gsAHPbar_sAHP", "high": 0.018, "low": 0.0045},
         ],
         "target_V_file": "./target_v.json",
         "target_V": None,  # Target voltages
@@ -384,6 +409,7 @@ LA_A_orig = {
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
         },
+        "use_random_forest": True,
         "decimate_factor": 10,
     },
     "summary_features": {
