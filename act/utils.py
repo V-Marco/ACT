@@ -71,16 +71,16 @@ def get_params(param_dist):
     return params
 
 
-def get_param_dist(config: SimulationConfig, preset_params={}, learned_params={}, learned_variability=0, n_slices=0):
+def get_param_dist(config: SimulationConfig, preset_params={}, learned_params={}, learned_variability=0, n_slices=0, block_channels=[]):
     # Deterimine the number of cells and their parameters to be set
     preset_channels = [k for k,v in preset_params.items()]
     all_channels = [p["channel"] for p in config["optimization_parameters"]["params"]]
     if learned_variability > 0: # we should remove them from learned since we're going to want to re-learn them
         preset_channels = [p for p in preset_channels if p not in learned_params]
 
-    channels = [p["channel"] for p in config["optimization_parameters"]["params"] if p["channel"] not in preset_channels]
-    lows = [p["low"] for p in config["optimization_parameters"]["params"] if p["channel"] not in preset_channels]
-    highs = [p["high"] for p in config["optimization_parameters"]["params"] if p["channel"] not in preset_channels]
+    channels = [p["channel"] for p in config["optimization_parameters"]["params"] if p["channel"] not in preset_channels and p["channel"] not in block_channels]
+    lows = [p["low"] for p in config["optimization_parameters"]["params"] if p["channel"] not in preset_channels and p["channel"] not in block_channels]
+    highs = [p["high"] for p in config["optimization_parameters"]["params"] if p["channel"] not in preset_channels and p["channel"] not in block_channels]
     
     if learned_variability > 0:
         print(f"learned variability set to {learned_variability}")
@@ -128,6 +128,8 @@ def get_param_dist(config: SimulationConfig, preset_params={}, learned_params={}
         for parameter_values in parameter_values_list: # for each parameter set
             for channel,value in zip(channels,parameter_values): # update the preset_channels dict to include the current parameter set
                 preset_params[channel] = value
+            for channel in block_channels:
+                preset_params[channel] = 0.0
             current_parameter_values_list = []
             for channel in all_channels:
                 current_parameter_values_list.append(preset_params[channel])
@@ -256,7 +258,7 @@ def build_parametric_network(config: SimulationConfig):
     segregation_index = 0 # looping through each of the segregations in the config
     n_slices = 0
     learned_variability = 0
-    hto_block_channels = []
+    block_channels = []
     # check if we're running in segregated mode
     # we keep track of the segregated state
     if config["run_mode"] == "segregated":
@@ -291,11 +293,11 @@ def build_parametric_network(config: SimulationConfig):
         n_slices = config["segregation"][segregation_index].get("n_slices",0)
         if config["segregation"][segregation_index].get("use_hto_amps",False):
             print("hto block channels loaded")
-            hto_block_channels = config["optimization_parameters"].get("hto_block_channels",[])
+            block_channels = config["optimization_parameters"].get("hto_block_channels",[])
             #for hbc in hto_block_channels:
             #    preset_params[hbc] = 0.0
 
-    param_dist = get_param_dist(config, preset_params=preset_params, learned_params=learned_params, learned_variability=learned_variability, n_slices=n_slices)
+    param_dist = get_param_dist(config, preset_params=preset_params, learned_params=learned_params, learned_variability=learned_variability, n_slices=n_slices, block_channels=block_channels)
 
     network_dir = "network"
     # remove everything from prior runs

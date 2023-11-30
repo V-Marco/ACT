@@ -56,7 +56,7 @@ def stats(traces, params_dict):
     spiking_traces, spiking_params, spiking_amps, spiking_ind = (#utils.extract_spiking_traces(
         traces_t, params_t, amps_t, [i for i in range(len(traces_t))]
     )
-    nonsaturated_only = True
+    nonsaturated_only = False
     if nonsaturated_only:
             drop_dur = 200
             end_of_drop = 750
