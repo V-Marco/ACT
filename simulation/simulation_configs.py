@@ -294,7 +294,7 @@ LA_A_seg = {
         {
             "params": ["gbar_nap", "gbar_im"],
             "model_class": "RandomForest", #"SimpleSummaryNet",
-            "selection_metric": "amplitude_frequency_error", #"mse", 
+            "selection_metric": "mse", #"amplitude_frequency_error", #"mse", 
             "num_epochs": 1000,
             "train_spiking_only": False,
             "train_amplitude_frequency": True,
@@ -308,13 +308,25 @@ LA_A_seg = {
             "selection_metric": "fi_error",
             "num_epochs": 200,
         },
-        {
-            "params": ["gcabar_cadyn", "gsAHPbar_sAHP"],
-            "model_class": "RandomForest", #"ConvolutionEmbeddingNet",
-            "selection_metric": "fi_error",
-            "num_epochs": 100,
-            "learned_variability": 0.5,
-        },
+        #{
+        #    "params": ["gcabar_cadyn", "gsAHPbar_sAHP"],
+        #    "model_class": "RandomForest", #"ConvolutionEmbeddingNet",
+        #    "selection_metric": "fi_error",
+        #    "num_epochs": 100,
+        #    #"learned_variability": 0.5,
+        #},
+        { # HTO addition
+            "params": ["gcabar_cadyn", "gsAHPbar_sAHP"], # taken care of with learned variability, na will be blocked
+            "model_class": "RandomForest", #"SimpleSummaryNet",
+            "selection_metric": "mse", #"amplitude_frequency_error", #"mse",
+            "num_epochs": 1000,
+            "train_spiking_only": False,
+            "train_amplitude_frequency": True,
+            "use_hto_amps": True,
+            "use_spike_summary_stats": False, # don't use spike summary stats for training
+            "arima_order": [10, 0, 10], # custom arima settings
+            "learned_variability": 0.2 # 20% of previous bounds
+        }
         ######## TAKE 4 ######### Combine 2 and 3 seg modules
         #{
         #    "params": ["gbar_nap", "gbar_im"],

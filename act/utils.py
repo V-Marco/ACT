@@ -81,7 +81,7 @@ def get_param_dist(config: SimulationConfig, preset_params={}, learned_params={}
     channels = [p["channel"] for p in config["optimization_parameters"]["params"] if p["channel"] not in preset_channels]
     lows = [p["low"] for p in config["optimization_parameters"]["params"] if p["channel"] not in preset_channels]
     highs = [p["high"] for p in config["optimization_parameters"]["params"] if p["channel"] not in preset_channels]
-
+    
     if learned_variability > 0:
         print(f"learned variability set to {learned_variability}")
         # we need to adjust the high and low values to be around the learned value by a percentage
@@ -256,6 +256,7 @@ def build_parametric_network(config: SimulationConfig):
     segregation_index = 0 # looping through each of the segregations in the config
     n_slices = 0
     learned_variability = 0
+    hto_block_channels = []
     # check if we're running in segregated mode
     # we keep track of the segregated state
     if config["run_mode"] == "segregated":
@@ -286,8 +287,13 @@ def build_parametric_network(config: SimulationConfig):
             print(f"Segregation parameters selected: {segregation_params}")
             print(f"Setting all else to zero: {preset_params}")
 
-        learned_variability = config["segregation"][segregation_index].get("learned_variability",0)*1e-1
+        learned_variability = config["segregation"][segregation_index].get("learned_variability",0)
         n_slices = config["segregation"][segregation_index].get("n_slices",0)
+        if config["segregation"][segregation_index].get("use_hto_amps",False):
+            print("hto block channels loaded")
+            hto_block_channels = config["optimization_parameters"].get("hto_block_channels",[])
+            #for hbc in hto_block_channels:
+            #    preset_params[hbc] = 0.0
 
     param_dist = get_param_dist(config, preset_params=preset_params, learned_params=learned_params, learned_variability=learned_variability, n_slices=n_slices)
 
