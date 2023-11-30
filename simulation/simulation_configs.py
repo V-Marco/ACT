@@ -182,7 +182,7 @@ LA_A_seg = {
     "cell": {
         "hoc_file": "../data/LA/A/seg_modfiles_modeldb/template.hoc",
         "modfiles_folder": "../data/LA/A/seg_modfiles_modeldb",
-        "name": "Cell_A",
+        "name": "Cell_A_seg",
         "passive_properties": {
             "v_rest": -71.486,
             "r_in": 141,
@@ -201,14 +201,17 @@ LA_A_seg = {
     "optimization_parameters": {
         "amps": [0.0, 0.1, 0.25, 0.5, 0.75, 1.0],
         "lto_amps": [0.0, 0.025, 0.05, 0.075, 0.1],
+        "hto_amps": [2.5, 3.0, 3.5, 4.0, 4.5],
+        "lto_block_channels": ["gbar_na3", "gbar_kdr", "gcabar_cadyn", "gsAHPbar_sAHP"],
+        "hto_block_channels": ["gbar_na3", "gbar_nap"],
         "params": [
             # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05}, # hd, passive
             {"channel": "gbar_nap", "high": 0.000284, "low": 0.0}, #"high": 0.000213, "low": 0.000071}, #"high": 0.000426, "low": 4.736e-05},
-            {"channel": "gbar_im", "high": 0.004000, "low": 0.0}, #"high": 0.003000, "low": 0.001000}, #"high": 0.006, "low": 0.000666},
-            {"channel": "gbar_na3", "high": 0.060000, "low": 0.0}, #"high": 0.060000, "low": 0.000000}, #"high": 0.045000, "low": 0.015000}, #"high": 0.09, "low": 0.01},
-            {"channel": "gbar_kdr", "high": 0.003000, "low": 0.0}, #"high": 0.002250, "low": 0.000750}, #"high": 0.0045, "low": 0.0005},
-            {"channel": "gcabar_cadyn", "high": 0.000120, "low": 0.0}, #"high": 0.000090, "low": 0.000030}, #"high": 0.00018, "low": 2e-05},
-            {"channel": "gsAHPbar_sAHP", "high": 0.018000, "low": 0.0}, #"high": 0.013500, "low": 0.004500}, #"high": 0.026996, "low": 0.0029996},
+            {"channel": "gbar_im", "high": 0.0012, "low": 0.0}, #"high": 0.003000, "low": 0.001000}, #"high": 0.006, "low": 0.000666},
+            {"channel": "gbar_na3", "high": 0.054, "low": 0.0}, #"high": 0.060000, "low": 0.000000}, #"high": 0.045000, "low": 0.015000}, #"high": 0.09, "low": 0.01},
+            {"channel": "gbar_kdr", "high": 0.003, "low": 0.0}, #"high": 0.002250, "low": 0.000750}, #"high": 0.0045, "low": 0.0005},
+            {"channel": "gcabar_cadyn", "high": 0.00110, "low": 0.0}, #"high": 0.000090, "low": 0.000030}, #"high": 0.00018, "low": 2e-05},
+            {"channel": "gsAHPbar_sAHP", "high": 0.0006, "low": 0.0}, #"high": 0.013500, "low": 0.004500}, #"high": 0.026996, "low": 0.0029996},
         ],
         # ======================================================
         "target_V_file": "./target_v.json",
@@ -233,16 +236,15 @@ LA_A_seg = {
             "leak_reversal_variable": "el_leak",  # eg: e_leak
          },
         "target_cell_target_params": [0.0003, 0.002, 0.03, 0.03, 6e-5, 0.009],
-        "target_cell_lto_block_channels": ["gbar_na3","gkdrbar_kdr","gcabar_cadyn","gsAHPbar_sAHP"],
         # ======================================================
         "target_V": None,  # Target voltages
         "target_params": [ # will not be used, except for analyzing error
-            0.000142,
-            0.002,
-            0.03,
-            0.0015,
-            6e-5,
-            0.009,
+            0.000142, #0.000142,
+            0.0006, #0.002,
+            0.027, #0.03,
+            0.0015, #0.0015,
+            0.00055, #6e-5,
+            0.0003, #0.009,
         ],  # [2.3e-05, 0.000142, 0.002, 0.03, 0.0015, 6e-5, 0.009],
         "num_repeats": 1,
         "num_amps_to_match": 1,
@@ -305,13 +307,13 @@ LA_A_seg = {
             "model_class": "RandomForest", #"ConvolutionEmbeddingNet",
             "selection_metric": "fi_error",
             "num_epochs": 200,
-            "learned_variability": 0.5,
         },
         {
             "params": ["gcabar_cadyn", "gsAHPbar_sAHP"],
             "model_class": "RandomForest", #"ConvolutionEmbeddingNet",
             "selection_metric": "fi_error",
             "num_epochs": 100,
+            "learned_variability": 0.5,
         },
         ######## TAKE 4 ######### Combine 2 and 3 seg modules
         #{

@@ -304,6 +304,9 @@ def build_parametric_network(config: SimulationConfig):
     if config["run_mode"] == "segregated" and config["segregation"][segregation_index].get("use_lto_amps", False):
         print(f"Using LTO Amps for current segregation (use_lto_amps set)")
         amps = config["optimization_parameters"]["lto_amps"]
+    elif config["run_mode"] == "segregated" and config["segregation"][segregation_index].get("use_hto_amps", False):
+        print(f"Using HTO Amps for current segregation (use_hto_amps set)")
+        amps = config["optimization_parameters"]["hto_amps"]
     else:
         amps = config["optimization_parameters"]["amps"]
     amp_delay = config["simulation_parameters"]["h_i_delay"]

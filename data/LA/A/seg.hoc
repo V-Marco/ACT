@@ -16,10 +16,11 @@ nrn_load_dll("./seg_modfiles_modeldb/nrnmech.dll")
 // Load Template(s) (some may not be needed if a folder was specified and may cause problems, remove as needed)
 {load_file("./seg_modfiles_modeldb/template.hoc")}
 
-tstop = 2000
+tstop = 1000
 v_init = -70
+dt=0.1
 objref Cell // declare the primary cell object
-Cell = new Cell_A()
+Cell = new Cell_A_seg()
 //Cell.insert_mechs(123) // COMMENT TO DISABLE 
 
 NumClamps = 1
@@ -36,8 +37,8 @@ objref ccl[NumClamps]
 
 // current clamp current injection
 Cell.soma[0] ccl[0] = new IClamp(0.5)
-ccl[0].del = 500.0
-ccl[0].dur = 1500.0
+ccl[0].del = 250.0
+ccl[0].dur = 500.0
 ccl[0].amp = .1
 
 strdef tstr0, tstr1,tstr2,tstr3

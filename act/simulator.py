@@ -27,7 +27,12 @@ temp_modfiles_dir = "temp_modfiles"
 def _run_generate_target_traces(config: SimulationConfig):
     # if there is a target_cell specified then use it too
 
-    if config["optimization_parameters"].get("target_cell"):
+    segregation_index = utils.get_segregation_index(config)
+    segregated_and_lto = config["run_mode"] == "segregated" and config["segregation"][segregation_index].get("use_lto_amps", False)
+    segregated_and_hto = config["run_mode"] == "segregated" and config["segregation"][segregation_index].get("use_hto_amps", False)
+
+    # If we specify a target cell then we should simulate that target
+    if config["optimization_parameters"].get("target_cell") and not segregated_and_lto and not segregated_and_hto:
         modfolder = (
             config["optimization_parameters"].get("target_cell").get("modfiles_folder")
         )
@@ -68,6 +73,9 @@ def _run(config: SimulationConfig):
     if config["run_mode"] == "segregated" and config["segregation"][segregation_index].get("use_lto_amps", False):
         print(f"Using LTO Amps for current segregation (use_lto_amps set)")
         amps = config["optimization_parameters"]["lto_amps"]
+    elif config["run_mode"] == "segregated" and config["segregation"][segregation_index].get("use_hto_amps", False):
+        print(f"Using HTO Amps for current segregation (use_hto_amps set)")
+        amps = config["optimization_parameters"]["hto_amps"]
     else:
         amps = config["optimization_parameters"]["amps"]
 

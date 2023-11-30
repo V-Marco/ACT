@@ -18,6 +18,7 @@ class CellModel:
         """
 
         # Load the .hoc file
+        print(f"loading hoc file {hoc_file}")
         h.load_file(hoc_file)
 
         # Initialize the cell

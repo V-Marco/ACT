@@ -45,11 +45,13 @@ class OptimizationParameters(TypedDict):
     skip_match_voltage: bool
     amps: List[float]
     lto_amps: List[float]
+    hto_amps: List[float]
+    lto_block_channels: List[str]
+    hto_block_channels: List[str]
     params: List[OptimizationParam]
     target_cell: Cell
     target_cell_params: List[OptimizationParam]
     target_cell_target_params: List[List[float]]
-    target_cell_lto_block_channels: List[str]
     target_V_file: str  # location of voltage traces, stored as a json {"traces":[[],]}
     target_V: List[List[float]]  # Target voltage
     target_params: List[List[float]]
@@ -86,6 +88,7 @@ class SegregationModule(TypedDict):
     adjustment_percent: float # a percentage that future seg modules will be allowed to modify the suggested param
     adjustment_n_slices: int # n_splits for the adjustment, will use default parametric distribution n_splits if this doesn't exist
     use_lto_amps: bool # use lto amps instead of amps
+    use_hto_amps: bool
     use_spike_summary_stats: bool # if set to false, then don't train on spike interval, spike times, etc... 
     arima_order: List[int] # use a custom arima order for this segregation index
     learned_variability: float #allow the previously learned  parameters to vary by the specified percentage
