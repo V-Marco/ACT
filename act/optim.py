@@ -79,8 +79,10 @@ class ACTOptimizer:
         logger: object = None,
         set_passive_properties=True,
         cell_override=None,
+        ignore_segregation=False
     ):
         self.config = simulation_config
+        self.ignore_segregation = ignore_segregation
 
         # Initialize standard run
         h.load_file("stdrun.hoc")
@@ -111,7 +113,7 @@ class ACTOptimizer:
 
     def optimize_with_segregation(
         self, target_V: torch.Tensor, segregate_by: str
-    ) -> torch.Tensor:
+        ) -> torch.Tensor:
         raise NotImplementedError
 
     def cut_voltage_region(
@@ -262,7 +264,7 @@ class ACTOptimizer:
         self.preset_params = {}
         self.params = [param["channel"] for param in self.config["optimization_parameters"]["params"]]
 
-        if self.config["run_mode"] == "segregated":
+        if not self.ignore_segregation and self.config["run_mode"] == "segregated":
             self.preset_params = utils.load_preset_params(self.config)
             learned_params = utils.load_learned_params(self.config)
             learned_variability = utils.get_learned_variability(self.config)
@@ -296,7 +298,8 @@ class GeneralACTOptimizer(ACTOptimizer):
         self.summary_feature_scaler = TorchMinMaxColScaler()
 
         self.segregation_index = utils.get_segregation_index(simulation_config)
-        
+        self.hto_block_channels = []
+
     def init_random_forest(self):
         params = {
             "n_estimators": 5000,
@@ -362,6 +365,7 @@ class GeneralACTOptimizer(ACTOptimizer):
             model_class = self.config["segregation"][self.segregation_index].get("model_class",None)
             num_epochs = self.config["segregation"][self.segregation_index].get("num_epochs",0)
             spiking_only = self.config["segregation"][self.segregation_index].get("train_spiking_only",True)
+            nonsaturated_only = self.config["segregation"][self.segregation_index].get("nonsaturated_only",True)
             use_spike_summary_stats = self.config["segregation"][self.segregation_index].get("use_spike_summary_stats",True)
             train_amplitude_frequency = self.config["segregation"][self.segregation_index].get("train_amplitude_frequency",False)
             segregation_arima_order = self.config["segregation"][self.segregation_index].get("arima_order",None)
@@ -729,10 +733,12 @@ class GeneralACTOptimizer(ACTOptimizer):
 
         # cut the target_params for segregation
         if self.config["run_mode"] == "segregated":
+            if self.config["segregation"][self.segregation_index].get("use_hto_amps", False):
+                self.hto_block_channels = self.config["optimization_parameters"].get("hto_block_channels",[])
             # get all the indicies that we want to keep
             keep_ind = []
             for i, param in enumerate(self.params):
-                if param not in self.preset_params:
+                if param not in self.preset_params and param not in self.hto_block_channels:
                     keep_ind.append(i)
             print(f"Training target param indicies {keep_ind} only for segregation")
             keep_ind.append(-1) # we want to also keep the last element for amps
@@ -872,7 +878,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         if self.config["run_mode"] == "segregated":
             output_ind = [] # these are the indices that the network returned
             for i, param in enumerate(self.params):
-                if param not in self.preset_params:
+                if param not in self.preset_params and param not in self.hto_block_channels:
                     output_ind.append(i)
             output_ind.append(-1)
             sigmoid_mins = sigmoid_mins[output_ind]

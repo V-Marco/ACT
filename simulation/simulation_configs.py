@@ -321,6 +321,7 @@ LA_A_seg = {
             "selection_metric": "mse", #"amplitude_frequency_error", #"mse",
             "num_epochs": 1000,
             "train_spiking_only": False,
+            "nonsaturated_only": False,
             "train_amplitude_frequency": True,
             "use_hto_amps": True,
             "use_spike_summary_stats": False, # don't use spike summary stats for training

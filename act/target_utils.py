@@ -15,11 +15,16 @@ DEFAULT_TARGET_V_FILE = "./target_v.json"
 
 def get_voltage_trace_from_params(
     simulation_config: SimulationConfig,
+    ignore_segregation=False,
 ) -> torch.Tensor:
 
-    segregation_index = utils.get_segregation_index(simulation_config)
-    segregated_and_lto = simulation_config["run_mode"] == "segregated" and simulation_config["segregation"][segregation_index].get("use_lto_amps", False)
-    segregated_and_hto = simulation_config["run_mode"] == "segregated" and simulation_config["segregation"][segregation_index].get("use_hto_amps", False)
+    if not ignore_segregation:
+        segregation_index = utils.get_segregation_index(simulation_config)
+        segregated_and_lto = simulation_config["run_mode"] == "segregated" and simulation_config["segregation"][segregation_index].get("use_lto_amps", False)
+        segregated_and_hto = simulation_config["run_mode"] == "segregated" and simulation_config["segregation"][segregation_index].get("use_hto_amps", False)
+    else:
+        segregated_and_lto = False
+        segregated_and_hto = False
 
     # If we specify a target cell then we should simulate that target
     if simulation_config["optimization_parameters"].get("target_cell") and not segregated_and_lto and not segregated_and_hto:
@@ -80,6 +85,7 @@ def get_voltage_trace_from_params(
         simulation_config=simulation_config,
         set_passive_properties=False if target_cell else True, # we only want to set passive properties if we're using the original cell, not target
         cell_override=target_cell,
+        ignore_segregation=ignore_segregation
     )
     target_V = []
 
@@ -95,10 +101,11 @@ def get_voltage_trace_from_params(
     simulated_label = simulation_config["output"].get("simulated_label", "Simulated")
     target_label = simulation_config["output"].get("target_label", "Target")
 
-    if simulation_config["run_mode"] == "segregated" and simulation_config["segregation"][segregation_index].get("use_lto_amps", False):
+
+    if not ignore_segregation and simulation_config["run_mode"] == "segregated" and simulation_config["segregation"][segregation_index].get("use_lto_amps", False):
         print(f"Using LTO Amps for current segregation (use_lto_amps set)")
         amps = simulation_config["optimization_parameters"]["lto_amps"]
-    elif simulation_config["run_mode"] == "segregated" and simulation_config["segregation"][segregation_index].get("use_hto_amps", False):
+    elif not ignore_segregation and simulation_config["run_mode"] == "segregated" and simulation_config["segregation"][segregation_index].get("use_hto_amps", False):
         print(f"Using HTO Amps for current segregation (use_hto_amps set)")
         amps = simulation_config["optimization_parameters"]["hto_amps"]
     else:
@@ -148,8 +155,9 @@ def get_voltage_trace_from_params(
 
 def save_target_traces(
     simulation_config: SimulationConfig,
+    ignore_segregation=False,
 ) -> torch.Tensor:
-    target_V = get_voltage_trace_from_params(simulation_config)
+    target_V = get_voltage_trace_from_params(simulation_config, ignore_segregation=ignore_segregation)
 
     target_v_file = simulation_config["optimization_parameters"].get(
         "target_V_file", DEFAULT_TARGET_V_FILE

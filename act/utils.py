@@ -228,6 +228,17 @@ def update_segregation(config: SimulationConfig, learned_params):
 
         current_segregation_params = current_segregation_params + config["segregation"][segregation_index]["params"]
 
+        # don't want to update anything that was blocked
+        if config["segregation"][segregation_index].get("use_hto_amps", False):
+            hto_block_channels = config["optimization_parameters"]["hto_block_channels"]
+            new_current_params = []
+            for p in current_segregation_params:
+                if p not in hto_block_channels:
+                    new_current_params.append(p)
+                else:
+                    print(f"Not updating {p} because it was blocked")
+            current_segregation_params = new_current_params
+
         for learned_param, value in learned_params.items():
             if learned_param in current_segregation_params:
                 parameter_values_dict["learned_params"][learned_param] = value

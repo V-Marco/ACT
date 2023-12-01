@@ -84,6 +84,7 @@ class SegregationModule(TypedDict):
     selection_metric: str # fi_error or mse should be enum
     num_epochs: int # change the number of epochs that we can train for overrides global num_epochs
     train_spiking_only: bool # only train on spiking, true by default
+    nonsaturated_only: bool # only train on nonsaturating traces, true by default
     train_amplitude_frequency: bool # train using freqency/amplitude - only useful for lto/hto, finds peaks and counts, with mean value for peaks
     adjustment_percent: float # a percentage that future seg modules will be allowed to modify the suggested param
     adjustment_n_slices: int # n_splits for the adjustment, will use default parametric distribution n_splits if this doesn't exist

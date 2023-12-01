@@ -24,12 +24,16 @@ from act.target_utils import (
 temp_modfiles_dir = "temp_modfiles"
 
 
-def _run_generate_target_traces(config: SimulationConfig):
+def _run_generate_target_traces(config: SimulationConfig, ignore_segregation=False):
     # if there is a target_cell specified then use it too
 
-    segregation_index = utils.get_segregation_index(config)
-    segregated_and_lto = config["run_mode"] == "segregated" and config["segregation"][segregation_index].get("use_lto_amps", False)
-    segregated_and_hto = config["run_mode"] == "segregated" and config["segregation"][segregation_index].get("use_hto_amps", False)
+    if not ignore_segregation:
+        segregation_index = utils.get_segregation_index(config)
+        segregated_and_lto = config["run_mode"] == "segregated" and config["segregation"][segregation_index].get("use_lto_amps", False)
+        segregated_and_hto = config["run_mode"] == "segregated" and config["segregation"][segregation_index].get("use_hto_amps", False)
+    else:
+        segregated_and_lto = False
+        segregated_and_hto = False
 
     # If we specify a target cell then we should simulate that target
     if config["optimization_parameters"].get("target_cell") and not segregated_and_lto and not segregated_and_hto:
@@ -49,7 +53,7 @@ def _run_generate_target_traces(config: SimulationConfig):
     except:
         logger.info("Mod files already loaded. Continuing.")
 
-    save_target_traces(config)
+    save_target_traces(config, ignore_segregation=ignore_segregation)
 
     return
 
@@ -345,15 +349,15 @@ def _run(config: SimulationConfig):
 
         utils.update_segregation(config, learned_params)
 
-def run_generate_target_traces(config: SimulationConfig, subprocess=True):
+def run_generate_target_traces(config: SimulationConfig, subprocess=True, ignore_segregation=False):
     try:
         if subprocess:
-            p = Process(target=_run_generate_target_traces, args=[config])
+            p = Process(target=_run_generate_target_traces, args=[config, ignore_segregation])
             p.start()
             p.join()
             p.terminate()
         else:
-            _run_generate_target_traces(config)
+            _run_generate_target_traces(config, ignore_segregation)
     except:
         raise
     finally:  # always remove this folder
