@@ -93,6 +93,7 @@ class SegregationModule(TypedDict):
     use_spike_summary_stats: bool # if set to false, then don't train on spike interval, spike times, etc... 
     arima_order: List[int] # use a custom arima order for this segregation index
     learned_variability: float #allow the previously learned  parameters to vary by the specified percentage
+    learned_variability_params: List[str] # select the parameters you want to vary, otherwise it's the last segregation module
     n_splits: int # custom number of splits
 
 class Output(TypedDict):

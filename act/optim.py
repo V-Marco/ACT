@@ -268,8 +268,17 @@ class ACTOptimizer:
             self.preset_params = utils.load_preset_params(self.config)
             learned_params = utils.load_learned_params(self.config)
             learned_variability = utils.get_learned_variability(self.config)
+            learned_variability_params = utils.get_learned_variability_params(self.config)
+            
+            if len(learned_variability_params) > 0: # if we specify which ones to unlearn, then we want to remove, otherwise everything gets varied
+                learned_params = [p for p in learned_params if p in learned_variability_params]
+
             if learned_variability > 0:
+                if len(learned_variability_params) > 0: # if we specify which ones to unlearn, then we want to remove, otherwise everything gets varied
+                    learned_params = [p for p in learned_params if p in learned_variability_params]
+
                 self.preset_params = {p:v for p,v in self.preset_params.items() if p not in learned_params} # we're essentially "un-learning"
+
             self.num_params = len(self.params) - len(self.preset_params) # don't count those that will be set
         else:
             self.num_params = len(self.params)

@@ -71,10 +71,15 @@ def get_params(param_dist):
     return params
 
 
-def get_param_dist(config: SimulationConfig, preset_params={}, learned_params={}, learned_variability=0, n_slices=0, block_channels=[]):
+def get_param_dist(config: SimulationConfig, preset_params={}, learned_params={}, learned_variability=0, learned_variability_params=[], n_slices=0, block_channels=[]):
     # Deterimine the number of cells and their parameters to be set
     preset_channels = [k for k,v in preset_params.items()]
     all_channels = [p["channel"] for p in config["optimization_parameters"]["params"]]
+    
+    # only learned parameters to adjust are ones that are in learned_variability_params if set
+    if len(learned_variability_params) > 0:
+        learned_params = {k:v for k,v in learned_params.items() if k in learned_variability_params}
+
     if learned_variability > 0: # we should remove them from learned since we're going to want to re-learn them
         preset_channels = [p for p in preset_channels if p not in learned_params]
 
@@ -210,6 +215,16 @@ def get_learned_variability(config: SimulationConfig):
         lv = config["segregation"][segregation_index].get("learned_variability",0)
     return lv
 
+def get_learned_variability_params(config: SimulationConfig):
+    parameter_values_file = "parameter_values.json"
+    lvp = []
+    if os.path.exists(parameter_values_file):
+        with open(parameter_values_file, "r") as fp:
+            parameter_values_dict = json.load(fp)
+        segregation_index = parameter_values_dict["segregation_index"]
+        lvp = config["segregation"][segregation_index].get("learned_variability_params",[])
+    return lvp
+
 def update_segregation(config: SimulationConfig, learned_params):
     # This function accepts the learned parameters for the network
     # And updates the parameter_values.json if that parameter was
@@ -221,10 +236,17 @@ def update_segregation(config: SimulationConfig, learned_params):
         with open(parameter_values_file, "r") as fp:
             parameter_values_dict = json.load(fp)
         segregation_index = parameter_values_dict["segregation_index"]
+        
         current_segregation_params = []
         if config["segregation"][segregation_index].get("learned_variability",0)>0:
             for i in range(segregation_index): # we should add previous params to our list
                 current_segregation_params = current_segregation_params + [p for p in config["segregation"][i]["params"] if p not in current_segregation_params]
+
+            learned_variability_params = []
+            if config["segregation"][segregation_index].get("learned_variability_params",[]):
+                # if there are only specific parameters that we want to learn, update those only, remove from the current_seg params
+                learned_variability_params = config["segregation"][segregation_index].get("learned_variability_params")
+                current_segregation_params = [p for p in current_segregation_params if p in learned_variability_params]
 
         current_segregation_params = current_segregation_params + config["segregation"][segregation_index]["params"]
 
@@ -269,6 +291,7 @@ def build_parametric_network(config: SimulationConfig):
     segregation_index = 0 # looping through each of the segregations in the config
     n_slices = 0
     learned_variability = 0
+    learned_variability_params = []
     block_channels = []
     # check if we're running in segregated mode
     # we keep track of the segregated state
@@ -301,6 +324,7 @@ def build_parametric_network(config: SimulationConfig):
             print(f"Setting all else to zero: {preset_params}")
 
         learned_variability = config["segregation"][segregation_index].get("learned_variability",0)
+        learned_variability_params = config["segregation"][segregation_index].get("learned_variability_params", [])
         n_slices = config["segregation"][segregation_index].get("n_slices",0)
         if config["segregation"][segregation_index].get("use_hto_amps",False):
             print("hto block channels loaded")
@@ -308,7 +332,7 @@ def build_parametric_network(config: SimulationConfig):
             #for hbc in hto_block_channels:
             #    preset_params[hbc] = 0.0
 
-    param_dist = get_param_dist(config, preset_params=preset_params, learned_params=learned_params, learned_variability=learned_variability, n_slices=n_slices, block_channels=block_channels)
+    param_dist = get_param_dist(config, preset_params=preset_params, learned_params=learned_params, learned_variability=learned_variability, learned_variability_params=learned_variability_params, n_slices=n_slices, block_channels=block_channels)
 
     network_dir = "network"
     # remove everything from prior runs

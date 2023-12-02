@@ -11,7 +11,8 @@ from act.cell_model import CellModel
 from act import utils
 
 DEFAULT_TARGET_V_FILE = "./target_v.json"
-
+DEFAULT_TARGET_V_LTO_FILE = "./target_v_lto.json"
+DEFAULT_TARGET_V_HTO_FILE = "./target_v_hto.json"
 
 def get_voltage_trace_from_params(
     simulation_config: SimulationConfig,
@@ -156,6 +157,8 @@ def get_voltage_trace_from_params(
 def save_target_traces(
     simulation_config: SimulationConfig,
     ignore_segregation=False,
+    save_lto=False, # useful for plotting final plots
+    save_hto=False,
 ) -> torch.Tensor:
     target_V = get_voltage_trace_from_params(simulation_config, ignore_segregation=ignore_segregation)
 
@@ -167,15 +170,26 @@ def save_target_traces(
     with open(target_v_file, "w") as fp:
         json.dump(target_v_dict, fp)
 
+    if save_lto:
+        print(f"saving additional lto file {DEFAULT_TARGET_V_LTO_FILE}...")
+        with open(DEFAULT_TARGET_V_LTO_FILE, "w") as fp:
+            json.dump(target_v_dict, fp)
+    if save_hto:
+        print(f"saving additional hto file {DEFAULT_TARGET_V_HTO_FILE}...")
+        with open(DEFAULT_TARGET_V_HTO_FILE, "w") as fp:
+            json.dump(target_v_dict, fp)
+
     return target_V
 
 
 def load_target_traces(
     simulation_config: SimulationConfig,
+    target_v_file=None
 ) -> torch.Tensor:
-    target_v_file = simulation_config["optimization_parameters"].get(
-        "target_V_file", DEFAULT_TARGET_V_FILE
-    )
+    if not target_v_file:
+        target_v_file = simulation_config["optimization_parameters"].get(
+            "target_V_file", DEFAULT_TARGET_V_FILE
+        )
 
     with open(target_v_file, "r") as fp:
         target_v_dict = json.load(fp)
