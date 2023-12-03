@@ -23,7 +23,7 @@ def save_plot(
     dt=0.025,
 ):
     _, ax = plt.subplots(1, 1, figsize=(10, 10))
-    title = f"I = {(amp * 1000):.0f} nA"
+    title = f"I = {(amp * 1000):.0f} pA"
     if simulated_data is not None:
         times = np.arange(0, int(len(simulated_data.flatten()) * dt), dt)
         ax.plot(times, simulated_data.flatten(), label=simulated_label, alpha=0.7)
@@ -37,7 +37,7 @@ def save_plot(
     ax.grid()
 
     if not output_file:
-        output_file = os.path.join(output_folder, f"{(amp * 1000):.0f}nA.png")
+        output_file = os.path.join(output_folder, f"{(amp * 1000):.0f}pA.png")
     else:
         output_file = os.path.join(output_folder, output_file)
     plt.savefig(output_file)
@@ -206,18 +206,23 @@ def print_run_stats(config: SimulationConfig):
 
 
 def plot_fi_curves(
-    spike_counts_list, amps, labels, title="FI Curves", ignore_negative=True
+    spike_counts_list, amps, labels, title="FI Curves", ignore_negative=True, output_file=None 
 ):
     if ignore_negative:
         amps = amps[amps >= 0]
 
     for spike_counts, label in zip(spike_counts_list, labels):
-        print(f"{label}: {amps*1e3} nA : {spike_counts} Hz")
+        print(f"{label}: {amps*1e3} pA : {spike_counts} Hz")
         plt.plot(amps * 1e3, spike_counts, label=label, alpha=0.75)
 
     # plt.ylim((0,np.max(np.array(spike_counts))))
     plt.legend()
     plt.title(title)
     plt.ylabel("Hz")
-    plt.xlabel("nA")
-    plt.show()
+    plt.xlabel("pA")
+
+    if output_file:
+        plt.savefig(output_file)
+        plt.close()
+    else:
+        plt.show()

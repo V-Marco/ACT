@@ -114,7 +114,7 @@ def get_voltage_trace_from_params(
 
     # generate data per amp
     for i, amp in enumerate(amps):
-        print(f"Generating trace for {float(amp)*1000} nA")
+        print(f"Generating trace for {float(amp)*1000} pA")
         parameters = [p["channel"] for p in params]
         tv = optim.simulate(amp, parameters, target_params).reshape(1, -1)
         target_V.append(tv)
@@ -124,7 +124,7 @@ def get_voltage_trace_from_params(
             output_folder,
             simulated_data=None,
             target_V=tv.cpu().detach().numpy(),
-            output_file=f"target_{(amp * 1000):.0f}nA.png",
+            output_file=f"target_{(amp * 1000):.0f}pA.png",
             dt=dt,
             simulated_label=simulated_label,
             target_label=target_label,
@@ -146,7 +146,7 @@ def get_voltage_trace_from_params(
         -0.1,
         output_folder,
         simulated_data=passive_v,
-        output_file="passive_-100nA.png",
+        output_file="passive_-100pA.png",
         dt=dt,
         simulated_label=simulated_label,
     )

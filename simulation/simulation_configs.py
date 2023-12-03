@@ -199,7 +199,7 @@ LA_A_seg = {
         "h_dt": 0.1,
     },
     "optimization_parameters": {
-        "amps": [0.0, 0.1, 0.25, 0.5, 0.75, 1.0],
+        "amps": [0.0, 0.1, 0.2, 0.3, 0.4],
         "lto_amps": [0.0, 0.025, 0.05, 0.075, 0.1],
         "hto_amps": [2.5, 3.0, 3.5, 4.0, 4.5],
         "lto_block_channels": ["gbar_na3", "gbar_kdr", "gcabar_cadyn", "gsAHPbar_sAHP"],
