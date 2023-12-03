@@ -196,8 +196,6 @@ def load_learned_params(config: SimulationConfig):
     # if segregation is not used then returns an empty dict
     parameter_values_file = "parameter_values.json"
 
-    if config["run_mode"] != "segregated":
-        return {}
     if not os.path.exists(parameter_values_file):
         return {}
     with open(parameter_values_file, "r") as fp:
