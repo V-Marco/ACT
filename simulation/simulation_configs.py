@@ -208,9 +208,9 @@ LA_A_seg = {
             # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05}, # hd, passive
             {"channel": "gbar_nap", "high": 0.000284, "low": 0.0}, #"high": 0.000213, "low": 0.000071}, #"high": 0.000426, "low": 4.736e-05},
             {"channel": "gbar_im", "high": 0.0012, "low": 0.0}, #"high": 0.003000, "low": 0.001000}, #"high": 0.006, "low": 0.000666},
-            {"channel": "gbar_na3", "high": 0.054, "low": 0.0}, #"high": 0.060000, "low": 0.000000}, #"high": 0.045000, "low": 0.015000}, #"high": 0.09, "low": 0.01},
-            {"channel": "gbar_kdr", "high": 0.003, "low": 0.0}, #"high": 0.002250, "low": 0.000750}, #"high": 0.0045, "low": 0.0005},
-            {"channel": "gcabar_cadyn", "high": 0.0016, "low": 0.0}, #"high": 0.000090, "low": 0.000030}, #"high": 0.00018, "low": 2e-05},
+            {"channel": "gbar_na3", "high": 0.054, "low": 0.0},#{"channel": "gbar_na3", "high": 0.054, "low": 0.0}, #"high": 0.060000, "low": 0.000000}, #"high": 0.045000, "low": 0.015000}, #"high": 0.09, "low": 0.01},
+            {"channel": "gbar_kdr", "high": 0.006, "low": 0.0},#{"channel": "gbar_kdr", "high": 0.003, "low": 0.0}, #"high": 0.002250, "low": 0.000750}, #"high": 0.0045, "low": 0.0005},
+            {"channel": "gcabar_cadyn", "high": 0.0032, "low": 0.0}, #{"channel": "gcabar_cadyn", "high": 0.0016, "low": 0.0}, #"high": 0.000090, "low": 0.000030}, #"high": 0.00018, "low": 2e-05},
             {"channel": "gsAHPbar_sAHP", "high": 0.0006, "low": 0.0}, #"high": 0.013500, "low": 0.004500}, #"high": 0.026996, "low": 0.0029996},
         ],
         # ======================================================
@@ -414,6 +414,92 @@ LA_A_seg = {
 }
 
 LA_A_orig = {
+    "cell": {
+        "hoc_file": "../data/LA/A/orig_modfiles/template.hoc",
+        "modfiles_folder": "../data/LA/A/orig_modfiles",
+        "name": "Cell_A",
+         "passive_properties": {
+            "v_rest": -70,
+            "r_in": 141,
+            "tau": 30.88,
+            "leak_conductance_variable": "glbar_leak",  # eg: g_leak
+            "leak_reversal_variable": "el_leak",  # eg: e_leak
+         },
+    },
+    "simulation_parameters": {
+        "h_v_init": -70.0,  # (mV)
+        "h_tstop": 1000,  # (ms)
+        "h_i_delay": 250,  # (ms)
+        "h_i_dur": 500,  # (ms)
+        "h_dt": 0.1,
+    },
+    "optimization_parameters": {
+        #"amps": [0.1, 0.25, 0.5, 0.75, 1.0],
+        "amps": [0.0, 0.1, 0.2, 0.3, 0.4],
+        "lto_amps": [0.0, 0.025, 0.05, 0.075, 0.1],
+        "hto_amps": [2.5, 3.0, 3.5, 4.0, 4.5],
+        "lto_block_channels": ["gbar_na3", "gkdrbar_kdr", "gcabar_cadyn", "gsAHPbar_sAHP"],
+        "hto_block_channels": ["gbar_na3", "gbar_nap"],
+        "params": [
+            {"channel": "gbar_nap", "high": 0.0009, "low": 0.0001},
+            {"channel": "gmbar_im", "high": 0.006, "low": 0.00066667},
+            {"channel": "gbar_na3", "high": 0.09, "low": 0.01},
+            {"channel": "gkdrbar_kdr", "high": 0.09, "low": 0.01},
+            {"channel": "gcabar_cadyn", "high": 0.00018, "low": 2e-05},
+            {"channel": "gsAHPbar_sAHP", "high": 0.027, "low": 0.003},
+        ],
+        "target_V_file": "./target_v.json",
+        "target_V": None,  # Target voltages
+        # "target_params": [5.5e-5, 2.3e-05, 0.000142, 0.002, 0.03, 0.0015, 6e-5, 0.009],
+        "target_params": [0.0003, 0.002, 0.03, 0.03, 6e-5, 0.009],
+        "num_repeats": 1,
+        "num_amps_to_match": 12,
+        "num_epochs": 10,
+        "skip_match_voltage": True,
+        "use_random_forest": True,
+        "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
+            "n_slices": 5,
+        },
+        "decimate_factor": 10,
+    },
+    "summary_features": {
+        "spike_threshold": -20,  # (mV)
+        "arima_order": [4, 0, 4],
+        # Target-sim match conditions (max abs diff between sim and target)
+        "mc_num_spikes": 1,
+        "mc_interspike_time": 200,  # (ms)
+        "mc_min_v": 1,  # (mV)
+        "mc_mean_v": 2,  # (mV)
+        "mc_max_v": 1,  # (mV)
+    },
+    "segregation": [
+        {  # passive
+            "params": ["glbar_leak", "ghdbar_hd"],
+            "voltage": [-80, -67.5],
+        },
+        {  # lto
+            "params": ["gbar_nap", "gmbar_im"],
+            "voltage": [-67.5, -57.5],
+        },
+        {  # spking / adaptation
+            "params": ["gbar_na3", "gkdrbar_kdr", "gcabar_cadyn", "gsAHPbar_sAHP"],
+            "voltage": [-57.5, 0],
+        },
+        {  # hto
+            "params": ["gbar_nap", "gmbar_im"],
+            "voltage": [-40, -30],
+        },
+    ],
+    "output": {
+        "folder": "output_LA_A_orig",
+        "produce_plots": True,
+        "target_label": "User Trace",
+        "simulated_label": "Model ACT-Original",
+    },
+    "run_mode": "original",  # "original", "segregated"
+}
+
+LA_A_orig_old = {
     "cell": {
         "hoc_file": "../data/LA/A/orig_modfiles/template.hoc",
         "modfiles_folder": "../data/LA/A/orig_modfiles",
