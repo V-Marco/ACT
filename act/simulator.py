@@ -341,10 +341,9 @@ def _run(config: SimulationConfig):
         )
         f.create_dataset("amps", (len(amp_out)), dtype="f", data=amp_out)
         f.close()
-
+    
+    learned_params = {param:predict for param,predict in zip(params, predictions)}
     if config['run_mode'] == "segregated":
-        learned_params = {param:predict for param,predict in zip(params, predictions)}
-        
         # save a copy of the outputs for future development
         base_output_folder = config["output"]["folder"]
         run_output_folder_name = f"{config['run_mode']}"
