@@ -276,6 +276,18 @@ def update_segregation(config: SimulationConfig, learned_params):
         print(f"{parameter_values_file} file not found - unable to update learned params")
     
 
+def save_learned_params(learned_params):
+    parameter_values_file = "parameter_values.json"
+    if os.path.exists(parameter_values_file):
+        print(f"Updating {parameter_values_file} for learned parameters")
+        with open(parameter_values_file, "r") as fp:
+            parameter_values_dict = json.load(fp)
+        parameter_values_dict["learned_params"] = {}
+        for learned_param, value in learned_params.items():
+            parameter_values_dict["learned_params"][learned_param] = value
+        with open(parameter_values_file, "w") as fp:
+            json.dump(parameter_values_dict, fp, indent=4)
+
 def build_parametric_network(config: SimulationConfig):
     config_file = "simulation_act_simulation_config.json"
     parameter_values_file = "parameter_values.json"

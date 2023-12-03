@@ -36,3 +36,8 @@ One line
 ```
 python generate_target_traces.py && python generate_traces.py build && python generate_traces.py && python generate_arma_stats.py && python run_simulation.py && python analyze_res.py && python plot_fi.py
 ```
+To generate final plots (after all segregation modules):
+```
+# lto and hto target files will be generated automatically if you specified use_lto_amps or use_hto_amps at any point during segregation
+python generate_target_traces.py --ignore_segregation && python plot_learned_parameters.py
+```

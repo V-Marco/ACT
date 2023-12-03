@@ -352,6 +352,8 @@ def _run(config: SimulationConfig):
         shutil.copytree(output_folder, seg_folder, dirs_exist_ok=True)
 
         utils.update_segregation(config, learned_params)
+    else:
+        utils.save_learned_params(learned_params)
 
 def run_generate_target_traces(config: SimulationConfig, subprocess=True, ignore_segregation=False):
     try:
