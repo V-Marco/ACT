@@ -353,7 +353,7 @@ def build_parametric_network(config: SimulationConfig):
     cell_name = config["cell"]["name"]
     hoc_file = config["cell"]["hoc_file"]
     modfiles_folder = config["cell"]["modfiles_folder"]
-    
+
     if config["run_mode"] == "segregated" and config["segregation"][segregation_index].get("use_lto_amps", False):
         print(f"Using LTO Amps for current segregation (use_lto_amps set)")
         amps = config["optimization_parameters"]["lto_amps"]
@@ -362,6 +362,14 @@ def build_parametric_network(config: SimulationConfig):
         amps = config["optimization_parameters"]["hto_amps"]
     else:
         amps = config["optimization_parameters"]["amps"]
+    
+    # see if there needs to be a ramp
+    ramp_time = 0
+    ramp_splits = 1
+    if config["run_mode"] == "segregated":
+        ramp_time = config["segregation"][segregation_index].get("ramp_time", 0.0)
+        ramp_splits = config["segregation"][segregation_index].get("ramp_splits", 1)
+    
     amp_delay = config["simulation_parameters"]["h_i_delay"]
     amp_duration = config["simulation_parameters"]["h_i_dur"]
 
@@ -369,6 +377,12 @@ def build_parametric_network(config: SimulationConfig):
     tstop = config["simulation_parameters"]["h_tstop"]
     v_init = config["simulation_parameters"]["h_v_init"]
     celsius = config["simulation_parameters"].get("h_celsius")
+
+    if config["run_mode"] == "segregated": # sometimes segregated modules have different params
+        amp_delay = config["segregation"][segregation_index].get("h_i_delay", amp_delay)
+        amp_duration = config["segregation"][segregation_index].get("h_i_dur", amp_duration)
+        tstop = config["segregation"][segregation_index].get("h_tstop", tstop)
+
     if not celsius:
         print("Setting celsius to default value of 31.0")
         celsius = 31.0
@@ -396,14 +410,30 @@ def build_parametric_network(config: SimulationConfig):
             model_template="hoc:" + cell_name,
             morphology=None,
         )
-        clamps[pop] = {
-            "input_type": "current_clamp",
-            "module": "IClamp",
-            "node_set": pop,
-            "amp": amp,
-            "delay": amp_delay,
-            "duration": amp_duration,
-        }
+        if ramp_time:
+            for index in range(ramp_splits):
+                ramp_amp = amp / ramp_splits
+                ramp_time_split = ramp_time/ramp_splits
+                ramp_duration = ramp_time + amp_duration - index*ramp_time_split
+                ramp_delay = amp_delay + index*ramp_time_split
+                clamps[f"clamp_{i}_{index}"] = {
+                    "input_type": "current_clamp",
+                    "module": "IClamp",
+                    "node_set": pop,
+                    "amp": ramp_amp,
+                    "delay": ramp_delay,
+                    "duration": ramp_duration,
+                }
+
+        else: # regular amps
+            clamps[pop] = {
+                "input_type": "current_clamp",
+                "module": "IClamp",
+                "node_set": pop,
+                "amp": amp,
+                "delay": amp_delay,
+                "duration": amp_duration,
+            }
 
     params_list = []
     amps_list = []
@@ -418,7 +448,7 @@ def build_parametric_network(config: SimulationConfig):
     build_env_bionet(
         base_dir="./",
         network_dir=network_dir,
-        tstop=tstop,
+        tstop=tstop + ramp_time, # ramp time is normally zero but when this is all done then we need to cut the first "ramp_time" off each trace to keep it consistent
         dt=dt,
         dL=9999999.9,
         report_vars=["v"],
@@ -453,7 +483,7 @@ def build_parametric_network(config: SimulationConfig):
         conf_dict["network"] = "$BASE_DIR/circuit_act_simulation_config.json"
 
     with open(config_file, "w") as f:
-        json.dump(conf_dict, f)
+        json.dump(conf_dict, f, indent=2)
 
     nodesets_file = "node_sets.json"
     node_dict = None
@@ -524,7 +554,6 @@ def generate_parametric_traces(config: SimulationConfig):
     bionet.nrn.quit_execution()
     # Save traces/parameters and cleanup
 
-
 def apply_decimate_factor(config: SimulationConfig, traces):
     decimate_factor = config["optimization_parameters"].get("decimate_factor")
     if decimate_factor:
@@ -561,10 +590,20 @@ def load_parametric_traces(config: SimulationConfig):
     # reorder to match parameters set
     order = list(traces_h5["report"]["biocell"]["mapping"]["node_ids"])
     traces = traces[order]
+    
+    import torch
+
+    if config["run_mode"] == "segregated": # we should drop the first bit if we ramped up
+        dt = config["simulation_parameters"]["h_dt"]
+        segregation_index = get_segregation_index(config) # could probably just get it from above, oh well
+        ramp_time = config["segregation"][segregation_index].get("ramp_time", 0.0)
+        ramp_splits = config["segregation"][segregation_index].get("ramp_splits", 1)
+        if ramp_time > 0:
+            skip_ramp_time = int(ramp_time / dt)
+            traces = torch.tensor(traces)
+            traces = traces[:,skip_ramp_time:]
 
     traces = apply_decimate_factor(config, traces)
-
-    import torch
 
     return traces, torch.tensor(parameter_values_list), torch.tensor(amps)
 

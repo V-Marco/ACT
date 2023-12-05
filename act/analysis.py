@@ -56,7 +56,7 @@ def save_prediction_plots(
     params = [
         p["channel"] for p in simulation_config["optimization_parameters"]["params"]
     ]
-    simulated_data = optim.simulate(amp, params, predicted_params_values)
+    simulated_data = optim.simulate(amp, params, predicted_params_values, cut_ramp=True)
     decimate_factor = simulation_config["optimization_parameters"].get(
         "decimate_factor"
     )
@@ -108,7 +108,7 @@ def save_mse_corr(
         params = [
             p["channel"] for p in simulation_config["optimization_parameters"]["params"]
         ]
-        sim_data = optim.simulate(amp, params, predicted_params_values)
+        sim_data = optim.simulate(amp, params, predicted_params_values, cut_ramp=True)
         decimate_factor = simulation_config["optimization_parameters"].get(
             "decimate_factor"
         )

@@ -167,7 +167,7 @@ def _run(config: SimulationConfig):
         for i, pred in enumerate(predictions.cpu().detach().tolist()):
             sim_list = []
             for j, amp in enumerate(amps):
-                sim_list.append(optim.simulate(amp, params, pred).reshape(1, -1))
+                sim_list.append(optim.simulate(amp, params, pred, cut_ramp=True).reshape(1, -1))
             sims.append(sim_list)
 
         decimate_factor = config["optimization_parameters"].get("decimate_factor")
@@ -188,6 +188,9 @@ def _run(config: SimulationConfig):
         # for each prediction
         inj_dur = config["simulation_parameters"]["h_i_dur"]
         inj_start = config["simulation_parameters"]["h_i_delay"]
+        if config["run_mode"] == "segregated": # sometimes segregated modules have different params
+            inj_start = config["segregation"][segregation_index].get("h_i_delay", inj_start)
+            inj_dur = config["segregation"][segregation_index].get("h_i_dur", inj_dur)
 
         for j, pred_sim in enumerate(sims):
             total_error = 0

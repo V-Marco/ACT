@@ -150,29 +150,55 @@ class ACTOptimizer:
         parameter_values: np.ndarray,
         i_dur: float = 0,
         i_delay: float = 0,
-        tstop = None
+        tstop = None,
+        no_ramp = False,
+        cut_ramp = False,
     ) -> torch.Tensor:
+        
         h.dt = self.config["simulation_parameters"]["h_dt"]
         h.steps_per_ms = 1 / h.dt
-        h.tstop = tstop or self.config["simulation_parameters"]["h_tstop"]
         h.v_init = self.config["simulation_parameters"]["h_v_init"]
         h.celsius = self.config["simulation_parameters"].get("h_celsius", 31.0)
         print(f"h.celsius set to {h.celsius}")
 
         self.cell.set_parameters(parameter_names, parameter_values)
+        segregation_index = utils.get_segregation_index(self.config)
         if not i_dur:
             i_dur = self.config["simulation_parameters"]["h_i_dur"]
+            if self.config["run_mode"] == "segregated":
+                i_dur = self.config["segregation"][segregation_index].get("h_i_dur", i_dur)
         if not i_delay:
             i_delay = self.config["simulation_parameters"]["h_i_delay"]
+            if self.config["run_mode"] == "segregated":
+                i_delay = self.config["segregation"][segregation_index].get("h_i_delay", i_delay)
+
+        ramp_time = 0
+        ramp_splits = 1
+        if self.config["run_mode"] == "segregated" and not no_ramp:
+            ramp_time = self.config["segregation"][segregation_index].get("ramp_time",0)
+            ramp_splits = self.config["segregation"][segregation_index].get("ramp_splits", 1)
+
+        tstop_config = self.config["simulation_parameters"]["h_tstop"]
+        if self.config["run_mode"] == "segregated": # sometimes segregated modules have different params
+            tstop_config = self.config["segregation"][segregation_index].get("h_tstop", tstop_config)
+
+        h.tstop = (tstop or tstop_config) + ramp_time
+
         self.cell.apply_current_injection(
             amp,
             i_dur,
             i_delay,
+            ramp_time=ramp_time,
+            ramp_splits=ramp_splits
         )
 
         h.run()
-
-        return torch.Tensor(self.cell.Vm.as_numpy()[:-1])
+        start_idx = int((ramp_time) / h.dt) # usually 0, this will remove ramp_time
+        trace =  torch.Tensor(self.cell.Vm.as_numpy())
+        if cut_ramp:
+            return trace[start_idx:-1]
+        else:
+            return trace[:-1]#[start_idx:-1]
 
     def calculate_passive_properties(
         self, parameter_names: list, parameter_values: np.ndarray
@@ -210,7 +236,8 @@ class ACTOptimizer:
             parameter_values,
             i_delay=tstart,
             i_dur=passive_duration,
-            tstop=tstop
+            tstop=tstop,
+            no_ramp=True
         )
         passive_vec = passive_tensor.cpu().detach().numpy()
 
@@ -380,6 +407,9 @@ class GeneralACTOptimizer(ACTOptimizer):
             segregation_arima_order = self.config["segregation"][self.segregation_index].get("arima_order",None)
             train_test_split = self.config["segregation"][self.segregation_index].get("train_test_split", 0.99)
             learned_variability = self.config["segregation"][self.segregation_index].get("learned_variability", 0)
+            inj_start = self.config["segregation"][self.segregation_index].get("h_i_delay", inj_start)
+            inj_dur = self.config["segregation"][self.segregation_index].get("h_i_dur", inj_dur)
+
         if not num_epochs:
             num_epochs = self.config["optimization_parameters"].get("num_epochs")
 
@@ -931,8 +961,12 @@ class GeneralACTOptimizer(ACTOptimizer):
         ]
         lows = [p["low"] for p in self.config["optimization_parameters"]["params"]]
         highs = [p["high"] for p in self.config["optimization_parameters"]["params"]]
+        tstop_config = self.config["simulation_parameters"]["h_tstop"]
+        if self.config["run_mode"] == "segregated": # sometimes segregated modules have different params
+            tstop_config = self.config["segregation"][self.segregation_index].get("h_tstop", tstop_config)
+
         steps = int(
-            self.config["simulation_parameters"]["h_tstop"]
+            tstop_config
             / self.config["simulation_parameters"]["h_dt"]
         )
 
@@ -998,12 +1032,15 @@ class GeneralACTOptimizer(ACTOptimizer):
 
         # Set a vector of non-correspondence to target features
         non_corresp = torch.ones(self.num_ampl)
+        tstop_config = self.config["simulation_parameters"]["h_tstop"]
+        if self.config["run_mode"] == "segregated": # sometimes segregated modules have different params
+            tstop_config = self.config["segregation"][self.segregation_index].get("h_tstop", tstop_config)
 
         simulated_V_for_next_stage = torch.zeros(
             (
                 self.num_ampl,
                 int(
-                    self.config["simulation_parameters"]["h_tstop"]
+                    tstop_config
                     / self.config["simulation_parameters"]["h_dt"]
                 ),
             )
@@ -1028,7 +1065,7 @@ class GeneralACTOptimizer(ACTOptimizer):
                 (
                     self.num_ampl,
                     int(
-                        self.config["simulation_parameters"]["h_tstop"]
+                        tstop_config
                         / self.config["simulation_parameters"]["h_dt"]
                     ),
                 )

@@ -194,4 +194,14 @@ def load_target_traces(
     with open(target_v_file, "r") as fp:
         target_v_dict = json.load(fp)
     print(f"Loading {target_v_file} for target traces")
-    return torch.tensor(target_v_dict["traces"])
+
+    traces = torch.tensor(target_v_dict["traces"])
+    if simulation_config["run_mode"] == "segregated":
+        segregation_index = utils.get_segregation_index(simulation_config)
+        dt = simulation_config["simulation_parameters"]["h_dt"]
+        ramp_time = simulation_config["segregation"][segregation_index].get("ramp_time",0)
+        if ramp_time:
+            print(f"cutting ramp time {ramp_time} from beginning of trace")
+            traces = traces[:,int(ramp_time/dt):]
+    
+    return traces

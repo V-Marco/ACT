@@ -32,7 +32,7 @@ class CellModel:
 
         # Init injection
         self.inj = h.IClamp(self.soma[0](0.5))
-        # import pdb;pdb.set_trace()
+        self.ramp_inj_list = []
         # self.I = h.Vector().record(h._ref_i)
 
         # Passive properties
@@ -47,10 +47,30 @@ class CellModel:
             for index, key in enumerate(parameter_list):
                 setattr(sec, key, parameter_values[index])
 
-    def apply_current_injection(self, amp: float, dur: float, delay: float) -> None:
-        self.inj.amp = amp
-        self.inj.dur = dur
-        self.inj.delay = delay
+    def apply_current_injection(self, amp: float, dur: float, delay: float, ramp_time=0, ramp_splits=1) -> None:
+        
+        if ramp_time > 0: # have to ramp up input
+            # no overall amp supplied
+            self.inj.amp = 0
+            self.inj.dur = 0
+            self.inj.delay = 0
+            # make sure we have enough ramp inj
+            while len(self.ramp_inj_list) < ramp_splits:
+                inj = h.IClamp(self.soma[0](0.5))
+                self.ramp_inj_list.append(inj)
+            for idx in range(ramp_splits):
+                ramp_amp = amp / ramp_splits
+                ramp_time_split = ramp_time / ramp_splits
+                ramp_duration = dur + (ramp_time-idx*ramp_time_split)
+                ramp_delay = delay + idx*ramp_time_split
+                
+                self.ramp_inj_list[idx].amp = ramp_amp
+                self.ramp_inj_list[idx].dur = ramp_duration
+                self.ramp_inj_list[idx].delay = ramp_delay
+        else:
+            self.inj.amp = amp
+            self.inj.dur = dur
+            self.inj.delay = delay
 
     def set_passive_properties(
         self, passive_properties: act_types.PassiveProperties

@@ -95,6 +95,11 @@ class SegregationModule(TypedDict):
     learned_variability: float #allow the previously learned  parameters to vary by the specified percentage
     learned_variability_params: List[str] # select the parameters you want to vary, otherwise it's the last segregation module
     n_splits: int # custom number of splits
+    ramp_splits: int # how many current injections should be made and split
+    ramp_time: float # how long should a ramp be before you deliver current inj
+    h_tstop: int  # (ms) Override the simulation config params
+    h_i_delay: int  # (ms) ""
+    h_i_dur: int # (ms) ""
 
 class Output(TypedDict):
     folder: str

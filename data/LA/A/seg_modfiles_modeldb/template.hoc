@@ -53,7 +53,7 @@ proc init() {
 soma[0] {nseg = 1 L = 117.77 diam = 24.5} // L = 55.2
 	
 	soma[0] {
-		insert cadyn gcabar_cadyn =  0.0008  eca = 120 //0.00055  eca = 120 // 0.00055 is error in paper, should be 0.0008
+		insert cadyn gcabar_cadyn =  0.00055  eca = 120 //0.00055  eca = 120 // 0.00055 is error in paper, should be 0.0008
 		insert leak el_leak= -72 glbar_leak = 5.5e-5  Ra=RaAll cm=2.5 
 		insert hd ghdbar_hd=1.5e-5  78.72884325 
 		insert na3 sh_na3=nash ar_na3=1	gbar_na3 = 0.027
