@@ -97,7 +97,7 @@ def save_mse_corr(
     simulation_config: SimulationConfig,
     predicted_params_values: list,
     output_folder: str,
-    amps = None,
+    amps=None,
 ) -> None:
     with open(os.path.join(output_folder, "metrics.csv"), "w") as file:
         file.write(f"amp,mse,corr\n")
@@ -157,7 +157,9 @@ def print_run_stats(config: SimulationConfig):
     if config["cell"].get("passive_properties"):
         target_passive_json = config["cell"]["passive_properties"]
         if config["optimization_parameters"].get("target_passive_properties"):
-            target_passive_json = config["optimization_parameters"]["target_passive_properties"]
+            target_passive_json = config["optimization_parameters"][
+                "target_passive_properties"
+            ]
 
     preds = np.array(preds_df)
     print(output_folder)
@@ -188,7 +190,9 @@ def print_run_stats(config: SimulationConfig):
     if pred_passive_json and target_passive_json:
         print()
         print("Passive properties errror")
-        print(f"v_rest: {(pred_passive_json['v_rest']-target_passive_json['v_rest']):.2f}")
+        print(
+            f"v_rest: {(pred_passive_json['v_rest']-target_passive_json['v_rest']):.2f}"
+        )
         print(f"r_in: {(pred_passive_json['r_in']-target_passive_json['r_in']):.2f}")
         print(f"tau: {(pred_passive_json['tau']-target_passive_json['tau']):.2f}")
         print("----------\n")
@@ -206,7 +210,12 @@ def print_run_stats(config: SimulationConfig):
 
 
 def plot_fi_curves(
-    spike_counts_list, amps, labels, title="FI Curves", ignore_negative=True, output_file=None 
+    spike_counts_list,
+    amps,
+    labels,
+    title="FI Curves",
+    ignore_negative=True,
+    output_file=None,
 ):
     if ignore_negative:
         amps = amps[amps >= 0]

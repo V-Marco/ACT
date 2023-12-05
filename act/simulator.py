@@ -31,8 +31,12 @@ def _run_generate_target_traces(config: SimulationConfig, ignore_segregation=Fal
     save_lto = False
     save_hto = False
     if not ignore_segregation:
-        segregated_and_lto = config["run_mode"] == "segregated" and config["segregation"][segregation_index].get("use_lto_amps", False)
-        segregated_and_hto = config["run_mode"] == "segregated" and config["segregation"][segregation_index].get("use_hto_amps", False)
+        segregated_and_lto = config["run_mode"] == "segregated" and config[
+            "segregation"
+        ][segregation_index].get("use_lto_amps", False)
+        segregated_and_hto = config["run_mode"] == "segregated" and config[
+            "segregation"
+        ][segregation_index].get("use_hto_amps", False)
         save_lto = segregated_and_lto
         save_hto = segregated_and_hto
     else:
@@ -40,7 +44,11 @@ def _run_generate_target_traces(config: SimulationConfig, ignore_segregation=Fal
         segregated_and_hto = False
 
     # If we specify a target cell then we should simulate that target
-    if config["optimization_parameters"].get("target_cell") and not segregated_and_lto and not segregated_and_hto:
+    if (
+        config["optimization_parameters"].get("target_cell")
+        and not segregated_and_lto
+        and not segregated_and_hto
+    ):
         modfolder = (
             config["optimization_parameters"].get("target_cell").get("modfiles_folder")
         )
@@ -57,7 +65,12 @@ def _run_generate_target_traces(config: SimulationConfig, ignore_segregation=Fal
     except:
         logger.info("Mod files already loaded. Continuing.")
 
-    save_target_traces(config, ignore_segregation=ignore_segregation, save_lto=save_lto, save_hto=save_hto)
+    save_target_traces(
+        config,
+        ignore_segregation=ignore_segregation,
+        save_lto=save_lto,
+        save_hto=save_hto,
+    )
 
     return
 
@@ -77,19 +90,21 @@ def _run(config: SimulationConfig):
     os.system(f"nrnivmodl {temp_modfiles_dir}")
 
     logger = ACTLogger()
-    segregation_index = utils.get_segregation_index(config)# if needed
-    if config["run_mode"] == "segregated" and config["segregation"][segregation_index].get("use_lto_amps", False):
+    segregation_index = utils.get_segregation_index(config)  # if needed
+    if config["run_mode"] == "segregated" and config["segregation"][
+        segregation_index
+    ].get("use_lto_amps", False):
         print(f"Using LTO Amps for current segregation (use_lto_amps set)")
         amps = config["optimization_parameters"]["lto_amps"]
-    elif config["run_mode"] == "segregated" and config["segregation"][segregation_index].get("use_hto_amps", False):
+    elif config["run_mode"] == "segregated" and config["segregation"][
+        segregation_index
+    ].get("use_hto_amps", False):
         print(f"Using HTO Amps for current segregation (use_hto_amps set)")
         amps = config["optimization_parameters"]["hto_amps"]
     else:
         amps = config["optimization_parameters"]["amps"]
 
-    logger.info(
-        f"Number of amplitudes: {len(amps)}"
-    )
+    logger.info(f"Number of amplitudes: {len(amps)}")
 
     try:
         h.nrn_load_dll("./x86_64/.libs/libnrnmech.so")
@@ -133,9 +148,9 @@ def _run(config: SimulationConfig):
         if config["run_mode"] == "original" or config["run_mode"] == "segregated":
             optim = GeneralACTOptimizer(simulation_config=config, logger=logger)
             predictions, train_stats = optim.optimize(target_V)
-            predictions_amps = predictions[:,-1].reshape(-1,1)
-            predictions = predictions[:,:-1]
-        #elif config["run_mode"] == "segregated":
+            predictions_amps = predictions[:, -1].reshape(-1, 1)
+            predictions = predictions[:, :-1]
+        # elif config["run_mode"] == "segregated":
         #    optim = GeneralACTOptimizer(simulation_config=config, logger=logger)
         #    predictions, train_stats = optim.optimize_with_segregation(
         #        target_V, "voltage"
@@ -167,7 +182,9 @@ def _run(config: SimulationConfig):
         for i, pred in enumerate(predictions.cpu().detach().tolist()):
             sim_list = []
             for j, amp in enumerate(amps):
-                sim_list.append(optim.simulate(amp, params, pred, cut_ramp=True).reshape(1, -1))
+                sim_list.append(
+                    optim.simulate(amp, params, pred, cut_ramp=True).reshape(1, -1)
+                )
             sims.append(sim_list)
 
         decimate_factor = config["optimization_parameters"].get("decimate_factor")
@@ -188,8 +205,12 @@ def _run(config: SimulationConfig):
         # for each prediction
         inj_dur = config["simulation_parameters"]["h_i_dur"]
         inj_start = config["simulation_parameters"]["h_i_delay"]
-        if config["run_mode"] == "segregated": # sometimes segregated modules have different params
-            inj_start = config["segregation"][segregation_index].get("h_i_delay", inj_start)
+        if (
+            config["run_mode"] == "segregated"
+        ):  # sometimes segregated modules have different params
+            inj_start = config["segregation"][segregation_index].get(
+                "h_i_delay", inj_start
+            )
             inj_dur = config["segregation"][segregation_index].get("h_i_dur", inj_dur)
 
         for j, pred_sim in enumerate(sims):
@@ -202,9 +223,9 @@ def _run(config: SimulationConfig):
                 total_error = total_error + error
 
                 amp = amps[i]
-                if False: # save prediction plot for debugging
+                if False:  # save prediction plot for debugging
                     save_prediction_plots(
-                       target_V[i].reshape(1, len(target_V[i])).cpu().detach(),
+                        target_V[i].reshape(1, len(target_V[i])).cpu().detach(),
                         amp,
                         config,
                         predictions.cpu().detach()[j],
@@ -220,7 +241,7 @@ def _run(config: SimulationConfig):
             target_ampl, target_freq = utils.get_amplitude_frequency(
                 target_V, inj_dur=inj_dur, inj_start=inj_start
             )
-    
+
             af_error = float((pred_freq - target_freq).abs().sum().cpu())
 
             err_pool.append(error)
@@ -248,10 +269,15 @@ def _run(config: SimulationConfig):
     print(f"Amplitude/Frequency err per prediction {af_err_pool}")
 
     # old way, error was not reliable, a flat line beats spikes offset by a few ms
-    
+
     if config["run_mode"] == "segregated":
-        if config["segregation"][segregation_index].get("selection_metric") == "amplitude_frequency_error":
-            print("Minimal Amplitude and Frequency error selected for parameter selection")
+        if (
+            config["segregation"][segregation_index].get("selection_metric")
+            == "amplitude_frequency_error"
+        ):
+            print(
+                "Minimal Amplitude and Frequency error selected for parameter selection"
+            )
             predictions = pred_pool[np.argmin(af_err_pool)]
         if config["segregation"][segregation_index].get("selection_metric") == "mse":
             print("MSE error selected for parameter selection")
@@ -259,7 +285,7 @@ def _run(config: SimulationConfig):
         else:
             print(f"FI error selected for parameter selection")
             predictions = pred_pool[np.argmin(np.abs(fi_err_pool))]
-    else:# by default I want fi error
+    else:  # by default I want fi error
         predictions = pred_pool[np.argmin(np.abs(fi_err_pool))]
 
     print(f"Best prediction: {predictions}")
@@ -344,23 +370,30 @@ def _run(config: SimulationConfig):
         )
         f.create_dataset("amps", (len(amp_out)), dtype="f", data=amp_out)
         f.close()
-    
-    learned_params = {param:predict for param,predict in zip(params, predictions)}
-    if config['run_mode'] == "segregated":
+
+    learned_params = {param: predict for param, predict in zip(params, predictions)}
+    if config["run_mode"] == "segregated":
         # save a copy of the outputs for future development
         base_output_folder = config["output"]["folder"]
         run_output_folder_name = f"{config['run_mode']}"
-        seg_folder = os.path.join(base_output_folder, f"{run_output_folder_name}_seg{segregation_index+1}")
+        seg_folder = os.path.join(
+            base_output_folder, f"{run_output_folder_name}_seg{segregation_index+1}"
+        )
         shutil.copytree(output_folder, seg_folder, dirs_exist_ok=True)
 
         utils.update_segregation(config, learned_params)
     else:
         utils.save_learned_params(learned_params)
 
-def run_generate_target_traces(config: SimulationConfig, subprocess=True, ignore_segregation=False):
+
+def run_generate_target_traces(
+    config: SimulationConfig, subprocess=True, ignore_segregation=False
+):
     try:
         if subprocess:
-            p = Process(target=_run_generate_target_traces, args=[config, ignore_segregation])
+            p = Process(
+                target=_run_generate_target_traces, args=[config, ignore_segregation]
+            )
             p.start()
             p.join()
             p.terminate()

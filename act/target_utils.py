@@ -14,21 +14,33 @@ DEFAULT_TARGET_V_FILE = "./target_v.json"
 DEFAULT_TARGET_V_LTO_FILE = "./target_v_lto.json"
 DEFAULT_TARGET_V_HTO_FILE = "./target_v_hto.json"
 
+
 def get_voltage_trace_from_params(
     simulation_config: SimulationConfig,
     ignore_segregation=False,
 ) -> torch.Tensor:
-
     if not ignore_segregation:
         segregation_index = utils.get_segregation_index(simulation_config)
-        segregated_and_lto = simulation_config["run_mode"] == "segregated" and simulation_config["segregation"][segregation_index].get("use_lto_amps", False)
-        segregated_and_hto = simulation_config["run_mode"] == "segregated" and simulation_config["segregation"][segregation_index].get("use_hto_amps", False)
+        segregated_and_lto = simulation_config[
+            "run_mode"
+        ] == "segregated" and simulation_config["segregation"][segregation_index].get(
+            "use_lto_amps", False
+        )
+        segregated_and_hto = simulation_config[
+            "run_mode"
+        ] == "segregated" and simulation_config["segregation"][segregation_index].get(
+            "use_hto_amps", False
+        )
     else:
         segregated_and_lto = False
         segregated_and_hto = False
 
     # If we specify a target cell then we should simulate that target
-    if simulation_config["optimization_parameters"].get("target_cell") and not segregated_and_lto and not segregated_and_hto:
+    if (
+        simulation_config["optimization_parameters"].get("target_cell")
+        and not segregated_and_lto
+        and not segregated_and_hto
+    ):
         target_cell = CellModel(
             hoc_file=simulation_config["optimization_parameters"]["target_cell"][
                 "hoc_file"
@@ -51,27 +63,31 @@ def get_voltage_trace_from_params(
         if segregated_and_lto:
             print("Checking to see if channels need blocked for lto")
             if simulation_config["optimization_parameters"].get("lto_block_channels"):
-                block_channels = simulation_config["optimization_parameters"].get("lto_block_channels")
+                block_channels = simulation_config["optimization_parameters"].get(
+                    "lto_block_channels"
+                )
                 target_params_new = []
                 params_list = [p["channel"] for p in params]
-                for p,name in zip(target_params,params_list):
+                for p, name in zip(target_params, params_list):
                     if name not in block_channels:
                         target_params_new.append(p)
                     else:
-                        target_params_new.append(0) # block the channel
+                        target_params_new.append(0)  # block the channel
                         print(f"blocking channel {name} | {name} = 0.0")
                 target_params = target_params_new
         if segregated_and_hto:
             print("Checking to see if channels need blocked for hto")
             if simulation_config["optimization_parameters"].get("hto_block_channels"):
-                block_channels = simulation_config["optimization_parameters"].get("hto_block_channels")
+                block_channels = simulation_config["optimization_parameters"].get(
+                    "hto_block_channels"
+                )
                 target_params_new = []
                 params_list = [p["channel"] for p in params]
-                for p,name in zip(target_params,params_list):
+                for p, name in zip(target_params, params_list):
                     if name not in block_channels:
                         target_params_new.append(p)
                     else:
-                        target_params_new.append(0) # block the channel
+                        target_params_new.append(0)  # block the channel
                         print(f"blocking channel {name} | {name} = 0.0")
                 target_params = target_params_new
 
@@ -84,9 +100,11 @@ def get_voltage_trace_from_params(
     # create the optimizer
     optim = ACTOptimizer(
         simulation_config=simulation_config,
-        set_passive_properties=False if target_cell else True, # we only want to set passive properties if we're using the original cell, not target
+        set_passive_properties=False
+        if target_cell
+        else True,  # we only want to set passive properties if we're using the original cell, not target
         cell_override=target_cell,
-        ignore_segregation=ignore_segregation
+        ignore_segregation=ignore_segregation,
     )
     target_V = []
 
@@ -102,15 +120,26 @@ def get_voltage_trace_from_params(
     simulated_label = simulation_config["output"].get("simulated_label", "Simulated")
     target_label = simulation_config["output"].get("target_label", "Target")
 
-
-    if not ignore_segregation and simulation_config["run_mode"] == "segregated" and simulation_config["segregation"][segregation_index].get("use_lto_amps", False):
+    if (
+        not ignore_segregation
+        and simulation_config["run_mode"] == "segregated"
+        and simulation_config["segregation"][segregation_index].get(
+            "use_lto_amps", False
+        )
+    ):
         print(f"Using LTO Amps for current segregation (use_lto_amps set)")
         amps = simulation_config["optimization_parameters"]["lto_amps"]
-    elif not ignore_segregation and simulation_config["run_mode"] == "segregated" and simulation_config["segregation"][segregation_index].get("use_hto_amps", False):
+    elif (
+        not ignore_segregation
+        and simulation_config["run_mode"] == "segregated"
+        and simulation_config["segregation"][segregation_index].get(
+            "use_hto_amps", False
+        )
+    ):
         print(f"Using HTO Amps for current segregation (use_hto_amps set)")
         amps = simulation_config["optimization_parameters"]["hto_amps"]
     else:
-        amps = simulation_config["optimization_parameters"]["amps"]    
+        amps = simulation_config["optimization_parameters"]["amps"]
 
     # generate data per amp
     for i, amp in enumerate(amps):
@@ -157,10 +186,12 @@ def get_voltage_trace_from_params(
 def save_target_traces(
     simulation_config: SimulationConfig,
     ignore_segregation=False,
-    save_lto=False, # useful for plotting final plots
+    save_lto=False,  # useful for plotting final plots
     save_hto=False,
 ) -> torch.Tensor:
-    target_V = get_voltage_trace_from_params(simulation_config, ignore_segregation=ignore_segregation)
+    target_V = get_voltage_trace_from_params(
+        simulation_config, ignore_segregation=ignore_segregation
+    )
 
     target_v_file = simulation_config["optimization_parameters"].get(
         "target_V_file", DEFAULT_TARGET_V_FILE
@@ -183,8 +214,7 @@ def save_target_traces(
 
 
 def load_target_traces(
-    simulation_config: SimulationConfig,
-    target_v_file=None
+    simulation_config: SimulationConfig, target_v_file=None
 ) -> torch.Tensor:
     if not target_v_file:
         target_v_file = simulation_config["optimization_parameters"].get(
@@ -199,9 +229,11 @@ def load_target_traces(
     if simulation_config["run_mode"] == "segregated":
         segregation_index = utils.get_segregation_index(simulation_config)
         dt = simulation_config["simulation_parameters"]["h_dt"]
-        ramp_time = simulation_config["segregation"][segregation_index].get("ramp_time",0)
+        ramp_time = simulation_config["segregation"][segregation_index].get(
+            "ramp_time", 0
+        )
         if ramp_time:
             print(f"cutting ramp time {ramp_time} from beginning of trace")
-            traces = traces[:,int(ramp_time/dt):]
-    
+            traces = traces[:, int(ramp_time / dt) :]
+
     return traces

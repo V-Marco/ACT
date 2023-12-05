@@ -16,6 +16,7 @@ class SimpleNet(torch.nn.Module):
     def forward(self, X, summary_features):
         return self.model.forward(X)
 
+
 class SimpleSummaryNet(torch.nn.Module):
     def __init__(self, in_channels, out_channels, summary_features):
         super().__init__()
@@ -117,6 +118,7 @@ class ConvolutionEmbeddingNet(torch.nn.Module):
         embedding = self.embedder(X_res)
         return self.predictor(torch.cat((summary_features, embedding), axis=1))
 
+
 class ConvolutionNet(torch.nn.Module):
     def __init__(self, in_channels, out_channels, summary_features):
         super().__init__()
@@ -150,6 +152,7 @@ class ConvolutionNet(torch.nn.Module):
 
         # The embedder's output is (1, ...), flatten for concatenation
         return self.embedder(X_res)
+
 
 class SummaryNet(torch.nn.Module):
     def __init__(self, in_channels, out_channels, summary_features):

@@ -47,9 +47,10 @@ class CellModel:
             for index, key in enumerate(parameter_list):
                 setattr(sec, key, parameter_values[index])
 
-    def apply_current_injection(self, amp: float, dur: float, delay: float, ramp_time=0, ramp_splits=1) -> None:
-        
-        if ramp_time > 0: # have to ramp up input
+    def apply_current_injection(
+        self, amp: float, dur: float, delay: float, ramp_time=0, ramp_splits=1
+    ) -> None:
+        if ramp_time > 0:  # have to ramp up input
             # no overall amp supplied
             self.inj.amp = 0
             self.inj.dur = 0
@@ -61,9 +62,9 @@ class CellModel:
             for idx in range(ramp_splits):
                 ramp_amp = amp / ramp_splits
                 ramp_time_split = ramp_time / ramp_splits
-                ramp_duration = dur + (ramp_time-idx*ramp_time_split)
-                ramp_delay = delay + idx*ramp_time_split
-                
+                ramp_duration = dur + (ramp_time - idx * ramp_time_split)
+                ramp_delay = delay + idx * ramp_time_split
+
                 self.ramp_inj_list[idx].amp = ramp_amp
                 self.ramp_inj_list[idx].dur = ramp_duration
                 self.ramp_inj_list[idx].delay = ramp_delay
