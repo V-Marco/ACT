@@ -156,7 +156,7 @@ def run(simulation_config):
             parameters = [k for k,v in learned_params_lto.items()]
             lto_target_params = [v for k,v in learned_params_lto.items()]
             print(f"{learned_params_lto}")
-            sv = optim.simulate(amp, parameters, lto_target_params, cut_ramp=True, ramp_time=ramp_time, ramp_splits=ramp_splits, i_dur=i_dur, i_delay=i_delay, tstop=tstop).reshape(1, -1)
+            sv = optim.simulate(amp, parameters, lto_target_params, cut_ramp=False, ramp_time=ramp_time, ramp_splits=ramp_splits, i_dur=i_dur, i_delay=i_delay, tstop=tstop).reshape(1, -1)
             # write to output folder / final
             save_plot(
                 amp,
@@ -211,7 +211,7 @@ def run(simulation_config):
             parameters = [k for k,v in learned_params_hto.items()]
             hto_target_params = [v for k,v in learned_params_hto.items()]
             print(f"{learned_params_hto}")
-            sv = optim.simulate(amp, parameters, hto_target_params, cut_ramp=True, ramp_time=ramp_time, ramp_splits=ramp_splits, i_dur=i_dur, i_delay=i_delay, tstop=tstop).reshape(1, -1)
+            sv = optim.simulate(amp, parameters, hto_target_params, cut_ramp=False, ramp_time=ramp_time, ramp_splits=ramp_splits, i_dur=i_dur, i_delay=i_delay, tstop=tstop).reshape(1, -1)
             # write to output folder / final
             save_plot(
                 amp,

@@ -183,7 +183,7 @@ def _run(config: SimulationConfig):
             sim_list = []
             for j, amp in enumerate(amps):
                 sim_list.append(
-                    optim.simulate(amp, params, pred, cut_ramp=True).reshape(1, -1)
+                    optim.simulate(amp, params, pred, cut_ramp=False).reshape(1, -1)
                 )
             sims.append(sim_list)
 
