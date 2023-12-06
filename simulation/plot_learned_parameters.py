@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 import shutil
 
@@ -246,6 +247,18 @@ def run(simulation_config):
     print("Difference (percent)")
     print(f"{diff_percent}")
     print()
+
+    # write to file
+    lpd = {}
+    lpd["learned_params"] = learned_params
+    lpd["target_params"] = target_params
+    lpd["difference"] = diff
+    lpd["difference_percent"] = diff_percent
+    file_path = os.path.join(output_folder, "learned_params.json")
+    with open(file_path, "w") as f:
+        json.dump(lpd, f, indent=2)
+    print("done")
+
 
 if __name__ == '__main__':
     # will have to generate target traces (python generate_target_traces.py --ignore_segregation)

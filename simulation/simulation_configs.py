@@ -405,36 +405,53 @@ LA_A_seg = {
         #    "arima_order": [4, 0, 4], # custom arima settings
         #    "learned_variability": 0.2 # 20% of previous bounds
         #}
-        ######### TAKE 7 #############
-        { # HTO - na3 and nap are blocked
-            "params": ["gbar_im", "gbar_kdr", "gcabar_cadyn", "gsAHPbar_sAHP"],  
-            "model_class": "RandomForest", #"SimpleSummaryNet",
-            "selection_metric": "mse", #"amplitude_frequency_error", #"mse",
-            "num_epochs": 1000,
-            "train_spiking_only": False,
-            "nonsaturated_only": False,
-            "train_amplitude_frequency": True,
-            "use_hto_amps": True,
-            "ramp_time": 1000, #ms to ramp up the amp input
-            "ramp_splits": 20, # the amps should be steped up n times
-            "use_spike_summary_stats": False, # don't use spike summary stats for training
-            "arima_order": [4, 0, 4], # custom arima settings
-            "h_tstop": 1500,  # (ms)
-            "h_i_delay": 250,  # (ms)
-            "h_i_dur": 1000,  # (ms)
-        },
-        { # Spiking Adaptation - allow variation the learned spiking parameters by 20%
-            "params": ["gbar_na3"],
-            "learned_variability_params": ["gbar_kdr", "gcabar_cadyn", "gsAHPbar_sAHP"],
-            "learned_variability": 0.5,
-            "model_class": "RandomForest", #"ConvolutionEmbeddingNet",
-            "selection_metric": "fi_error",
-            "num_epochs": 200,
-        },
+        ######### TAKE 7 ############# Dr. Nair suggested HTO first
+        #{ # HTO - na3 and nap are blocked
+        #    "params": ["gbar_im", "gbar_kdr", "gcabar_cadyn", "gsAHPbar_sAHP"],  
+        #    "model_class": "RandomForest", #"SimpleSummaryNet",
+        #    "selection_metric": "mse", #"amplitude_frequency_error", #"mse",
+        #    "num_epochs": 1000,
+        #    "train_spiking_only": False,
+        #    "nonsaturated_only": False,
+        #    "train_amplitude_frequency": True,
+        #    "use_hto_amps": True,
+        #    "ramp_time": 1000, #ms to ramp up the amp input
+        #    "ramp_splits": 20, # the amps should be steped up n times
+        #    "use_spike_summary_stats": False, # don't use spike summary stats for training
+        #    "arima_order": [4, 0, 4], # custom arima settings
+        #    "h_tstop": 1500,  # (ms)
+        #    "h_i_delay": 250,  # (ms)
+        #    "h_i_dur": 1000,  # (ms)
+        #},
+        #{ # Spiking Adaptation - allow variation the learned spiking parameters by 20%
+        #    "params": ["gbar_na3"],
+        #    "learned_variability_params": ["gbar_kdr", "gcabar_cadyn", "gsAHPbar_sAHP"],
+        #    "learned_variability": 0.5,
+        #    "model_class": "RandomForest", #"ConvolutionEmbeddingNet",
+        #    "selection_metric": "fi_error",
+        #    "num_epochs": 200,
+        #},
+        #{ # LTO
+        #    "params": ["gbar_nap"], # Everything has already been "learned" only vary
+        #    "learned_variability_params": ["gbar_im"],
+        #    "learned_variability": 0.2,
+        #    "model_class": "RandomForest", #"SimpleSummaryNet",
+        #    "selection_metric": "mse", #"amplitude_frequency_error", #"mse",
+        #    "num_epochs": 1000,
+        #    "train_spiking_only": False,
+        #    "train_amplitude_frequency": True,
+        #    "use_lto_amps": True,
+        #    "ramp_time": 1000, #ms to ramp up the amp input
+        #    "ramp_splits": 20, # the amps should be steped up n times
+        #    "use_spike_summary_stats": False, # don't use spike summary stats for training
+        #    "arima_order": [4, 0, 4], # custom arima settings
+        #    "h_tstop": 1500,  # (ms)
+        #    "h_i_delay": 250,  # (ms)
+        #    "h_i_dur": 1000,  # (ms)
+        #},
+        ############ TAKE 8 ###############
         { # LTO
-            "params": ["gbar_nap"], # Everything has already been "learned" only vary
-            "learned_variability_params": ["gbar_im"],
-            "learned_variability": 0.2,
+            "params": ["gbar_nap", "gbar_im"],
             "model_class": "RandomForest", #"SimpleSummaryNet",
             "selection_metric": "mse", #"amplitude_frequency_error", #"mse",
             "num_epochs": 1000,
@@ -449,7 +466,39 @@ LA_A_seg = {
             "h_i_delay": 250,  # (ms)
             "h_i_dur": 1000,  # (ms)
         },
-
+        { # Spiking rough estimate
+            "params": ["gbar_na3", "gbar_kdr"],
+            "model_class": "RandomForest", #"ConvolutionEmbeddingNet",
+            "selection_metric": "fi_error",
+            "num_epochs": 200,
+        },
+        { # Spiking Adaptation - allow variation the learned spiking parameters by 20%
+            "params": ["gcabar_cadyn", "gsAHPbar_sAHP"],
+            "learned_variability_params": ["gbar_na3", "gbar_kdr"],
+            "learned_variability": 0.2,
+            "model_class": "RandomForest", #"ConvolutionEmbeddingNet",
+            "selection_metric": "fi_error",
+            "num_epochs": 200,
+        },
+        { # HTO - na3 and nap are blocked
+            "params": [],
+            "learned_variability_params": ["gbar_im", "gbar_kdr", "gcabar_cadyn", "gsAHPbar_sAHP"],
+            "learned_variability": 0.2,
+            "model_class": "RandomForest", #"SimpleSummaryNet",
+            "selection_metric": "mse", #"amplitude_frequency_error", #"mse",
+            "num_epochs": 1000,
+            "train_spiking_only": False,
+            "nonsaturated_only": False,
+            "train_amplitude_frequency": True,
+            "use_hto_amps": True,
+            "ramp_time": 1000, #ms to ramp up the amp input
+            "ramp_splits": 20, # the amps should be steped up n times
+            "use_spike_summary_stats": False, # don't use spike summary stats for training
+            "arima_order": [4, 0, 4], # custom arima settings
+            "h_tstop": 1500,  # (ms)
+            "h_i_delay": 250,  # (ms)
+            "h_i_dur": 1000,  # (ms)
+        }
     ],
     "output": {
         "folder": "output_LA_A_seg",
