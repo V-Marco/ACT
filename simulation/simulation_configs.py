@@ -457,6 +457,7 @@ LA_A_seg = {
             "num_epochs": 1000,
             "train_spiking_only": False,
             "train_amplitude_frequency": True,
+            "train_mean_potential": True,
             "use_lto_amps": True,
             "ramp_time": 1000, #ms to ramp up the amp input
             "ramp_splits": 20, # the amps should be steped up n times
@@ -490,6 +491,7 @@ LA_A_seg = {
             "train_spiking_only": False,
             "nonsaturated_only": False,
             "train_amplitude_frequency": True,
+            "train_mean_potential": True,
             "use_hto_amps": True,
             "ramp_time": 1000, #ms to ramp up the amp input
             "ramp_splits": 20, # the amps should be steped up n times

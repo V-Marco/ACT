@@ -421,6 +421,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         num_epochs = 0
         use_spike_summary_stats = True
         train_amplitude_frequency = False
+        train_mean_potential = False
         segregation_arima_order = None
         train_test_split = 0.85
         summary_feature_columns = []
@@ -456,9 +457,14 @@ class GeneralACTOptimizer(ACTOptimizer):
             use_spike_summary_stats = self.config["segregation"][
                 self.segregation_index
             ].get("use_spike_summary_stats", True)
+            
             train_amplitude_frequency = self.config["segregation"][
                 self.segregation_index
             ].get("train_amplitude_frequency", False)
+            train_mean_potential = self.config["segregation"][
+                self.segregation_index
+            ].get("train_mean_potential", False)
+
             segregation_arima_order = self.config["segregation"][
                 self.segregation_index
             ].get("arima_order", None)
@@ -690,6 +696,25 @@ class GeneralACTOptimizer(ACTOptimizer):
                 "amplitude",
                 "frequency",
             ]
+        if train_mean_potential:
+            mean_potential = utils.get_mean_potential(
+                simulated_V_for_next_stage.float(), inj_dur, inj_start
+            )
+            if summary_features is not None:
+                summary_features = torch.cat(
+                    (
+                        summary_features,
+                        mean_potential.reshape(-1, 1),
+                    ),
+                    dim=1,
+                )
+            else:
+                summary_features = mean_potential.reshape(-1, 1)
+
+            summary_feature_columns = summary_feature_columns + [
+                "mean_potential",
+            ]
+
 
         if summary_features is None:
             print(
@@ -815,6 +840,21 @@ class GeneralACTOptimizer(ACTOptimizer):
                     (target_amplitude.reshape(-1, 1), target_frequency.reshape(-1, 1)),
                     dim=1,
                 )
+        if train_mean_potential:
+            target_mean_potential = utils.get_mean_potential(
+                target_V.float(), inj_dur, inj_start
+            )
+            if target_summary_features is not None:
+                target_summary_features = torch.cat(
+                    (
+                        target_summary_features,
+                        target_mean_potential.reshape(-1, 1),
+                    ),
+                    dim=1,
+                )
+            else:
+                target_summary_features = target_mean_potential.reshape(-1, 1)
+
         # remove any remaining nan values
         target_summary_features[torch.isnan(target_summary_features)] = 0
 

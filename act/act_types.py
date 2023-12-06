@@ -87,6 +87,7 @@ class SegregationModule(TypedDict):
     train_spiking_only: bool  # only train on spiking, true by default
     nonsaturated_only: bool  # only train on nonsaturating traces, true by default
     train_amplitude_frequency: bool  # train using freqency/amplitude - only useful for lto/hto, finds peaks and counts, with mean value for peaks
+    train_mean_potential: bool # get the mean of each and use in training data
     adjustment_percent: float  # a percentage that future seg modules will be allowed to modify the suggested param
     adjustment_n_slices: int  # n_splits for the adjustment, will use default parametric distribution n_splits if this doesn't exist
     use_lto_amps: bool  # use lto amps instead of amps

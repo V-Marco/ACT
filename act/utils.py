@@ -926,6 +926,9 @@ def get_amplitude_frequency(traces, inj_dur, inj_start, fs=1000):
 
     return amplitudes, frequencies
 
+def get_mean_potential(traces, inj_dur, inj_start):
+    mean_potential = traces[:,inj_start:inj_start+inj_dur].mean(dim=1)
+    return mean_potential
 
 def load_final_traces(trace_file):
     traces_h5 = h5py.File(trace_file)
