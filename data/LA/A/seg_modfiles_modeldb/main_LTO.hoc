@@ -5,7 +5,7 @@
 v_init = -70//-70//-69
 stim_amp = 0.0076/4.6632              // .0025//0.0059//0.0125//0.098//0.0070//0.00485
 objref Cell
-Cell = new Cell_C()
+Cell = new Cell_A()
 
 objref stim, stim2, stim3, stim4, stim5, stim6, stim7, stim8, stim9, stim10
 Cell.soma stim = new IClamp(0.5) //creating current clamp in the middle of the soma

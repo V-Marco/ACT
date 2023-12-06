@@ -154,6 +154,8 @@ class ACTOptimizer:
         tstop=None,
         no_ramp=False,
         cut_ramp=False,
+        ramp_time=0,
+        ramp_splits=1, 
     ) -> torch.Tensor:
         h.dt = self.config["simulation_parameters"]["h_dt"]
         h.steps_per_ms = 1 / h.dt
@@ -165,20 +167,18 @@ class ACTOptimizer:
         segregation_index = utils.get_segregation_index(self.config)
         if not i_dur:
             i_dur = self.config["simulation_parameters"]["h_i_dur"]
-            if self.config["run_mode"] == "segregated":
+            if self.config["run_mode"] == "segregated" and not self.ignore_segregation:
                 i_dur = self.config["segregation"][segregation_index].get(
                     "h_i_dur", i_dur
                 )
         if not i_delay:
             i_delay = self.config["simulation_parameters"]["h_i_delay"]
-            if self.config["run_mode"] == "segregated":
+            if self.config["run_mode"] == "segregated" and not self.ignore_segregation:
                 i_delay = self.config["segregation"][segregation_index].get(
                     "h_i_delay", i_delay
                 )
 
-        ramp_time = 0
-        ramp_splits = 1
-        if self.config["run_mode"] == "segregated" and not no_ramp:
+        if self.config["run_mode"] == "segregated" and not no_ramp and not self.ignore_segregation:
             ramp_time = self.config["segregation"][segregation_index].get(
                 "ramp_time", 0
             )
@@ -188,7 +188,7 @@ class ACTOptimizer:
 
         tstop_config = self.config["simulation_parameters"]["h_tstop"]
         if (
-            self.config["run_mode"] == "segregated"
+            self.config["run_mode"] == "segregated" and not self.ignore_segregation
         ):  # sometimes segregated modules have different params
             tstop_config = self.config["segregation"][segregation_index].get(
                 "h_tstop", tstop_config

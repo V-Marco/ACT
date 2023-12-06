@@ -1,3 +1,4 @@
+import argparse
 import os
 import shutil
 
@@ -67,7 +68,7 @@ def run(simulation_config):
         print("Mod files already loaded. Continuing.")
 
 
-    target_V = load_target_traces(simulation_config)
+    target_V = load_target_traces(simulation_config, ignore_segregation=True)
     optim = ACTOptimizer(
         simulation_config=simulation_config,
         set_passive_properties=True,
@@ -112,7 +113,27 @@ def run(simulation_config):
     save_fi(simulation_config, sv_tensor, target_V, torch.tensor(amps))
 
     if os.path.exists(DEFAULT_TARGET_V_LTO_FILE): # we have generated an LTO file before and should simulate at end
-        target_V = load_target_traces(simulation_config, target_v_file=DEFAULT_TARGET_V_LTO_FILE)
+        # need to go case by case
+        i_dur = 0
+        i_delay = 0
+        tstop = 0
+        ramp_splits = 1
+        ramp_time = 0
+        module = None
+        for m in simulation_config.get("segregation", []):
+            if m.get("use_lto_amps"):
+                module = m
+        if module:
+            i_dur = module.get("h_i_dur", 0)
+            i_delay = module.get("h_i_delay", 0)
+            tstop = module.get("h_tstop", 0)
+            ramp_time = module.get("ramp_time", 0)
+            ramp_splits = module.get("ramp_splits", 1)
+        else:
+            raise Exception("NO LTO MODULE FOUND")
+
+
+        target_V = load_target_traces(simulation_config, target_v_file=DEFAULT_TARGET_V_LTO_FILE, ramp_time=ramp_time)
         optim = ACTOptimizer(
             simulation_config=simulation_config,
             set_passive_properties=True,
@@ -123,7 +144,7 @@ def run(simulation_config):
         if not amps:
             raise Exception(f"No lto_amps specified in config. Either add and generate new target params, or delete {DEFAULT_TARGET_V_LTO_FILE}")
         lto_block_channels = simulation_config["optimization_parameters"]["lto_block_channels"]
-
+        
         # generate data per amp
         for i, amp in enumerate(amps):
             print(f"Generating lto trace for {float(amp)*1000} pA")
@@ -134,7 +155,7 @@ def run(simulation_config):
             parameters = [k for k,v in learned_params_lto.items()]
             lto_target_params = [v for k,v in learned_params_lto.items()]
             print(f"{learned_params_lto}")
-            sv = optim.simulate(amp, parameters, lto_target_params).reshape(1, -1)
+            sv = optim.simulate(amp, parameters, lto_target_params, cut_ramp=True, ramp_time=ramp_time, ramp_splits=ramp_splits, i_dur=i_dur, i_delay=i_delay, tstop=tstop).reshape(1, -1)
             # write to output folder / final
             save_plot(
                 amp,
@@ -148,9 +169,28 @@ def run(simulation_config):
             )
 
     if os.path.exists(DEFAULT_TARGET_V_HTO_FILE): # we have generated an HTO file before and should simulate at end
-        target_V = load_target_traces(simulation_config, target_v_file=DEFAULT_TARGET_V_HTO_FILE)
+        # need to go case by case
+        i_dur = 0
+        i_delay = 0
+        tstop = 0
+        ramp_splits = 1
+        ramp_time = 0
+        module = None
+        for m in simulation_config.get("segregation",[]):
+            if m.get("use_hto_amps"):
+                module = m
+        if module:
+            i_dur = module.get("h_i_dur", 0)
+            i_delay = module.get("h_i_delay", 0)
+            tstop = module.get("h_tstop", 0)
+            ramp_time = module.get("ramp_time", 0)
+            ramp_splits = module.get("ramp_splits", 1)
+        else:
+            raise Exception("NO HTO MODULE FOUND")
+
+        target_V = load_target_traces(simulation_config, target_v_file=DEFAULT_TARGET_V_HTO_FILE, ramp_time=ramp_time)
         optim = ACTOptimizer(
-            simulation_config=simulation_config,
+                simulation_config=simulation_config,
             set_passive_properties=True,
             ignore_segregation=True
         )
@@ -170,7 +210,7 @@ def run(simulation_config):
             parameters = [k for k,v in learned_params_hto.items()]
             hto_target_params = [v for k,v in learned_params_hto.items()]
             print(f"{learned_params_hto}")
-            sv = optim.simulate(amp, parameters, hto_target_params).reshape(1, -1)
+            sv = optim.simulate(amp, parameters, hto_target_params, cut_ramp=True, ramp_time=ramp_time, ramp_splits=ramp_splits, i_dur=i_dur, i_delay=i_delay, tstop=tstop).reshape(1, -1)
             # write to output folder / final
             save_plot(
                 amp,
@@ -182,6 +222,30 @@ def run(simulation_config):
                 simulated_label=simulated_label,
                 target_label=target_label,
             )
+    
+    # print learned params and the difference between target
+    print("Learned Params")
+    print(f"{learned_params}")
+    print()
+    params = [p["channel"] for p in simulation_config["optimization_parameters"]["params"]]
+    vals = simulation_config["optimization_parameters"]["target_params"]
+    target_params = {p:v for p,v in zip(params, vals)}
+
+    print("Target Params")
+    print(f"{target_params}")
+    print()
+
+    print("Difference")
+    diff = {}
+    diff_percent = {}
+    for p,v in learned_params.items():
+        diff[p] = v - target_params[p]
+        diff_percent[p] = round(((v - target_params[p])/target_params[p])*100, 2)
+    print(f"{diff}")
+    print()
+    print("Difference (percent)")
+    print(f"{diff_percent}")
+    print()
 
 if __name__ == '__main__':
     # will have to generate target traces (python generate_target_traces.py --ignore_segregation)

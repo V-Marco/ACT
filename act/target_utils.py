@@ -100,9 +100,7 @@ def get_voltage_trace_from_params(
     # create the optimizer
     optim = ACTOptimizer(
         simulation_config=simulation_config,
-        set_passive_properties=False
-        if target_cell
-        else True,  # we only want to set passive properties if we're using the original cell, not target
+        set_passive_properties=False if (target_cell or segregated_and_lto or segregated_and_hto) else True,  # we only want to set passive properties if we're using the original cell, not target
         cell_override=target_cell,
         ignore_segregation=ignore_segregation,
     )
@@ -214,7 +212,9 @@ def save_target_traces(
 
 
 def load_target_traces(
-    simulation_config: SimulationConfig, target_v_file=None
+    simulation_config: SimulationConfig, target_v_file=None,
+    ignore_segregation=False,
+    ramp_time = -1
 ) -> torch.Tensor:
     if not target_v_file:
         target_v_file = simulation_config["optimization_parameters"].get(
@@ -224,16 +224,17 @@ def load_target_traces(
     with open(target_v_file, "r") as fp:
         target_v_dict = json.load(fp)
     print(f"Loading {target_v_file} for target traces")
-
+    dt = simulation_config["simulation_parameters"]["h_dt"]
     traces = torch.tensor(target_v_dict["traces"])
-    if simulation_config["run_mode"] == "segregated":
+    if simulation_config["run_mode"] == "segregated" and not ignore_segregation:
         segregation_index = utils.get_segregation_index(simulation_config)
-        dt = simulation_config["simulation_parameters"]["h_dt"]
-        ramp_time = simulation_config["segregation"][segregation_index].get(
-            "ramp_time", 0
-        )
-        if ramp_time:
-            print(f"cutting ramp time {ramp_time} from beginning of trace")
-            traces = traces[:, int(ramp_time / dt) :]
+        if ramp_time == -1: # this was not set
+            ramp_time = simulation_config["segregation"][segregation_index].get(
+                "ramp_time", 0
+            )
+    else:
+        ramp_time = 0
+    if ramp_time:
+        print(f"cutting ramp time {ramp_time} from beginning of trace")
 
-    return traces
+    return traces[:, int(ramp_time / dt) :] 

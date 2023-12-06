@@ -200,7 +200,8 @@ LA_A_seg = {
     },
     "optimization_parameters": {
         "amps": [0.0, 0.1, 0.2, 0.3, 0.4],
-        "lto_amps": [0.0, 0.025, 0.05, 0.075, 0.1],
+        #"lto_amps": [0.0, 0.025, 0.05, 0.075, 0.1],
+        "lto_amps": [0.060, 0.065, 0.070, 0.075, 0.08],
         "hto_amps": [2.5, 3.0, 3.5, 4.0, 4.5],
         #"lto_block_channels": ["gbar_na3", "gbar_kdr", "gcabar_cadyn", "gsAHPbar_sAHP"],
         "lto_block_channels": [], # in the alterki paper, no channels were blocked for lto, but above config change worked
@@ -431,8 +432,8 @@ LA_A_seg = {
             "num_epochs": 200,
         },
         { # LTO
-            "params": [], # Everything has already been "learned" only vary
-            "learned_variability_params": ["gbar_nap", "gbar_im"],
+            "params": ["gbar_nap"], # Everything has already been "learned" only vary
+            "learned_variability_params": ["gbar_im"],
             "learned_variability": 0.2,
             "model_class": "RandomForest", #"SimpleSummaryNet",
             "selection_metric": "mse", #"amplitude_frequency_error", #"mse",
