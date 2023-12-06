@@ -476,7 +476,7 @@ LA_A_seg = {
         { # Spiking Adaptation - allow variation the learned spiking parameters by 20%
             "params": ["gcabar_cadyn", "gsAHPbar_sAHP"],
             "learned_variability_params": ["gbar_na3", "gbar_kdr"],
-            "learned_variability": 0.2,
+            "learned_variability": 0.25,
             "model_class": "RandomForest", #"ConvolutionEmbeddingNet",
             "selection_metric": "fi_error",
             "num_epochs": 200,
@@ -484,7 +484,7 @@ LA_A_seg = {
         { # HTO - na3 and nap are blocked
             "params": [],
             "learned_variability_params": ["gbar_im", "gbar_kdr", "gcabar_cadyn", "gsAHPbar_sAHP"],
-            "learned_variability": 0.2,
+            "learned_variability": 0.25,
             "model_class": "RandomForest", #"SimpleSummaryNet",
             "selection_metric": "mse", #"amplitude_frequency_error", #"mse",
             "num_epochs": 1000,
