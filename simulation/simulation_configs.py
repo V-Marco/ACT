@@ -243,8 +243,8 @@ LA_A_orig = {
 LA_C_seg = {
     "cell": {
         "hoc_file": "../data/LA/C/seg_modfiles/template.hoc",
-        "modfiles_folder": "../data/LA/A/seg_modfiles",
-        "name": "Cell_C_seg",
+        "modfiles_folder": "../data/LA/C/seg_modfiles",
+        "name": "Cell_C",
         "passive_properties": {
             "v_rest": -71.486,
             "r_in": 141,

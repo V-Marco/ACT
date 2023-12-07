@@ -131,13 +131,18 @@ def run(simulation_config):
             ramp_time = module.get("ramp_time", 0)
             ramp_splits = module.get("ramp_splits", 1)
         else:
-            raise Exception("NO LTO MODULE FOUND")
+            raise Exception("NO LTO MODULE FOUND") # comment out for original cases, need to have a param in config or something
+            i_dur = 1000
+            i_delay = 250
+            tstop = 1500
+            ramp_time = 1000
+            ramp_splits = 20
 
 
         target_V = load_target_traces(simulation_config, target_v_file=DEFAULT_TARGET_V_LTO_FILE, ramp_time=ramp_time)
         optim = ACTOptimizer(
             simulation_config=simulation_config,
-            set_passive_properties=True,
+            set_passive_properties=False,
             ignore_segregation=True
         )
 
@@ -188,11 +193,16 @@ def run(simulation_config):
             ramp_splits = module.get("ramp_splits", 1)
         else:
             raise Exception("NO HTO MODULE FOUND")
+            i_dur = 1000
+            i_delay = 250
+            tstop = 1500
+            ramp_time = 1000
+            ramp_splits = 20
 
         target_V = load_target_traces(simulation_config, target_v_file=DEFAULT_TARGET_V_HTO_FILE, ramp_time=ramp_time)
         optim = ACTOptimizer(
                 simulation_config=simulation_config,
-            set_passive_properties=True,
+            set_passive_properties=False,
             ignore_segregation=True
         )
 

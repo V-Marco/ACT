@@ -214,7 +214,8 @@ def save_target_traces(
 def load_target_traces(
     simulation_config: SimulationConfig, target_v_file=None,
     ignore_segregation=False,
-    ramp_time = -1
+    ramp_time = -1,
+    cut_ramp=False
 ) -> torch.Tensor:
     if not target_v_file:
         target_v_file = simulation_config["optimization_parameters"].get(
@@ -234,7 +235,8 @@ def load_target_traces(
             )
     else:
         ramp_time = 0
-    if ramp_time:
+    if ramp_time and cut_ramp:
         print(f"cutting ramp time {ramp_time} from beginning of trace")
-
-    return traces[:, int(ramp_time / dt) :] 
+        return traces[:, int(ramp_time / dt) :] 
+    else:
+        return traces
