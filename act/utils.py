@@ -650,7 +650,7 @@ def apply_decimate_factor(config: SimulationConfig, traces):
     return torch.tensor(traces)
 
 
-def load_parametric_traces(config: SimulationConfig):
+def load_parametric_traces(config: SimulationConfig, drop_ramp=False):
     """
     Return a torch tensor of all traces in the specified h5 file
     """
@@ -684,7 +684,7 @@ def load_parametric_traces(config: SimulationConfig):
         )  # could probably just get it from above, oh well
         ramp_time = config["segregation"][segregation_index].get("ramp_time", 0.0)
         ramp_splits = config["segregation"][segregation_index].get("ramp_splits", 1)
-        if ramp_time > 0:
+        if ramp_time > 0 and drop_ramp:
             skip_ramp_time = int(ramp_time / dt)
             traces = torch.tensor(traces)
             traces = traces[:, skip_ramp_time:]

@@ -17,13 +17,13 @@ python generate_traces.py build
 # OR
 python generate_traces.py
 
-# 4. Generate ARIMA summary statistics
+# 4. Generate ARIMA summary statistics (OPTIONAL - will be loaded by run_simulation if the ariama is generated)
 python generate_arma_stats.py
 
 # 5. Run the simulation
 python run_simulation.py
 
-# 6. View runs statistics
+# 6. View runs statistics (OLD)
 python analyze_res.py
 python plot_fi.py 
 
@@ -32,9 +32,9 @@ python plot_fi.py
 
 ```
 
-One line
+One line - THIS WILL NEED TO BE RUN ONCE FOR *EACH* SEGREGATION MODULE. We loop through and learn parameters once at a time. Generating arima stats is optional, and usually only helpful for LTO/HTO modules.
 ```
-python generate_target_traces.py && python generate_traces.py build && python generate_traces.py && python generate_arma_stats.py && python run_simulation.py && python analyze_res.py && python plot_fi.py
+python generate_target_traces.py && python generate_traces.py build && python generate_traces.py && python generate_arma_stats.py && python run_simulation.py
 ```
 To generate final plots (after all segregation modules):
 ```

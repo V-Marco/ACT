@@ -344,10 +344,12 @@ class GeneralACTOptimizer(ACTOptimizer):
         self,
         simulation_config: SimulationConfig,
         logger: object = None,
+        set_passive_properties = True
     ):
         super().__init__(
             simulation_config=simulation_config,
             logger=logger,
+            set_passive_properties=set_passive_properties
         )
 
         self.model = None

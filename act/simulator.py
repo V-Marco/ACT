@@ -88,7 +88,7 @@ def _run(config: SimulationConfig):
     )
 
     os.system(f"nrnivmodl {temp_modfiles_dir}")
-
+    ltohto = False
     logger = ACTLogger()
     segregation_index = utils.get_segregation_index(config)  # if needed
     if config["run_mode"] == "segregated" and config["segregation"][
@@ -96,11 +96,13 @@ def _run(config: SimulationConfig):
     ].get("use_lto_amps", False):
         print(f"Using LTO Amps for current segregation (use_lto_amps set)")
         amps = config["optimization_parameters"]["lto_amps"]
+        ltohto = True
     elif config["run_mode"] == "segregated" and config["segregation"][
         segregation_index
     ].get("use_hto_amps", False):
         print(f"Using HTO Amps for current segregation (use_hto_amps set)")
         amps = config["optimization_parameters"]["hto_amps"]
+        ltohto = True
     else:
         amps = config["optimization_parameters"]["amps"]
 
@@ -146,7 +148,7 @@ def _run(config: SimulationConfig):
     params = [p["channel"] for p in config["optimization_parameters"]["params"]]
     for repeat_num in range(config["optimization_parameters"]["num_repeats"]):
         if config["run_mode"] == "original" or config["run_mode"] == "segregated":
-            optim = GeneralACTOptimizer(simulation_config=config, logger=logger)
+            optim = GeneralACTOptimizer(simulation_config=config, logger=logger, set_passive_properties=not ltohto)
             predictions, train_stats = optim.optimize(target_V)
             predictions_amps = predictions[:, -1].reshape(-1, 1)
             predictions = predictions[:, :-1]
