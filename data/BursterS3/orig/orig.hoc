@@ -3,9 +3,9 @@
 //{load_file("onecompartment_template_no_osc.hoc")}
 {load_file("graphics_lib.hoc")}
 
-v_init = -70//-70//-69
+v_init = -50//-70//-69
 objref Cell
-Cell = new Burster_Izh()
+Cell = new Burster()
 
 objref stim
 Cell.soma stim = new IClamp(0.5) //creating current clamp in the middle of the soma

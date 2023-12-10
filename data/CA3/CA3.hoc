@@ -1,0 +1,156 @@
+begintemplate CA3PyramidalCell
+	public NumSoma,NumDend
+	NumSoma = 1
+	NumDend = 2
+	
+
+	Rm = 80000
+	Cm = 2.4 // 1.8 // 2 //1
+	RaAll= 150//200
+	RaSoma= 150 // 146.969697
+	RaDend = 150
+	Vpas = -75
+	v_init = -75
+
+	public soma, dend
+	create soma[NumSoma]
+	create dend[NumDend]
+	
+	objref noise_exc, noise_inh, cclA
+	objref noiseRandObj_exc, noiseRandObj_inh
+
+	public all, somatic, basal, apical, axonal
+	objref all, somatic, basal, apical, axonal
+	objref this
+
+    proc init() {
+
+		//Parameters.
+		gnat = 0.09840381518006325 //0.08 //0.06
+		gkdr = 0.02383466437458992 //0.04 //0.065 //0.03 //0.015
+		gnap = 0.0011877061915583909 //0.0022 //0.0022 //0.0013 //0.0009 //0.00065
+
+
+		gim  =0.010494430549442768 //0.005 //0.007 //0.00501 //0005 //0.007 //0.009
+
+		all = new SectionList()
+		somatic = new SectionList()
+		basal = new SectionList()
+		apical = new SectionList()
+		axonal = new SectionList()
+
+		v_init = -75
+
+		for i=0,NumSoma soma[i] {
+			all.append()
+			somatic.append()
+		} 
+		for i=0,NumDend dend[i] {
+			all.append()
+			basal.append()
+		}
+		
+
+		//create soma, dend, dendb
+		connect dend[0](0), soma[0](0)
+		connect dend[1](0), soma[0](1)
+
+		soma[0] {nseg=1 L=25 diam=24.75} // changed L & diam
+			
+		dend[0] {nseg=8 L=270 diam=3}
+		dend[1] {nseg=1 L=400 diam=5}
+
+		soma[0]{
+			insert leakCA3 
+			el_leakCA3 = -75  
+			glbar_leakCA3 = 1.57*3e-5 
+			Ra = 150 
+			cm = 2.4 // 2.5
+			
+			insert natCA3  
+			gbar_natCA3 = gnat
+
+			insert napCA3//0.0
+			gbar_napCA3 = gnap 
+			
+			insert kdrCA3 
+			gbar_kdrCA3 = gkdr
+		
+			insert imCA3
+			gbar_imCA3 = gim
+
+			ena=45  ek=-80 
+		}
+				
+		dend[0] {
+			insert leakCA3 
+			el_leakCA3 = -75  
+			glbar_leakCA3 = 1.57*3e-5 
+			Ra = 150 
+			cm = 2.4
+			
+			insert natCA3  
+			gbar_natCA3 = gnat
+
+			insert napCA3
+			gbar_napCA3 = gnap 
+			
+			insert kdrCA3 
+			gbar_kdrCA3 = gkdr
+
+			insert imCA3
+			gbar_imCA3 = gim
+
+			ena=45  ek=-80
+		}
+								
+		dend[1] {
+			insert leakCA3 
+			el_leak = -75  
+			glbar_leakCA3 = 1.57*3e-5 
+			Ra = 150 
+			cm = 2.4 // 2.5
+			
+			insert natCA3  
+			gbar_natCA3 = gnat
+
+			insert napCA3
+			gbar_napCA3 = gnap 
+			
+			insert kdrCA3 
+			gbar_kdrCA3 = gkdr
+
+			insert imCA3
+			gbar_imCA3 = gim
+			
+			ena=45  ek=-80  		}
+		
+		insert_mechs(100)
+		define_shape()
+	}
+
+	proc insert_mechs(){
+		r = $1
+		soma[0]{
+            noiseRandObj_exc=new Random()
+            noiseRandObj_exc.Random123(r)
+            noiseRandObj_exc.normal(0,1)
+
+	        noise_exc = new Gfluct2_exc(0.5)
+            noise_exc.g_e0 = 0.0016
+            noise_exc.std_e = 0.000178//0.003
+            noise_exc.setRandObj(noiseRandObj_exc)
+
+            noiseRandObj_inh=new Random()
+            noiseRandObj_inh.Random123(r)
+            noiseRandObj_inh.normal(0,1)
+
+            noise_inh = new Gfluct2_inh(0.5)
+
+            noise_inh.g_i0 = 0.01
+            noise_inh.std_i = 0.00264
+            noise_inh.setRandObj(noiseRandObj_inh)
+		}
+	}
+
+endtemplate CA3PyramidalCell

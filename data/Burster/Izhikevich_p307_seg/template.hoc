@@ -3,11 +3,7 @@
 //The parameters in this model are based on Type C cell of 3-compartment model 
 
 
-/////////////////////////////
-///// Type A cell in LA /////
-/////////////////////////////
-
-begintemplate Cell_A
+begintemplate Burster_Izh
 
 public soma, connect2target, type
 
@@ -53,12 +49,12 @@ proc init() {
 soma[0] {nseg = 1 L = 117.77 diam = 24.5} // L = 55.2
 	
 	soma[0] {
-		insert leak el_leak=Vpas glbar_leak = 3.5e-5 /*2e-5*/ Ra=RaAll cm=2.5 //different values in the thress compartment model
-		insert na3 sh_na3=nash ar_na3=1	gbar_na3=0.03//gna //soma and p_dend are different
-		insert nap gbar_nap= 0.0003//0.00113//8e-4 //4.5e-4
-		insert kdr gkdrbar_kdr=gkdr //same value in the three compartment model
+		insert leak el_leak=Vpas glbar_leak =  3.6e-5 Ra=RaAll cm=2.5 //3.5e-5 /*2e-5*/ Ra=RaAll cm=2.5 //different values in the thress compartment model
+		insert na3 sh_na3=nash ar_na3=1	gbar_na3= 0.05//0.03//gna //soma and p_dend are different
+		insert nap gbar_nap= 0.0004 //0.0003//0.00113//8e-4 //4.5e-4
+		insert kdr gkdrbar_kdr= 0.03//gkdr //same value in the three compartment model
 		insert capool taucas = 1000  fcas_capool = 0.05 //only in dend and p_dend
-		insert im gmbar_im = 0.0033//GmC //same value in the three compartment model
+		insert im gmbar_im = 0.0038 //0.0033//GmC //same value in the three compartment model
 		
 		ena = 45
 		ek = -80
@@ -72,6 +68,6 @@ obfunc connect2target() { localobj nc
 	if (numarg() == 2) ($o2 = nc)
 	return nc
 	}
-endtemplate Cell_A
+endtemplate Burster_Izh
 
 

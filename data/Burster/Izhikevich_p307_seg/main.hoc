@@ -5,7 +5,7 @@
 
 v_init = -70//-70//-69
 objref Cell
-Cell = new Cell_A()
+Cell = new Burster_Izh()
 
 objref stim
 Cell.soma stim = new IClamp(0.5) //creating current clamp in the middle of the soma
