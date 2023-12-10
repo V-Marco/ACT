@@ -516,7 +516,7 @@ Burster_Izh_seg = {
         "h_dt": 0.1,
     },
     "optimization_parameters": {
-        "amps": [0.0, 0.5, 1.0, 1.5, 2],
+        "amps": [0.0, 0.25, 0.5, 0.75, 1.0],
         #"lto_amps": [0.0, 0.025, 0.05, 0.075, 0.1],
         "lto_amps": [0.060, 0.065, 0.070, 0.075, 0.08],
         "hto_amps": [2.5, 3.0, 3.5, 4.0, 4.5],
@@ -532,7 +532,7 @@ Burster_Izh_seg = {
         # ======================================================
         "target_V_file": "./target_v.json",
         "target_cell": {
-            "hoc_file": "../data/Burster/Izhikevich_p307_seg/template.hoc",
+            "hoc_file": "../data/Burster/Izhikevich_p307_orig/template.hoc",
             "modfiles_folder": "../data/Burster/Izhikevich_p307_orig/",
             "name": "Burster_Izh",
         },
@@ -616,7 +616,7 @@ Burster_Izh_seg = {
 
 Burster_Izh_orig = {
     "cell": {
-        "hoc_file": "../data/Burster/Izhikevich_p307_seg/template.hoc",
+        "hoc_file": "../data/Burster/Izhikevich_p307_orig/template.hoc",
         "modfiles_folder": "../data/Burster/Izhikevich_p307_orig/",
         "name": "Burster_Izh",
          "passive_properties": {
@@ -635,7 +635,7 @@ Burster_Izh_orig = {
         "h_dt": 0.1,
     },
     "optimization_parameters": {
-        "amps": [0.0, 0.5, 1.0, 1.5, 2],
+        "amps": [0.0, 0.25, 0.5, 0.75, 1.0],
         #"lto_amps": [0.060, 0.065, 0.070, 0.075, 0.08],
         #"hto_amps": [2.5, 3.0, 3.5, 4.0, 4.5],
         #"lto_block_channels": [],
@@ -881,4 +881,4 @@ Burster_Seg_orig = {
 #                                                 SELECTED_CONFIG
 # ===================================================================================================================
 # ===================================================================================================================
-selected_config = LA_C_seg
+selected_config = Burster_Izh_seg
