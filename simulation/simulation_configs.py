@@ -29,7 +29,7 @@ LA_A_seg = {
         "hto_amps": [2.5, 3.0, 3.5, 4.0, 4.5],
         #"lto_block_channels": ["gbar_na3", "gbar_kdr", "gcabar_cadyn", "gsAHPbar_sAHP"],
         "lto_block_channels": [], # in the alterki paper, no channels were blocked for lto, but above config change worked
-        "hto_block_channels": ["gbar_na3", "gbar_nap"],
+        "hto_block_channels": ["gbar_na3", "gbar_nap", "gsAHPbar_sAHP"],
         "params": [
             # {"channel": "ghdbar_hd", "low": 1.15e-05, "high": 4.6e-05}, # hd, passive
             {"channel": "gbar_nap", "high": 0.000284, "low": 0.0}, #"high": 0.000213, "low": 0.000071}, #"high": 0.000426, "low": 4.736e-05},
@@ -478,4 +478,4 @@ LA_C_orig = {
     "run_mode": "original",  # "original", "segregated"
 }
 
-selected_config = LA_A_seg
+selected_config = LA_C_seg

@@ -21,8 +21,10 @@ def save_plot(
     simulated_label="Simulated",
     target_label="Target",
     dt=0.025,
+    fontsize='xx-large',
+    tick_fontsize='x-large',
 ):
-    _, ax = plt.subplots(1, 1, figsize=(10, 10))
+    fig, ax = plt.subplots(1, 1, figsize=(8, 8))
     title = f"I = {(amp * 1000):.0f} pA"
     if simulated_data is not None:
         times = np.arange(0, int(len(simulated_data.flatten()) * dt), dt)
@@ -30,12 +32,16 @@ def save_plot(
     if target_V is not None:
         times = np.arange(0, int(len(target_V.flatten()) * dt), dt)
         ax.plot(times, target_V.flatten(), label=target_label, alpha=0.7)
-    ax.set_title(title)
-    ax.set_xlabel("Timestamp (ms)")
-    ax.set_ylabel("V (mV)")
-    ax.legend()
+    ax.set_title(title, fontsize=fontsize)
+    ax.set_xlabel("Timestamp (ms)", fontsize=fontsize)
+    ax.set_ylabel("V (mV)", fontsize=fontsize)
+    ax.legend(fontsize=fontsize)
+    for item in ([ax.xaxis.label, ax.yaxis.label] +
+              ax.get_xticklabels() + ax.get_yticklabels() +
+              ax.get_legend().get_texts()):
+     item.set_fontsize(tick_fontsize)
     ax.grid()
-
+    fig.tight_layout()
     if not output_file:
         output_file = os.path.join(output_folder, f"{(amp * 1000):.0f}pA.png")
     else:
@@ -216,19 +222,28 @@ def plot_fi_curves(
     title="FI Curves",
     ignore_negative=True,
     output_file=None,
+    fontsize='xx-large',
+    tick_fontsize='x-large',
 ):
     if ignore_negative:
         amps = amps[amps >= 0]
 
+    fig, ax = plt.subplots(1, 1, figsize=(8, 8))
     for spike_counts, label in zip(spike_counts_list, labels):
         print(f"{label}: {amps*1e3} pA : {spike_counts} Hz")
-        plt.plot(amps * 1e3, spike_counts, label=label, alpha=0.75)
+        ax.plot(amps * 1e3, spike_counts, label=label, alpha=0.75)
 
     # plt.ylim((0,np.max(np.array(spike_counts))))
-    plt.legend()
-    plt.title(title)
-    plt.ylabel("Hz")
-    plt.xlabel("pA")
+    ax.legend(fontsize=fontsize)
+    ax.set_title(title, fontsize=fontsize)
+    ax.set_ylabel("Hz", fontsize=fontsize)
+    ax.set_xlabel("pA", fontsize=fontsize)
+    for item in ([ax.xaxis.label, ax.yaxis.label] +
+              ax.get_xticklabels() + ax.get_yticklabels() +
+              ax.get_legend().get_texts()):
+        item.set_fontsize(tick_fontsize)
+    ax.grid()
+    fig.tight_layout()
 
     if output_file:
         plt.savefig(output_file)
