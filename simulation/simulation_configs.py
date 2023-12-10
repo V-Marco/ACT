@@ -749,7 +749,7 @@ Burster_S3_seg = {
         "target_cell_target_params": [0.13, 0.1, 0.01, 0.005, 0.17, 0.02],
         # ======================================================
         "target_V": None,  # Target voltages
-        "target_cell_target_params": [0.13, 0.1, 0.01, 0.005, 0.17, 0.02],
+        "target_params": [0.13, 0.1, 0.01, 0.005, 0.17, 0.02],
         "num_repeats": 1,
         "num_amps_to_match": 1,
         "num_epochs": 10,
@@ -806,7 +806,7 @@ Burster_S3_seg = {
     "run_mode": "segregated",  # "original", "segregated"
 }
 
-Burster_Seg_orig = {
+Burster_S3_orig = {
     "cell": {
         "hoc_file": "../data/BursterS3/orig/template.hoc",
         "modfiles_folder": "../data/BursterS3/orig/orig_modfiles",
@@ -881,4 +881,4 @@ Burster_Seg_orig = {
 #                                                 SELECTED_CONFIG
 # ===================================================================================================================
 # ===================================================================================================================
-selected_config = Burster_Izh_seg
+selected_config = Burster_S3_seg
