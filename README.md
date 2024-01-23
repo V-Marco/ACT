@@ -77,6 +77,8 @@ python run_simulation.py
 python analyze_res.py
 ```
 
+See [labinstall.sh](./labinstall.sh) for installation of core environment.
+
 ### Examples (Jupyter Notebook)
 
 `examples/Pospischil_sPYr/main.ipynb` example of running `act` on Pospichil's cells
