@@ -1,3 +1,5 @@
+import sys
+sys.path.append("../")
 from act import utils
 from simulation_configs import selected_config
 import warnings

@@ -1,5 +1,6 @@
 import numpy as np
-
+import sys
+sys.path.append("../")
 from act.act_types import SimulationConfig
 
 pospischilsPY: SimulationConfig = {

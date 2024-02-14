@@ -5,7 +5,8 @@ import shutil
 
 from neuron import h
 import torch
-
+import sys
+sys.path.append("../")
 from act.analysis import save_plot, plot_fi_curves
 from act.target_utils import load_target_traces
 from act.utils import load_learned_params, get_fi_curve, get_fi_curve_error

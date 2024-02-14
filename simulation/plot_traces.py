@@ -2,6 +2,7 @@ import h5py
 from matplotlib import pyplot as plt
 import os
 import sys
+sys.path.append("../")
 import json
 from act import utils
 import torch
