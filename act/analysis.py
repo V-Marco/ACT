@@ -7,7 +7,7 @@ import pandas as pd
 import torch
 
 from act.act_types import SimulationConfig
-from act.metrics import correlation_score, mse_score
+from act.metrics import correlation_score, mse_score, torch_correlation_score
 from act.optim import ACTOptimizer
 from act import utils
 
@@ -134,7 +134,8 @@ def save_mse_corr(
             simulated_data = sim_data.reshape((1, -1))
 
         mse = mse_score(target_V[ind].reshape(-1, 1), simulated_data.reshape(-1, 1))
-        corr = correlation_score(
+
+        corr = torch_correlation_score(
             target_V[ind].reshape(1, -1), simulated_data.reshape(1, -1)
         )
 
