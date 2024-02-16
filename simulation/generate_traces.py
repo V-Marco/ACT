@@ -1,7 +1,7 @@
-from simulation_configs import selected_config
-
 import sys
+sys.path.append("../")
 
+from simulation_configs import selected_config
 from act.utils import build_parametric_network, generate_parametric_traces
 
 if __name__ == "__main__":

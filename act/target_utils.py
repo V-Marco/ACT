@@ -8,6 +8,7 @@ from act.act_types import SimulationConfig
 from act.analysis import save_plot
 from act.optim import ACTOptimizer
 from act.cell_model import CellModel
+from act.logger import ACTLogger
 from act import utils
 
 DEFAULT_TARGET_V_FILE = "./target_v.json"
@@ -140,22 +141,23 @@ def get_voltage_trace_from_params(
         amps = simulation_config["optimization_parameters"]["amps"]
 
     # generate data per amp
-    for i, amp in enumerate(amps):
-        print(f"Generating trace for {float(amp)*1000} pA")
+    for _, amp in enumerate(amps):
+        ACTLogger.log(f"Generating trace for {float(amp)*1000} pA")
         parameters = [p["channel"] for p in params]
         tv = optim.simulate(amp, parameters, target_params).reshape(1, -1)
         target_V.append(tv)
         # write to output folder / mode / target
-        save_plot(
-            amp,
-            output_folder,
-            simulated_data=None,
-            target_V=tv.cpu().detach().numpy(),
-            output_file=f"target_{(amp * 1000):.0f}pA.png",
-            dt=dt,
-            simulated_label=simulated_label,
-            target_label=target_label,
-        )
+        if simulation_config["output"]["produce_plots"]:
+            save_plot(
+                amp,
+                output_folder,
+                simulated_data=None,
+                target_V=tv.cpu().detach().numpy(),
+                output_file=f"target_{(amp * 1000):.0f}pA.png",
+                dt=dt,
+                simulated_label=simulated_label,
+                target_label=target_label,
+            )
     target_V = torch.cat(target_V, dim=0)
 
     # save passive properties
@@ -169,14 +171,15 @@ def get_voltage_trace_from_params(
     ) as fp:
         json.dump(passive_properties, fp, indent=2)
 
-    save_plot(
-        -0.1,
-        output_folder,
-        simulated_data=passive_v,
-        output_file="passive_-100pA.png",
-        dt=dt,
-        simulated_label=simulated_label,
-    )
+    if simulation_config["output"]["produce_plots"]:
+        save_plot(
+            -0.1,
+            output_folder,
+            simulated_data=passive_v,
+            output_file="passive_-100pA.png",
+            dt=dt,
+            simulated_label=simulated_label,
+        )
 
     return target_V
 
@@ -196,16 +199,20 @@ def save_target_traces(
     )
     target_v_dict = {"traces": target_V.cpu().detach().tolist()}
 
-    with open(target_v_file, "w") as fp:
+    output_folder = os.path.join(
+        simulation_config["output"]["folder"], simulation_config["run_mode"], "target"
+    )
+
+    with open(os.path.join(output_folder, target_v_file), "w") as fp:
         json.dump(target_v_dict, fp)
 
     if save_lto:
-        print(f"saving additional lto file {DEFAULT_TARGET_V_LTO_FILE}...")
-        with open(DEFAULT_TARGET_V_LTO_FILE, "w") as fp:
+        ACTLogger.log(f"Saving additional LTO file {DEFAULT_TARGET_V_LTO_FILE}...")
+        with open(os.path.join(output_folder, DEFAULT_TARGET_V_LTO_FILE), "w") as fp:
             json.dump(target_v_dict, fp)
     if save_hto:
-        print(f"saving additional hto file {DEFAULT_TARGET_V_HTO_FILE}...")
-        with open(DEFAULT_TARGET_V_HTO_FILE, "w") as fp:
+        ACTLogger.log(f"Saving additional HTO file {DEFAULT_TARGET_V_LTO_FILE}...")
+        with open(os.path.join(output_folder, DEFAULT_TARGET_V_HTO_FILE), "w") as fp:
             json.dump(target_v_dict, fp)
 
     return target_V

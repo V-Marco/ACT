@@ -57,13 +57,12 @@ def _run_generate_target_traces(config: SimulationConfig, ignore_segregation=Fal
 
     shutil.copytree(modfolder, temp_modfiles_dir, dirs_exist_ok=True)
 
-    os.system(f"nrnivmodl {temp_modfiles_dir}")
+    os.system(f"nrnivmodl {temp_modfiles_dir} > /dev/null 2>&1")
 
-    logger = ACTLogger()
     try:
         h.nrn_load_dll("./x86_64/.libs/libnrnmech.so")
     except:
-        logger.info("Mod files already loaded. Continuing.")
+        ACTLogger.log("Mod files already loaded. Continuing.")
 
     save_target_traces(
         config,
@@ -89,7 +88,6 @@ def _run(config: SimulationConfig):
 
     os.system(f"nrnivmodl {temp_modfiles_dir}")
     ltohto = False
-    logger = ACTLogger()
     segregation_index = utils.get_segregation_index(config)  # if needed
     if config["run_mode"] == "segregated" and config["segregation"][
         segregation_index
@@ -106,12 +104,12 @@ def _run(config: SimulationConfig):
     else:
         amps = config["optimization_parameters"]["amps"]
 
-    logger.info(f"Number of amplitudes: {len(amps)}")
+    ACTLogger.log(f"Number of amplitudes: {len(amps)}")
 
     try:
         h.nrn_load_dll("./x86_64/.libs/libnrnmech.so")
     except:
-        logger.info("Mod files already loaded. Continuing.")
+        ACTLogger.log("Mod files already loaded. Continuing.")
 
     # Get target voltage
     if config["optimization_parameters"]["target_V"] is not None:
@@ -137,7 +135,7 @@ def _run(config: SimulationConfig):
         ).copy()  # copy per neg index err
         target_V = torch.tensor(traces)
 
-    logger.info(f"Target voltage shape: {target_V.shape}")
+    ACTLogger.log(f"Target voltage shape: {target_V.shape}")
 
     # Run the optimizer
     pred_pool = []
@@ -148,7 +146,7 @@ def _run(config: SimulationConfig):
     params = [p["channel"] for p in config["optimization_parameters"]["params"]]
     for repeat_num in range(config["optimization_parameters"]["num_repeats"]):
         if config["run_mode"] == "original" or config["run_mode"] == "segregated":
-            optim = GeneralACTOptimizer(simulation_config=config, logger=logger, set_passive_properties=not ltohto)
+            optim = GeneralACTOptimizer(simulation_config=config, logger=None, set_passive_properties=not ltohto)
             predictions, train_stats = optim.optimize(target_V)
             predictions_amps = predictions[:, -1].reshape(-1, 1)
             predictions = predictions[:, :-1]

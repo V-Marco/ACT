@@ -11,7 +11,7 @@ import tqdm
 
 from act.act_types import PassiveProperties, SimulationConfig
 from act.cell_model import CellModel
-from act.logger import ACTDummyLogger
+from act.logger import ACTDummyLogger, ACTLogger
 from act.models import (
     BranchingNet,
     EmbeddingNet,
@@ -107,7 +107,7 @@ class ACTOptimizer:
         # Set the logger
         self.logger = logger
         if self.logger is None:
-            self.logger = ACTDummyLogger()
+            self.logger = ACTLogger()
 
     def optimize(self, target_V: torch.Tensor) -> torch.Tensor:
         raise NotImplementedError
@@ -161,7 +161,6 @@ class ACTOptimizer:
         h.steps_per_ms = 1 / h.dt
         h.v_init = self.config["simulation_parameters"]["h_v_init"]
         h.celsius = self.config["simulation_parameters"].get("h_celsius", 31.0)
-        print(f"h.celsius set to {h.celsius}")
 
         self.cell.set_parameters(parameter_names, parameter_values)
         segregation_index = utils.get_segregation_index(self.config)

@@ -1,5 +1,5 @@
-import numpy as np
-
+import sys
+sys.path.append("../")
 from act.act_types import SimulationConfig
 
 # ===================================================================================================================
@@ -238,7 +238,7 @@ LA_A_orig = {
     ],
     "output": {
         "folder": "output_LA_A_orig",
-        "produce_plots": True,
+        "produce_plots": False,
         "target_label": "User Trace",
         "simulated_label": "Model ACT-Original",
     },
@@ -881,4 +881,4 @@ Burster_S3_orig = {
 #                                                 SELECTED_CONFIG
 # ===================================================================================================================
 # ===================================================================================================================
-selected_config = Burster_Izh_seg
+selected_config = LA_A_orig
