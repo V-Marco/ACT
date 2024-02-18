@@ -82,8 +82,9 @@ def stats(traces, params_dict):
 
 
 if __name__ == "__main__":
-    traces_path = "output/v_report.h5"
-    params_path = "parameter_values.json"
+    output_dir = utils.get_output_folder_name(selected_config)
+    traces_path = output_dir + "sim_data/output/v_report.h5"
+    params_path = output_dir + "sim_data/parameter_values.json"
 
     if not os.path.exists(traces_path) or not os.path.exists(params_path):
         print(

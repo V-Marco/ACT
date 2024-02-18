@@ -12,9 +12,16 @@ def main(extra_trace, extra_trace_label, title=None):
 
     inj_dur = config["simulation_parameters"]["h_i_dur"]
 
-    traces_file = os.path.join(
-        config["output"]["folder"], config["run_mode"], "traces.h5"
-    )
+    output_folder = utils.get_output_folder_name(config)
+    target_params = config["optimization_parameters"].get("target_params")
+    if(config["run_mode"] == "segregated"):
+        segregation_index = utils.get_segregation_index(config)
+        segregation_dir = f"seg_module_{segregation_index+1}/"
+        model_data_dir = os.path.join(output_folder, segregation_dir)
+    else:
+        model_data_dir = output_folder
+
+    traces_file = model_data_dir + "traces.h5"
     simulated_traces, target_traces, amps = utils.load_final_traces(traces_file)
 
     simulated_curve = utils.get_fi_curve(simulated_traces, amps, inj_dur=inj_dur)
@@ -40,8 +47,9 @@ def main(extra_trace, extra_trace_label, title=None):
         extra_trace_label = extra_trace_label + f" (err: {err2})"
         labels.append(extra_trace_label)
 
+    fi_file = f"{output_folder[2:-1]}_FI"
     analysis.plot_fi_curves(
-        curves_list, amps.cpu().detach().numpy(), labels=labels, title=title
+        curves_list, amps.cpu().detach().numpy(), labels=labels, title=title, output_file=model_data_dir + fi_file
     )
 
 

@@ -9,7 +9,7 @@ import sys
 sys.path.append("../")
 from act.analysis import save_plot, plot_fi_curves
 from act.target_utils import load_target_traces
-from act.utils import load_learned_params, get_fi_curve, get_fi_curve_error
+from act.utils import load_learned_params, get_fi_curve, get_fi_curve_error, get_output_folder_name
 from act.optim import ACTOptimizer
 from act.target_utils import DEFAULT_TARGET_V_LTO_FILE, DEFAULT_TARGET_V_HTO_FILE
 
@@ -23,7 +23,7 @@ def save_fi(config, simulated_traces, target_traces, amps):
     inj_dur = config["simulation_parameters"]["h_i_dur"]
 
     output_file = os.path.join(
-        config["output"]["folder"], "final" , "final_fi_curve"
+        get_output_folder_name(selected_config), "final" , "final_fi_curve"
     )
 
     simulated_curve = get_fi_curve(simulated_traces, amps, inj_dur=inj_dur)
@@ -79,7 +79,7 @@ def run(simulation_config):
     
     # create output folders
     output_folder = os.path.join(
-        simulation_config["output"]["folder"], "final"
+        get_output_folder_name(selected_config), "final"
     )
     if not os.path.exists(output_folder):
         os.makedirs(output_folder, exist_ok=True)
