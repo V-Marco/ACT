@@ -78,7 +78,7 @@ def _run(config: SimulationConfig):
     if config["optimization_parameters"]["num_epochs"] < 1:
         raise ValueError("Number of epochs is expected to be >= 1.")
 
-    output_folder = utils.create_output_folder(config)
+    output_folder = os.path.join(config["output"]["folder"], config["run_mode"])
 
     # if there is a target_cell specified then use it too
     os.mkdir(temp_modfiles_dir)
@@ -115,7 +115,7 @@ def _run(config: SimulationConfig):
     if config["optimization_parameters"]["target_V"] is not None:
         target_V = config["optimization_parameters"]["target_V"]
     elif config["optimization_parameters"]["target_V_file"] is not None:
-        target_V = load_target_traces(config)
+        target_V = load_target_traces(config, os.path.join(output_folder, "target", "target_v.json"))
     elif config["optimization_parameters"]["target_params"] is not None:
         target_V = get_voltage_trace_from_params(config)
     else:

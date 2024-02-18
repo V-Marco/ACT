@@ -345,12 +345,14 @@ def save_learned_params(learned_params):
 
 
 def build_parametric_network(config: SimulationConfig):
-    config_file = "simulation_act_simulation_config.json"
-    parameter_values_file = "parameter_values.json"
+    output_folder = os.path.join(config["output"]["folder"], "traces")
+
+    config_file = os.path.join(output_folder, "simulation_act_simulation_config.json")
+    parameter_values_file = os.path.join(output_folder, "parameter_values.json")
 
     params = [p["channel"] for p in config["optimization_parameters"]["params"]]
 
-    if os.path.exists("components"):
+    if os.path.exists(os.path.join(output_folder, "components")):
         print(f"./components dir exists, removing")
         shutil.rmtree("components")
 
@@ -416,7 +418,7 @@ def build_parametric_network(config: SimulationConfig):
         block_channels=block_channels,
     )
 
-    network_dir = "network"
+    network_dir = os.path.join(output_folder, "network")
     # remove everything from prior runs
     if os.path.exists(network_dir):
         for f in os.listdir(network_dir):
@@ -526,8 +528,8 @@ def build_parametric_network(config: SimulationConfig):
     net.save_edges(output_dir=network_dir)
 
     build_env_bionet(
-        base_dir="./",
-        network_dir=network_dir,
+        base_dir=output_folder,
+        network_dir="network",
         tstop=tstop
         + ramp_time,  # ramp time is normally zero but when this is all done then we need to cut the first "ramp_time" off each trace to keep it consistent
         dt=dt,
@@ -542,9 +544,9 @@ def build_parametric_network(config: SimulationConfig):
     )
 
     # copy the files to the correct network directories
-    shutil.copy(hoc_file, "components/templates/")
+    shutil.copy(hoc_file, os.path.join(output_folder, "components", "templates"))
 
-    new_mods_folder = "./components/mechanisms/"
+    new_mods_folder = os.path.join(output_folder, "components", "mechanisms")
     src_files = os.listdir(modfiles_folder)
     for file_name in src_files:
         full_file_name = os.path.join(modfiles_folder, file_name)
@@ -566,7 +568,7 @@ def build_parametric_network(config: SimulationConfig):
     with open(config_file, "w") as f:
         json.dump(conf_dict, f, indent=2)
 
-    nodesets_file = "node_sets.json"
+    nodesets_file = os.path.join(output_folder, "node_sets.json")
     node_dict = None
     with open(nodesets_file) as json_file:
         node_dict = json.load(json_file)
@@ -598,9 +600,10 @@ def generate_parametric_traces(config: SimulationConfig):
     traces for a large collection of cells and generates an h5
     file for injestion later.
     """
+    output_folder = os.path.join(config["output"]["folder"], "traces")
     passive_properties = config.get("cell", {}).get("passive_properties", None)
-    config_file = "simulation_act_simulation_config.json"
-    parameter_values_file = "parameter_values.json"
+    config_file = os.path.join(output_folder, "simulation_act_simulation_config.json")
+    parameter_values_file = os.path.join(output_folder, "parameter_values.json")
     with open(parameter_values_file) as f:
         param_dict = json.load(f)
         params = param_dict["parameters"]
@@ -654,8 +657,9 @@ def load_parametric_traces(config: SimulationConfig, drop_ramp=False):
     """
     Return a torch tensor of all traces in the specified h5 file
     """
-    parameter_values_file = "parameter_values.json"
-    traces_file = "output/v_report.h5"
+    traces_folder = os.path.join(config["output"]["folder"], "traces")
+    parameter_values_file = os.path.join(traces_folder, "parameter_values.json")
+    traces_file = os.path.join(traces_folder, "output", "v_report.h5")
 
     if not os.path.exists(parameter_values_file) or not os.path.exists(traces_file):
         return None, None, None
