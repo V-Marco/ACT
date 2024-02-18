@@ -15,11 +15,7 @@ from act.analysis import save_mse_corr, save_plot, save_prediction_plots
 from act.logger import ACTLogger
 from act.metrics import correlation_score, mse_score
 from act.optim import GeneralACTOptimizer
-from act.target_utils import (
-    get_voltage_trace_from_params,
-    save_target_traces,
-    load_target_traces,
-)
+from act import target_utils
 
 temp_modfiles_dir = "temp_modfiles"
 
@@ -65,7 +61,7 @@ def _run_generate_target_traces(config: SimulationConfig, ignore_segregation=Fal
     except:
         logger.info("Mod files already loaded. Continuing.")
 
-    save_target_traces(
+    target_utils.save_target_traces(
         config,
         ignore_segregation=ignore_segregation,
         save_lto=save_lto,
@@ -79,7 +75,9 @@ def _run(config: SimulationConfig):
     if config["optimization_parameters"]["num_epochs"] < 1:
         raise ValueError("Number of epochs is expected to be >= 1.")
 
-    output_folder = utils.create_output_folder(config)
+    output_folder = utils.get_output_folder_name(config) + "_temp_/"
+    if not os.path.exists(output_folder):
+        os.mkdir(output_folder)
 
     # if there is a target_cell specified then use it too
     os.mkdir(temp_modfiles_dir)
@@ -117,9 +115,9 @@ def _run(config: SimulationConfig):
     if config["optimization_parameters"]["target_V"] is not None:
         target_V = config["optimization_parameters"]["target_V"]
     elif config["optimization_parameters"]["target_V_file"] is not None:
-        target_V = load_target_traces(config)
+        target_V = target_utils.load_target_traces(config)
     elif config["optimization_parameters"]["target_params"] is not None:
-        target_V = get_voltage_trace_from_params(config)
+        target_V = target_utils.get_voltage_trace_from_params(config)
     else:
         raise ValueError(
             "Must specify either target_V, target_V_file or target_params for optimization_parameters"
@@ -170,7 +168,7 @@ def _run(config: SimulationConfig):
 
         # output train stats
         print(f"writing training run stats for repeat {repeat_num+1}")
-        with open(f"train_stats_repeat_{repeat_num+1}.json", "w") as fp:
+        with open(output_folder + f"train_stats_repeat_{repeat_num+1}.json", "w") as fp:
             json.dump(train_stats, fp)
         print("done")
 
@@ -376,13 +374,12 @@ def _run(config: SimulationConfig):
     learned_params = {param: predict for param, predict in zip(params, predictions)}
     if config["run_mode"] == "segregated":
         # save a copy of the outputs for future development
-        base_output_folder = config["output"]["folder"]
+        base_output_folder = utils.get_output_folder_name(config)
         run_output_folder_name = f"{config['run_mode']}"
         seg_folder = os.path.join(
-            base_output_folder, f"{run_output_folder_name}_seg{segregation_index+1}"
+            base_output_folder, f"seg_module_{segregation_index+1}"
         )
         shutil.copytree(output_folder, seg_folder, dirs_exist_ok=True)
-
         utils.update_segregation(config, learned_params)
     else:
         utils.save_learned_params(learned_params)

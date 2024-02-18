@@ -3,6 +3,9 @@ import os
 
 import numpy as np
 import torch
+import sys
+sys.path.append("../")
+from act import simulator
 
 from act.act_types import SimulationConfig
 from act.analysis import save_plot
@@ -10,9 +13,9 @@ from act.optim import ACTOptimizer
 from act.cell_model import CellModel
 from act import utils
 
-DEFAULT_TARGET_V_FILE = "./target_v.json"
-DEFAULT_TARGET_V_LTO_FILE = "./target_v_lto.json"
-DEFAULT_TARGET_V_HTO_FILE = "./target_v_hto.json"
+DEFAULT_TARGET_V_FILE = "target_v.json"
+DEFAULT_TARGET_V_LTO_FILE = "target_v_lto.json"
+DEFAULT_TARGET_V_HTO_FILE = "target_v_hto.json"
 
 
 def get_voltage_trace_from_params(
@@ -108,7 +111,7 @@ def get_voltage_trace_from_params(
 
     # create output folders
     output_folder = os.path.join(
-        simulation_config["output"]["folder"], simulation_config["run_mode"], "target"
+        utils.get_output_folder_name(simulation_config), "target"
     )
     if not os.path.exists(output_folder):
         os.makedirs(output_folder, exist_ok=True)
@@ -190,22 +193,28 @@ def save_target_traces(
     target_V = get_voltage_trace_from_params(
         simulation_config, ignore_segregation=ignore_segregation
     )
+    output_folder = utils.get_output_folder_name(simulation_config) + "target/"
 
     target_v_file = simulation_config["optimization_parameters"].get(
         "target_V_file", DEFAULT_TARGET_V_FILE
     )
+
+    target_v_file = output_folder + target_v_file
+    print(f"Saving target voltage data to: {target_v_file}")
     target_v_dict = {"traces": target_V.cpu().detach().tolist()}
 
     with open(target_v_file, "w") as fp:
         json.dump(target_v_dict, fp)
 
     if save_lto:
-        print(f"saving additional lto file {DEFAULT_TARGET_V_LTO_FILE}...")
-        with open(DEFAULT_TARGET_V_LTO_FILE, "w") as fp:
+        target_v_lto_file = output_folder + DEFAULT_TARGET_V_LTO_FILE
+        print(f"saving additional lto file {target_v_lto_file}...")
+        with open(target_v_lto_file, "w") as fp:
             json.dump(target_v_dict, fp)
     if save_hto:
-        print(f"saving additional hto file {DEFAULT_TARGET_V_HTO_FILE}...")
-        with open(DEFAULT_TARGET_V_HTO_FILE, "w") as fp:
+        target_v_hto_file = output_folder + DEFAULT_TARGET_V_HTO_FILE
+        print(f"saving additional hto file {target_v_hto_file}...")
+        with open(target_v_hto_file, "w") as fp:
             json.dump(target_v_dict, fp)
 
     return target_V
@@ -217,10 +226,13 @@ def load_target_traces(
     ramp_time = -1,
     cut_ramp=False
 ) -> torch.Tensor:
+    output_folder = utils.get_output_folder_name(simulation_config) + "target/"
     if not target_v_file:
         target_v_file = simulation_config["optimization_parameters"].get(
             "target_V_file", DEFAULT_TARGET_V_FILE
         )
+
+    target_v_file = output_folder + target_v_file
 
     with open(target_v_file, "r") as fp:
         target_v_dict = json.load(fp)

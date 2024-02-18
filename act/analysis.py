@@ -144,17 +144,17 @@ def save_mse_corr(
 
 
 def print_run_stats(config: SimulationConfig):
-    output_folder = config["output"]["folder"]
-    run_mode = config["run_mode"]
+    output_folder = utils.get_output_folder_name(config)
     target_params = config["optimization_parameters"].get("target_params")
-    pred_passive_json_path = os.path.join(
-        output_folder, run_mode, "pred_passive_properties.json"
-    )
-
-    metrics = pd.read_csv(os.path.join(output_folder, run_mode, "metrics.csv"))
-    preds_df = pd.read_csv(
-        os.path.join(output_folder, run_mode, "pred.csv"), index_col=0
-    )
+    if(config["run_mode"] == "segregated"):
+        segregation_index = utils.get_segregation_index(config)
+        segregation_dir = f"seg_module_{segregation_index+1}/"
+        model_data_dir = os.path.join(output_folder, segregation_dir)
+    else:
+        model_data_dir = output_folder
+    pred_passive_json_path = model_data_dir + "pred_passive_properties.json"
+    metrics = pd.read_csv(model_data_dir + "metrics.csv")
+    preds_df = pd.read_csv(model_data_dir + "pred.csv", index_col=0)
     pred_passive_json = None
     if os.path.isfile(pred_passive_json_path):
         with open(pred_passive_json_path, "r") as fp:
@@ -204,9 +204,8 @@ def print_run_stats(config: SimulationConfig):
         print(f"tau: {(pred_passive_json['tau']-target_passive_json['tau']):.2f}")
         print("----------\n")
 
-    traces_file = os.path.join(
-        config["output"]["folder"], config["run_mode"], "traces.h5"
-    )
+    traces_file = model_data_dir + "traces.h5"
+    
     simulated_traces, target_traces, amps = utils.load_final_traces(traces_file)
     error = utils.get_fi_curve_error(
         simulated_traces, target_traces, amps, print_info=True
