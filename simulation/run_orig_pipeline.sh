@@ -3,8 +3,8 @@
 #SBATCH -N 1
 #SBATCH -n 1
 #SBATCH --qos=normal
-#SBATCH --job-name=act-pipeline
-#SBATCH --output=output/act_batch_full.out
+#SBATCH --job-name=act-orig-pipeline
+#SBATCH --output=output/run_orig_pipeline.out
 #SBATCH --time 0-12:00
 
 

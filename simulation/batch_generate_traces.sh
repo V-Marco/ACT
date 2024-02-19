@@ -2,9 +2,10 @@
 
 #SBATCH -N 1
 #SBATCH -n 48
+#SBATCH -W
 #SBATCH --qos=normal
 #SBATCH --job-name=act
-#SBATCH --output=output/act_batch.out
+#SBATCH --output=output/bmtk_sim.out
 #SBATCH --time 0-12:00
 
 START=$(date)

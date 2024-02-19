@@ -865,7 +865,7 @@ Burster_S3_orig = {
         "skip_match_voltage": True,
         "use_random_forest": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
-            "n_slices": 1,
+            "n_slices": 3,
         },
         "decimate_factor": 10,
     },
