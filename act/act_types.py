@@ -58,6 +58,7 @@ class OptimizationParameters(TypedDict):
     num_repeats: int
     num_amps_to_match: int
     num_epochs: int
+    random_seed: int
     parametric_distribution: ParametricDistribution
     decimate_factor: int  # reduce voltage traces after simulation
     use_random_forest: bool
@@ -108,6 +109,7 @@ class SegregationModule(TypedDict):
 
 class Output(TypedDict):
     folder: str
+    auto_structure: bool
     produce_plots: bool
     target_label: str
     simulated_label: str

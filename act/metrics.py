@@ -18,6 +18,12 @@ def correlation_score(target_data: torch.Tensor, simulated_data: torch.Tensor) -
 
     return float(torch.mean(corr).cpu().detach())
 
+def torch_correlation_score(target_data: torch.Tensor, simulated_data: torch.Tensor) -> float:
+    matrix = torch.cat((target_data,simulated_data),0)
+    corr_mat = torch.corrcoef(matrix)
+    corr_coef = corr_mat[0,1]
+
+    return float(corr_coef)
 
 def mse_score(target_data: torch.Tensor, simulated_data: torch.Tensor) -> float:
     return float(

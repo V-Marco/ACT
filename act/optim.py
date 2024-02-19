@@ -356,6 +356,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         self.model_pool = None
         self.use_random_forest = False  # just for testing
         self.reg = None  # regressor for random forest
+        self.random_seed = simulation_config["optimization_parameters"]["random_seed"]
         self.init_random_forest()
 
         self.voltage_data_scaler = TorchMinMaxScaler()
@@ -363,6 +364,7 @@ class GeneralACTOptimizer(ACTOptimizer):
 
         self.segregation_index = utils.get_segregation_index(simulation_config)
         self.hto_block_channels = []
+        
 
     def init_random_forest(self):
         params = {
@@ -371,7 +373,7 @@ class GeneralACTOptimizer(ACTOptimizer):
             "min_samples_split": 2,
             # "warm_start": True,
             # "oob_score": True,
-            "random_state": 42,
+            "random_state": self.random_seed,
         }
         self.reg = RandomForestRegressor(**params)
 

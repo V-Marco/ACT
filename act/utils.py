@@ -25,13 +25,15 @@ MPI_RANK = int(pc.id())
 
 
 def create_output_folder(config: SimulationConfig, overwrite=True) -> str:
-    output_folder = config["output"]["folder"]
-    run_output_folder_name = f"{config['run_mode']}"
+    if(config["output"]["auto_structure"] == True):
+        print("AUTO STRUCTURED")
+        output_folder = get_output_folder_name(config)
+    else:
+        output_folder = f"{config['output']['folder']}"
 
     if not os.path.exists(output_folder):
-        os.mkdir(output_folder)
+            os.mkdir(output_folder)
 
-    output_folder = os.path.join(config["output"]["folder"], run_output_folder_name)
     # delete old results
     if os.path.exists(output_folder) and overwrite:
         shutil.rmtree(output_folder, ignore_errors=True)
@@ -40,6 +42,17 @@ def create_output_folder(config: SimulationConfig, overwrite=True) -> str:
 
     return output_folder
 
+def get_output_folder_name(config: SimulationConfig) -> str:
+    cell_name = config["cell"]["name"]
+    num_slices = f"{config['optimization_parameters']['parametric_distribution']['n_slices']}"
+    random_seed = f"{config['optimization_parameters']['random_seed']}"
+    run_mode = f"{config['run_mode']}"  #"segregated" "origin
+    if(run_mode == "segregated"):
+        run_mode_name = "seg"
+    else:
+        run_mode_name = "orig"
+
+    return f"./output/{cell_name}_{run_mode_name}_{num_slices}-slice_{random_seed}-seed/"
 
 def set_cell_parameters(cell, parameter_list: list, parameter_values: list) -> None:
     for sec in cell.all:
@@ -185,7 +198,8 @@ def cleanup_simulation():
 
 
 def get_segregation_index(config: SimulationConfig):
-    parameter_values_file = "parameter_values.json"
+    output_dir = get_output_folder_name(config)
+    parameter_values_file = output_dir + "sim_data" + "parameter_values.json"
 
     if config["run_mode"] != "segregated":
         return -1
@@ -264,7 +278,8 @@ def update_segregation(config: SimulationConfig, learned_params):
     # And updates the parameter_values.json if that parameter was
     # in the current segregation index
     # learned_params = {'channel'(str):value(float),}
-    parameter_values_file = "parameter_values.json"
+    output_dir = get_output_folder_name(config) + "sim_data/"
+    parameter_values_file = output_dir + "parameter_values.json"
     if os.path.exists(parameter_values_file):
         print(f"Updating {parameter_values_file} for learned parameters")
         with open(parameter_values_file, "r") as fp:
@@ -345,8 +360,9 @@ def save_learned_params(learned_params):
 
 
 def build_parametric_network(config: SimulationConfig):
-    config_file = "simulation_act_simulation_config.json"
-    parameter_values_file = "parameter_values.json"
+    output_dir = get_output_folder_name(config) + "sim_data/"
+    config_file = output_dir + "simulation_act_simulation_config.json"
+    parameter_values_file = output_dir + "parameter_values.json"
 
     params = [p["channel"] for p in config["optimization_parameters"]["params"]]
 
@@ -416,7 +432,8 @@ def build_parametric_network(config: SimulationConfig):
         block_channels=block_channels,
     )
 
-    network_dir = "network"
+    
+    network_dir = output_dir + "network"
     # remove everything from prior runs
     if os.path.exists(network_dir):
         for f in os.listdir(network_dir):
@@ -526,7 +543,7 @@ def build_parametric_network(config: SimulationConfig):
     net.save_edges(output_dir=network_dir)
 
     build_env_bionet(
-        base_dir="./",
+        base_dir=output_dir,
         network_dir=network_dir,
         tstop=tstop
         + ramp_time,  # ramp time is normally zero but when this is all done then we need to cut the first "ramp_time" off each trace to keep it consistent
@@ -535,16 +552,16 @@ def build_parametric_network(config: SimulationConfig):
         report_vars=["v"],
         v_init=v_init,
         celsius=celsius,
-        components_dir="components",
+        components_dir= "components",
         config_file="act_simulation_config.json",
         compile_mechanisms=False,
         overwrite_config=True,
     )
 
     # copy the files to the correct network directories
-    shutil.copy(hoc_file, "components/templates/")
+    shutil.copy(hoc_file, output_dir + "components/templates/")
 
-    new_mods_folder = "./components/mechanisms/"
+    new_mods_folder = output_dir + "components/mechanisms/"
     src_files = os.listdir(modfiles_folder)
     for file_name in src_files:
         full_file_name = os.path.join(modfiles_folder, file_name)
@@ -566,7 +583,7 @@ def build_parametric_network(config: SimulationConfig):
     with open(config_file, "w") as f:
         json.dump(conf_dict, f, indent=2)
 
-    nodesets_file = "node_sets.json"
+    nodesets_file = output_dir + "node_sets.json"
     node_dict = None
     with open(nodesets_file) as json_file:
         node_dict = json.load(json_file)
@@ -598,9 +615,10 @@ def generate_parametric_traces(config: SimulationConfig):
     traces for a large collection of cells and generates an h5
     file for injestion later.
     """
+    output_dir = get_output_folder_name(config) + "sim_data/"
     passive_properties = config.get("cell", {}).get("passive_properties", None)
-    config_file = "simulation_act_simulation_config.json"
-    parameter_values_file = "parameter_values.json"
+    config_file = output_dir + "simulation_act_simulation_config.json"
+    parameter_values_file = output_dir + "parameter_values.json"
     with open(parameter_values_file) as f:
         param_dict = json.load(f)
         params = param_dict["parameters"]
@@ -632,7 +650,8 @@ def generate_parametric_traces(config: SimulationConfig):
 
     # Run the Simulation
     sim.run()
-    bionet.nrn.quit_execution()
+    #bionet.nrn.quit_execution()
+
     # Save traces/parameters and cleanup
 
 
@@ -654,8 +673,9 @@ def load_parametric_traces(config: SimulationConfig, drop_ramp=False):
     """
     Return a torch tensor of all traces in the specified h5 file
     """
-    parameter_values_file = "parameter_values.json"
-    traces_file = "output/v_report.h5"
+    output_dir = get_output_folder_name(config) + "sim_data/"
+    parameter_values_file = output_dir + "parameter_values.json"
+    traces_file = output_dir + "output/v_report.h5"
 
     if not os.path.exists(parameter_values_file) or not os.path.exists(traces_file):
         return None, None, None

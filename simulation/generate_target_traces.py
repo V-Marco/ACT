@@ -1,5 +1,5 @@
 import sys
-
+sys.path.append("../")
 from act import simulator
 
 from simulation_configs import selected_config

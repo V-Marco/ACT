@@ -11,6 +11,7 @@ import os
 import time
 import signal
 import sys
+sys.path.append("../")
 
 from act import utils
 

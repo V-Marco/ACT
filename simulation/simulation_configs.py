@@ -1,5 +1,6 @@
 import numpy as np
-
+import sys
+sys.path.append("../")
 from act.act_types import SimulationConfig
 
 # ===================================================================================================================
@@ -80,6 +81,7 @@ LA_A_seg = {
         "num_repeats": 1,
         "num_amps_to_match": 1,
         "num_epochs": 10,
+        "random_seed": 42,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
@@ -152,6 +154,7 @@ LA_A_seg = {
     ],
     "output": {
         "folder": "output_LA_A_seg",
+        "auto_structure": True,   # Makes above "folder" setting obsolete
         "produce_plots": True,
         "target_label": "User Trace",
         "simulated_label": "Model ACT-Segregated",
@@ -201,6 +204,7 @@ LA_A_orig = {
         "num_repeats": 1,
         "num_amps_to_match": 12,
         "num_epochs": 10,
+        "random_seed": 42,
         "skip_match_voltage": True,
         "use_random_forest": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
@@ -238,6 +242,7 @@ LA_A_orig = {
     ],
     "output": {
         "folder": "output_LA_A_orig",
+        "auto_structure": True,   # Makes above "folder" setting obsolete
         "produce_plots": True,
         "target_label": "User Trace",
         "simulated_label": "Model ACT-Original",
@@ -324,6 +329,7 @@ LA_C_seg = {
         "num_repeats": 1,
         "num_amps_to_match": 1,
         "num_epochs": 10,
+        "random_seed": 42,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
@@ -396,6 +402,7 @@ LA_C_seg = {
     ],
     "output": {
         "folder": "output_LA_C_seg",
+        "auto_structure": True,   # Makes above "folder" setting obsolete
         "produce_plots": True,
         "target_label": "User Trace",
         "simulated_label": "Model ACT-Segregated",
@@ -445,6 +452,7 @@ LA_C_orig = {
         "num_repeats": 1,
         "num_amps_to_match": 12,
         "num_epochs": 10,
+        "random_seed": 42,
         "skip_match_voltage": True,
         "use_random_forest": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
@@ -482,6 +490,7 @@ LA_C_orig = {
     ],
     "output": {
         "folder": "output_LA_C_orig",
+        "auto_structure": True,   # Makes above "folder" setting obsolete
         "produce_plots": True,
         "target_label": "User Trace",
         "simulated_label": "Model ACT-Original",
@@ -561,6 +570,7 @@ Burster_Izh_seg = {
         "num_repeats": 1,
         "num_amps_to_match": 1,
         "num_epochs": 10,
+        "random_seed": 42,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
@@ -607,6 +617,7 @@ Burster_Izh_seg = {
     ],
     "output": {
         "folder": "output_Burster_Izh_seg",
+        "auto_structure": True,   # Makes above "folder" setting obsolete
         "produce_plots": True,
         "target_label": "User Trace",
         "simulated_label": "Model ACT-Segregated",
@@ -652,6 +663,7 @@ Burster_Izh_orig = {
         "num_repeats": 1,
         "num_amps_to_match": 12,
         "num_epochs": 10,
+        "random_seed": 42,
         "skip_match_voltage": True,
         "use_random_forest": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
@@ -674,6 +686,7 @@ Burster_Izh_orig = {
     ],
     "output": {
         "folder": "output_Burster_Izh_orig",
+        "auto_structure": True,   # Makes above "folder" setting obsolete
         "produce_plots": True,
         "target_label": "User Trace",
         "simulated_label": "Model ACT-Original",
@@ -725,7 +738,7 @@ Burster_S3_seg = {
             {"channel": "gbar_kca", "high": 0.04, "low": 0.0},
         ],
         # ======================================================
-        "target_V_file": "./target_v.json",
+        "target_V_file": "target_v.json",
         "target_cell": {
             "hoc_file": "../data/BursterS3/orig/template.hoc",
             "modfiles_folder": "../data/BursterS3/orig/orig_modfiles",
@@ -753,9 +766,10 @@ Burster_S3_seg = {
         "num_repeats": 1,
         "num_amps_to_match": 1,
         "num_epochs": 10,
+        "random_seed": 42,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
-            "n_slices": 5,
+            "n_slices": 2,
         },
         "decimate_factor": 10,
     },
@@ -799,6 +813,7 @@ Burster_S3_seg = {
     ],
     "output": {
         "folder": "output_Burster_S3_seg",
+        "auto_structure": True,   # Makes above "folder" setting obsolete
         "produce_plots": True,
         "target_label": "User Trace",
         "simulated_label": "Model ACT-Segregated",
@@ -840,16 +855,17 @@ Burster_S3_orig = {
             {"channel": "gbar_ka", "high": 0.34, "low": 0.0},
             {"channel": "gbar_kca", "high": 0.04, "low": 0.0},
         ],
-        "target_V_file": "./target_v.json",
+        "target_V_file": "target_v.json",
         "target_V": None,  # Target voltages
         "target_params": [0.13, 0.1, 0.01, 0.005, 0.17, 0.02],
         "num_repeats": 1,
         "num_amps_to_match": 12,
         "num_epochs": 10,
+        "random_seed": 42,
         "skip_match_voltage": True,
         "use_random_forest": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
-            "n_slices": 5,
+            "n_slices": 3,
         },
         "decimate_factor": 10,
     },
@@ -868,6 +884,7 @@ Burster_S3_orig = {
     ],
     "output": {
         "folder": "output_Burster_S3_orig",
+        "auto_structure": True,   # Makes above "folder" setting obsolete
         "produce_plots": True,
         "target_label": "User Trace",
         "simulated_label": "Model ACT-Original",
@@ -881,4 +898,4 @@ Burster_S3_orig = {
 #                                                 SELECTED_CONFIG
 # ===================================================================================================================
 # ===================================================================================================================
-selected_config = Burster_Izh_seg
+selected_config = Burster_S3_orig

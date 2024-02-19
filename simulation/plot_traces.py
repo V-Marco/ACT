@@ -2,6 +2,7 @@ import h5py
 from matplotlib import pyplot as plt
 import os
 import sys
+sys.path.append("../")
 import json
 from act import utils
 import torch
@@ -75,14 +76,15 @@ def stats(traces, params_dict):
     for cell_id in [45, 55,65,75,90,110,120]:
         plot_trace(spiking_amps[cell_id].cpu(), spiking_traces[cell_id].cpu(), spiking_params[cell_id].cpu().tolist(), cell_id)
     plt.show()
-    import pdb
+    #import pdb
 
-    pdb.set_trace()
+    #pdb.set_trace()
 
 
 if __name__ == "__main__":
-    traces_path = "output/v_report.h5"
-    params_path = "parameter_values.json"
+    output_dir = utils.get_output_folder_name(selected_config)
+    traces_path = output_dir + "sim_data/output/v_report.h5"
+    params_path = output_dir + "sim_data/parameter_values.json"
 
     if not os.path.exists(traces_path) or not os.path.exists(params_path):
         print(
