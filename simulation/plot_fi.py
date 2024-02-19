@@ -18,8 +18,10 @@ def main(extra_trace, extra_trace_label, title=None):
         segregation_index = utils.get_segregation_index(config)
         segregation_dir = f"seg_module_{segregation_index+1}/"
         model_data_dir = os.path.join(output_folder, segregation_dir)
+        fi_file = model_data_dir + f"{output_folder[9:-1]}_FI.png"
     else:
-        model_data_dir = output_folder
+        model_data_dir = output_folder + "model_data/"
+        fi_file = model_data_dir + f"{output_folder[9:-1]}_FI.png"
 
     traces_file = model_data_dir + "traces.h5"
     simulated_traces, target_traces, amps = utils.load_final_traces(traces_file)
@@ -47,9 +49,9 @@ def main(extra_trace, extra_trace_label, title=None):
         extra_trace_label = extra_trace_label + f" (err: {err2})"
         labels.append(extra_trace_label)
 
-    fi_file = f"{output_folder[2:-1]}_FI"
+    print(fi_file)
     analysis.plot_fi_curves(
-        curves_list, amps.cpu().detach().numpy(), labels=labels, title=title, output_file=model_data_dir + fi_file
+        curves_list, amps.cpu().detach().numpy(), labels=labels, title=title, output_file=fi_file
     )
 
 

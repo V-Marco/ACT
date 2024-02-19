@@ -379,9 +379,14 @@ def _run(config: SimulationConfig):
         seg_folder = os.path.join(
             base_output_folder, f"seg_module_{segregation_index+1}"
         )
-        shutil.copytree(output_folder, seg_folder, dirs_exist_ok=True)
+        shutil.move(output_folder, seg_folder)
         utils.update_segregation(config, learned_params)
     else:
+        base_output_folder = utils.get_output_folder_name(config)
+        orig_folder = os.path.join(
+            base_output_folder, "model_data"
+        )
+        shutil.move(output_folder, orig_folder)
         utils.save_learned_params(learned_params)
 
 

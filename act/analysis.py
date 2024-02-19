@@ -151,7 +151,7 @@ def print_run_stats(config: SimulationConfig):
         segregation_dir = f"seg_module_{segregation_index+1}/"
         model_data_dir = os.path.join(output_folder, segregation_dir)
     else:
-        model_data_dir = output_folder
+        model_data_dir = output_folder + "model_data/"
     pred_passive_json_path = model_data_dir + "pred_passive_properties.json"
     metrics = pd.read_csv(model_data_dir + "metrics.csv")
     preds_df = pd.read_csv(model_data_dir + "pred.csv", index_col=0)

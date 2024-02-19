@@ -13,7 +13,7 @@ if(selected_config["run_mode"] == "segregated"):
     segregation_dir = f"seg_module_{segregation_index+1}/"
     model_data_dir = os.path.join(output_dir, segregation_dir)
 else:
-    model_data_dir = output_dir
+    model_data_dir = output_dir + "model_data/"
 with open(model_data_dir + "train_stats_repeat_1.json", "r") as fp:
     d = json.load(fp)
 

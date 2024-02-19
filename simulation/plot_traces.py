@@ -76,9 +76,9 @@ def stats(traces, params_dict):
     for cell_id in [45, 55,65,75,90,110,120]:
         plot_trace(spiking_amps[cell_id].cpu(), spiking_traces[cell_id].cpu(), spiking_params[cell_id].cpu().tolist(), cell_id)
     plt.show()
-    import pdb
+    #import pdb
 
-    pdb.set_trace()
+    #pdb.set_trace()
 
 
 if __name__ == "__main__":

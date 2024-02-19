@@ -4,7 +4,7 @@
 #SBATCH -n 48
 #SBATCH --qos=normal
 #SBATCH --job-name=act
-#SBATCH --output=act_batch.out
+#SBATCH --output=output/act_batch.out
 #SBATCH --time 0-12:00
 
 START=$(date)

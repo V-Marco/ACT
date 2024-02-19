@@ -52,7 +52,7 @@ def get_output_folder_name(config: SimulationConfig) -> str:
     else:
         run_mode_name = "orig"
 
-    return f"./{cell_name}_{run_mode_name}_{num_slices}-slice_{random_seed}-seed/"
+    return f"./output/{cell_name}_{run_mode_name}_{num_slices}-slice_{random_seed}-seed/"
 
 def set_cell_parameters(cell, parameter_list: list, parameter_values: list) -> None:
     for sec in cell.all:
