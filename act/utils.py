@@ -650,7 +650,8 @@ def generate_parametric_traces(config: SimulationConfig):
 
     # Run the Simulation
     sim.run()
-    bionet.nrn.quit_execution()
+    #bionet.nrn.quit_execution()
+
     # Save traces/parameters and cleanup
 
 
