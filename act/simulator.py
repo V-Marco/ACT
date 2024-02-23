@@ -72,12 +72,12 @@ def _run_generate_target_traces(config: SimulationConfig, ignore_segregation=Fal
 
 
 def _run(config: SimulationConfig):
+    
     if config["optimization_parameters"]["num_epochs"] < 1:
         raise ValueError("Number of epochs is expected to be >= 1.")
-
-    output_folder = utils.get_output_folder_name(config) + "_temp_/"
-    if not os.path.exists(output_folder):
-        os.mkdir(output_folder)
+    
+    output_folder = utils.create_model_data_folder(config)
+    segregation_index = utils.get_segregation_index(config)
 
     # if there is a target_cell specified then use it too
     os.mkdir(temp_modfiles_dir)
@@ -88,7 +88,6 @@ def _run(config: SimulationConfig):
     os.system(f"nrnivmodl {temp_modfiles_dir}")
     ltohto = False
     logger = ACTLogger()
-    segregation_index = utils.get_segregation_index(config)  # if needed
     if config["run_mode"] == "segregated" and config["segregation"][
         segregation_index
     ].get("use_lto_amps", False):
@@ -374,20 +373,20 @@ def _run(config: SimulationConfig):
     learned_params = {param: predict for param, predict in zip(params, predictions)}
     if config["run_mode"] == "segregated":
         # save a copy of the outputs for future development
-        base_output_folder = utils.get_output_folder_name(config)
-        run_output_folder_name = f"{config['run_mode']}"
-        seg_folder = os.path.join(
-            base_output_folder, f"seg_module_{segregation_index+1}"
-        )
-        shutil.move(output_folder, seg_folder)
+        #base_output_folder = utils.get_output_folder_name(config)
+        #run_output_folder_name = f"{config['run_mode']}"
+        #seg_folder = os.path.join(
+            #base_output_folder, f"{random_seed}-seed_module_{segregation_index+1}"
+        #)
+        #shutil.move(output_folder, seg_folder)
         utils.update_segregation(config, learned_params)
     else:
-        base_output_folder = utils.get_output_folder_name(config)
-        orig_folder = os.path.join(
-            base_output_folder, "model_data"
-        )
-        shutil.move(output_folder, orig_folder)
-        utils.save_learned_params(learned_params)
+        #base_output_folder = utils.get_output_folder_name(config)
+        #orig_folder = os.path.join(
+            #base_output_folder, f"{random_seed}-seed_model_data"
+        #)
+        #shutil.move(output_folder, orig_folder)
+        utils.save_learned_params(learned_params, config)
 
 
 def run_generate_target_traces(

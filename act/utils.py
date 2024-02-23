@@ -23,7 +23,6 @@ from act.cell_model import CellModel
 pc = h.ParallelContext()  # object to access MPI methods
 MPI_RANK = int(pc.id())
 
-
 def create_output_folder(config: SimulationConfig, overwrite=True) -> str:
     if(config["output"]["auto_structure"] == True):
         print("AUTO STRUCTURED")
@@ -45,14 +44,81 @@ def create_output_folder(config: SimulationConfig, overwrite=True) -> str:
 def get_output_folder_name(config: SimulationConfig) -> str:
     cell_name = config["cell"]["name"]
     num_slices = f"{config['optimization_parameters']['parametric_distribution']['n_slices']}"
-    random_seed = f"{config['optimization_parameters']['random_seed']}"
     run_mode = f"{config['run_mode']}"  #"segregated" "origin
     if(run_mode == "segregated"):
         run_mode_name = "seg"
     else:
         run_mode_name = "orig"
 
-    return f"./output/{cell_name}_{run_mode_name}_{num_slices}-slice_{random_seed}-seed/"
+    return f"./output/{cell_name}_{run_mode_name}_{num_slices}-slice/"
+
+def get_sim_data_folder_name(config: SimulationConfig) -> str:
+    segregation_index = get_segregation_index(config)
+    if config["run_mode"] == "segregated":
+        sim_dir = get_output_folder_name(config) + "sim_data/" + f"module_{segregation_index+1}/"
+    else:
+        sim_dir = get_output_folder_name(config) + "sim_data/" 
+    return sim_dir
+
+def get_param_values_file(config: SimulationConfig) -> str:
+    random_seed = f"{config['optimization_parameters']['random_seed']}"
+    return get_output_folder_name(config) + "sim_data/"  + f"parameter_values_{random_seed}-seed.json"
+
+def get_sim_output_folder_name(config: SimulationConfig) -> str:
+    return get_sim_data_folder_name(config) + "output/"
+
+def create_model_data_folder(config: SimulationConfig) -> str:
+    segregation_index = get_segregation_index(config)
+    random_seed = f"{config['optimization_parameters']['random_seed']}"
+    if config["run_mode"] == "segregated":
+        
+        output_folder = get_output_folder_name(config) + "model_data/" 
+
+        if not os.path.exists(output_folder):
+            os.mkdir(output_folder)
+
+        output_folder = output_folder + f"{random_seed}-seed/"
+
+        if not os.path.exists(output_folder):
+            os.mkdir(output_folder)
+
+        output_folder = output_folder + f"module_{segregation_index+1}/"
+        
+        if not os.path.exists(output_folder):
+            os.mkdir(output_folder)
+    else:
+        output_folder = get_output_folder_name(config) + "model_data/" 
+
+        if not os.path.exists(output_folder):
+            os.mkdir(output_folder)
+
+        output_folder = output_folder + f"{random_seed}-seed/"
+
+        if not os.path.exists(output_folder):
+            os.mkdir(output_folder)
+    
+    return output_folder
+
+def get_model_data_folder_name(config: SimulationConfig) -> str:
+    output_dir = get_output_folder_name(config)
+    random_seed = f"{config['optimization_parameters']['random_seed']}"
+    segregation_index = get_segregation_index(config)
+    if(config["run_mode"] == "segregated"):
+        model_data_dir = output_dir + "model_data/"+ f"{random_seed}-seed/" + f"module_{segregation_index+1}/"
+    else:
+        model_data_dir = output_dir + "model_data/"+ f"{random_seed}-seed/"
+    return model_data_dir
+
+def get_last_model_data_folder_name(config: SimulationConfig) -> str:
+    # This is used for the plotting scripts because the module # was incremented, so we need the "last run"
+    output_dir = get_output_folder_name(config)
+    random_seed = f"{config['optimization_parameters']['random_seed']}"
+    segregation_index = get_segregation_index(config)
+    if(config["run_mode"] == "segregated"):
+        model_data_dir = output_dir + "model_data/"+ f"{random_seed}-seed/" + f"module_{segregation_index}/"
+    else:
+        model_data_dir = output_dir + "model_data/"+ f"{random_seed}-seed/"
+    return model_data_dir
 
 def set_cell_parameters(cell, parameter_list: list, parameter_values: list) -> None:
     for sec in cell.all:
@@ -198,8 +264,7 @@ def cleanup_simulation():
 
 
 def get_segregation_index(config: SimulationConfig):
-    output_dir = get_output_folder_name(config)
-    parameter_values_file = output_dir + "sim_data" + "parameter_values.json"
+    parameter_values_file = get_param_values_file(config)
 
     if config["run_mode"] != "segregated":
         return -1
@@ -215,7 +280,7 @@ def get_segregation_index(config: SimulationConfig):
 def load_preset_params(config: SimulationConfig):
     # Returns a dict of learned params from segregation
     # if segregation is not used then returns an empty dict
-    parameter_values_file = "parameter_values.json"
+    parameter_values_file = get_param_values_file(config)
 
     if config["run_mode"] != "segregated":
         return {}
@@ -239,7 +304,7 @@ def load_preset_params(config: SimulationConfig):
 def load_learned_params(config: SimulationConfig):
     # Returns a dict of learned params from segregation
     # if segregation is not used then returns an empty dict
-    parameter_values_file = "parameter_values.json"
+    parameter_values_file = get_param_values_file(config)
 
     if not os.path.exists(parameter_values_file):
         return {}
@@ -250,7 +315,7 @@ def load_learned_params(config: SimulationConfig):
 
 
 def get_learned_variability(config: SimulationConfig):
-    parameter_values_file = "parameter_values.json"
+    parameter_values_file = get_param_values_file(config)
     lv = 0
     if os.path.exists(parameter_values_file):
         with open(parameter_values_file, "r") as fp:
@@ -261,7 +326,7 @@ def get_learned_variability(config: SimulationConfig):
 
 
 def get_learned_variability_params(config: SimulationConfig):
-    parameter_values_file = "parameter_values.json"
+    parameter_values_file = get_param_values_file(config)
     lvp = []
     if os.path.exists(parameter_values_file):
         with open(parameter_values_file, "r") as fp:
@@ -278,8 +343,8 @@ def update_segregation(config: SimulationConfig, learned_params):
     # And updates the parameter_values.json if that parameter was
     # in the current segregation index
     # learned_params = {'channel'(str):value(float),}
-    output_dir = get_output_folder_name(config) + "sim_data/"
-    parameter_values_file = output_dir + "parameter_values.json"
+    output_dir = get_sim_data_folder_name(config)
+    parameter_values_file = get_param_values_file(config)
     if os.path.exists(parameter_values_file):
         print(f"Updating {parameter_values_file} for learned parameters")
         with open(parameter_values_file, "r") as fp:
@@ -346,8 +411,8 @@ def update_segregation(config: SimulationConfig, learned_params):
         )
 
 
-def save_learned_params(learned_params):
-    parameter_values_file = "parameter_values.json"
+def save_learned_params(learned_params, config: SimulationConfig):
+    parameter_values_file = get_param_values_file(config)
     if os.path.exists(parameter_values_file):
         print(f"Updating {parameter_values_file} for learned parameters")
         with open(parameter_values_file, "r") as fp:
@@ -360,9 +425,9 @@ def save_learned_params(learned_params):
 
 
 def build_parametric_network(config: SimulationConfig):
-    output_dir = get_output_folder_name(config) + "sim_data/"
+    output_dir = get_sim_data_folder_name(config)
     config_file = output_dir + "simulation_act_simulation_config.json"
-    parameter_values_file = output_dir + "parameter_values.json"
+    parameter_values_file = get_param_values_file(config)
 
     params = [p["channel"] for p in config["optimization_parameters"]["params"]]
 
@@ -615,10 +680,10 @@ def generate_parametric_traces(config: SimulationConfig):
     traces for a large collection of cells and generates an h5
     file for injestion later.
     """
-    output_dir = get_output_folder_name(config) + "sim_data/"
+    output_dir = get_sim_data_folder_name(config)
     passive_properties = config.get("cell", {}).get("passive_properties", None)
     config_file = output_dir + "simulation_act_simulation_config.json"
-    parameter_values_file = output_dir + "parameter_values.json"
+    parameter_values_file = get_param_values_file(config)
     with open(parameter_values_file) as f:
         param_dict = json.load(f)
         params = param_dict["parameters"]
@@ -673,8 +738,8 @@ def load_parametric_traces(config: SimulationConfig, drop_ramp=False):
     """
     Return a torch tensor of all traces in the specified h5 file
     """
-    output_dir = get_output_folder_name(config) + "sim_data/"
-    parameter_values_file = output_dir + "parameter_values.json"
+    output_dir = get_sim_data_folder_name(config)
+    parameter_values_file = get_param_values_file(config)
     traces_file = output_dir + "output/v_report.h5"
 
     if not os.path.exists(parameter_values_file) or not os.path.exists(traces_file):

@@ -5,23 +5,17 @@ from simulation_configs import selected_config
 import sys
 sys.path.append("../")
 from act import analysis, utils
+import meta_sweep
 
 
-def main(extra_trace, extra_trace_label, title=None):
-    config = selected_config
+def main(config, extra_trace, extra_trace_label, title=None):
 
     inj_dur = config["simulation_parameters"]["h_i_dur"]
-
+    random_seed = f"{config['optimization_parameters']['random_seed']}"
     output_folder = utils.get_output_folder_name(config)
     target_params = config["optimization_parameters"].get("target_params")
-    if(config["run_mode"] == "segregated"):
-        segregation_index = utils.get_segregation_index(config)
-        segregation_dir = f"seg_module_{segregation_index+1}/"
-        model_data_dir = os.path.join(output_folder, segregation_dir)
-        fi_file = model_data_dir + f"{output_folder[9:-1]}_FI.png"
-    else:
-        model_data_dir = output_folder + "model_data/"
-        fi_file = model_data_dir + f"{output_folder[9:-1]}_FI.png"
+    model_data_dir = utils.get_last_model_data_folder_name(config)
+    fi_file = model_data_dir + f"FI.png"
 
     traces_file = model_data_dir + "traces.h5"
     simulated_traces, target_traces, amps = utils.load_final_traces(traces_file)
@@ -72,4 +66,6 @@ if __name__ == "__main__":
     if args.title:
         title = args.title
 
-    main(extra_trace, extra_label, title=title)
+    if '--sweep' in sys.argv:
+        selected_config = meta_sweep.get_meta_params_for_sweep()
+    main(selected_config, extra_trace, extra_label, title=title)

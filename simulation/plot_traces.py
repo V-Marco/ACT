@@ -9,6 +9,7 @@ import torch
 import numpy as np
 
 from simulation_configs import selected_config
+import meta_sweep
 
 config = selected_config
 
@@ -82,6 +83,8 @@ def stats(traces, params_dict):
 
 
 if __name__ == "__main__":
+    if '--sweep' in sys.argv:
+        selected_config = meta_sweep.get_meta_params_for_sweep()
     output_dir = utils.get_output_folder_name(selected_config)
     traces_path = output_dir + "sim_data/output/v_report.h5"
     params_path = output_dir + "sim_data/parameter_values.json"

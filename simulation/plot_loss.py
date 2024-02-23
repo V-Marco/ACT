@@ -5,7 +5,10 @@ sys.path.append("../")
 from act import utils
 from simulation_configs import selected_config
 import os
+import meta_sweep
 
+if '--sweep' in sys.argv:
+    selected_config = meta_sweep.get_meta_params_for_sweep()
 output_dir = utils.get_output_folder_name(selected_config)
 
 if(selected_config["run_mode"] == "segregated"):

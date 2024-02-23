@@ -1,56 +1,46 @@
 import json
-import subprocess
+import numpy as np
 
-def set_meta_params():
-    x = 1
+from simulation_configs import selected_config
 
-
-def run_meta_sweep():
+def get_meta_params_for_sweep():
     meta_data = json.load(open('meta_params.json'))
-    print(meta_data)
-    run_mode_list = meta_data["run_mode_list"]
-    print(run_mode_list)
-    print(type(run_mode_list))
-    cell_list = meta_data["cell_list"]
-    model_type_list = meta_data["model_type_list"]
-    parameter_slice_list = meta_data["parameter_slice_list"]
-    random_seed_list = meta_data["random_seed_list"]
-    generate_arma_stats = meta_data["generate_arma_stats"]
+    run_num = meta_data["run_num"]
+    
+    list_param_lens = []
+    parameter_slice_length = len(meta_data["parameter_slice_list"])
+    list_param_lens.append(parameter_slice_length)
 
-    if "orig" in run_mode_list:
-        for cell in cell_list :
-            for model_type in model_type_list :
-                for slices in parameter_slice_list :
-                    for seed in random_seed_list :
-                        # Set the parameters
-                        print("SETTING PARAMETERS")
+    random_seed_length = len(meta_data["random_seed_list"])
+    list_param_lens.append(random_seed_length)
 
-                        # Run the Pipeline
-                        print(f"PARAMS: orig_{cell}_{model_type}_{slices}_{seed}")
-                        #subprocess.run("python generate_target_traces.py") 
-                        print(f"Target")
-                        #subprocess.run(["python generate_traces.py", "build"]) 
-                        print(f"Build")
-                        #subprocess.run("sbatch batch_generate_traces.sh") 
-                        print(f"Simulate")
-                        if (generate_arma_stats == True) and (seed == random_seed_list[0]):
-                            print(f"Generating ARMA stats")
-                            #subprocess.run("python generate_arma_stats.py") 
+    index_list = get_index_tuple(run_num,list_param_lens)
 
-                        #subprocess.run("python run_simulation.py") 
-                        print(f"Run Model")
-                        #subprocess.run("python analyze_res.py") 
-                        print(f"Results")
-                        #subprocess.run("python plot_fi.py") 
-                        print(f"FI Plot")
-                        #subprocess.run("python plot_learned_parameters.py") 
-                        print(f"Final")
+    config = selected_config
+
+    config["optimization_parameters"]["parametric_distribution"]["n_slices"] = meta_data["parameter_slice_list"][index_list[0]]
+    config["optimization_parameters"]["random_seed"] = meta_data["random_seed_list"][index_list[1]]
+
+    return config
 
 
+def get_index_tuple(run_num, list_param_lens):
+    return np.unravel_index(run_num, list_param_lens)
 
-    if "seg" in run_mode_list:
-        pass
+def increment_config_sweep_number():
+    # Increment which configuration we are on
+    meta_data = json.load(open('meta_params.json'))
+    with open('meta_params.json', 'w') as json_file:
+        meta_data["run_num"] = meta_data["run_num"] + 1
+        json.dump(meta_data, json_file)
 
-# python generate_target_traces.py && python generate_traces.py build && sbatch batch_generate_traces.sh -W && python generate_arma_stats.py && python run_simulation.py && python analyze_res.py && python plot_fi.py && python plot_learned_parameters.py
-if __name__ == "__main__":
-    run_meta_sweep()
+def get_number_of_configs():
+    meta_data = json.load(open('meta_params.json'))
+    list_param_lens = []
+    parameter_slice_length = len(meta_data["parameter_slice_list"])
+    list_param_lens.append(parameter_slice_length)
+
+    random_seed_length = len(meta_data["random_seed_list"])
+    list_param_lens.append(random_seed_length)
+
+    return np.prod(list_param_lens)
