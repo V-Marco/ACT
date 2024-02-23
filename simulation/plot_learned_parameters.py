@@ -9,30 +9,27 @@ import sys
 sys.path.append("../")
 from act.analysis import save_plot, plot_fi_curves
 from act.target_utils import load_target_traces
-from act.utils import load_learned_params, get_fi_curve, get_fi_curve_error, get_output_folder_name
+from act import utils
 from act.optim import ACTOptimizer
 from act.target_utils import DEFAULT_TARGET_V_LTO_FILE, DEFAULT_TARGET_V_HTO_FILE
 
 from simulation_configs import selected_config
+import meta_sweep
 
 # will have to generate target traces (python generate_target_traces.py --ignore_segregation)
 
 temp_modfiles_dir = "temp_modfiles"
 
-def save_fi(config, simulated_traces, target_traces, amps):
+def save_fi(config, simulated_traces, target_traces, amps, output_file):
     inj_dur = config["simulation_parameters"]["h_i_dur"]
-
-    output_file = os.path.join(
-        get_output_folder_name(selected_config), "final" , "final_fi_curve"
-    )
-
-    simulated_curve = get_fi_curve(simulated_traces, amps, inj_dur=inj_dur)
-    target_curve = get_fi_curve(target_traces, amps, inj_dur=inj_dur)
+    
+    simulated_curve = utils.get_fi_curve(simulated_traces, amps, inj_dur=inj_dur)
+    target_curve = utils.get_fi_curve(target_traces, amps, inj_dur=inj_dur)
 
     simulated_label = config["output"]["simulated_label"]
     target_label = config["output"]["target_label"]
 
-    err1 = get_fi_curve_error(simulated_traces, target_traces, amps, inj_dur=inj_dur)
+    err1 = utils.get_fi_curve_error(simulated_traces, target_traces, amps, inj_dur=inj_dur)
     simulated_label = simulated_label + f" (err: {err1})"
 
     curves_list = [
@@ -78,17 +75,40 @@ def run(simulation_config):
     )
     
     # create output folders
-    output_folder = os.path.join(
-        get_output_folder_name(selected_config), "final"
-    )
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder, exist_ok=True)
+    segregation_index = utils.get_segregation_index(simulation_config)
+    random_seed = f"{simulation_config['optimization_parameters']['random_seed']}"
+    if simulation_config["run_mode"] == "segregated":
+        
+        output_folder = utils.get_output_folder_name(simulation_config) + "final/" 
+
+        if not os.path.exists(output_folder):
+            os.mkdir(output_folder)
+
+        output_folder = output_folder + f"{random_seed}-seed/"
+
+        if not os.path.exists(output_folder):
+            os.mkdir(output_folder)
+
+        output_folder = output_folder + f"module_{segregation_index}/"
+        
+        if not os.path.exists(output_folder):
+            os.mkdir(output_folder)
+    else:
+        output_folder = utils.get_output_folder_name(simulation_config) + "final/" 
+
+        if not os.path.exists(output_folder):
+            os.mkdir(output_folder)
+
+        output_folder = output_folder + f"{random_seed}-seed/"
+
+        if not os.path.exists(output_folder):
+            os.mkdir(output_folder)
        
     dt = simulation_config["simulation_parameters"]["h_dt"]
     amps = simulation_config["optimization_parameters"]["amps"]
     simulated_label = simulation_config["output"]["simulated_label"]
     target_label = simulation_config["output"]["target_label"]
-    learned_params = load_learned_params(simulation_config)
+    learned_params = utils.load_learned_params(simulation_config)
     parameters = [k for k,v in learned_params.items()]
     target_params = [v for k,v in learned_params.items()]
     
@@ -112,7 +132,8 @@ def run(simulation_config):
         )
     print("saving fi")
     sv_tensor = torch.cat(sv_list)
-    save_fi(simulation_config, sv_tensor, target_V, torch.tensor(amps))
+    output_file = output_folder + "final_fi_curve.png"
+    save_fi(simulation_config, sv_tensor, target_V, torch.tensor(amps), output_file)
 
     if os.path.exists(DEFAULT_TARGET_V_LTO_FILE): # we have generated an LTO file before and should simulate at end
         # need to go case by case
@@ -273,6 +294,8 @@ def run(simulation_config):
 
 if __name__ == '__main__':
     # will have to generate target traces (python generate_target_traces.py --ignore_segregation)
+    if '--sweep' in sys.argv:
+        selected_config = meta_sweep.get_meta_params_for_sweep()
     try:
         run(selected_config)
     except:
