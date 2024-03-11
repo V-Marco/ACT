@@ -200,9 +200,10 @@ def print_run_stats(config: SimulationConfig):
         print(
             f"v_rest: {(pred_passive_json['v_rest']-target_passive_json['v_rest']):.2f}"
         )
-        print(f"r_in: {(pred_passive_json['r_in']-target_passive_json['r_in']):.2f}")
-        print(f"tau: {(pred_passive_json['tau']-target_passive_json['tau']):.2f}")
-        print("----------\n")
+        if('r_in' in target_passive_json):
+            print(f"r_in: {(pred_passive_json['r_in']-target_passive_json['r_in']):.2f}")
+            print(f"tau: {(pred_passive_json['tau']-target_passive_json['tau']):.2f}")
+            print("----------\n")
 
     traces_file = model_data_dir + "traces.h5"
     

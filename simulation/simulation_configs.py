@@ -892,10 +892,72 @@ Burster_S3_orig = {
     "run_mode": "original",  # "original", "segregated"
 }
 
+Test_Spiker_orig = {
+    "cell": {
+        "hoc_file": "../data/TestSpiker/template.hoc",
+        "modfiles_folder": "../data/TestSpiker/orig_modfiles",
+        "name": "Test_Spiker",
+         "passive_properties": {
+            "v_rest": -70,
+            "tau": 18,
+            "leak_conductance_variable": "gbar_leak",  # eg: g_leak
+            "leak_reversal_variable": "eleak",  # eg: e_leak
+         },
+    },
+    "simulation_parameters": {
+        "h_v_init": -72,  # (mV)
+        "h_tstop": 1000,  # (ms)
+        "h_i_delay": 250,  # (ms)
+        "h_i_dur": 500,  # (ms)
+        "h_dt": 0.1,
+    },
+    "optimization_parameters": {
+        "amps": [0.0, 0.5, 1.0, 1.5, 2],
+        "params": [
+            {"channel": "gbar_na", "high": 0.3, "low": 0.0},
+            {"channel": "gbar_kdr", "high": 0.3, "low": 0.0}
+        ],
+        "target_V_file": "target_v.json",
+        "target_V": None,  # Target voltages
+        "target_params": [0.25, 0.05],
+        "num_repeats": 1,
+        "num_amps_to_match": 12,
+        "num_epochs": 10,
+        "random_seed": 53,
+        "generate_arma": False,
+        "skip_match_voltage": True,
+        "use_random_forest": True,
+        "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
+            "n_slices": 5,
+        },
+        "decimate_factor": 10,
+    },
+    "summary_features": {
+        "spike_threshold": -20,  # (mV)
+        "arima_order": [4, 0, 4],
+        "num_first_spikes": 10,
+        # Target-sim match conditions (max abs diff between sim and target)
+        "mc_num_spikes": 1,
+        "mc_interspike_time": 200,  # (ms)
+        "mc_min_v": 1,  # (mV)
+        "mc_mean_v": 2,  # (mV)
+        "mc_max_v": 1,  # (mV)
+    },
+    "segregation": [
+    ],
+    "output": {
+        "auto_structure": True,
+        "produce_plots": True,
+        "target_label": "User Trace",
+        "simulated_label": "Model ACT-Original",
+    },
+    "run_mode": "original",  # "original", "segregated"
+}
+
 
 # ===================================================================================================================
 # ===================================================================================================================
 #                                                 SELECTED_CONFIG
 # ===================================================================================================================
 # ===================================================================================================================
-selected_config = Burster_S3_orig
+selected_config = Test_Spiker_orig

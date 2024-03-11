@@ -4,4 +4,7 @@ sys.path.append("../")
 from act import simulator
 
 if __name__ == "__main__":
+    if '--sweep' in sys.argv:
+        selected_config = meta_sweep.get_meta_params_for_sweep()
+    print("TRAINING MODEL")
     p = simulator.run(selected_config, subprocess=False)

@@ -210,7 +210,7 @@ class ACTOptimizer:
 
     def calculate_passive_properties(
         self, parameter_names: list, parameter_values: np.ndarray
-    ) -> (PassiveProperties, np.ndarray):
+    ) -> tuple[PassiveProperties, np.ndarray]:
         """
         Run simulations to determine passive properties for a given cell parameter set
         """
@@ -357,6 +357,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         self.use_random_forest = False  # just for testing
         self.reg = None  # regressor for random forest
         self.random_seed = simulation_config["optimization_parameters"]["random_seed"]
+        #self.max_depth = simulation_config["optimization_parameters"]["max_depth"]
         self.init_random_forest()
 
         self.voltage_data_scaler = TorchMinMaxScaler()
@@ -369,12 +370,13 @@ class GeneralACTOptimizer(ACTOptimizer):
     def init_random_forest(self):
         params = {
             "n_estimators": 5000,
-            # "max_depth": 32,
+            #"max_depth": self.max_depth,
             "min_samples_split": 2,
             # "warm_start": True,
             # "oob_score": True,
             "random_state": self.random_seed,
         }
+        print(f"RANDOM FOREST PARAMS: {params}")
         self.reg = RandomForestRegressor(**params)
 
     def train_random_forest(self, X_train, y_train, columns=[], evaluate=False) -> dict:
@@ -396,7 +398,7 @@ class GeneralACTOptimizer(ACTOptimizer):
             )
             # report performance
             print("MAE: %.6f (%.6f)" % (mean(n_scores), std(n_scores)))
-        print("fitting random forest")
+        print("Fitting random forest")
         self.reg.fit(X_train[:1000], y_train[:1000])
         print("Done fitting random forest")
         print("Feature importance")
