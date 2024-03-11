@@ -82,6 +82,7 @@ LA_A_seg = {
         "num_amps_to_match": 1,
         "num_epochs": 10,
         "random_seed": 42,
+        "generate_arma": True,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
@@ -205,6 +206,7 @@ LA_A_orig = {
         "num_amps_to_match": 12,
         "num_epochs": 10,
         "random_seed": 42,
+        "generate_arma": True,
         "skip_match_voltage": True,
         "use_random_forest": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
@@ -330,6 +332,7 @@ LA_C_seg = {
         "num_amps_to_match": 1,
         "num_epochs": 10,
         "random_seed": 42,
+        "generate_arma": False,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
@@ -453,6 +456,7 @@ LA_C_orig = {
         "num_amps_to_match": 12,
         "num_epochs": 10,
         "random_seed": 42,
+        "generate_arma": False,
         "skip_match_voltage": True,
         "use_random_forest": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
@@ -571,6 +575,7 @@ Burster_Izh_seg = {
         "num_amps_to_match": 1,
         "num_epochs": 10,
         "random_seed": 42,
+        "generate_arma": False,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
@@ -664,6 +669,7 @@ Burster_Izh_orig = {
         "num_amps_to_match": 12,
         "num_epochs": 10,
         "random_seed": 42,
+        "generate_arma": False,
         "skip_match_voltage": True,
         "use_random_forest": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
@@ -766,7 +772,8 @@ Burster_S3_seg = {
         "num_repeats": 1,
         "num_amps_to_match": 1,
         "num_epochs": 10,
-        "random_seed": 42,
+        "random_seed": 45,
+        "generate_arma": False,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 2,
@@ -861,11 +868,12 @@ Burster_S3_orig = {
         "num_repeats": 1,
         "num_amps_to_match": 12,
         "num_epochs": 10,
-        "random_seed": 42,
+        "random_seed": 53,
+        "generate_arma": False,
         "skip_match_voltage": True,
         "use_random_forest": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
-            "n_slices": 3,
+            "n_slices": 2,
         },
         "decimate_factor": 10,
     },

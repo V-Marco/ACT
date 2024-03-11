@@ -2,6 +2,7 @@ from simulation_configs import selected_config
 import sys
 sys.path.append("../")
 from act import simulator
+import meta_sweep
 
 if __name__ == "__main__":
     if '--sweep' in sys.argv:

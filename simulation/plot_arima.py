@@ -10,6 +10,7 @@ from io import StringIO
 import numpy as np
 from statsmodels.graphics.tsaplots import plot_predict
 import time
+import meta_sweep
 
 warnings.filterwarnings("ignore")
 
@@ -49,6 +50,8 @@ def plot_arima(cell_id, pq=10):
 
 
 if __name__ == "__main__":
+    if '--sweep' in sys.argv:
+        selected_config = meta_sweep.get_meta_params_for_sweep()
     traces, params, amps = utils.load_parametric_traces(selected_config)
 
     traces = traces.cpu().detach().tolist()

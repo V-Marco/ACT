@@ -144,14 +144,9 @@ def save_mse_corr(
 
 
 def print_run_stats(config: SimulationConfig):
-    output_folder = utils.get_output_folder_name(config)
+    model_data_dir = utils.get_last_model_data_folder_name(config)
+
     target_params = config["optimization_parameters"].get("target_params")
-    if(config["run_mode"] == "segregated"):
-        segregation_index = utils.get_segregation_index(config)
-        segregation_dir = f"seg_module_{segregation_index+1}/"
-        model_data_dir = os.path.join(output_folder, segregation_dir)
-    else:
-        model_data_dir = output_folder + "model_data/"
     pred_passive_json_path = model_data_dir + "pred_passive_properties.json"
     metrics = pd.read_csv(model_data_dir + "metrics.csv")
     preds_df = pd.read_csv(model_data_dir + "pred.csv", index_col=0)
@@ -169,7 +164,7 @@ def print_run_stats(config: SimulationConfig):
             ]
 
     preds = np.array(preds_df)
-    print(output_folder)
+    print(model_data_dir)
     print(f"Med MSE: {metrics['mse'].median():.4f} ({metrics['mse'].std():.4f})")
     print(f"Med Corr: {metrics['corr'].median():.4f} ({metrics['corr'].std():.4f})")
     print()
