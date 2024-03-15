@@ -934,7 +934,7 @@ Test_Spiker_orig = {
         "random_seed": 53,
         "generate_arma": False,
         "skip_match_voltage": True,
-        "use_random_forest": True,
+        "use_random_forest": False,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
             "n_slices": 5,
         },
