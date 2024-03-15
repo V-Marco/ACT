@@ -23,6 +23,7 @@ from act.models import (
 )
 from act import utils
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import RepeatedKFold
 
@@ -344,7 +345,8 @@ class GeneralACTOptimizer(ACTOptimizer):
         self,
         simulation_config: SimulationConfig,
         logger: object = None,
-        set_passive_properties = True
+        set_passive_properties = True,
+        r_seed = 1
     ):
         super().__init__(
             simulation_config=simulation_config,
@@ -356,8 +358,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         self.model_pool = None
         self.use_random_forest = False  # just for testing
         self.reg = None  # regressor for random forest
-        self.random_seed = simulation_config["optimization_parameters"]["random_seed"]
-        #self.max_depth = simulation_config["optimization_parameters"]["max_depth"]
+        self.random_seed = r_seed
         self.init_random_forest()
 
         self.voltage_data_scaler = TorchMinMaxScaler()
@@ -368,16 +369,11 @@ class GeneralACTOptimizer(ACTOptimizer):
         
 
     def init_random_forest(self):
-        params = {
-            "n_estimators": 5000,
-            #"max_depth": self.max_depth,
-            "min_samples_split": 2,
-            # "warm_start": True,
-            # "oob_score": True,
-            "random_state": self.random_seed,
-        }
-        print(f"RANDOM FOREST PARAMS: {params}")
-        self.reg = RandomForestRegressor(**params)
+        self.reg = RandomForestRegressor(
+            n_estimators=5000, 
+            min_samples_split=2,
+            random_state=self.random_seed
+        )
 
     def train_random_forest(self, X_train, y_train, columns=[], evaluate=False) -> dict:
         """
@@ -386,7 +382,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         if evaluate:
             print("Evaluating random forest")
             # evaluate the model
-            cv = RepeatedKFold(n_splits=10, n_repeats=3, random_state=1)
+            cv = RepeatedKFold(n_splits=10, n_repeats=3, random_state=self.random_seed)
             n_scores = cross_val_score(
                 self.reg,
                 X_train,
@@ -883,14 +879,14 @@ class GeneralACTOptimizer(ACTOptimizer):
                 ModelClass = eval(model_class)  # dangerous but ok
         else:
             print(f"Using ConvolutionEmbeddingNet for model class")
-            # ModelClass = SimpleNet
+            ModelClass = SimpleNet
             # ModelClass = BranchingNet
             # ModelClass = EmbeddingNet
-            ModelClass = ConvolutionEmbeddingNet
+            # ModelClass = ConvolutionEmbeddingNet
             # ModelClass = SummaryNet
             # ModelClass = ConvolutionNet
 
-        model = ModelClass(in_channels, out_channels, summary_features)
+        model = ModelClass(in_channels, out_channels, summary_features, self.random_seed)
         return model
 
     def train_model(
@@ -1125,6 +1121,7 @@ class GeneralACTOptimizer(ACTOptimizer):
             return ret
 
     def get_parametric_distribution(self, n_slices, simulations_per_amp) -> tuple:
+        np.random.seed(self.random_seed)
         params = [
             p["channel"] for p in self.config["optimization_parameters"]["params"]
         ]
@@ -1195,6 +1192,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         return s_v, s_param, s_amps
 
     def match_voltage(self, target_V: torch.Tensor) -> tuple:
+        np.random.seed(self.random_seed)
         # Get target voltage summary features
         num_target_spikes, target_interspike_times = self.extract_summary_features(
             target_V
