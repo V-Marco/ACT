@@ -142,8 +142,12 @@ special.nrn
 
 *.png
 *.csv
+!exp_metrics.csv
 
 *.json
+!exp_learned_params.json
+!exp_target_v.json
+
 ~lock.*
 
 simulation/components
@@ -155,4 +159,6 @@ simulation/output_LA_A
 examples/LA/output_LA_A
 
 *.h5
+!exp_spikes.h5
+!exp_v_report.h5
 old/
