@@ -345,8 +345,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         self,
         simulation_config: SimulationConfig,
         logger: object = None,
-        set_passive_properties = True,
-        r_seed = 1
+        set_passive_properties = True
     ):
         super().__init__(
             simulation_config=simulation_config,
@@ -358,7 +357,9 @@ class GeneralACTOptimizer(ACTOptimizer):
         self.model_pool = None
         self.use_random_forest = False  # just for testing
         self.reg = None  # regressor for random forest
-        self.random_seed = r_seed
+        self.random_seed = simulation_config["optimization_parameters"]["random_seed"]
+        np.random.seed(self.random_seed)
+        torch.manual_seed(self.random_seed)
         self.init_random_forest()
 
         self.voltage_data_scaler = TorchMinMaxScaler()
@@ -1121,7 +1122,7 @@ class GeneralACTOptimizer(ACTOptimizer):
             return ret
 
     def get_parametric_distribution(self, n_slices, simulations_per_amp) -> tuple:
-        np.random.seed(self.random_seed)
+        #np.random.seed(self.random_seed)
         params = [
             p["channel"] for p in self.config["optimization_parameters"]["params"]
         ]
@@ -1192,7 +1193,7 @@ class GeneralACTOptimizer(ACTOptimizer):
         return s_v, s_param, s_amps
 
     def match_voltage(self, target_V: torch.Tensor) -> tuple:
-        np.random.seed(self.random_seed)
+        #np.random.seed(self.random_seed)
         # Get target voltage summary features
         num_target_spikes, target_interspike_times = self.extract_summary_features(
             target_V

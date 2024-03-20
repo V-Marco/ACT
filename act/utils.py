@@ -16,6 +16,7 @@ import torch
 import timeout_decorator
 import multiprocessing as mp
 from scipy import signal
+import itertools
 
 from act.act_types import SimulationConfig
 from act.cell_model import CellModel
@@ -43,14 +44,20 @@ def create_output_folder(config: SimulationConfig, overwrite=True) -> str:
 
 def get_output_folder_name(config: SimulationConfig) -> str:
     cell_name = config["cell"]["name"]
-    num_slices = f"{config['optimization_parameters']['parametric_distribution']['n_slices']}"
+    num_slices = config['optimization_parameters']['parametric_distribution']['n_slices']
+    num_slices_name = ""
+    if type(num_slices) is list:
+        for x in num_slices:
+            num_slices_name = num_slices_name + f"{x}-"
+    else:
+        num_slices_name = f"{num_slices}"
     run_mode = f"{config['run_mode']}"  #"segregated" "origin
     if(run_mode == "segregated"):
         run_mode_name = "seg"
     else:
         run_mode_name = "orig"
 
-    return f"./output/{cell_name}_{run_mode_name}_{num_slices}-slice/"
+    return f"./output/{cell_name}_{run_mode_name}_{num_slices_name}slice/"
 
 def get_sim_data_folder_name(config: SimulationConfig) -> str:
     segregation_index = get_segregation_index(config)
@@ -216,21 +223,39 @@ def get_param_dist(
             .get("parametric_distribution", {})
             .get("n_slices", 0)
         )
-    if n_slices <= 1:
-        raise ValueError(
-            'config["optimization_parameters"]["parametric_distribution"]["n_slices"] must be > 2 to generate a distribution.'
-        )
-    param_dist = np.array(
-        [
-            np.arange(
-                low, high - 1e-15, (high - low) / (n_slices - 1)
-            )  # -1e-15 because we really don't want the last one since we're adding it back in, can lead to inhomogenous shapes if ommited
-            for low, high in zip(lows, highs)
-        ]
-    ).T
+    if type(n_slices) is int:
+        if n_slices <= 1:
+            raise ValueError(
+                'config["optimization_parameters"]["parametric_distribution"]["n_slices"] must be > 2 to generate a distribution.'
+            )
+        param_dist = np.array(
+            [
+                np.arange(
+                    low, high - 1e-15, (high - low) / (n_slices - 1)
+                )  # -1e-15 because we really don't want the last one since we're adding it back in, can lead to inhomogenous shapes if ommited
+                for low, high in zip(lows, highs)
+            ]
+        ).T
+        param_dist = np.array(param_dist.tolist() + [highs])  # add on the highes values
+        parameter_values_list = get_params(param_dist)
+    else:
+        if len(n_slices) == 0:
+            raise ValueError(
+                'config["optimization_parameters"]["parametric_distribution"]["n_slices"] requires each element to be > 2 to generate a distribution.'
+            )
+        param_dist = []
+        count = 0
+        # Generate list of lists of the increments of gbar for each ion channel
+        for low, high, n_slice in zip(lows, highs, n_slices):
+            count=count+1
+            slice_range = np.arange(
+                low, high - 1e-15, (high - low) / (n_slice - 1)
+            ).tolist() # -1e-15 because we really don't want the last one since we're adding it back in, can lead to inhomogenous shapes if ommited
+            slice_range.append(high)
+            param_dist.append(slice_range)
 
-    param_dist = np.array(param_dist.tolist() + [highs])  # add on the highes values
-    parameter_values_list = get_params(param_dist)
+        # Generate all of the gbar combinations in a list of lists
+        parameter_values_list = [list(x) for x in itertools.product(*param_dist)]
 
     if config["run_mode"] == "segregated":
         # need to add in the preset channels to each of the generated parametric sets
@@ -495,9 +520,8 @@ def build_parametric_network(config: SimulationConfig):
         learned_variability_params=learned_variability_params,
         n_slices=n_slices,
         block_channels=block_channels,
-    )
+    )    
 
-    
     network_dir = output_dir + "network"
     # remove everything from prior runs
     if os.path.exists(network_dir):

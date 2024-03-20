@@ -4,7 +4,6 @@ import torch
 class SimpleNet(torch.nn.Module):
     def __init__(self, in_channels, out_channels, summary_features, seed):
         super().__init__()
-        torch.manual_seed(seed)
         self.model = torch.nn.Sequential(
             torch.nn.Linear(in_channels, 256),
             torch.nn.ReLU(),

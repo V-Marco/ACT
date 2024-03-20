@@ -1,18 +1,18 @@
 {
   "learned_params": {
-    "gbar_na": 0.14570827782154083,
-    "gbar_kdr": 0.14811769127845764
+    "gbar_na": 0.12551739811897278,
+    "gbar_kdr": 0.14109697937965393
   },
   "target_params": {
     "gbar_na": 0.25,
     "gbar_kdr": 0.05
   },
   "difference": {
-    "gbar_na": -0.10429172217845917,
-    "gbar_kdr": 0.09811769127845764
+    "gbar_na": -0.12448260188102722,
+    "gbar_kdr": 0.09109697937965393
   },
   "difference_percent": {
-    "gbar_na": -41.72,
-    "gbar_kdr": 196.24
+    "gbar_na": -49.79,
+    "gbar_kdr": 182.19
   }
 }

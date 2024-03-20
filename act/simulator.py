@@ -142,13 +142,10 @@ def _run(config: SimulationConfig):
     fi_err_pool = []
     af_err_pool = []
 
-    random_seed_set = config["optimization_parameters"]["random_seed"]
-    np.random.seed(random_seed_set)
-
     params = [p["channel"] for p in config["optimization_parameters"]["params"]]
     for repeat_num in range(config["optimization_parameters"]["num_repeats"]):
         if config["run_mode"] == "original" or config["run_mode"] == "segregated":
-            optim = GeneralACTOptimizer(simulation_config=config, logger=logger, set_passive_properties=not ltohto, r_seed=random_seed_set)
+            optim = GeneralACTOptimizer(simulation_config=config, logger=logger, set_passive_properties=not ltohto)
             predictions, train_stats = optim.optimize(target_V)
             predictions_amps = predictions[:, -1].reshape(-1, 1)
             predictions = predictions[:, :-1]
