@@ -82,10 +82,10 @@ LA_A_seg = {
         "num_amps_to_match": 1,
         "num_epochs": 10,
         "random_seed": 42,
-        "generate_arma": True,
+        "generate_arma": False,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
-            "n_slices": 5,
+            "n_slices": [6,5,3,4,7,5],# 5,
         },
         "decimate_factor": 10,
     },
@@ -210,7 +210,7 @@ LA_A_orig = {
         "skip_match_voltage": True,
         "use_random_forest": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
-            "n_slices": 5,
+            "n_slices": 3,
         },
         "decimate_factor": 10,
     },
@@ -776,7 +776,7 @@ Burster_S3_seg = {
         "generate_arma": False,
         "skip_match_voltage": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
-            "n_slices": 2,
+            "n_slices": [6, 4, 6, 7, 5, 3], # -> 5
         },
         "decimate_factor": 10,
     },
@@ -968,4 +968,4 @@ Test_Spiker_orig = {
 #                                                 SELECTED_CONFIG
 # ===================================================================================================================
 # ===================================================================================================================
-selected_config = Burster_S3_orig
+selected_config = LA_A_seg
