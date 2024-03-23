@@ -432,7 +432,8 @@ def update_segregation(config: SimulationConfig, learned_params):
             json.dump(parameter_values_dict, fp, indent=4)
         if segregation_index+1 == len(config["segregation"]):
             random_seed = f"{config['optimization_parameters']['random_seed']}"
-            final_folder = output_dir + f"final/{random_seed}-seed/parameter_values_seg_complete.json"
+            output_folder_base = get_output_folder_name(config)
+            final_folder = output_folder_base + f"final/{random_seed}-seed/parameter_values_seg_complete.json"
             print(f"Saving final learned parameters to: {final_folder}")
             shutil.move(parameter_values_file, final_folder)
     else:
