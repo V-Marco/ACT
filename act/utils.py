@@ -21,6 +21,8 @@ import itertools
 from act.act_types import SimulationConfig
 from act.cell_model import CellModel
 
+import warnings
+
 pc = h.ParallelContext()  # object to access MPI methods
 MPI_RANK = int(pc.id())
 
@@ -428,8 +430,11 @@ def update_segregation(config: SimulationConfig, learned_params):
         )
         with open(parameter_values_file, "w") as fp:
             json.dump(parameter_values_dict, fp, indent=4)
-        if segregation_index == len(config["segregation"]):
-            shutil.move(parameter_values_file, "./parameter_values_seg_complete.json")
+        if segregation_index+1 == len(config["segregation"]):
+            random_seed = f"{config['optimization_parameters']['random_seed']}"
+            final_folder = output_dir + f"final/{random_seed}-seed/parameter_values_seg_complete.json"
+            print(f"Saving final learned parameters to: {final_folder}")
+            shutil.move(parameter_values_file, final_folder)
     else:
         print(
             f"{parameter_values_file} file not found - unable to update learned params"
@@ -1022,7 +1027,9 @@ def get_amplitude_frequency(traces, inj_dur, inj_start, fs=1000):
         x = traces[idx].cpu().numpy()[inj_start : inj_start + inj_dur]
         secs = len(x) / fs
         peaks = signal.find_peaks(x, prominence=0.1)[0].tolist()
-        amplitude = x[peaks].mean()
+        with warnings.catch_warnings():
+            warnings.filterwarnings(action='ignore', message='Mean of empty slice')
+            amplitude = x[peaks].mean()
         frequency = int(len(peaks) / (secs))
         amplitudes.append(amplitude)
         frequencies.append(frequency)
