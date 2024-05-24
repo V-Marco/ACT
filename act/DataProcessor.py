@@ -155,6 +155,119 @@ class DataProcessor:
         interspike_times[torch.isnan(interspike_times)] = 0
         return num_spikes, interspike_times
     
+    def extract_target_v_summary_features(
+            self, target_V, config: SimulationConfig, 
+            segregation_arima_order, fs, inj_dur, inj_start,
+            use_spike_summary_stats=True, train_amplitude_frequency=False, train_mean_potential=False
+            ):
+        # Predict and take max across ci to prevent underestimating
+        (
+            num_spikes_simulated,
+            simulated_interspike_times,
+        ) = self.extract_summary_features(target_V.float())
+        (first_n_spikes, avg_spike_min, avg_spike_max) = utils.spike_stats(
+            target_V.float(), n_spikes=self.num_first_spikes
+        )
+        ampl_target = torch.tensor(self.config["optimization_parameters"]["amps"])
+        target_summary_features = None
+
+        coefs_loaded = False
+        if os.path.exists("output/arima_stats.json"):
+            coefs_loaded = True
+            coefs = utils.load_arima_coefs(
+                input_file="output/arima_stats.json"
+            )  # [subset_target_ind] # TODO REMOVE for testing quickly
+
+        if coefs_loaded:
+            arima_order = (10, 0, 10)
+            if config.get("summary_features", {}).get("arima_order"):
+                arima_order = tuple(config["summary_features"]["arima_order"])
+            if segregation_arima_order:
+                arima_order = segregation_arima_order
+            print(f"ARIMA order set to {arima_order}")
+            total_arima_vals = 2 + arima_order[0] + arima_order[1]
+            coefs = []
+            for data in target_V.cpu().detach().numpy():
+                try:
+                    c = self.get_arima_coefs(data, order=arima_order)
+                except:
+                    print("ERROR calculating coefs, setting all to 0")
+                    c = np.zeros(total_arima_vals)
+                coefs.append(c)
+            coefs = torch.tensor(coefs)
+
+            target_summary_features = torch.stack(
+                (
+                    # ampl_target,
+                    torch.flatten(num_spikes_simulated),
+                    torch.flatten(simulated_interspike_times),
+                    avg_spike_min.flatten().T,
+                    avg_spike_max.flatten().T,
+                )
+            )
+            if use_spike_summary_stats:
+                target_summary_features = torch.cat(
+                    (target_summary_features.T, first_n_spikes, coefs), dim=1
+                )
+            else:
+                target_summary_features = coefs
+        else:
+            if use_spike_summary_stats:
+                target_summary_features = torch.stack(
+                    (
+                        # ampl_target,
+                        torch.flatten(num_spikes_simulated),
+                        torch.flatten(simulated_interspike_times),
+                        avg_spike_min.flatten().T,
+                        avg_spike_max.flatten().T,
+                    )
+                )
+                target_summary_features = torch.cat(
+                    (
+                        target_summary_features.T,
+                        first_n_spikes,
+                    ),
+                    dim=1,
+                )
+        if train_amplitude_frequency:
+            target_amplitude, target_frequency = utils.get_amplitude_frequency(
+                target_V.float(), inj_dur, inj_start, fs=fs
+            )
+            if target_summary_features is not None:
+                target_summary_features = torch.cat(
+                    (
+                        target_summary_features,
+                        target_amplitude.reshape(-1, 1),
+                        target_frequency.reshape(-1, 1),
+                    ),
+                    dim=1,
+                )
+            else:
+                target_summary_features = torch.cat(
+                    (target_amplitude.reshape(-1, 1), target_frequency.reshape(-1, 1)),
+                    dim=1,
+                )
+        if train_mean_potential:
+            target_mean_potential = utils.get_mean_potential(
+                target_V.float(), inj_dur, inj_start
+            )
+            if target_summary_features is not None:
+                target_summary_features = torch.cat(
+                    (
+                        target_summary_features,
+                        target_mean_potential.reshape(-1, 1),
+                    ),
+                    dim=1,
+                )
+            else:
+                target_summary_features = target_mean_potential.reshape(-1, 1)
+
+        # remove any remaining nan values
+        target_summary_features[torch.isnan(target_summary_features)] = 0
+
+        return target_summary_features
+    
+
     def calculate_passive_properties(
         self, config: SimulationConfig, parameter_names: list, parameter_values: np.ndarray
     ) -> Tuple[PassiveProperties, np.ndarray]:

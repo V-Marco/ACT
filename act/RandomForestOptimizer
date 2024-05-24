@@ -1,6 +1,4 @@
 import numpy as np
-from numpy import mean
-from numpy import std
 import torch
 
 from act.act_types import SimulationConfig
@@ -8,8 +6,6 @@ from act.act_types import SimulationConfig
 
 from act import utils
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import RepeatedKFold
 from act.DataProcessor import DataProcessor
 from act.ACTOptimizer import (
     ACTOptimizer
@@ -40,25 +36,20 @@ class RandomForestOptimizer(ACTOptimizer):
 
         self.model = None
         self.model_pool = None
-        self.reg = RandomForestRegressor(n_estimators=n_estimators, min_samples_split=min_samples_split, max_depth=max_depth, random_state=random_state)
+        self.reg = RandomForestRegressor(
+            n_estimators=n_estimators, 
+            min_samples_split=min_samples_split, 
+            max_depth=max_depth, 
+            random_state=random_state
+            )
 
         self.voltage_data_scaler = TorchMinMaxScaler()
         self.summary_feature_scaler = TorchMinMaxColScaler()
 
         self.segregation_index = utils.get_segregation_index(simulation_config)
         self.hto_block_channels = []
-        
 
-    def train_random_forest(self, X_train, Y_train, columns=[], evaluate=False) -> dict:
-        """
-        Returns the feature importances for stats storing
-        """
 
-        self.reg.fit(X_train[:1000], Y_train[:1000])
-        print("Done fitting random forest")
-
-    
-    
     def get_feature_importance(self, X_train, columns=[]):
         if not columns:
             columns = [f"feature_{i+1}" for i in range(X_train.shape[1])]
@@ -69,7 +60,6 @@ class RandomForestOptimizer(ACTOptimizer):
         for k, v in sf.items():
             print(k + " : " + str(v))
         return sf
-
 
 
     def optimize(self, target_V: torch.Tensor) -> torch.Tensor:
@@ -121,7 +111,17 @@ class RandomForestOptimizer(ACTOptimizer):
             summary_feature_columns=summary_feature_columns,
         )
 
-        target_summary_features = self.extract_target_v_summary_features(target_V)
+        target_summary_features = DataProcessor.extract_target_v_summary_features(
+                                                target_V, 
+                                                self.config, 
+                                                self.segregation_arima_order, 
+                                                self.fs, 
+                                                self.inj_dur, 
+                                                self.inj_start, 
+                                                self.use_spike_summary_stats, 
+                                                self.train_amplitude_frequency, 
+                                                self.train_mean_potential
+                                                )
 
         predictions = self.predict(
             target_V.float(), lows, highs, target_summary_features.float()

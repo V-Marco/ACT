@@ -3,6 +3,7 @@ import torch
 import copy
 import tqdm
 
+from act.DataProcessor import DataProcessor
 from act.act_types import SimulationConfig
 from act.models import (
     ConvolutionEmbeddingNet,
@@ -95,7 +96,17 @@ class TCNNOptimizer(ACTOptimizer):
             summary_feature_columns=summary_feature_columns,
         )
 
-        target_summary_features = self.extract_target_v_summary_features(target_V)
+        target_summary_features = DataProcessor.extract_target_v_summary_features(
+                                                target_V, 
+                                                self.config, 
+                                                self.segregation_arima_order, 
+                                                self.fs, 
+                                                self.inj_dur, 
+                                                self.inj_start, 
+                                                self.use_spike_summary_stats, 
+                                                self.train_amplitude_frequency, 
+                                                self.train_mean_potential
+                                                )
 
         predictions = self.predict_with_model(
             target_V.float(), lows, highs, target_summary_features.float()
