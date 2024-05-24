@@ -65,16 +65,16 @@ class RandomForestOptimizer(ACTOptimizer):
     def optimize(self, target_V: torch.Tensor) -> torch.Tensor:
 
         # Load the data
-        self.load_params()
+        self.get_params()
 
         (
         simulated_V_for_next_stage,
         ampl_next_stage, 
         spiking_ind,
         nonsaturated_ind
-        ) = self.load_voltage_traces(target_V)
+        ) = self.get_voltage_traces(target_V)
             
-        summary_features, summary_feature_columns, coefs_loaded = self.load_summary_features(simulated_V_for_next_stage,
+        summary_features, summary_feature_columns, coefs_loaded = self.get_summary_features(simulated_V_for_next_stage,
         spiking_ind,
         nonsaturated_ind
         )
@@ -111,17 +111,7 @@ class RandomForestOptimizer(ACTOptimizer):
             summary_feature_columns=summary_feature_columns,
         )
 
-        target_summary_features = DataProcessor.extract_target_v_summary_features(
-                                                target_V, 
-                                                self.config, 
-                                                self.segregation_arima_order, 
-                                                self.fs, 
-                                                self.inj_dur, 
-                                                self.inj_start, 
-                                                self.use_spike_summary_stats, 
-                                                self.train_amplitude_frequency, 
-                                                self.train_mean_potential
-                                                )
+        target_summary_features = self.get_summary_features(target_V, spiking_ind, nonsaturated_ind)
 
         predictions = self.predict(
             target_V.float(), lows, highs, target_summary_features.float()

@@ -14,7 +14,7 @@ from act.act_types import SimulationConfig
 from act.analysis import save_mse_corr, save_plot, save_prediction_plots
 from act.logger import ACTLogger
 from act.metrics import correlation_score, mse_score
-from act.optim import GeneralACTOptimizer
+from act.RandomForestOptimizer import RandomForestOptimizer
 from act import target_utils
 
 temp_modfiles_dir = "temp_modfiles"
@@ -145,7 +145,7 @@ def _run(config: SimulationConfig):
     params = [p["channel"] for p in config["optimization_parameters"]["params"]]
     for repeat_num in range(config["optimization_parameters"]["num_repeats"]):
         if config["run_mode"] == "original" or config["run_mode"] == "segregated":
-            optim = GeneralACTOptimizer(simulation_config=config, logger=logger, set_passive_properties=not ltohto)
+            optim = RandomForestOptimizer(simulation_config=config, logger=logger, set_passive_properties=not ltohto)
             predictions, train_stats = optim.optimize(target_V)
             predictions_amps = predictions[:, -1].reshape(-1, 1)
             predictions = predictions[:, :-1]

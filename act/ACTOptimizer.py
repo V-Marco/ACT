@@ -56,10 +56,10 @@ class ACTOptimizer:
     # ABSTRACT METHODS
     #------------------------------------
 
-    def fit(self, target_V: torch.Tensor, target_I: torch.Tensor, conductances) -> torch.Tensor:
+    def fit(self, x ,y) -> torch.Tensor:
         raise NotImplementedError
     
-    def predict(self, target_V: torch.Tensor, target_I: torch.Tensor, conductances) -> torch.Tensor:
+    def predict(self, x) -> torch.Tensor:
         raise NotImplementedError
 
     #------------------------------------
@@ -110,7 +110,7 @@ class ACTOptimizer:
 
         self.num_ampl = len(self.config["optimization_parameters"]["amps"])
 
-    def load_params(self):
+    def get_params(self):
         # extract only traces that have spikes in them
         self.spiking_only = True
         self.nonsaturated_only = True
@@ -122,6 +122,7 @@ class ACTOptimizer:
         self.use_spike_summary_stats = True
         self.train_amplitude_frequency = False
         self.train_mean_potential = False
+        self.train_I_stats = True
         self.segregation_arima_order = None
         self.train_test_split = 0.85
         self.summary_feature_columns = []
@@ -187,7 +188,7 @@ class ACTOptimizer:
         self.num_first_spikes = self.config["summary_features"].get("num_first_spikes", 20)
         print(f"Extracting first {self.num_first_spikes} spikes for summary features")
 
-    def load_voltage_traces(self, target_V):
+    def get_voltage_traces(self, target_V):
         # Get voltage with characteristics similar to target
 
         (
@@ -299,18 +300,16 @@ class ACTOptimizer:
             nonsaturated_ind
             )
     
-    def load_summary_features(self, 
-            simulated_V_for_next_stage,
-            spiking_ind,
-            nonsaturated_ind):
-        (
-            num_spikes_simulated,
+    def get_summary_features(self, V: torch.Tensor, I: torch.Tensor, spiking_ind, nonsaturated_ind):
+        
+        # Extract spike summary features
+        (   num_spikes_simulated,
             simulated_interspike_times,
-        ) = DataProcessor.extract_summary_features(simulated_V_for_next_stage)
-        # spike_stats
-        (first_n_spikes, avg_spike_min, avg_spike_max) = utils.spike_stats(
-            simulated_V_for_next_stage, n_spikes=self.num_first_spikes
-        )
+            first_n_spikes, 
+            avg_spike_min, 
+            avg_spike_max
+        ) = DataProcessor.extract_spike_features(V)
+
         coefs_loaded = False
         if os.path.exists("output/arima_stats.json"):
             coefs_loaded = True
@@ -327,6 +326,7 @@ class ACTOptimizer:
             return [f"arima{i}" for i in range(coefs.shape[1])]
 
         summary_features = None
+        summary_feature_columns = []
         if coefs_loaded:
             summary_features = torch.stack(
                 (
@@ -415,6 +415,25 @@ class ACTOptimizer:
                 "mean_potential",
             ]
 
+        if self.train_I_stats:
+            amp_mean, amp_std = DataProcessor.extract_I_stats(I)
+            if summary_features is not None:
+                summary_features = torch.cat(
+                    (
+                        summary_features,
+                        amp_mean.reshape(-1, 1),
+                        amp_std.reshape(-1, 1),
+                    ),
+                    dim=1,
+                )
+            else:
+                summary_features = torch.cat(
+                    (amp_mean.reshape(-1, 1), amp_std.reshape(-1, 1)), dim=1)
+
+            summary_feature_columns = summary_feature_columns + [
+                "mean_amp",
+                "std_amp",
+            ]
 
         if summary_features is None:
             print(
@@ -422,4 +441,73 @@ class ACTOptimizer:
             )
 
         return summary_features, summary_feature_columns, coefs_loaded
+    
+    #------------------------------------
+    # Temporary simulate (will be replaced with Simulator class)
+    #------------------------------------
+
+    def simulate(
+        self,
+        amp: float,
+        parameter_names: list,
+        parameter_values: np.ndarray,
+        i_dur: float = 0,
+        i_delay: float = 0,
+        tstop=None,
+        no_ramp=False,
+        cut_ramp=False,
+        ramp_time=0,
+        ramp_splits=1, 
+    ) -> torch.Tensor:
+        h.dt = self.config["simulation_parameters"]["h_dt"]
+        h.steps_per_ms = 1 / h.dt
+        h.v_init = self.config["simulation_parameters"]["h_v_init"]
+        h.celsius = self.config["simulation_parameters"].get("h_celsius", 31.0)
+        print(f"h.celsius set to {h.celsius}")
+
+        self.cell.set_parameters(parameter_names, parameter_values)
+        segregation_index = utils.get_segregation_index(self.config)
+        if not i_dur:
+            i_dur = self.config["simulation_parameters"]["h_i_dur"]
+            if self.config["run_mode"] == "segregated" and not self.ignore_segregation:
+                i_dur = self.config["segregation"][segregation_index].get(
+                    "h_i_dur", i_dur
+                )
+        if not i_delay:
+            i_delay = self.config["simulation_parameters"]["h_i_delay"]
+            if self.config["run_mode"] == "segregated" and not self.ignore_segregation:
+                i_delay = self.config["segregation"][segregation_index].get(
+                    "h_i_delay", i_delay
+                )
+
+        if self.config["run_mode"] == "segregated" and not no_ramp and not self.ignore_segregation:
+            ramp_time = self.config["segregation"][segregation_index].get(
+                "ramp_time", 0
+            )
+            ramp_splits = self.config["segregation"][segregation_index].get(
+                "ramp_splits", 1
+            )
+
+        tstop_config = self.config["simulation_parameters"]["h_tstop"]
+        if (
+            self.config["run_mode"] == "segregated" and not self.ignore_segregation
+        ):  # sometimes segregated modules have different params
+            tstop_config = self.config["segregation"][segregation_index].get(
+                "h_tstop", tstop_config
+            )
+
+        h.tstop = (tstop or tstop_config) + ramp_time
+
+        self.cell.apply_current_injection(
+            amp, i_dur, i_delay, ramp_time=ramp_time, ramp_splits=ramp_splits
+        )
+
+        h.run()
+        start_idx = int((ramp_time) / h.dt)  # usually 0, this will remove ramp_time
+        trace = torch.Tensor(self.cell.Vm.as_numpy())
+        if cut_ramp:
+            return trace[start_idx:-1]
+        else:
+            return trace[:-1]  # [start_idx:-1]
+
     

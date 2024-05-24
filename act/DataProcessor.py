@@ -142,7 +142,8 @@ class DataProcessor:
     #---------------------------------------------
 
     @staticmethod
-    def extract_summary_features(V: torch.Tensor, spike_threshold=0) -> tuple:
+    def extract_spike_features(V: torch.Tensor, spike_threshold=0, n_spikes=20):
+
         threshold_crossings = torch.diff(V > spike_threshold, dim=1)
         num_spikes = torch.round(torch.sum(threshold_crossings, dim=1) * 0.5)
         interspike_times = torch.zeros((V.shape[0], 1))
@@ -153,119 +154,42 @@ class DataProcessor:
                 ).float()
             )
         interspike_times[torch.isnan(interspike_times)] = 0
-        return num_spikes, interspike_times
+        
+        threshold_crossings = torch.diff(V > spike_threshold, dim=1)
+
+        first_n_spikes = torch.zeros((V.shape[0], n_spikes)) * V.shape[1]
+        avg_spike_min = torch.zeros((V.shape[0], 1))
+        avg_spike_max = torch.zeros((V.shape[0], 1))
+        for i in range(threshold_crossings.shape[0]):
+            threshold_crossing_times = torch.arange(threshold_crossings.shape[1])[
+                threshold_crossings[i, :]
+            ]
+            spike_times = []
+            spike_mins = []
+            spike_maxes = []
+            for j in range(0, threshold_crossing_times.shape[0], 2):
+                spike_times.append(threshold_crossing_times[j])
+                ind = threshold_crossing_times[j : j + 2].cpu().tolist()
+                end_ind = ind[1] if len(ind) == 2 else V.shape[1]
+                spike_maxes.append(
+                    V[i][max(0, ind[0] - 1) : min(end_ind + 5, V.shape[1])].max()
+                )
+                spike_mins.append(
+                    V[i][max(0, ind[0] - 1) : min(end_ind + 5, V.shape[1])].min()
+                )
+            first_n_spikes[i][: min(n_spikes, len(spike_times))] = torch.tensor(
+                spike_times
+            ).flatten()[: min(n_spikes, len(spike_times))]
+            avg_spike_max[i] = torch.mean(torch.tensor(spike_maxes).flatten())
+            avg_spike_min[i] = torch.mean(torch.tensor(spike_mins).flatten())
+            first_n_spikes_scaled = (
+                first_n_spikes / V.shape[1]
+            )  # may be good to return this
+        return num_spikes, interspike_times, first_n_spikes_scaled, avg_spike_min, avg_spike_max
     
-    def extract_target_v_summary_features(
-            self, target_V, config: SimulationConfig, 
-            segregation_arima_order, fs, inj_dur, inj_start,
-            use_spike_summary_stats=True, train_amplitude_frequency=False, train_mean_potential=False
-            ):
-        # Predict and take max across ci to prevent underestimating
-        (
-            num_spikes_simulated,
-            simulated_interspike_times,
-        ) = self.extract_summary_features(target_V.float())
-        (first_n_spikes, avg_spike_min, avg_spike_max) = utils.spike_stats(
-            target_V.float(), n_spikes=self.num_first_spikes
-        )
-        ampl_target = torch.tensor(self.config["optimization_parameters"]["amps"])
-        target_summary_features = None
-
-        coefs_loaded = False
-        if os.path.exists("output/arima_stats.json"):
-            coefs_loaded = True
-            coefs = utils.load_arima_coefs(
-                input_file="output/arima_stats.json"
-            )  # [subset_target_ind] # TODO REMOVE for testing quickly
-
-        if coefs_loaded:
-            arima_order = (10, 0, 10)
-            if config.get("summary_features", {}).get("arima_order"):
-                arima_order = tuple(config["summary_features"]["arima_order"])
-            if segregation_arima_order:
-                arima_order = segregation_arima_order
-            print(f"ARIMA order set to {arima_order}")
-            total_arima_vals = 2 + arima_order[0] + arima_order[1]
-            coefs = []
-            for data in target_V.cpu().detach().numpy():
-                try:
-                    c = self.get_arima_coefs(data, order=arima_order)
-                except:
-                    print("ERROR calculating coefs, setting all to 0")
-                    c = np.zeros(total_arima_vals)
-                coefs.append(c)
-            coefs = torch.tensor(coefs)
-
-            target_summary_features = torch.stack(
-                (
-                    # ampl_target,
-                    torch.flatten(num_spikes_simulated),
-                    torch.flatten(simulated_interspike_times),
-                    avg_spike_min.flatten().T,
-                    avg_spike_max.flatten().T,
-                )
-            )
-            if use_spike_summary_stats:
-                target_summary_features = torch.cat(
-                    (target_summary_features.T, first_n_spikes, coefs), dim=1
-                )
-            else:
-                target_summary_features = coefs
-        else:
-            if use_spike_summary_stats:
-                target_summary_features = torch.stack(
-                    (
-                        # ampl_target,
-                        torch.flatten(num_spikes_simulated),
-                        torch.flatten(simulated_interspike_times),
-                        avg_spike_min.flatten().T,
-                        avg_spike_max.flatten().T,
-                    )
-                )
-                target_summary_features = torch.cat(
-                    (
-                        target_summary_features.T,
-                        first_n_spikes,
-                    ),
-                    dim=1,
-                )
-        if train_amplitude_frequency:
-            target_amplitude, target_frequency = utils.get_amplitude_frequency(
-                target_V.float(), inj_dur, inj_start, fs=fs
-            )
-            if target_summary_features is not None:
-                target_summary_features = torch.cat(
-                    (
-                        target_summary_features,
-                        target_amplitude.reshape(-1, 1),
-                        target_frequency.reshape(-1, 1),
-                    ),
-                    dim=1,
-                )
-            else:
-                target_summary_features = torch.cat(
-                    (target_amplitude.reshape(-1, 1), target_frequency.reshape(-1, 1)),
-                    dim=1,
-                )
-        if train_mean_potential:
-            target_mean_potential = utils.get_mean_potential(
-                target_V.float(), inj_dur, inj_start
-            )
-            if target_summary_features is not None:
-                target_summary_features = torch.cat(
-                    (
-                        target_summary_features,
-                        target_mean_potential.reshape(-1, 1),
-                    ),
-                    dim=1,
-                )
-            else:
-                target_summary_features = target_mean_potential.reshape(-1, 1)
-
-        # remove any remaining nan values
-        target_summary_features[torch.isnan(target_summary_features)] = 0
-
-        return target_summary_features
+    
+    def extract_I_stats(selff, I: torch.Tensor):
+        return np.mean(I.cpu().detach().numpy()), np.std(I.cpu().detach().numpy())
     
 
     def calculate_passive_properties(
@@ -356,30 +280,3 @@ class DataProcessor:
         else:
             print("resampling of traces not needed, same shape as target")
             return V
-
-    def cut_voltage_region(
-        self, target_V: torch.Tensor, voltage_bounds: list
-    ) -> torch.Tensor:
-        cut_target_V = torch.zeros_like(target_V)
-
-        for i in range(cut_target_V.shape[0]):
-            trace = target_V[i]
-            trace = trace[(trace >= voltage_bounds[0]) & (trace < voltage_bounds[1])]
-            cut_target_V[i] = torch.tensor(
-                resample(x=trace, num=target_V.shape[1])
-            ).float()
-
-        return cut_target_V
-
-    def cut_time_region(
-        self, target_V: torch.Tensor, time_bounds: tuple
-    ) -> torch.Tensor:
-        cut_target_V = torch.zeros_like(target_V)
-
-        for i in range(cut_target_V.shape[0]):
-            trace = target_V[i, time_bounds[0] : time_bounds[1]]
-            cut_target_V[i] = torch.tensor(
-                resample(x=trace, num=target_V.shape[1])
-            ).float()
-
-        return cut_target_V

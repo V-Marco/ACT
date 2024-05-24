@@ -815,41 +815,6 @@ def load_parametric_traces(config: SimulationConfig, drop_ramp=False):
     return traces, torch.tensor(parameter_values_list), torch.tensor(amps)
 
 
-def spike_stats(V: torch.Tensor, threshold=0, n_spikes=20):
-    threshold = 0
-    threshold_crossings = torch.diff(V > threshold, dim=1)
-
-    first_n_spikes = torch.zeros((V.shape[0], n_spikes)) * V.shape[1]
-    avg_spike_min = torch.zeros((V.shape[0], 1))
-    avg_spike_max = torch.zeros((V.shape[0], 1))
-    for i in range(threshold_crossings.shape[0]):
-        threshold_crossing_times = torch.arange(threshold_crossings.shape[1])[
-            threshold_crossings[i, :]
-        ]
-        spike_times = []
-        spike_mins = []
-        spike_maxes = []
-        for j in range(0, threshold_crossing_times.shape[0], 2):
-            spike_times.append(threshold_crossing_times[j])
-            ind = threshold_crossing_times[j : j + 2].cpu().tolist()
-            end_ind = ind[1] if len(ind) == 2 else V.shape[1]
-            spike_maxes.append(
-                V[i][max(0, ind[0] - 1) : min(end_ind + 5, V.shape[1])].max()
-            )
-            spike_mins.append(
-                V[i][max(0, ind[0] - 1) : min(end_ind + 5, V.shape[1])].min()
-            )
-        first_n_spikes[i][: min(n_spikes, len(spike_times))] = torch.tensor(
-            spike_times
-        ).flatten()[: min(n_spikes, len(spike_times))]
-        avg_spike_max[i] = torch.mean(torch.tensor(spike_maxes).flatten())
-        avg_spike_min[i] = torch.mean(torch.tensor(spike_mins).flatten())
-        first_n_spikes_scaled = (
-            first_n_spikes / V.shape[1]
-        )  # may be good to return this
-    return first_n_spikes_scaled, avg_spike_min, avg_spike_max
-
-
 def extract_spiking_traces(
     traces_t, params_t, amps_t, threshold=-40, min_spikes=1, keep_zero_amps=True
 ):
