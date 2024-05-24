@@ -31,3 +31,10 @@ def mse_score(target_data: torch.Tensor, simulated_data: torch.Tensor) -> float:
         .cpu()
         .detach()
     )
+
+def mae_score(target_data: torch.Tensor, simulated_data: torch.Tensor) -> float:
+    return float(
+        torch.mean(torch.mean(torch.abs(target_data - simulated_data), dim=0))
+        .cpu()
+        .detach()
+    )

@@ -11,20 +11,22 @@ from bmtk.simulator import bionet
 from bmtk.utils.sim_setup import build_env_bionet
 from neuron import h
 import pandas as pd
-from statsmodels.tsa.arima.model import ARIMA
 import torch
-import timeout_decorator
 import multiprocessing as mp
 from scipy import signal
 import itertools
 
 from act.act_types import SimulationConfig
 from act.cell_model import CellModel
+from act.DataProcessor import DataProcessor
 
 import warnings
 
 pc = h.ParallelContext()  # object to access MPI methods
 MPI_RANK = int(pc.id())
+
+def get_random_seed(config: SimulationConfig) -> str:
+    return f"{config['optimization_parameters']['random_seed']}"
 
 def create_output_folder(config: SimulationConfig, overwrite=True) -> str:
     if(config["output"]["auto_structure"] == True):
@@ -128,6 +130,11 @@ def get_last_model_data_folder_name(config: SimulationConfig) -> str:
     else:
         model_data_dir = output_dir + "model_data/"+ f"{random_seed}-seed/"
     return model_data_dir
+
+def get_final_folder(config: SimulationConfig) -> str:
+    output_dir = get_output_folder_name(config)
+    random_seed = f"{config['optimization_parameters']['random_seed']}"
+    return output_dir + "final/" + f"{random_seed}-seed/"
 
 def set_cell_parameters(cell, parameter_list: list, parameter_values: list) -> None:
     for sec in cell.all:
@@ -431,11 +438,10 @@ def update_segregation(config: SimulationConfig, learned_params):
         with open(parameter_values_file, "w") as fp:
             json.dump(parameter_values_dict, fp, indent=4)
         if segregation_index+1 == len(config["segregation"]):
-            random_seed = f"{config['optimization_parameters']['random_seed']}"
-            output_folder_base = get_output_folder_name(config)
-            final_folder = output_folder_base + f"final/{random_seed}-seed/parameter_values_seg_complete.json"
-            print(f"Saving final learned parameters to: {final_folder}")
-            shutil.move(parameter_values_file, final_folder)
+            final_folder = get_final_folder(config)
+            final_parameter_file = f"final/{final_folder}/parameter_values_seg_complete.json"
+            print(f"Saving final learned parameters to: {final_parameter_file}")
+            shutil.move(parameter_values_file, final_parameter_file)
     else:
         print(
             f"{parameter_values_file} file not found - unable to update learned params"
@@ -844,25 +850,10 @@ def spike_stats(V: torch.Tensor, threshold=0, n_spikes=20):
     return first_n_spikes_scaled, avg_spike_min, avg_spike_max
 
 
-def extract_summary_features(V: torch.Tensor, threshold=-40) -> tuple:
-    threshold_crossings = torch.diff(V > threshold, dim=1)
-    num_spikes = torch.round(torch.sum(threshold_crossings, dim=1) * 0.5)
-    interspike_times = torch.zeros((V.shape[0], 1))
-    for i in range(threshold_crossings.shape[0]):
-        interspike_times[i, :] = torch.mean(
-            torch.diff(
-                torch.arange(threshold_crossings.shape[1])[threshold_crossings[i, :]]
-            ).float()
-        )
-    interspike_times[torch.isnan(interspike_times)] = 0
-
-    return num_spikes, interspike_times
-
-
 def extract_spiking_traces(
     traces_t, params_t, amps_t, threshold=-40, min_spikes=1, keep_zero_amps=True
 ):
-    num_spikes, interspike_times = extract_summary_features(traces_t)
+    num_spikes, interspike_times = DataProcessor.extract_summary_features(traces_t)
     spiking_gids = (
         num_spikes.gt(min_spikes - 1).nonzero().flatten().cpu().detach().tolist()
     )
@@ -876,106 +867,22 @@ def extract_spiking_traces(
     print(f"{len(spiking_traces)}/{len(traces_t)} spiking traces extracted.")
     return spiking_traces, spiking_params, spiking_amps, spiking_gids
 
-
-def get_arima_coefs(trace: np.array, order=(10, 0, 10)):
-    model = ARIMA(endog=trace, order=order).fit()
-    stats_df = pd.read_csv(
-        StringIO(model.summary().tables[1].as_csv()),
-        index_col=0,
-        skiprows=1,
-        names=["coef", "std_err", "z", "significance", "0.025", "0.975"],
-    )
-    stats_df.loc[stats_df["significance"].astype(float) > 0.05, "coef"] = 0
-    coefs = stats_df.coef.tolist()
-    return coefs
-
-
-def arima_processor(trace_dict):
-    @timeout_decorator.timeout(180, use_signals=True, timeout_exception=Exception)
-    def arima_run(trace, order):
-        return get_arima_coefs(trace, order)
-
-    cell_id = trace_dict["cell_id"]
-    trace = trace_dict["trace"]
-    total = trace_dict["total"]
-    arima_order = trace_dict["arima_order"]
-    print(f"processing cell {cell_id+1}/{total}")
-
-    try:
-        coefs = arima_run(trace, arima_order)
-    except Exception as e:
-        print(f"problem processing cell {cell_id}: {e} | setting all values to 0.0")
-        num_arima_vals = 2 + arima_order[0] + arima_order[2]
-        coefs = [0.0 for _ in range(num_arima_vals)]
-
-    trace_dict["coefs"] = coefs
-    return trace_dict
-
-
-def arima_coefs_proc_map(
-    traces, num_procs=64, output_file="output/arima_stats.json", arima_order=(10, 0, 10)
-):
-    trace_list = []
-    traces = traces.cpu().detach().tolist()
-    num_traces = len(traces)
-    for i, trace in enumerate(traces):
-        trace_list.append(
-            {
-                "cell_id": i,
-                "trace": trace,
-                "total": num_traces,
-                "arima_order": arima_order,
-            }
-        )
-    with mp.Pool(num_procs) as pool:
-        pool_output = pool.map_async(arima_processor, trace_list).get()
-    # ensure ordering
-    pool_dict = {}
-    for out in pool_output:
-        pool_dict[out["cell_id"]] = out["coefs"]
-    coefs_list = []
-    num_arima_vals = 2 + arima_order[0] + arima_order[2]
-    for i in range(num_traces):
-        if pool_dict.get(i):
-            coefs_list.append(pool_dict[i])
-        else:  # we didn't complete that task, was not found
-            coefs_list.append([0 for _ in range(num_arima_vals)])
-
-    output_dict = {}
-    output_dict["arima_coefs"] = coefs_list
-
-    with open(output_file, "w") as fp:
-        json.dump(output_dict, fp, indent=4)
-
-    return coefs_list
-
-
-def load_arima_coefs(input_file="output/arima_stats.json"):
-    with open(input_file) as json_file:
-        arima_dict = json.load(json_file)
-    return torch.tensor(arima_dict["arima_coefs"])
-
-
-def extract_summary_features(V: torch.Tensor, spike_threshold=0) -> tuple:
-    threshold_crossings = torch.diff(V > spike_threshold, dim=1)
-    num_spikes = torch.round(torch.sum(threshold_crossings, dim=1) * 0.5)
-    interspike_times = torch.zeros((V.shape[0], 1))
-    for i in range(threshold_crossings.shape[0]):
-        interspike_times[i, :] = torch.mean(
-            torch.diff(
-                torch.arange(threshold_crossings.shape[1])[threshold_crossings[i, :]]
-            ).float()
-        )
-    interspike_times[torch.isnan(interspike_times)] = 0
-    return num_spikes, interspike_times
-
+def get_arima_order(config: SimulationConfig, segregation_index):
+    arima_order = (10, 0, 10)
+    if config.get("summary_features", {}).get("arima_order"):
+        arima_order = tuple(config["summary_features"]["arima_order"])
+    if config["run_mode"] == "segregated" and config["segregation"][segregation_index].get("arima_order",None):
+        print(f"custom arima order for segregation set")
+        arima_order = tuple(config["segregation"][segregation_index]["arima_order"])
+    return arima_order
 
 def get_fi_curve(traces, amps, ignore_negative=True, inj_dur=1000):
     """
     Returns the spike counts per amp.
     inj_dur is the duration of the current injection
     """
-    spikes, interspike_times = extract_summary_features(traces)
+
+    spikes, interspike_times = DataProcessor.extract_summary_features(traces)
 
     if ignore_negative:
         non_neg_idx = (amps >= 0).nonzero().flatten()

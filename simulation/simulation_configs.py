@@ -210,7 +210,7 @@ LA_A_orig = {
         "skip_match_voltage": True,
         "use_random_forest": True,
         "parametric_distribution": {  # sample the parameter space for training if n_slices is > 1
-            "n_slices": 3,
+            "n_slices": 2,
         },
         "decimate_factor": 10,
     },
@@ -968,4 +968,4 @@ Test_Spiker_orig = {
 #                                                 SELECTED_CONFIG
 # ===================================================================================================================
 # ===================================================================================================================
-selected_config = LA_A_seg
+selected_config = LA_A_orig
