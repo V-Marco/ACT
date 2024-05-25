@@ -64,7 +64,7 @@ class DataProcessor:
         print("-------------------------------------------------")
         print("GENERATING ARIMA STATS")
         print("-------------------------------------------------")
-        traces = utils.load_parametric_traces(selected_config)
+        traces, params, amps = utils.load_parametric_traces(selected_config)
         output_file = output_folder + "arima_stats.json"
 
         segregation_index = utils.get_segregation_index(selected_config)
@@ -187,9 +187,9 @@ class DataProcessor:
             )  # may be good to return this
         return num_spikes, interspike_times, first_n_spikes_scaled, avg_spike_min, avg_spike_max
     
-    
-    def extract_I_stats(selff, I: torch.Tensor):
-        return np.mean(I.cpu().detach().numpy()), np.std(I.cpu().detach().numpy())
+
+    def extract_I_stats(I: torch.Tensor):
+        return torch.mean(I), torch.std(I)
     
 
     def calculate_passive_properties(

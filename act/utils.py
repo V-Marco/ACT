@@ -818,7 +818,7 @@ def load_parametric_traces(config: SimulationConfig, drop_ramp=False):
 def extract_spiking_traces(
     traces_t, params_t, amps_t, threshold=-40, min_spikes=1, keep_zero_amps=True
 ):
-    num_spikes, interspike_times = DataProcessor.extract_summary_features(traces_t)
+    num_spikes, interspike_times, first_n_spikes_scaled, avg_spike_min, avg_spike_max = DataProcessor.extract_spike_features(traces_t)
     spiking_gids = (
         num_spikes.gt(min_spikes - 1).nonzero().flatten().cpu().detach().tolist()
     )

@@ -74,10 +74,7 @@ class RandomForestOptimizer(ACTOptimizer):
         nonsaturated_ind
         ) = self.get_voltage_traces(target_V)
             
-        summary_features, summary_feature_columns, coefs_loaded = self.get_summary_features(simulated_V_for_next_stage,
-        spiking_ind,
-        nonsaturated_ind
-        )
+        summary_features, summary_feature_columns, coefs_loaded = self.get_summary_features(simulated_V_for_next_stage, ampl_next_stage, spiking_ind,nonsaturated_ind)
 
         # make amp output a learned parameter (target params)
         param_samples_for_next_stage = torch.cat(

@@ -377,7 +377,7 @@ class ACTOptimizer:
 
         if self.train_amplitude_frequency:
             amplitude, frequency = utils.get_amplitude_frequency(
-                simulated_V_for_next_stage.float(), self.inj_dur, self.inj_start, fs=self.fs
+                V.float(), self.inj_dur, self.inj_start, fs=self.fs
             )
             if summary_features is not None:
                 summary_features = torch.cat(
@@ -396,9 +396,31 @@ class ACTOptimizer:
                 "amplitude",
                 "frequency",
             ]
+
+        if self.train_I_stats:
+            amp_mean, amp_std = DataProcessor.extract_I_stats(I)
+            print(amp_mean.reshape(-1,1))
+            print(summary_features)
+            if summary_features is not None:
+                summary_features = torch.cat(
+                    (
+                        summary_features,
+                        amp_mean.reshape(-1, 1),
+                        amp_std.reshape(-1, 1)
+                    ),
+                    dim=1,
+                )
+            else:
+                summary_features = torch.cat(
+                    (amp_mean.reshape(-1, 1), amp_std.reshape(-1, 1)), dim=1)
+
+            summary_feature_columns = summary_feature_columns + [
+                "mean_amp",
+                "std_amp",
+            ]
         if self.train_mean_potential:
             mean_potential = utils.get_mean_potential(
-                simulated_V_for_next_stage.float(), self.inj_dur, self.inj_start
+                V.float(), self.inj_dur, self.inj_start
             )
             if summary_features is not None:
                 summary_features = torch.cat(
@@ -415,25 +437,7 @@ class ACTOptimizer:
                 "mean_potential",
             ]
 
-        if self.train_I_stats:
-            amp_mean, amp_std = DataProcessor.extract_I_stats(I)
-            if summary_features is not None:
-                summary_features = torch.cat(
-                    (
-                        summary_features,
-                        amp_mean.reshape(-1, 1),
-                        amp_std.reshape(-1, 1),
-                    ),
-                    dim=1,
-                )
-            else:
-                summary_features = torch.cat(
-                    (amp_mean.reshape(-1, 1), amp_std.reshape(-1, 1)), dim=1)
 
-            summary_feature_columns = summary_feature_columns + [
-                "mean_amp",
-                "std_amp",
-            ]
 
         if summary_features is None:
             print(
