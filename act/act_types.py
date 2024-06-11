@@ -4,15 +4,24 @@ These types should be used to define the user supplied simulation config/config.
 """
 
 from typing import List, TypedDict
+from dataclasses import dataclass
 
-
-class PassiveProperties(TypedDict):
-    v_rest: float
-    r_in: float
+@dataclass
+class PassiveProperties:
+    V_rest: float
+    R_in: float
     tau: float
     leak_conductance_variable: str  # eg: g_leak
     leak_reversal_variable: str  # eg: e_leak
 
+@dataclass
+class SimulationParameters:
+    sim_name: str
+    h_v_init: float # (mV)
+    h_tstop: int  # (ms)
+    h_dt: float # (ms)
+    h_celsius: float # (deg C)
+    CI: dict
 
 class Cell(TypedDict):
     hoc_file: str
@@ -21,13 +30,13 @@ class Cell(TypedDict):
     passive_properties: PassiveProperties  # optional if you want an analytical passive approach
 
 
-class SimulationParameters(TypedDict):
-    h_v_init: float
-    h_tstop: int  # (ms)
-    h_i_delay: int  # (ms)
-    h_i_dur: int  # (ms)
-    h_dt: float
-    h_celsius: float
+# class SimulationParameters(TypedDict):
+#     h_v_init: float
+#     h_tstop: int  # (ms)
+#     h_i_delay: int  # (ms)
+#     h_i_dur: int  # (ms)
+#     h_dt: float
+#     h_celsius: float
 
 
 class OptimizationParam(TypedDict):
