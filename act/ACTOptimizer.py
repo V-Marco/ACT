@@ -7,7 +7,7 @@ from act.act_types import PassiveProperties, SimulationConfig
 from act.cell_model import CellModel
 from act.logger import ACTDummyLogger
 from act import utils
-from act.DataProcessor import DataProcessor
+from proj.ACT.act.DataProcessor_old import DataProcessor
 from typing import Tuple
 
 # ACTOptimizer is the base class for all optimization algorithms
@@ -306,7 +306,7 @@ class ACTOptimizer:
         (   num_spikes_simulated,
             simulated_interspike_times,
             first_n_spikes, 
-            avg_spike_min, 
+            avg_spike_min,
             avg_spike_max
         ) = DataProcessor.extract_spike_features(V)
 

@@ -45,7 +45,8 @@ class Simulator:
     def _run_job(self, cell: ACTCellModel, parameters: SimulationParameters) -> None:
 
         # Create this simulation's folder
-        os.mkdir(parameters.path)
+        if os.path.isfile(parameters.path) == False:
+            os.mkdir(parameters.path)
         
         # Load standard run files
         h.load_file('stdrun.hoc')

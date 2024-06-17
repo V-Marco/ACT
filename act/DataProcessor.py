@@ -5,7 +5,8 @@ from io import StringIO
 import numpy as np
 import pandas as pd
 from statsmodels.tsa.arima.model import ARIMA
-from scipy.signal import resample
+
+from scipy import signal
 import torch
 import timeout_decorator
 import multiprocessing as mp
@@ -16,6 +17,8 @@ from act.act_types import PassiveProperties, SimulationConfig
 from act import utils
 from typing import Tuple
 
+import warnings
+
 # Data Processor 
 # Broken into 3 main sections:
 # 1. ARIMA STATS
@@ -24,11 +27,25 @@ from typing import Tuple
 
 
 class DataProcessor:
+    #["arima", "spike", "current"]
+    def extract_features(self, list_of_features, arima_file):
+        feature_columns = []
+        features = []
+        if "arima" in list_of_features:
+            features, feature_columns = self.get_arima_featues(feature_columns, arima_file)
+        
+        return features, feature_columns
 
     #---------------------------------------------
     #ARIMA STATS
     #---------------------------------------------
-    @staticmethod
+
+    def get_arima_featues(columns, arima_file):
+        coefs = DataProcessor.load_arima_coefs(input_file=arima_file)
+        arima_columns = columns + [f"arima{i}" for i in range(coefs.shape[1])]
+        return coefs, arima_columns
+    
+
     def load_arima_coefs(output_folder, input_file=None):
 
         if input_file is None:
@@ -43,23 +60,6 @@ class DataProcessor:
 
         if output_folder is None:
             output_folder  = utils.get_sim_output_folder_name(selected_config)
-
-        '''
-        arma_stats_already_exists = os.path.exists(f"{output_folder}arima_stats.json")
-        want_to_generate_arma = selected_config["optimization_parameters"]["generate_arma"]
-        
-        if (arma_stats_already_exists):
-            print("--------------------------------------------------------------------")
-            print(f"ARIMA STATS ALREADY GENERATED - Using stats from: {f"{output_folder}arima_stats.json"}")
-            print("--------------------------------------------------------------------")
-            return None
-        elif (not want_to_generate_arma):
-            print("-------------------------------------------------")
-            print("ARIMA STATS TURNED OFF IN SIMULATION CONFIGURATION")
-            print("-------------------------------------------------")
-            return None
-        else:
-        '''
         
         print("-------------------------------------------------")
         print("GENERATING ARIMA STATS")
@@ -135,13 +135,41 @@ class DataProcessor:
         stats_df.loc[stats_df["significance"].astype(float) > 0.05, "coef"] = 0
         coefs = stats_df.coef.tolist()
         return coefs
-
+    
 
     #---------------------------------------------
-    # FEATURE EXTRACTION
+    #CURRENT STATS
     #---------------------------------------------
+    def get_current_stats(I: torch.Tensor):
+        return torch.mean(I), torch.std(I)
+    
+    #---------------------------------------------
+    #VOLTAGE STATS
+    #---------------------------------------------
+    def get_spike_stats(self, columns, V: torch.Tensor):
+        # Extract spike summary features
+        (   num_spikes_simulated,
+            simulated_interspike_times,
+            first_n_spikes, 
+            avg_spike_min,
+            avg_spike_max
+        ) = self.extract_spike_features(V)
 
-    @staticmethod
+        summary_features = torch.stack(
+                (
+                    torch.flatten(num_spikes_simulated),
+                    torch.flatten(simulated_interspike_times),
+                    avg_spike_min.flatten().T,
+                    avg_spike_max.flatten().T,
+                )
+            )
+        columns.append("Num Spikes")
+        columns.append("Interspike Interval")
+        columns.append("Avg Min Spike Height")
+        columns.append("Avg Max Spike Height")
+
+
+
     def extract_spike_features(V: torch.Tensor, spike_threshold=0, n_spikes=20):
 
         threshold_crossings = torch.diff(V > spike_threshold, dim=1)
@@ -154,8 +182,6 @@ class DataProcessor:
                 ).float()
             )
         interspike_times[torch.isnan(interspike_times)] = 0
-        
-        threshold_crossings = torch.diff(V > spike_threshold, dim=1)
 
         first_n_spikes = torch.zeros((V.shape[0], n_spikes)) * V.shape[1]
         avg_spike_min = torch.zeros((V.shape[0], 1))
@@ -186,97 +212,5 @@ class DataProcessor:
                 first_n_spikes / V.shape[1]
             )  # may be good to return this
         return num_spikes, interspike_times, first_n_spikes_scaled, avg_spike_min, avg_spike_max
+
     
-
-    def extract_I_stats(I: torch.Tensor):
-        return torch.mean(I), torch.std(I)
-    
-
-    def calculate_passive_properties(
-        self, config: SimulationConfig, parameter_names: list, parameter_values: np.ndarray
-    ) -> Tuple[PassiveProperties, np.ndarray]:
-        """
-        Run simulations to determine passive properties for a given cell parameter set
-        """
-        gleak_var = (
-            config.get("cell", {})
-            .get("passive_properties", {})
-            .get("leak_conductance_variable")
-        )
-        eleak_var = (
-            config.get("cell", {})
-            .get("passive_properties", {})
-            .get("leak_reversal_variable")
-        )
-        props: PassiveProperties = {
-            "leak_conductance_variable": gleak_var,
-            "leak_reversal_variable": eleak_var,
-            "r_in": 0,
-            "tau": 0,
-            "v_rest": 0,
-        }
-        tstart = 500
-        passive_delay = 500
-        passive_amp = -100 / 1e3
-        passive_duration = 1000
-
-        tstop = tstart + passive_duration
-
-        passive_tensor = self.simulate(
-            passive_amp,
-            parameter_names,
-            parameter_values,
-            i_delay=tstart,
-            i_dur=passive_duration,
-            tstop=tstop,
-            no_ramp=True,
-        )
-        passive_vec = passive_tensor.cpu().detach().numpy()
-
-        index_v_rest = int(((1000 / h.dt) / 1000 * tstart))
-        index_v_final = int(((1000 / h.dt) / 1000 * (tstart + passive_delay)))
-
-        # v rest
-        v_rest = passive_vec[index_v_rest]
-        v_rest_time = index_v_rest / (1 / h.dt)
-
-        # tau/r_in
-        passive_v_final = passive_vec[index_v_final]
-        v_final_time = index_v_final / (1 / h.dt)
-
-        v_diff = v_rest - passive_v_final
-
-        v_t_const = v_rest - (v_diff * 0.632)
-        # Find index of first occurance where the voltage is less than the time constant for tau
-        # index_v_tau = list(filter(lambda i: i < v_t_const, cfir_widget.passive_vec))[0]
-        index_v_tau = next(
-            x
-            for x, val in enumerate(list(passive_vec[index_v_rest:]))
-            if val < v_t_const
-        )
-        time_tau = index_v_tau / ((1000 / h.dt) / 1000)
-        tau = time_tau  # / 1000 (in ms)
-        r_in = (v_diff) / (0 - passive_amp)  # * 1e6  # MegaOhms -> Ohms
-
-        props["v_rest"] = float(v_rest)
-        props["tau"] = float(tau)
-        props["r_in"] = float(r_in)
-
-        return props, passive_vec
-
-    #---------------------------------------------
-    # VOLTAGE TRACE MANIPULATION
-    #---------------------------------------------
-    def resample_voltage(self, V: torch.Tensor, num_obs: int) -> torch.Tensor:
-        if not V.shape[-1] == num_obs:
-            print(
-                f"resampling traces from shape {V.shape[-1]} to {num_obs} to match target shape"
-            )
-            resampled_data = []
-            for i in range(V.shape[0]):
-                resampled_data.append(resample(x=V[i].cpu(), num=num_obs))
-            resampled_data = torch.tensor(np.array(resampled_data)).float()
-            return resampled_data
-        else:
-            print("resampling of traces not needed, same shape as target")
-            return V

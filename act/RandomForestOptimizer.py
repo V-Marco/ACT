@@ -6,7 +6,7 @@ from act.act_types import SimulationConfig
 
 from act import utils
 from sklearn.ensemble import RandomForestRegressor
-from act.DataProcessor import DataProcessor
+from proj.ACT.act.DataProcessor_old import DataProcessor
 from act.ACTOptimizer import (
     ACTOptimizer
 )

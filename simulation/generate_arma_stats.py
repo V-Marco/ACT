@@ -2,7 +2,7 @@
 import sys
 sys.path.append("../")
 from act import utils
-from act.DataProcessor import DataProcessor
+from proj.ACT.act.DataProcessor_old import DataProcessor
 from simulation_configs import selected_config
 import warnings
 import os.path

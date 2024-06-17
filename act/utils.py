@@ -17,8 +17,6 @@ from scipy import signal
 import itertools
 
 from act.act_types import SimulationConfig
-from act.cell_model import CellModel
-from act.DataProcessor import DataProcessor
 
 import warnings
 
@@ -814,7 +812,7 @@ def load_parametric_traces(config: SimulationConfig, drop_ramp=False):
 
     return traces, torch.tensor(parameter_values_list), torch.tensor(amps)
 
-
+'''
 def extract_spiking_traces(
     traces_t, params_t, amps_t, threshold=-40, min_spikes=1, keep_zero_amps=True
 ):
@@ -831,7 +829,7 @@ def extract_spiking_traces(
     spiking_amps = amps_t[spiking_gids]
     print(f"{len(spiking_traces)}/{len(traces_t)} spiking traces extracted.")
     return spiking_traces, spiking_params, spiking_amps, spiking_gids
-
+'''
 def get_arima_order(config: SimulationConfig, segregation_index):
     arima_order = (10, 0, 10)
     if config.get("summary_features", {}).get("arima_order"):
@@ -840,7 +838,7 @@ def get_arima_order(config: SimulationConfig, segregation_index):
         print(f"custom arima order for segregation set")
         arima_order = tuple(config["segregation"][segregation_index]["arima_order"])
     return arima_order
-
+'''
 def get_fi_curve(traces, amps, ignore_negative=True, inj_dur=1000):
     """
     Returns the spike counts per amp.
@@ -857,7 +855,7 @@ def get_fi_curve(traces, amps, ignore_negative=True, inj_dur=1000):
     spikes = (1000.0 / inj_dur) * spikes  # Convert to Hz
 
     return spikes
-
+'''
 
 def get_fi_curve_error(
     simulated_traces,
