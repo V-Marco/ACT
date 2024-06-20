@@ -1,4 +1,4 @@
-import os
+#import os
 import json
 from io import StringIO
 
@@ -6,18 +6,18 @@ import numpy as np
 import pandas as pd
 from statsmodels.tsa.arima.model import ARIMA
 
-from scipy import signal
+#from scipy import signal
 import torch
 import timeout_decorator
 import multiprocessing as mp
 from tqdm import tqdm
 
 from neuron import h
-from act.act_types import PassiveProperties, SimulationConfig
+#from act.act_types import PassiveProperties, SimulationConfig
 from act import utils
-from typing import Tuple
+#from typing import Tuple
 
-import warnings
+#import warnings
 
 # Data Processor 
 # Broken into 3 main sections:
@@ -27,23 +27,27 @@ import warnings
 
 
 class DataProcessor:
+
+    def __init__():
+        pass
+
     #["arima", "spike", "current"]
-    def extract_features(self, list_of_features, arima_file):
+    def extract_features(self, list_of_features, arima_file=None):
         feature_columns = []
         features = []
         if "arima" in list_of_features:
-            features, feature_columns = self.get_arima_featues(feature_columns, arima_file)
+            features, column_names = self.get_arima_featues(arima_file)
         
-        return features, feature_columns
+        return features, column_names
 
     #---------------------------------------------
     #ARIMA STATS
     #---------------------------------------------
 
-    def get_arima_featues(columns, arima_file):
-        coefs = DataProcessor.load_arima_coefs(input_file=arima_file)
-        arima_columns = columns + [f"arima{i}" for i in range(coefs.shape[1])]
-        return coefs, arima_columns
+    def get_arima_featues(arima_file):
+        features = DataProcessor.load_arima_coefs(input_file=arima_file)
+        column_names =  [f"arima{i}" for i in range(features.shape[1])]
+        return features, column_names
     
 
     def load_arima_coefs(output_folder, input_file=None):
@@ -141,12 +145,22 @@ class DataProcessor:
     #CURRENT STATS
     #---------------------------------------------
     def get_current_stats(I: torch.Tensor):
-        return torch.mean(I), torch.std(I)
+        mean = torch.mean(I)
+        stddev = torch.std(I)
+        features = torch.stack(
+            torch.flatten(mean),
+            torch.flatten(stddev)
+        )
+
+        column_names = []
+        column_names.append("I_mean")
+        column_names.append("I_stdev")
+        return features, column_names
     
     #---------------------------------------------
     #VOLTAGE STATS
     #---------------------------------------------
-    def get_spike_stats(self, columns, V: torch.Tensor):
+    def get_spike_stats(self, V: torch.Tensor):
         # Extract spike summary features
         (   num_spikes_simulated,
             simulated_interspike_times,
@@ -155,7 +169,7 @@ class DataProcessor:
             avg_spike_max
         ) = self.extract_spike_features(V)
 
-        summary_features = torch.stack(
+        features = torch.stack(
                 (
                     torch.flatten(num_spikes_simulated),
                     torch.flatten(simulated_interspike_times),
@@ -163,10 +177,14 @@ class DataProcessor:
                     avg_spike_max.flatten().T,
                 )
             )
-        columns.append("Num Spikes")
-        columns.append("Interspike Interval")
-        columns.append("Avg Min Spike Height")
-        columns.append("Avg Max Spike Height")
+
+        column_names = []
+        column_names.append("Num Spikes")
+        column_names.append("Interspike Interval")
+        column_names.append("Avg Min Spike Height")
+        column_names.append("Avg Max Spike Height")
+
+        return features, column_names
 
 
 
