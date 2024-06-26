@@ -187,7 +187,7 @@ class ACTOptimizer:
 
         self.num_first_spikes = self.config["summary_features"].get("num_first_spikes", 20)
         print(f"Extracting first {self.num_first_spikes} spikes for summary features")
-
+    '''
     def get_voltage_traces(self, target_V):
         # Get voltage with characteristics similar to target
 
@@ -224,24 +224,6 @@ class ACTOptimizer:
         # simulated_V_dist = simulated_V_dist[subset_target_ind]
         # param_samples_dist = param_samples_dist[subset_target_ind]
         # simulated_amps = simulated_amps[subset_target_ind]
-
-        if simulated_V_dist is None:
-            if n_slices > 1:
-                print(
-                    f"n_slices variable set, but no traces have been generated previously"
-                )
-                print(f"Generate parametric traces prior to running")
-                """
-                (
-                    simulated_V_dist,
-                    param_samples_dist,
-                    simulated_amps,
-                ) = self.get_parametric_distribution(n_slices, simulations_per_amp)
-                """
-            else:
-                print(
-                    f"Parametric distribution parameters 'n_slices' not set, skipping."
-                )
 
         if simulated_V_dist is not None:
             if simulated_V_for_next_stage is not None:
@@ -299,7 +281,8 @@ class ACTOptimizer:
             spiking_ind,
             nonsaturated_ind
             )
-    
+    '''
+    '''
     def get_summary_features(self, V: torch.Tensor, I: torch.Tensor, spiking_ind, nonsaturated_ind):
         
         # Extract spike summary features
@@ -445,11 +428,11 @@ class ACTOptimizer:
             )
 
         return summary_features, summary_feature_columns, coefs_loaded
-    
+    '''
     #------------------------------------
     # Temporary simulate (will be replaced with Simulator class)
     #------------------------------------
-
+    '''
     def simulate(
         self,
         amp: float,
@@ -513,5 +496,5 @@ class ACTOptimizer:
             return trace[start_idx:-1]
         else:
             return trace[:-1]  # [start_idx:-1]
-
+    '''
     

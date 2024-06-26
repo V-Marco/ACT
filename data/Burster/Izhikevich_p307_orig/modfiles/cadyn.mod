@@ -1,14 +1,14 @@
 :High-voltage activated Ca2+ channel
 
 NEURON {
-        SUFFIX cadyn
+    SUFFIX cadyn
 	USEION ca READ eca WRITE ica
 	RANGE gcabar, gca,i
 	RANGE uinf, zinf, utau, ztau 
 }
 
 UNITS {
-        (mA) = (milliamp)
+    (mA) = (milliamp)
 	(mV) = (millivolt)
 }
 

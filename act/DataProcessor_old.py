@@ -365,7 +365,7 @@ class DataProcessor:
     def extract_I_stats(I: torch.Tensor):
         return torch.mean(I), torch.std(I)
     
-    '''
+
     def calculate_passive_properties(
         self, config: SimulationConfig, parameter_names: list, parameter_values: np.ndarray
     ) -> Tuple[PassiveProperties, np.ndarray]:
@@ -437,7 +437,7 @@ class DataProcessor:
         props["r_in"] = float(r_in)
 
         return props, passive_vec
-    '''
+    
     #---------------------------------------------
     # VOLTAGE TRACE MANIPULATION
     #---------------------------------------------

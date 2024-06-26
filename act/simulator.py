@@ -45,8 +45,10 @@ class Simulator:
     def _run_job(self, cell: ACTCellModel, parameters: SimulationParameters) -> None:
 
         # Create this simulation's folder
-        if os.path.isfile(parameters.path) == False:
+        if not os.path.exists(parameters.path):
             os.mkdir(parameters.path)
+
+        h.nrn_load_dll(os.path.join(cell.mod_folder, "libnrnmech.so"))
         
         # Load standard run files
         h.load_file('stdrun.hoc')

@@ -6,10 +6,11 @@ from act import act_types
 
 class ACTCellModel:
 
-    def __init__(self, hoc_file: str, cell_name: str, g_names: list):
+    def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list):
 
         # Hoc cell
         self.hoc_file = hoc_file
+        self.mod_folder = mod_folder
         self.cell_name = cell_name
 
         # Current injection objects
@@ -89,8 +90,8 @@ class TargetCell(ACTCellModel):
 
 class TrainCell(ACTCellModel):
 
-    def __init__(self, hoc_file: str, cell_name: str, g_names: list):
-        super().__init__(hoc_file, cell_name, g_names)
+    def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list):
+        super().__init__(hoc_file, mod_folder, cell_name, g_names)
         self.g_to_set_after_build = None
 
     def set_g(self, g_names: list, g_values: list) -> None:

@@ -234,7 +234,7 @@ class RandomForestOptimizer(ACTOptimizer):
             sigmoid_maxs = sigmoid_maxs[output_ind]
 
         ret = torch.tensor(
-                self.predict_random_forest(summary_features.cpu().numpy())
+                self.reg.predict(summary_features.cpu().numpy())
             ).float()
 
         # return with preset params
@@ -248,7 +248,3 @@ class RandomForestOptimizer(ACTOptimizer):
         else:
             return ret
         
-
-    def predict_random_forest(self, X_test):
-        y_pred = self.reg.predict(X_test)
-        return y_pred
