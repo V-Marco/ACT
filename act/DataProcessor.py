@@ -1,6 +1,7 @@
 import os
 import json
 from io import StringIO
+import glob
 
 import numpy as np
 import pandas as pd
@@ -25,9 +26,19 @@ import matplotlib.pyplot as plt
 import warnings
 
 # Data Processor 
-# Broken into 3 main sections:
-# 1. ARIMA STATS
-# 2. FEATURE EXTRACTION
+# Broken into main sections:
+
+# 1. PASSIVE PROPERTIES:
+#   : methods for simulating negative current injection and calculating 
+#     passive properties from voltage recording stats.
+
+# 2. TRACE FEATURE EXTRACTION:
+#   : methods for extracting features from Voltage and Current traces
+#     and shaping the data into a final output tensor
+#       a. ARIMA STATS  : methods for generating ARIMA stats from a tensor of voltage traces
+#       b. VOLT  STATS  : 
+#       c. CURRENT STATS:
+# 3. 
 # 3. VOLTAGE TRACE MANIPULATION AND FILTERING
 
 
@@ -36,96 +47,93 @@ class DataProcessor:
     def __init__(self):
         pass
 
-    # ["i_mean_stdev", "v_arima_coefs", "v_mean_potential", "v_amplitude", "v_frequency"]
     # Spike features automatically included. Must provide a voltage trace
     def extract_features(self, list_of_features=None, V=None, I=None, arima_file=None, inj_dur=None, inj_start=None, fs=None):
-        all_traces_features = []
 
         # If a specific list is not provided, extract all features
         if(list_of_features is not None):
             list_of_features = ["v_spike_stats", "i_mean_stdev", "v_arima_coefs", "v_mean_potential", "v_amplitude", "v_frequency"]
 
         # I and V should be the same length
-        for i in range(len(V)):
-            columns = []
-            summary_features = None
-            # Spike Features (Necessary Feature Extraction)
-            # Includes number of spikes, interspike interval, average minimum spike height, and average max spike height
-            if "v_spike_stats" in list_of_features and V[i] is not None:
-                features, column_names = self.get_spike_stats(V[i])
-                columns = columns + column_names
-                if(not summary_features):
-                    summary_features = features
-                else:
-                    summary_features = torch.cat(
-                            (
-                                summary_features,
-                                features
-                            ),
-                            dim=0,
-                        )
+        columns = []
+        summary_features = None
+        # Spike Features (Necessary Feature Extraction)
+        # Includes number of spikes, interspike interval, average minimum spike height, and average max spike height
+        if "v_spike_stats" in list_of_features and V is not None:
+            features, column_names = self.get_spike_stats(V)
+            columns = columns + column_names
+            if(not summary_features):
+                summary_features = features
+            else:
+                summary_features = torch.cat(
+                        (
+                            summary_features,
+                            features
+                        ),
+                        dim=0,
+                    )
 
-            # Mean and StdDev of the current input trace as features
-            if "i_mean_stdev" in list_of_features and I[i] is not None:
-                features, column_names = self.get_current_stats(I[i])
-                columns = columns + column_names
-                if(not summary_features):
-                    summary_features = features
-                else:
-                    summary_features = torch.cat(
-                            (
-                                summary_features,
-                                features
-                            ),
-                            dim=0,
-                        )
+        # Mean and StdDev of the current input trace as features
+        if "i_mean_stdev" in list_of_features and I is not None:
+            features, column_names = self.get_current_stats(I)
+            columns = columns + column_names
+            if(not summary_features):
+                summary_features = features
+            else:
+                summary_features = torch.cat(
+                        (
+                            summary_features,
+                            features
+                        ),
+                        dim=0,
+                    )
 
-            # Mean potential of voltage trace as a feature
-            if "v_mean_potential" in list_of_features and V[i] is not None:
-                features, column_names = self.get_mean_potential(V[i])
-                columns = columns + column_names
-                if(not summary_features):
-                    summary_features = features
-                else:
-                    summary_features = torch.cat(
-                            (
-                                summary_features,
-                                features
-                            ),
-                            dim=0,
-                        )
-            all_traces_features.append(summary_features)
-            '''
-            # Amplitude of voltage trace as a feature
-            if "v_amplitude" in list_of_features and V[i]:
-                features, column_names = self.get_mean_potential(I)
-                columns = columns + column_names
-                if(not summary_features):
-                    summary_features = features
-                else:
-                    summary_features = torch.cat(
-                            (
-                                summary_features,
-                                features
-                            ),
-                            dim=0,
-                        )
-            
-            # Frequency of voltage trace as a feature
-            if "v_frequency" in list_of_features and V:
-                features, column_names = self.get_mean_potential(I)
-                columns = columns + column_names
-                if(not summary_features):
-                    summary_features = features
-                else:
-                    summary_features = torch.cat(
-                            (
-                                summary_features,
-                                features
-                            ),
-                            dim=0,
-                        )
-            '''
+        # Mean potential of voltage trace as a feature
+        if "v_mean_potential" in list_of_features and V is not None:
+            features, column_names = self.get_mean_potential(V)
+            columns = columns + column_names
+            if(not summary_features):
+                summary_features = features
+            else:
+                summary_features = torch.cat(
+                        (
+                            summary_features,
+                            features
+                        ),
+                        dim=0,
+                    )
+        all_traces_features.append(summary_features)
+        '''
+        # Amplitude of voltage trace as a feature
+        if "v_amplitude" in list_of_features and V[i]:
+            features, column_names = self.get_mean_potential(I)
+            columns = columns + column_names
+            if(not summary_features):
+                summary_features = features
+            else:
+                summary_features = torch.cat(
+                        (
+                            summary_features,
+                            features
+                        ),
+                        dim=0,
+                    )
+        
+        # Frequency of voltage trace as a feature
+        if "v_frequency" in list_of_features and V:
+            features, column_names = self.get_mean_potential(I)
+            columns = columns + column_names
+            if(not summary_features):
+                summary_features = features
+            else:
+                summary_features = torch.cat(
+                        (
+                            summary_features,
+                            features
+                        ),
+                        dim=0,
+                    )
+        '''
         all_traces_features = torch.Tensor(all_traces_features)
         print(all_traces_features.shape)
 
@@ -207,6 +215,7 @@ class DataProcessor:
             cell,
             SimulationParameters(
                 sim_name = "passive_props",
+                sim_idx=0,
                 h_v_init = -70, # (mV)
                 h_tstop = h_tstop,  # (ms)
                 h_dt = h_dt, # (ms)
@@ -228,7 +237,7 @@ class DataProcessor:
         dt = 1 #ms
         cell_area = self.get_surface_area(cell) * 1e-8 # function returns um^2, want it in cm^2
 
-        data = np.load(simulator.path + "/passive_props/out.npy")
+        data = np.load(simulator.path + "/passive_props/out_0.npy")
         V = data[:,0]
         
 
@@ -260,7 +269,7 @@ class DataProcessor:
             if voltage_value < v_t_const
         )
 
-        tau= index_v_tau * dt                   # ms
+        tau = index_v_tau * dt                   # ms
         r_in = (v_diff) / (0 - I_intensity)     # MOhms
         g_leak = 1 / r_in                       # uS
         Cm = tau * g_leak                       # nF
@@ -528,3 +537,27 @@ class DataProcessor:
         frequencies[torch.isnan(frequencies)] = 0
 
         return amplitudes, frequencies
+    
+
+    def combine_data(self, output_path: str):
+        # Combine individual run outputs to a single file.
+        file_list = sorted(glob.glob(os.path.join(output_path, "out_*.npy")))
+
+        # Initialize an empty list to store the data from each file
+        data_list = []
+
+        # Loop through each file, load the data, and append to the list
+        for file_name in file_list:
+            data = np.load(file_name)
+            data_list.append(data)
+
+        # Concatenate all the arrays along a new axis (axis=0)
+        final_data = np.stack(data_list, axis=0)
+        np.save(os.path.join(output_path, f"combined_out.npy"), final_data)
+
+    def clean_g_bars(self, dataset):
+        def remove_nan_from_sample(sample):
+            return sample[np.nonzero(sample)]
+            
+        cleaned_g_bars = np.array([remove_nan_from_sample(sample) for sample in dataset[:,:,2]])
+        return cleaned_g_bars

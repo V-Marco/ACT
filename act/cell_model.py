@@ -1,5 +1,6 @@
 from neuron import h
 import numpy as np
+from itertools import product
 import os
 
 from act import act_types
@@ -83,19 +84,37 @@ class ACTCellModel:
         
         self.I = np.array(I)
 
+    def generate_I_g_combinations(self, channel_ranges: list, channel_slices: list, current_intensities: list):
+        channel_values = [
+            np.linspace(low, high, num=slices)
+            for (low, high), slices in zip(channel_ranges, channel_slices)
+        ]
+        
+        # Generate all combinations of conductance values
+        conductance_combinations = list(product(*channel_values))
+        
+        # Create a list of all combinations with current intensities
+        all_combinations = list(product(conductance_combinations, current_intensities))
+        
+        # Separate conductance groups and current intensities
+        conductance_groups = [comb[0] for comb in all_combinations]
+        current_intensities = [comb[1] for comb in all_combinations]
+        
+        return conductance_groups, current_intensities
+
 class TargetCell(ACTCellModel):
 
-    def __init__(self, hoc_file: str, cell_name: str, g_names: list):
-        super().__init__(hoc_file, cell_name, g_names)
+    def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list):
+        super().__init__(hoc_file, mod_folder, cell_name, g_names)
 
 class TrainCell(ACTCellModel):
 
     def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list):
         super().__init__(hoc_file, mod_folder, cell_name, g_names)
-        self.g_to_set_after_build = None
+        self.g_to_set_after_build = []
 
     def set_g(self, g_names: list, g_values: list) -> None:
-        self.g_to_set_after_build = (g_names, g_values)
+        self.g_to_set_after_build.append((g_names, g_values))
 
     def _set_g(self, g_names: list, g_values: list) -> None:
         for sec in self.all:

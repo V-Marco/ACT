@@ -8,6 +8,24 @@ from act.cell_model import ACTCellModel, TargetCell, TrainCell
 import numpy as np
 
 import os
+import sys
+import time
+import shutil
+
+from contextlib import contextmanager
+
+@contextmanager
+def suppress_neuron_warnings():
+    with open(os.devnull, 'w') as dev_null:
+        temp_stdout = sys.stdout
+        temp_stderr = sys.stderr
+        sys.stdout = dev_null
+        sys.stderr = dev_null
+        try:
+            yield
+        finally:
+            sys.stdout = temp_stdout
+            sys.stderr = temp_stderr
 
 # https://stackoverflow.com/questions/31729008/python-multiprocessing-seems-near-impossible-to-do-within-classes-using-any-clas
 def unwrap_self_run_job(args):
@@ -30,17 +48,46 @@ class Simulator:
         # Create the simulation parent folder if it doesn't exist
         if os.path.isdir(self.path) == False:
             os.mkdir(self.path)
+        try:
 
-        # Compile the modfiles and suppress output
-        os.system(f"nrnivmodl {path_to_modfiles} > /dev/null 2>&1")
+            # Compile the modfiles and suppress output
+            os.system(f"nrnivmodl {path_to_modfiles} > /dev/null 2>&1")
+
+            time.sleep(2)
+
+            # Attempt to load the compiled mechanisms
+            max_attempts = 3
+            for attempt in range(max_attempts):
+                try:
+                    with suppress_neuron_warnings():
+                        h.nrn_load_dll("./x86_64/.libs/libnrnmech.so")
+                    break
+                except RuntimeError as e:
+                    if "hocobj_call" in str(e):
+                        print("MECHANISMS already loaded.")
+                        break
+                    elif "is not a MECHANISM" in str(e) and attempt < max_attempts - 1:
+                        print(f"Loading compiled mechanisms failed {attempt + 1} time(s). Trying again (Max tries: {max_attempts})")
+                        time.sleep(2) 
+                    else:
+                        print(str(e))
+                        raise 
+
+            pool = Pool(processes = len(self.pool))
+            pool.map(unwrap_self_run_job, zip([self] * len(self.pool), self.pool))
+            pool.close()
+            pool.join()
+
+        except Exception as e:
+                    print(f"An error occurred during the simulation: {e}")
+                    raise
+        finally:
+            try:
+                shutil.rmtree("x86_64")
+            except OSError as e:
+                if not self.mechanisms_loaded:
+                    print(f"Error removing x86_64 directory: {e}")
         
-        pool = Pool(processes = len(self.pool))
-        pool.map(unwrap_self_run_job, zip([self] * len(self.pool), self.pool))
-        pool.close()
-        pool.join()
-
-        # Delete the compiled modfiles
-        os.system("rm -r x86_64")
 
     def _run_job(self, cell: ACTCellModel, parameters: SimulationParameters) -> None:
 
@@ -71,7 +118,7 @@ class Simulator:
         
         # If this is a train cell, load gs to set
         if type(cell) == TrainCell:
-            cell._set_g(cell.g_to_set_after_build[0], cell.g_to_set_after_build[1])
+            cell._set_g(cell.g_to_set_after_build[parameters.sim_idx][0], cell.g_to_set_after_build[parameters.sim_idx][1])
 
         # Simulate
         h.finitialize(h.v_init)
@@ -84,5 +131,5 @@ class Simulator:
         out[:, 1] = I[:parameters.h_tstop]
         out[:len(g), 2] = g
 
-        np.save(os.path.join(parameters.path, "out.npy"), out)
+        np.save(os.path.join(parameters.path, f"out_{parameters.sim_idx}.npy"), out)
         

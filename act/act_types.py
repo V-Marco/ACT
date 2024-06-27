@@ -17,6 +17,7 @@ class PassiveProperties:
 @dataclass
 class SimulationParameters:
     sim_name: str
+    sim_idx: int
     h_v_init: float # (mV)
     h_tstop: int  # (ms)
     h_dt: float # (ms)
