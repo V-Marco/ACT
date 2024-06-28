@@ -13,6 +13,3 @@ class RandomForestOptimizer():
 
     def predict(self, summary_features_test):
         return self.model.predict(summary_features_test)
-    
-    def predict_proba(self, summary_features_test):
-        return self.model.predict_proba(summary_features_test)
