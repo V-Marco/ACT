@@ -265,11 +265,6 @@ class DataProcessor:
             features = self.load_arima_coefs(arima_file)
             column_names =  [f"arima{i}" for i in range(features.shape[0])]
             return features, column_names
-        elif os.path.exists("./arima_output/arima_stats.json"):
-            # Use already generated data
-            features = self.load_arima_coefs("./arima_output/arima_stats.json")
-            column_names =  [f"arima{i}" for i in range(features.shape[0])]
-            return features, column_names
         elif isinstance(V, (np.ndarray, torch.Tensor)):
             # Generate new data
             V = torch.Tensor(V)
@@ -569,7 +564,7 @@ class DataProcessor:
 
     def clean_g_bars(self, dataset):
         def remove_nan_from_sample(sample):
-            return sample[np.nonzero(sample)]
+            return sample[~np.isnan(sample)]
             
         cleaned_g_bars = np.array([remove_nan_from_sample(sample) for sample in dataset[:,:,2]])
         return cleaned_g_bars

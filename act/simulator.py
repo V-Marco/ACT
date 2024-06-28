@@ -130,6 +130,7 @@ class Simulator:
         out[:, 0] = V[::int(1 / parameters.h_dt)][:parameters.h_tstop]
         out[:, 1] = I[:parameters.h_tstop]
         out[:len(g), 2] = g
+        out[len(g):, 2] = np.nan
 
         np.save(os.path.join(parameters.path, f"out_{parameters.sim_idx}.npy"), out)
         
