@@ -117,7 +117,7 @@ class Simulator:
             raise NotImplementedError
         
         # If this is a train cell, load gs to set
-        if type(cell) == TrainCell:
+        if len(cell.g_to_set_after_build) != 0:
             cell._set_g(cell.g_to_set_after_build[parameters.sim_idx][0], cell.g_to_set_after_build[parameters.sim_idx][1])
 
         # Simulate

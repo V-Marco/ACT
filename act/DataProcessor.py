@@ -173,17 +173,14 @@ class DataProcessor:
         I_duration = 1000 # ms
         I_intensity = -0.1 # pA
 
-        # We want to control when we set conductances by only allowing train cells to change conductances.
-        train_cell = TrainCell(cell.hoc_file, cell.mod_folder,cell.cell_name,cell.g_names)
-
         # Block all channels except for leak in the Target Cell. 
         channels_to_block = [g for g in cell.g_names if g != leak_conductance_var]
-        train_cell.block_channels(channels_to_block)
+        cell.block_channels(channels_to_block)
 
         # Simulate the cell with just the leak channel set to non-zero conductance
         simulator = Simulator()
         simulator.submit_job(
-            train_cell,
+            cell,
             SimulationParameters(
                 sim_name = "passive_props",
                 sim_idx=0,
