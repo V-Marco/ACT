@@ -1,18 +1,18 @@
 from neuron import h
 import numpy as np
-from itertools import product
 import os
 
 from act import act_types
 
 class ACTCellModel:
 
-    def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list):
+    def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list, g_to_set_after_build: list):
 
         # Hoc cell
         self.hoc_file = hoc_file
         self.mod_folder = mod_folder
         self.cell_name = cell_name
+        self.g_to_set_after_build = g_to_set_after_build
 
         # Current injection objects
         self.CI = []
@@ -45,6 +45,17 @@ class ACTCellModel:
             g_values.append(getattr(self.soma[0], channel))
 
         return self.V.as_numpy().flatten(), self.I.flatten(), np.array(g_values).flatten()
+    
+    def set_g(self, g_names: list, g_values: list) -> None:
+        self.g_to_set_after_build.append((g_names, g_values))
+
+    def _set_g(self, g_names: list, g_values: list) -> None:
+        for sec in self.all:
+            for index, key in enumerate(g_names):
+                setattr(sec, key, g_values[index])
+    
+    def block_channels(self, blocked_channel_list = []):
+        self.set_g(blocked_channel_list, [0.0 for _ in blocked_channel_list])
 
     def _add_constant_CI(self, amp: float, dur: int, delay: int) -> None:
         inj = h.IClamp(self.soma[0](0.5))
@@ -84,42 +95,16 @@ class ACTCellModel:
         
         self.I = np.array(I)
 
-    def generate_I_g_combinations(self, channel_ranges: list, channel_slices: list, current_intensities: list):
-        channel_values = [
-            np.linspace(low, high, num=slices)
-            for (low, high), slices in zip(channel_ranges, channel_slices)
-        ]
-        
-        # Generate all combinations of conductance values
-        conductance_combinations = list(product(*channel_values))
-        
-        # Create a list of all combinations with current intensities
-        all_combinations = list(product(conductance_combinations, current_intensities))
-        
-        # Separate conductance groups and current intensities
-        conductance_groups = [comb[0] for comb in all_combinations]
-        current_intensities = [comb[1] for comb in all_combinations]
-        
-        return conductance_groups, current_intensities
-
 class TargetCell(ACTCellModel):
 
     def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list):
-        super().__init__(hoc_file, mod_folder, cell_name, g_names)
+        super().__init__(hoc_file, mod_folder, cell_name, g_names, [])
 
 class TrainCell(ACTCellModel):
 
     def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list):
-        super().__init__(hoc_file, mod_folder, cell_name, g_names)
-        self.g_to_set_after_build = []
+        super().__init__(hoc_file, mod_folder, cell_name, g_names, [])
 
-    def set_g(self, g_names: list, g_values: list) -> None:
-        self.g_to_set_after_build.append((g_names, g_values))
-
-    def _set_g(self, g_names: list, g_values: list) -> None:
-        for sec in self.all:
-            for index, key in enumerate(g_names):
-                setattr(sec, key, g_values[index])
 
     def set_passive_properties(self, passive_properties: act_types.PassiveProperties) -> None:
             
