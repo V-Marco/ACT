@@ -1,50 +1,44 @@
-import torch
 from sklearn.model_selection import RepeatedKFold
 from sklearn.model_selection import cross_val_score
-from numpy import mean
-from numpy import std
+import numpy as np
 from act.DataProcessor import DataProcessor
 
 class Metrics:
     def __init__(self):
         pass
 
-    def correlation_score(self, target_data: torch.Tensor, simulated_data: torch.Tensor) -> float:
-        cov = (target_data - torch.mean(target_data, dim=0, keepdim=True)) * (
-            simulated_data - torch.mean(simulated_data, dim=0, keepdim=True)
+    def correlation_score(self, target_data, simulated_data) -> float:
+        cov = (target_data - np.mean(target_data, dim=0, keepdim=True)) * (
+            simulated_data - np.mean(simulated_data, dim=0, keepdim=True)
         )
-        cov = torch.sum(cov, dim=0)
+        cov = np.sum(cov, dim=0)
 
-        var0 = torch.sum(
-            torch.square(target_data - torch.mean(target_data, dim=0, keepdim=True)), dim=0
+        var0 = np.sum(
+            np.square(target_data - np.mean(target_data, dim=0, keepdim=True)), dim=0
         )
-        var1 = torch.sum(
-            torch.square(simulated_data - torch.mean(simulated_data, dim=0, keepdim=True)),
+        var1 = np.sum(
+            np.square(simulated_data - np.mean(simulated_data, dim=0, keepdim=True)),
             dim=0,
         )
-        corr = cov / (torch.sqrt(var0 * var1) + 1e-15)
+        corr = cov / (np.sqrt(var0 * var1) + 1e-15)
 
-        return float(torch.mean(corr).cpu().detach())
+        return float(np.mean(corr))
 
-    def torch_correlation_score(self, target_data: torch.Tensor, simulated_data: torch.Tensor) -> float:
-        matrix = torch.cat((target_data,simulated_data),0)
-        corr_mat = torch.corrcoef(matrix)
+    def np_correlation_score(self, target_data, simulated_data) -> float:
+        matrix = np.concatenate((target_data,simulated_data),0)
+        corr_mat = np.corrcoef(matrix)
         corr_coef = corr_mat[0,1]
 
         return float(corr_coef)
 
-    def mse_score(self, target_data: torch.Tensor, simulated_data: torch.Tensor) -> float:
+    def mse_score(self, target_data, simulated_data) -> float:
         return float(
-            torch.mean(torch.mean(torch.square(target_data - simulated_data), dim=0))
-            .cpu()
-            .detach()
+            np.mean(np.square(target_data - simulated_data))
         )
 
-    def mae_score(self, target_data: torch.Tensor, simulated_data: torch.Tensor) -> float:
+    def mae_score(self, target_data, simulated_data) -> float:
         return float(
-            torch.mean(torch.mean(torch.abs(target_data - simulated_data), dim=0))
-            .cpu()
-            .detach()
+            np.mean(np.abs(target_data - simulated_data))
         )
     
     def evaluate_random_forest(self, reg, X_train, Y_train):
@@ -61,7 +55,7 @@ class Metrics:
             error_score="raise",
         ))
         # report performance
-        print("MAE: %.6f (%.6f)" % (mean(n_scores), std(n_scores)))
+        print("MAE: %.6f (%.6f)" % (np.mean(n_scores), np.std(n_scores)))
 
     def get_fi_curve(trace, amps, ignore_negative=True, inj_dur=1000):
         """

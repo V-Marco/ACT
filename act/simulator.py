@@ -33,8 +33,8 @@ def unwrap_self_run_job(args):
 
 class Simulator:
 
-    def __init__(self) -> None:
-        self.path = "model"
+    def __init__(self, output_folder_name) -> None:
+        self.path = output_folder_name
         self.pool = []
 
     def submit_job(self, cell: ACTCellModel, parameters: SimulationParameters) -> None:

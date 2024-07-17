@@ -24,6 +24,16 @@ class SimulationParameters:
     h_celsius: float # (deg C)
     CI: dict
 
+class SimParams(TypedDict):
+    h_v_init: float # (mV)
+    h_tstop: int  # (ms)
+    h_dt: float # (ms)
+    h_celsius: float # (deg C)
+    CI_type: str # "constant" "random"
+    CI_amps: List[float] # [0.1,0.2,0.3] nA
+    CI_dur: float
+    CI_delay: float
+
 class Cell(TypedDict):
     hoc_file: str
     modfiles_folder: str
@@ -44,6 +54,11 @@ class OptimizationParam(TypedDict):
     param: str
     low: float
     high: float
+    n_slices: int  # slice each variable min to max, into n equal slices
+
+class LearnedVariability(TypedDict):
+    param: str
+    learned_variability: float
 
 
 class ParametricDistribution(TypedDict):
@@ -51,7 +66,7 @@ class ParametricDistribution(TypedDict):
     simulations_per_amp: int  # each amp will be split equally
 
 
-class OptimizationParameters(TypedDict):
+class OptimizationParameters_old(TypedDict):
     skip_match_voltage: bool
     amps: List[float]
     lto_amps: List[float]
@@ -73,6 +88,13 @@ class OptimizationParameters(TypedDict):
     decimate_factor: int  # reduce voltage traces after simulation
     use_random_forest: bool
 
+class OptimizationParameters(TypedDict):
+    g_ranges_slices: List[OptimizationParam]
+    learned_variability: List[LearnedVariability]
+    blocked_channels: List[str]
+    trim_sim_data: bool
+    random_seed: int
+    sample_rate_decimate_factor: int  
 
 class SummaryFeatures:
     spike_threshold: int  # (mV)
@@ -134,3 +156,11 @@ class SimulationConfig(TypedDict):
     output: Output
 
     run_mode: str  # "original", "segregated"
+
+class ModuleParameters(TypedDict):
+    module_folder_name: str
+    cell: Cell
+    passive_properties: PassiveProperties
+    sim_params: SimulationParameters
+    optim_params: OptimizationParameters
+    

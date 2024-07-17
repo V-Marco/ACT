@@ -13,15 +13,14 @@ import multiprocessing as mp
 from tqdm import tqdm
 
 from neuron import h
-from act.act_types import PassiveProperties, SimulationConfig
+from act.act_types import PassiveProperties
 from typing import Tuple
 from itertools import product
 
 from act.act_types import SimulationParameters
-from act.cell_model import TrainCell, TargetCell, ACTCellModel
+from act.cell_model import TrainCell, ACTCellModel
 from act.simulator import Simulator
 from act.act_types import SimulationParameters
-import matplotlib.pyplot as plt
 
 import warnings
 
@@ -163,7 +162,7 @@ class DataProcessor:
     
 
     # leak_conductance_var: the variable name used in the .hoc file for the leak conductance.
-    def simulate_negative_CI(self, cell: ACTCellModel, leak_conductance_var: str):
+    def simulate_negative_CI(self, output_folder_name, cell: ACTCellModel, leak_conductance_var: str):
         # Sim params
         h_dt = 0.01 #ms
         h_tstop = 1500 #ms
@@ -178,7 +177,7 @@ class DataProcessor:
         cell.block_channels(channels_to_block)
 
         # Simulate the cell with just the leak channel set to non-zero conductance
-        simulator = Simulator()
+        simulator = Simulator(output_folder_name)
         simulator.submit_job(
             cell,
             SimulationParameters(
@@ -217,7 +216,7 @@ class DataProcessor:
     # I_tstart: time when the current clamp starts (ms)
     # I_intensity: amps
     # leak_conductance_var: the variable name used in the .hoc file for the leak conductance.
-    def calculate_passive_properties(self, V, dt, recording_duration, I_tstart, I_intensity, cell_area, leak_conductance_var: str) -> Tuple[PassiveProperties, np.ndarray]:
+    def calculate_passive_properties(self, V, dt, recording_duration, I_tstart, I_intensity, cell_area, leak_conductance_var: str) -> PassiveProperties:
 
         # Get the initial and final voltage states of the step input (getting index first)
         index_v_rest = int(I_tstart / dt)
@@ -292,6 +291,9 @@ class DataProcessor:
 
         print(f"ARIMA order set to {arima_order}")
 
+        warnings.filterwarnings("ignore", message="Non-stationary starting autoregressive parameters")
+        warnings.filterwarnings("ignore", message="Maximum Likelihood optimization failed to converge. Check mle_retvals")
+
         trace_list = []
         traces = V.tolist()
         num_traces = len(traces)
@@ -336,10 +338,13 @@ class DataProcessor:
         arima_order = trace_dict["arima_order"]
         num_coeffs = trace_dict["num_coeffs"]
 
+        warnings.filterwarnings("ignore", message="Non-invertible starting MA parameters found.")
+        warnings.filterwarnings("ignore", message="Non-stationary starting autoregressive parameters")
+        warnings.filterwarnings("ignore", message="Maximum Likelihood optimization failed to converge. Check mle_retvals")
+        
         try:
             coefs = self.get_arima_coefs(trace, arima_order)
         except Exception as e:
-            #print(f"problem processing cell {cell_id}: {e} | setting all values to 0.0")
             coefs = [0.0 for _ in range(num_coeffs)]
 
         trace_dict["coefs"] = coefs
@@ -348,6 +353,11 @@ class DataProcessor:
 
     @timeout_decorator.timeout(180, use_signals=True, timeout_exception=Exception)
     def get_arima_coefs(self, trace: np.array, order=(10, 0, 10)):
+        
+        warnings.filterwarnings("ignore", message="Non-invertible starting MA parameters found.")
+        warnings.filterwarnings("ignore", message="Non-stationary starting autoregressive parameters")
+        warnings.filterwarnings("ignore", message="Maximum Likelihood optimization failed to converge. Check mle_retvals")
+        
         model = ARIMA(endog=trace, order=order).fit()
         stats_df = pd.read_csv(
             StringIO(model.summary().tables[1].as_csv()),
@@ -530,6 +540,7 @@ class DataProcessor:
     #---------------------------------------------
 
     def combine_data(self, output_path: str):
+        print(output_path)
         # Combine individual run outputs to a single file.
         file_list = sorted(glob.glob(os.path.join(output_path, "out_*.npy")))
 
@@ -570,25 +581,22 @@ class DataProcessor:
         
         return conductance_groups, current_intensities
     
-    def get_fi_curve(self, traces, amps, ignore_negative=True, inj_dur=1000):
-        """
-        Returns the spike counts per amp.
-        inj_dur is the duration of the current injection
-        
 
-        (   num_spikes_simulated,
-            simulated_interspike_times,
+    def get_fi_curve(self, V_test, amps, ignore_negative=True, inj_dur=1000):
+
+        (   num_spikes,
+            interspike_times,
             first_n_spikes, 
             avg_spike_min,
             avg_spike_max
-        ) = self.extract_spike_features(V)
+        ) = self.extract_spike_features(V_test)
 
         if ignore_negative:
-            non_neg_idx = (amps >= 0).nonzero().flatten()
-            amps = amps[amps >= 0]
-            spikes = spikes[non_neg_idx]
+            non_neg_idx = [i for i, amp in enumerate(amps) if amp >= 0]
+            amps = [amp for i, amp in enumerate(amps) if amp >= 0]
+            num_spikes = num_spikes[non_neg_idx]
 
-        spikes = (1000.0 / inj_dur) * spikes  # Convert to Hz
+        frequencies =  num_spikes / (inj_dur / 1000)  # Convert to Hz: spikes / time (sec)
 
-        return spikes
-        """
+        return frequencies
+        
