@@ -46,7 +46,7 @@ class Simulator:
         print(f"Total number of proccessors: {cpu_count()}")
 
         # Create the simulation parent folder if it doesn't exist
-        if os.path.isdir(self.path) == False:
+        if not os.path.exists(self.path):
             os.mkdir(self.path)
         try:
 

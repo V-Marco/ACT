@@ -93,7 +93,7 @@ class OptimizationParameters(TypedDict):
     learned_variability: List[LearnedVariability]
     blocked_channels: List[str]
     trim_sim_data: bool
-    random_seed: int
+    random_state: int
     sample_rate_decimate_factor: int  
 
 class SummaryFeatures:
@@ -159,6 +159,7 @@ class SimulationConfig(TypedDict):
 
 class ModuleParameters(TypedDict):
     module_folder_name: str
+    target_traces_file: str
     cell: Cell
     passive_properties: PassiveProperties
     sim_params: SimulationParameters

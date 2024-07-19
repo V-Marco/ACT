@@ -73,6 +73,3 @@ class Metrics:
         spikes = (1000.0 / inj_dur) * spikes  # Convert to Hz
 
         return spikes
-    
-    def final_prediction(self, reg, X_train, Y_train, X_Test):
-        pass
