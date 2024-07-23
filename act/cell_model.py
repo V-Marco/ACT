@@ -2,17 +2,18 @@ from neuron import h
 import numpy as np
 import os
 
-from act import act_types
+from act.act_types import PassiveProperties, OptimizationParameters, SimulationParameters
+from typing import List, TypedDict
 
 class ACTCellModel:
 
-    def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list, g_to_set_after_build: list):
+    def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list, passive_properties: PassiveProperties = None):
 
         # Hoc cell
         self.hoc_file = hoc_file
         self.mod_folder = mod_folder
         self.cell_name = cell_name
-        self.g_to_set_after_build = g_to_set_after_build
+        self.passive_properties = passive_properties
 
         # Current injection objects
         self.CI = []
@@ -46,24 +47,26 @@ class ACTCellModel:
 
         return self.V.as_numpy().flatten(), self.I.flatten(), np.array(g_values).flatten()
     
-    def set_g(self, g_names: list, g_values: list) -> None:
-        self.g_to_set_after_build.append((g_names, g_values))
+    def set_g(self, g_names: list, g_values: list, sim_params: SimulationParameters) -> None:
+        sim_params['set_g_to'].append((g_names, g_values))
 
     def _set_g(self, g_names: list, g_values: list) -> None:
         for sec in self.all:
             for index, key in enumerate(g_names):
                 setattr(sec, key, g_values[index])
     
-    def block_channels(self, blocked_channel_list = []):
-        self.set_g(blocked_channel_list, [0.0 for _ in blocked_channel_list])
+    def block_channels(self, sim_params: SimulationParameters, blocked_channel_list = [], ):
+        self.set_g(blocked_channel_list, [0.0 for _ in blocked_channel_list], sim_params)
 
-    def _add_constant_CI(self, amp: float, dur: int, delay: int) -> None:
+    def _add_constant_CI(self, amp: float, dur: int, delay: int, sim_time) -> None:
         inj = h.IClamp(self.soma[0](0.5))
         inj.amp = amp; inj.dur = dur; inj.delay = delay
         self.CI.append(inj)
+        
+        remainder = sim_time - delay - dur
 
         # Record injected current
-        self.I = np.array([0.0] * delay + [amp] * dur)
+        self.I = np.array([0.0] * delay + [amp] * dur + [0.0] * remainder)
     
     def _add_ramp_CI(self, start_amp: float, amp_incr: float, ramp_time: float, dur: int, delay: int) -> None:
         total_delay = delay
@@ -94,19 +97,8 @@ class ACTCellModel:
             total_delay += 1
         
         self.I = np.array(I)
-
-class TargetCell(ACTCellModel):
-
-    def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list):
-        super().__init__(hoc_file, mod_folder, cell_name, g_names, [])
-
-class TrainCell(ACTCellModel):
-
-    def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list):
-        super().__init__(hoc_file, mod_folder, cell_name, g_names, [])
-
-
-    def set_passive_properties(self, passive_properties: act_types.PassiveProperties) -> None:
+    
+    def set_passive_properties(self, passive_properties: PassiveProperties) -> None:
             
         V_rest = passive_properties.V_rest  # (mV)
         R_in = passive_properties.R_in  # (10^6 Ohm)
@@ -115,17 +107,17 @@ class TrainCell(ACTCellModel):
         gleak_var = passive_properties.leak_conductance_variable
         eleak_var = passive_properties.leak_reversal_variable
 
-        # Assuming Vrest is within the range for ELeak
-        # ELeak = Vrest
-        if (V_rest) and (eleak_var):
-            print(f"Setting {eleak_var} = {V_rest}")
-            self.set_parameters(self.all, [eleak_var], [V_rest])
-        else:
-            print(
-                f"Skipping analytical setting of e_leak variable. Cell v_rest and/or leak_reversal_variable not specified in config."
-            )
-
         for sec in self.all:
+            # Assuming Vrest is within the range for ELeak
+            # ELeak = Vrest
+            if (V_rest) and (eleak_var):
+                print(f"Setting {eleak_var} = {V_rest}")
+                setattr(sec, eleak_var, V_rest)
+            else:
+                print(
+                    f"Skipping analytical setting of e_leak variable. Cell v_rest and/or leak_reversal_variable not specified in config."
+                )
+            
             # Rin = 1 / (Area * g_bar_leak)
             # g_bar_leak = 1 / (Rin * Area)
 
@@ -153,4 +145,21 @@ class TrainCell(ACTCellModel):
             cm = tau * g_bar_leak * 1e3  # tau ms->s
             print(f"Setting {sec}.cm = {cm:.8f}")
             setattr(sec, "cm", cm)
+
+class TargetCell(ACTCellModel):
+
+    def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list):
+        super().__init__(hoc_file, mod_folder, cell_name, g_names, [])
+
+class TrainCell(ACTCellModel):
+
+    def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list):
+        super().__init__(hoc_file, mod_folder, cell_name, g_names, [])
+
                 
+class ModuleParameters(TypedDict):
+    module_folder_name: str
+    target_traces_file: str
+    cell: ACTCellModel
+    sim_params: SimulationParameters
+    optim_params: OptimizationParameters

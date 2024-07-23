@@ -85,8 +85,7 @@ class Simulator:
             try:
                 shutil.rmtree("x86_64")
             except OSError as e:
-                if not self.mechanisms_loaded:
-                    print(f"Error removing x86_64 directory: {e}")
+                print(f"Error removing x86_64 directory: {e}")
         
 
     def _run_job(self, cell: ACTCellModel, parameters: SimulationParameters) -> None:
@@ -106,19 +105,23 @@ class Simulator:
         h.dt = parameters.h_dt
         h.steps_per_ms = 1 / h.dt
         h.v_init = parameters.h_v_init
+        
+        # Set passive properties
+        if not cell.passive_properties == None and not len(cell.passive_properties) == 0:
+            cell.set_passive_properties(cell.passive_properties)
 
         # Build the cell
         cell._build_cell()
 
         # Set CI
         if parameters.CI["type"] == "constant":
-            cell._add_constant_CI(parameters.CI["amp"], parameters.CI["dur"], parameters.CI["delay"])
+            cell._add_constant_CI(parameters.CI["amp"], parameters.CI["dur"], parameters.CI["delay"], parameters.h_tstop)
         else:
             raise NotImplementedError
         
         # If this is a train cell, load gs to set
-        if len(cell.g_to_set_after_build) != 0:
-            cell._set_g(cell.g_to_set_after_build[parameters.sim_idx][0], cell.g_to_set_after_build[parameters.sim_idx][1])
+        if not parameters.set_g_to == None and not len(parameters.set_g_to) == 0:
+            cell._set_g(parameters.set_g_to[parameters.sim_idx][0], parameters.set_g_to [parameters.sim_idx][1])
 
         # Simulate
         h.finitialize(h.v_init)

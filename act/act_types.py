@@ -23,6 +23,7 @@ class SimulationParameters:
     h_dt: float # (ms)
     h_celsius: float # (deg C)
     CI: dict
+    set_g_to: List[float]
 
 class SimParams(TypedDict):
     h_v_init: float # (mV)
@@ -33,6 +34,7 @@ class SimParams(TypedDict):
     CI_amps: List[float] # [0.1,0.2,0.3] nA
     CI_dur: float
     CI_delay: float
+    set_g_to: List[float]
 
 class Cell(TypedDict):
     hoc_file: str
@@ -58,7 +60,7 @@ class OptimizationParam(TypedDict):
 
 class LearnedVariability(TypedDict):
     param: str
-    learned_variability: float
+    bounds_variability: float
 
 
 class ParametricDistribution(TypedDict):
@@ -90,11 +92,14 @@ class OptimizationParameters_old(TypedDict):
 
 class OptimizationParameters(TypedDict):
     g_ranges_slices: List[OptimizationParam]
-    learned_variability: List[LearnedVariability]
+    bounds_variability: List[LearnedVariability]
     blocked_channels: List[str]
     trim_sim_data: bool
     random_state: int
+    n_estimators: int
+    max_depth: int
     sample_rate_decimate_factor: int  
+    prediction_eval_method: str
 
 class SummaryFeatures:
     spike_threshold: int  # (mV)
@@ -127,8 +132,8 @@ class SegregationModule(TypedDict):
     use_hto_amps: bool
     use_spike_summary_stats: bool  # if set to false, then don't train on spike interval, spike times, etc...
     arima_order: List[int]  # use a custom arima order for this segregation index
-    learned_variability: float  # allow the previously learned  parameters to vary by the specified percentage
-    learned_variability_params: List[
+    bounds_variability: float  # allow the previously learned  parameters to vary by the specified percentage
+    bounds_variability_params: List[
         str
     ]  # select the parameters you want to vary, otherwise it's the last segregation module
     n_splits: int  # custom number of splits
@@ -157,11 +162,5 @@ class SimulationConfig(TypedDict):
 
     run_mode: str  # "original", "segregated"
 
-class ModuleParameters(TypedDict):
-    module_folder_name: str
-    target_traces_file: str
-    cell: Cell
-    passive_properties: PassiveProperties
-    sim_params: SimulationParameters
-    optim_params: OptimizationParameters
+
     

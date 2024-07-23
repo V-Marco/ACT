@@ -139,7 +139,7 @@ class DataProcessor:
     #PASSIVE PROPERTIES
     #---------------------------------------------
     # We need the surface area of the cell
-    def get_surface_area(self, cell: TrainCell):
+    def get_surface_area(self, cell: ACTCellModel):
         h.load_file('stdrun.hoc')
 
         # Initialize the cell
@@ -216,11 +216,11 @@ class DataProcessor:
     # I_tstart: time when the current clamp starts (ms)
     # I_intensity: amps
     # leak_conductance_var: the variable name used in the .hoc file for the leak conductance.
-    def calculate_passive_properties(self, V, dt, recording_duration, I_tstart, I_intensity, cell_area, leak_conductance_var: str) -> PassiveProperties:
+    def calculate_passive_properties(self, V, dt, I_tend, I_tstart, I_intensity, cell_area, leak_conductance_var: str, leak_reversal_var: str) -> PassiveProperties:
 
         # Get the initial and final voltage states of the step input (getting index first)
         index_v_rest = int(I_tstart / dt)
-        index_v_final = int(recording_duration / dt) - 1
+        index_v_final = int(I_tend / dt) - 1
 
         v_rest = V[index_v_rest]
         v_final = V[index_v_final]
@@ -245,6 +245,7 @@ class DataProcessor:
         # Initialize a dictionary to hold all of the passive properties data
         passive_props: PassiveProperties = {
             "leak_conductance_variable": leak_conductance_var,
+            "leak_reversal_variable": leak_reversal_var,
             "g_bar_leak": float(g_bar_leak),    # S/cm^2
             "r_in": float(r_in),                # MOhm
             "tau": float(tau),                  # ms
@@ -599,4 +600,3 @@ class DataProcessor:
         frequencies =  num_spikes / (inj_dur / 1000)  # Convert to Hz: spikes / time (sec)
 
         return frequencies
-        

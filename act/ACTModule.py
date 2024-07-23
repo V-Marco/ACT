@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from typing import List
 
-from act.act_types import ModuleParameters, Cell, SimulationParameters, OptimizationParameters, OptimizationParam, PassiveProperties, SimParams
-from act.cell_model import TargetCell, TrainCell
+from act.act_types import SimulationParameters, OptimizationParameters, OptimizationParam, PassiveProperties, SimParams
+from act.cell_model import ModuleParameters, TargetCell, TrainCell
 from act.simulator import Simulator
 from act.DataProcessor import DataProcessor
 
@@ -19,51 +19,33 @@ class ACTModule:
 
         self.output_folder_name: str = os.path.join(os.getcwd(), "model", params['module_folder_name']) + "/"
         self.target_traces_file = params["target_traces_file"]
-        self.cell: Cell = params["cell"]
-        passive_props: PassiveProperties = params['passive_properties']
+        self.train_cell: TrainCell = params["cell"]
         self.sim_params: SimParams = params['sim_params']
         self.optim_params: OptimizationParameters = params['optim_params']
         
 
     def run(self):
         print("RUNNING THE MODULE")
-
-        target_cell = TargetCell(
-            hoc_file = self.cell['hoc_file'],
-            mod_folder= self.cell['modfiles_folder'],
-            cell_name = self.cell['cell_name'],
-            g_names = self.cell['g_names']
-        )
-
         print("LOADING TARGET TRACES")
         self.convert_csv_to_npy()
 
         print("SIMULATING TRAINING DATA")
-        train_cell = TrainCell(
-            hoc_file = self.cell['hoc_file'],
-            mod_folder= self.cell['modfiles_folder'],
-            cell_name = self.cell['cell_name'],
-            g_names = self.cell['g_names']
-            )
-        
-        self.simulate_train_cells(train_cell)
+        self.simulate_train_cells(self.train_cell)
 
         print("TRAINING RANDOM FOREST REGRESSOR")
         prediction = self.get_rf_prediction()
 
         print("SIMULATING PREDICTIONS")
-        test_cell = TrainCell(
-            hoc_file = self.cell['hoc_file'],
-            mod_folder= self.cell['modfiles_folder'],
-            cell_name = self.cell['cell_name'],
-            g_names = self.cell['g_names']
-        )
-
-        self.simulate_test_cells(test_cell, prediction)
+        self.simulate_test_cells(self.train_cell, prediction)
 
         print("SELECTING BEST PREDICTION")
-        g_final_idx, final_prediction, FI_predicted, target_frequencies = self.evaluate_fi_curves(prediction)
-
+        if self.optim_params['prediction_eval_method'] == 'fi_curve':
+            g_final_idx, final_prediction, FI_predicted, target_frequencies = self.evaluate_fi_curves(prediction)
+        elif self.optim_params['prediction_eval_method'] == 'voltage':
+            g_final_idx, final_prediction, FI_predicted, target_frequencies = self.evaluate_v_traces(prediction)
+        else:
+            g_final_idx, final_prediction, FI_predicted, target_frequencies = self.evaluate_fi_curves(prediction)
+        # return predicted, and change train cell in place
         return g_final_idx, final_prediction, FI_predicted, target_frequencies
 
     def convert_csv_to_npy(self):
@@ -87,12 +69,12 @@ class ACTModule:
             if optim_param['low'] == optim_param['high']:
                 #if low == high, this may signal that we have a previous prediction.
                 #then we should check if there is a set learned variability for this channel
-                if not self.learned_variability[i] == None:
+                if not self.bounds_variability[i] == None:
                     final_g_ranges_slices.append(
                         OptimizationParam(
                             param=optim_param['param'],
-                            low=optim_param['low'] - self.optim_params['learned_variability'][i],
-                            high=optim_param['high'] + self.optim_params['learned_variability'][i],
+                            low=optim_param['low'] - self.optim_params['bounds_variability'][i],
+                            high=optim_param['high'] + self.optim_params['bounds_variability'][i],
                             n_slices=optim_param['n_slices']
                         )
                     )
@@ -111,7 +93,7 @@ class ACTModule:
         for g_params in final_g_ranges_slices:
             channel_ranges.append((g_params['low'], g_params['high']))
             slices.append(g_params["n_slices"])
-        #current_intensities = [0.1, 0.2, 0.3] # same as target_cell. comment out if wanting one control spot
+
         dp = DataProcessor()
         conductance_groups, current_settings = dp.generate_I_g_combinations(channel_ranges, slices, self.sim_params['CI_amps'])
 
@@ -143,7 +125,7 @@ class ACTModule:
                     )
                 )
         
-        simulator.run(self.cell['modfiles_folder'])
+        simulator.run(self.cell.mod_folder)
 
         dp = DataProcessor()
         dp.combine_data(self.output_folder_name + "train")
@@ -173,9 +155,10 @@ class ACTModule:
         X_train = features_train
         Y_train = g_train
         
-        
+        if self.optim_params['n_estimators'] == None:
+            self.optim_params['n_estimators'] = 1000
 
-        rf = RandomForestOptimizer(random_state=self.optim_params['random_state'])
+        rf = RandomForestOptimizer(n_estimators= self.optim_params['n_estimators'], random_state=self.optim_params['random_state'], max_depth=self.optim_params['max_depth'])
         rf.fit(X_train, Y_train)
 
         # Evaluate the model performance
@@ -204,7 +187,7 @@ class ACTModule:
                 simulator.submit_job(
                     test_cell, 
                     SimulationParameters(
-                        sim_name = "test"+str(i),
+                        sim_name = "prediction_eval"+str(i),
                         sim_idx = i * len(prediction) + j,
                         h_v_init = self.sim_params['h_v_init'], # (mV)
                         h_tstop = self.sim_params['h_tstop'],  # (ms)
@@ -218,11 +201,11 @@ class ACTModule:
                         }
                     )
                 )
-        simulator.run(self.cell['modfiles_folder'])
+        simulator.run(self.cell.mod_folder)
 
         dp = DataProcessor()
         for i in range(len(prediction)):
-            dp.combine_data(self.output_folder_name + "test" + str(i))
+            dp.combine_data(self.output_folder_name + "prediction_eval" + str(i))
 
     def evaluate_fi_curves(self, prediction):
 
@@ -235,10 +218,10 @@ class ACTModule:
 
         target_frequencies = dp.get_fi_curve(V_target, self.sim_params['CI_amps'], inj_dur=self.sim_params['CI_dur']).flatten()
 
-        # Get Test Cell Frequencies
+        # Get train2 Cell Frequencies
         FI_data = []
         for i in range(len(prediction)):
-            dataset = np.load(self.output_folder_name + "test" + str(i) + "/combined_out.npy")
+            dataset = np.load(self.output_folder_name + "prediction_eval" + str(i) + "/combined_out.npy")
             V_test = dataset[:,:,0]
 
             #Get FI curve info
@@ -258,46 +241,41 @@ class ACTModule:
         g_final_idx = fi_mae.index(min(fi_mae))
 
         print(prediction[g_final_idx])
-        return g_final_idx, prediction[g_final_idx], FI_data[g_final_idx], target_frequencies
-
-    def create_overlapped_v_plot(self, x, y1, y2, title, filename):
-        plt.figure(figsize=(8, 6))
-        plt.plot(x, y1, label='Target')
-        plt.plot(x, y2, label='Prediction')
-        plt.xlabel('Time (ms)')
-        plt.ylabel('Voltage (mV)')
-        plt.title(title)
-        plt.legend()
-        plt.savefig(self.output_folder_name + "results/" + filename)
-        plt.close()  # Close the figure to free up memory
-
-    def plot_results(self, g_final_idx, FI_predicted, target_frequencies):
+        
+        # Save the predicted and target FI data (for later plotting)
         results_folder = self.output_folder_name + "results/"
         if not os.path.exists(results_folder):
             os.makedirs(results_folder)
+            
+        np.save(results_folder + str(prediction[g_final_idx]), np.stack(list_of_freq[g_final_idx], target_frequencies))
+        
+        return g_final_idx, prediction[g_final_idx]
+    
+    def evaluate_v_traces(self, prediction):
 
-        # load target traces
-        target_traces = np.load(self.output_folder_name + "target/combined_out.npy")
-        target_v = target_traces[:,:,0]
+        dp = DataProcessor()
 
-        # load final prediction voltage traces
-        selected_traces = np.load(self.output_folder_name + "test" + str(g_final_idx) + "/combined_out.npy")
-        selected_v = selected_traces[:,:,0]
+        # Get Target Cell Frequencies
+        dataset = np.load(self.output_folder_name + "target/combined_out.npy")
 
-        time = np.linspace(0, len(target_v[0]), len(target_v[0]))
+        V_target = dataset[:,:,0]
 
-        # Plot all pairs of traces
-        for i in range(len(selected_v)):
-            self.create_overlapped_v_plot(time, target_v[i], selected_v[i], f"V Trace Comparison: {self.sim_params['CI_amps'][i]} nA", f"V_trace_{self.sim_params['CI_amps'][i]}nA.png")
+        # Get train Cell Frequencies
+        metrics = Metrics()
+        mean_mae_list = []
+        for i in range(len(prediction)):
+            dataset = np.load(self.output_folder_name + "prediction_eval" + str(i) + "/combined_out.npy")
+            V_test = dataset[:,:,0]
+            prediction_MAEs = []
+            
+            for j in range(len(V_test)):
+                v_mae = metrics.mae_score(V_test[j],V_target[j])
+                prediction_MAEs.append(v_mae)
 
-        # Plot the FI curves of 
+            mean_mae_list.append(np.mean(prediction_MAEs))
 
-        plt.figure(figsize=(8, 6))
-        plt.plot(self.sim_params['CI_amps'], target_frequencies, label='Target FI')
-        plt.plot(self.sim_params['CI_amps'], FI_predicted, label='Prediction FI')
-        plt.xlabel('Current Injection Intensity (nA)')
-        plt.ylabel('Frequency (Hz)')
-        plt.title("FI Curve Comparison")
-        plt.legend()
-        plt.savefig(self.output_folder_name + "results/" + "FI_Curve_Comparison.png")
-        plt.close()  # Close the figure to free up memory
+        # Evaluate FI curves on target FI curve
+        g_final_idx = mean_mae_list.index(min(mean_mae_list))
+
+        print(prediction[g_final_idx])
+        return g_final_idx, prediction[g_final_idx]
