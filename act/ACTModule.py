@@ -23,6 +23,8 @@ class ACTModule:
         self.sim_params: SimParams = params['sim_params']
         self.optim_params: OptimizationParameters = params['optim_params']
         
+        self.blocked_channels = []
+        
 
     def run(self):
         print("RUNNING THE MODULE")
@@ -39,14 +41,21 @@ class ACTModule:
         self.simulate_test_cells(self.train_cell, prediction)
 
         print("SELECTING BEST PREDICTION")
-        if self.optim_params['prediction_eval_method'] == 'fi_curve':
-            g_final_idx, final_prediction, FI_predicted, target_frequencies = self.evaluate_fi_curves(prediction)
-        elif self.optim_params['prediction_eval_method'] == 'voltage':
-            g_final_idx, final_prediction, FI_predicted, target_frequencies = self.evaluate_v_traces(prediction)
+        prediction_eval_method = self.optim_params.get('prediction_eval_method', 'fi_curve')
+        if prediction_eval_method == 'fi_curve':
+            predicted_g_data_folder, best_prediction = self.evaluate_fi_curves(prediction)
+        elif prediction_eval_method == 'voltage':
+            predicted_g_data_folder, best_prediction = self.evaluate_v_traces(prediction)
         else:
-            g_final_idx, final_prediction, FI_predicted, target_frequencies = self.evaluate_fi_curves(prediction)
-        # return predicted, and change train cell in place
-        return g_final_idx, final_prediction, FI_predicted, target_frequencies
+            print("prediction_eval_method must be 'fi_curve' or 'voltage'.")
+
+        # Save predictions as a conductance dictionary in the train cell
+        param_names_list = [param['param'] for param in self.optim_params['g_ranges_slices']]
+        self.train_cell.predicted_g = dict(zip(param_names_list, best_prediction))
+        
+        print(self.train_cell.predicted_g)
+        
+        return predicted_g_data_folder
 
     def convert_csv_to_npy(self):
         # Uses the number of traces held in CI_amps to parse a users 2D csv file to 3D npy file
@@ -63,22 +72,29 @@ class ACTModule:
 
 
     def get_I_g_combinations(self):
-
         final_g_ranges_slices: List[OptimizationParam] = []
         for i, optim_param in enumerate(self.optim_params['g_ranges_slices']):
-            if optim_param['low'] == optim_param['high']:
-                #if low == high, this may signal that we have a previous prediction.
-                #then we should check if there is a set learned variability for this channel
-                if not self.bounds_variability[i] == None:
-                    final_g_ranges_slices.append(
+            # Handle Blocked channels
+            if optim_param.get('blocked', False):
+                #self.blocked_channels.append(optim_param['param'])
+                final_g_ranges_slices.append(
                         OptimizationParam(
                             param=optim_param['param'],
-                            low=optim_param['low'] - self.optim_params['bounds_variability'][i],
-                            high=optim_param['high'] + self.optim_params['bounds_variability'][i],
-                            n_slices=optim_param['n_slices']
+                            low=0.0,
+                            high=0.0,
+                            n_slices=1
                         )
                     )
-            else:
+            elif optim_param.get('prediction', None) != None and optim_param.get('bounds_variation', None) != None:
+                final_g_ranges_slices.append(
+                    OptimizationParam(
+                        param=optim_param['param'],
+                        low=optim_param['prediction'] - optim_param['bounds_variation'],
+                        high=optim_param['prediction'] + optim_param['bounds_variation'],
+                        n_slices=optim_param['n_slices']
+                    )
+                )
+            elif optim_param.get('low', None) != None and optim_param.get('high', None) !=None:
                 final_g_ranges_slices.append(
                     OptimizationParam(
                         param=optim_param['param'],
@@ -87,6 +103,9 @@ class ACTModule:
                         n_slices=optim_param['n_slices']
                     )
                 )
+            else: 
+                raise Exception("OptimizationParm not defined fully. Need either (low & high) or (prediction & variation).")
+
         # Now extract the ranges from the final ranges
         channel_ranges = []
         slices = []
@@ -98,15 +117,21 @@ class ACTModule:
         conductance_groups, current_settings = dp.generate_I_g_combinations(channel_ranges, slices, self.sim_params['CI_amps'])
 
         return conductance_groups, current_settings
+    
 
-    def simulate_train_cells(self, train_cell):
+    def simulate_train_cells(self, train_cell: TrainCell):
         simulator = Simulator(self.output_folder_name)
-
-        conductance_groups, current_settings = self.get_I_g_combinations()
+            
+        try:
+            conductance_groups, current_settings = self.get_I_g_combinations()
+        except Exception as e:
+            print(e)
+            return
+    
 
         for i in range(len(conductance_groups)):
                 # Set parameters from the grid
-                train_cell.set_g(["gbar_nap", "gkdrbar_kdr", "gbar_na3", "gmbar_im", "glbar_leak"], conductance_groups[i])
+                train_cell.set_g(train_cell.g_names, conductance_groups[i], self.sim_params)
                 simulator.submit_job(
                     train_cell, 
                     SimulationParameters(
@@ -121,11 +146,12 @@ class ACTModule:
                             "amp": current_settings[i],
                             "dur": self.sim_params['CI_dur'],
                             "delay": self.sim_params['CI_delay']
-                        }
+                        },
+                        set_g_to=self.sim_params['set_g_to']
                     )
                 )
         
-        simulator.run(self.cell.mod_folder)
+        simulator.run(self.train_cell.mod_folder)
 
         dp = DataProcessor()
         dp.combine_data(self.output_folder_name + "train")
@@ -138,7 +164,7 @@ class ACTModule:
         V_target = dataset_target[:,:,0]
         I_target = dataset_target[:,:,1]
 
-        features_target, columns_target = dp.extract_features(V=V_target,I=I_target,inj_dur=290,inj_start=10)
+        features_target, columns_target = dp.extract_features(V=V_target,I=I_target,inj_dur=self.sim_params['CI_dur'],inj_start=self.sim_params['CI_delay'])
 
         # Extract Features from TrainCell traces
         dataset_train = np.load(self.output_folder_name + "train/combined_out.npy")
@@ -154,11 +180,12 @@ class ACTModule:
         # Train Model on data
         X_train = features_train
         Y_train = g_train
-        
-        if self.optim_params['n_estimators'] == None:
-            self.optim_params['n_estimators'] = 1000
 
-        rf = RandomForestOptimizer(n_estimators= self.optim_params['n_estimators'], random_state=self.optim_params['random_state'], max_depth=self.optim_params['max_depth'])
+        rf = RandomForestOptimizer(
+            n_estimators= self.optim_params.get('n_estimators',1000), 
+            random_state=self.optim_params.get('random_state', 42), 
+            max_depth=self.optim_params.get('max_depth', None)
+            )
         rf.fit(X_train, Y_train)
 
         # Evaluate the model performance
@@ -172,20 +199,20 @@ class ACTModule:
         X_test = features_target
         prediction = rf.predict(X_test)
 
-        print(f"Predicted Conductances: {prediction}")
+        print(f"Predicted Conductances for each current injection intensity: {prediction}")
 
         return prediction
 
         
 
-    def simulate_test_cells(self, test_cell, prediction):
+    def simulate_test_cells(self, train_cell: TrainCell, prediction):
         simulator = Simulator(self.output_folder_name)
         for i in range(len(prediction)):
             for j in range(len(self.sim_params['CI_amps'])):
                 # Set parameters from the grid
-                test_cell.set_g(["gbar_nap", "gkdrbar_kdr", "gbar_na3", "gmbar_im", "glbar_leak"], prediction[i])
+                train_cell.set_g(train_cell.g_names, prediction[i], self.sim_params)
                 simulator.submit_job(
-                    test_cell, 
+                    train_cell, 
                     SimulationParameters(
                         sim_name = "prediction_eval"+str(i),
                         sim_idx = i * len(prediction) + j,
@@ -198,10 +225,11 @@ class ACTModule:
                             "amp": self.sim_params['CI_amps'][j],
                             "dur": self.sim_params['CI_dur'],
                             "delay": self.sim_params['CI_delay']
-                        }
+                        },
+                        set_g_to=self.sim_params['set_g_to']
                     )
                 )
-        simulator.run(self.cell.mod_folder)
+        simulator.run(self.train_cell.mod_folder)
 
         dp = DataProcessor()
         for i in range(len(prediction)):
@@ -238,18 +266,22 @@ class ACTModule:
         for fi in list_of_freq:
             fi_mae.append(metrics.mae_score(target_frequencies, fi))
 
-        g_final_idx = fi_mae.index(min(fi_mae))
-
-        print(prediction[g_final_idx])
+        g_best_idx = fi_mae.index(min(fi_mae))
         
         # Save the predicted and target FI data (for later plotting)
         results_folder = self.output_folder_name + "results/"
-        if not os.path.exists(results_folder):
-            os.makedirs(results_folder)
-            
-        np.save(results_folder + str(prediction[g_final_idx]), np.stack(list_of_freq[g_final_idx], target_frequencies))
+
+        os.makedirs(results_folder, exist_ok=True)
         
-        return g_final_idx, prediction[g_final_idx]
+        data_to_save = np.array([list_of_freq[g_best_idx], target_frequencies])
+        filepath = os.path.join(results_folder, f"frequency_data_{g_best_idx}.npy")
+        
+        np.save(filepath, data_to_save)
+        
+        # Get the directory that holds the best prediction simulation data
+        best_prediction_data_folder = self.output_folder_name + "prediction_eval" + str(g_best_idx) + "/combined_out.npy"
+        
+        return best_prediction_data_folder, prediction[g_best_idx]
     
     def evaluate_v_traces(self, prediction):
 
@@ -275,7 +307,6 @@ class ACTModule:
             mean_mae_list.append(np.mean(prediction_MAEs))
 
         # Evaluate FI curves on target FI curve
-        g_final_idx = mean_mae_list.index(min(mean_mae_list))
+        g_best_idx = mean_mae_list.index(min(mean_mae_list))
 
-        print(prediction[g_final_idx])
-        return g_final_idx, prediction[g_final_idx]
+        return g_best_idx, prediction[g_best_idx]

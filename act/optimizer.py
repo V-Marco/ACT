@@ -4,8 +4,8 @@ from sklearn.ensemble import RandomForestRegressor
 
 class RandomForestOptimizer():
 
-    def __init__(self, n_estimators=1000, random_state=42):
-        self.model = RandomForestRegressor(n_estimators = n_estimators, random_state = random_state)
+    def __init__(self, n_estimators=1000, random_state=42, max_depth=None):
+        self.model = RandomForestRegressor(n_estimators = n_estimators, random_state = random_state, max_depth=max_depth)
 
     def fit(self, summary_features_train, g_train):
         g_train = [g for g in g_train if str(g) != 'nan']

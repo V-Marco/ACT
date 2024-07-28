@@ -1,7 +1,7 @@
 from neuron import h
 from multiprocessing import Pool, cpu_count
 
-from act.act_types import SimulationParameters
+from act.act_types import SimulationParameters, SimParams
 from act.cell_model import ACTCellModel, TargetCell, TrainCell
 
 
@@ -30,6 +30,18 @@ def suppress_neuron_warnings():
 # https://stackoverflow.com/questions/31729008/python-multiprocessing-seems-near-impossible-to-do-within-classes-using-any-clas
 def unwrap_self_run_job(args):
     return Simulator._run_job(args[0], args[1][0], args[1][1])
+
+def print_mechanism_conductances(sec):
+    print(f"\nMechanisms in section '{sec.name()}':")
+    for seg in sec:
+        print(f"  Segment {seg.x}:")
+        for mech in seg:
+            mech_name = mech.name()
+            print(f"    Mechanism '{mech_name}':")
+            for var in dir(mech):
+                if not var.startswith('_') and not callable(getattr(mech, var)):
+                    value = getattr(mech, var)
+                    print(f"      {var} = {value}")
 
 class Simulator:
 
@@ -88,11 +100,10 @@ class Simulator:
                 print(f"Error removing x86_64 directory: {e}")
         
 
-    def _run_job(self, cell: ACTCellModel, parameters: SimulationParameters) -> None:
+    def _run_job(self, cell: ACTCellModel, parameters: SimParams) -> None:
 
         # Create this simulation's folder
-        if not os.path.exists(parameters.path):
-            os.mkdir(parameters.path)
+        os.makedirs(parameters.path, exist_ok=True)
 
         h.nrn_load_dll(os.path.join(cell.mod_folder, "libnrnmech.so"))
         
@@ -105,13 +116,13 @@ class Simulator:
         h.dt = parameters.h_dt
         h.steps_per_ms = 1 / h.dt
         h.v_init = parameters.h_v_init
-        
-        # Set passive properties
-        if not cell.passive_properties == None and not len(cell.passive_properties) == 0:
-            cell.set_passive_properties(cell.passive_properties)
 
         # Build the cell
         cell._build_cell()
+        
+        # Set passive properties
+        if not cell.passive_properties == None:
+            cell.set_passive_properties(cell.passive_properties)
 
         # Set CI
         if parameters.CI["type"] == "constant":
@@ -123,6 +134,7 @@ class Simulator:
         if not parameters.set_g_to == None and not len(parameters.set_g_to) == 0:
             cell._set_g(parameters.set_g_to[parameters.sim_idx][0], parameters.set_g_to [parameters.sim_idx][1])
 
+        print_mechanism_conductances(cell.soma[0])
         # Simulate
         h.finitialize(h.v_init)
         h.run()

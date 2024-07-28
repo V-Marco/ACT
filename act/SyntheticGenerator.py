@@ -11,7 +11,7 @@ class SyntheticGenerator:
     def __init__(self, params: ModuleParameters):
 
         self.output_folder_name: str = os.path.join(os.getcwd(), "model", params['module_folder_name']) + "/"
-        self.cell: Cell = params["cell"]
+        self.target_cell: TargetCell = params["cell"]
         self.sim_params: SimParams = params['sim_params']
         self.optim_params: OptimizationParameters = params['optim_params']
         
@@ -24,7 +24,7 @@ class SyntheticGenerator:
         
     def generate_synthetic_target_data(self, filename):
 
-        self.simulate_target_cell(self.cell)
+        self.simulate_target_cell(self.target_cell)
         
         self.save_voltage_current_to_csv(filename)
 
@@ -55,7 +55,7 @@ class SyntheticGenerator:
             )
         
 
-        simulator.run(self.cell.mod_folder)
+        simulator.run(target_cell.mod_folder)
 
         
         dp = DataProcessor()

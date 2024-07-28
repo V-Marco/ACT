@@ -11,8 +11,11 @@ class PassiveProperties:
     V_rest: float
     R_in: float
     tau: float
-    leak_conductance_variable: str  # eg: g_leak
-    leak_reversal_variable: str  # eg: e_leak
+    Cm: float
+    g_bar_leak: float
+    cell_area: float
+    leak_conductance_variable: str  # eg: glbar_leak
+    leak_reversal_variable: str  # eg: el_leak
 
 @dataclass
 class SimulationParameters:
@@ -26,6 +29,8 @@ class SimulationParameters:
     set_g_to: List[float]
 
 class SimParams(TypedDict):
+    sim_name: str
+    sim_idx: int
     h_v_init: float # (mV)
     h_tstop: int  # (ms)
     h_dt: float # (ms)
@@ -54,14 +59,12 @@ class Cell(TypedDict):
 
 class OptimizationParam(TypedDict):
     param: str
+    blocked: bool
     low: float
     high: float
+    prediction: float
+    bounds_variation: float
     n_slices: int  # slice each variable min to max, into n equal slices
-
-class LearnedVariability(TypedDict):
-    param: str
-    bounds_variability: float
-
 
 class ParametricDistribution(TypedDict):
     n_slices: int  # slice each variable min to max, into n equal slices
@@ -92,9 +95,6 @@ class OptimizationParameters_old(TypedDict):
 
 class OptimizationParameters(TypedDict):
     g_ranges_slices: List[OptimizationParam]
-    bounds_variability: List[LearnedVariability]
-    blocked_channels: List[str]
-    trim_sim_data: bool
     random_state: int
     n_estimators: int
     max_depth: int

@@ -7,13 +7,15 @@ from typing import List, TypedDict
 
 class ACTCellModel:
 
-    def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list, passive_properties: PassiveProperties = None):
+    def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list, passive_properties: PassiveProperties = None, cell_area = None, predicted_g: dict = None):
 
         # Hoc cell
         self.hoc_file = hoc_file
         self.mod_folder = mod_folder
         self.cell_name = cell_name
         self.passive_properties = passive_properties
+        self.cell_area = cell_area
+        self.predicted_g = predicted_g
 
         # Current injection objects
         self.CI = []
@@ -24,6 +26,27 @@ class ACTCellModel:
         # Passive properties
         self.gleak_var = None
         self.g_bar_leak = None
+        
+    def set_surface_area(self):
+        h.load_file('stdrun.hoc')
+
+        # Initialize the cell
+        h.load_file(self.hoc_file)
+        init_Cell = getattr(h, self.cell_name)
+        cell = init_Cell()
+
+        # Print out all of the sections that are found
+        section_list = list(h.allsec())
+        print(f"Found {len(section_list)} section(s) in this cell. Calculating the total surface area of the cell.")
+
+        cell_area = 0
+
+        # Loop through all sections and segments and add up the areas
+        for section in section_list:  
+            for segment in section:
+                segment_area = h.area(segment.x, sec=section)
+                cell_area += segment_area
+        self.cell_area = cell_area * 1e-8
 
     def _build_cell(self) -> None:
 
@@ -98,63 +121,46 @@ class ACTCellModel:
         
         self.I = np.array(I)
     
-    def set_passive_properties(self, passive_properties: PassiveProperties) -> None:
-            
-        V_rest = passive_properties.V_rest  # (mV)
-        R_in = passive_properties.R_in  # (10^6 Ohm)
-        tau = passive_properties.tau # (ms)
-
-        gleak_var = passive_properties.leak_conductance_variable
-        eleak_var = passive_properties.leak_reversal_variable
-
+    def set_passive_properties(self, passive_props: PassiveProperties) -> None:
         for sec in self.all:
-            # Assuming Vrest is within the range for ELeak
-            # ELeak = Vrest
-            if (V_rest) and (eleak_var):
-                print(f"Setting {eleak_var} = {V_rest}")
-                setattr(sec, eleak_var, V_rest)
+            # Setting e_leak
+            if (passive_props.V_rest) and (passive_props.leak_reversal_variable):
+                setattr(sec, passive_props.leak_reversal_variable, passive_props.V_rest)
             else:
                 print(
-                    f"Skipping analytical setting of e_leak variable. Cell v_rest and/or leak_reversal_variable not specified in config."
+                    f"Skipping analytical setting of e_leak variable. V_rest and/or leak_reversal_variable not specified."
                 )
+                
+            # Setting g_leak
+            if (passive_props.g_bar_leak) and (passive_props.leak_conductance_variable):
+                setattr(sec, passive_props.leak_conductance_variable, passive_props.g_bar_leak)
+            elif (passive_props.R_in) and (passive_props.cell_area):
+                g_bar_leak = (1/passive_props.R_in) / passive_props.cell_area
+                setattr(sec, passive_props.leak_conductance_variable, g_bar_leak)
+            else:
+                print(
+                    f"Skipping analytical setting of g_bar_leak variable. g_bar_leak, leak_conductance_variable, R_in, and/or cell_area not specified."
+                )       
             
-            # Rin = 1 / (Area * g_bar_leak)
-            # g_bar_leak = 1 / (Rin * Area)
-
-            # Have to specify the location to get access to area
-            area = sec(0.5).area() # (um2)
-            
-            if not R_in:
-                print(f"Skipping analytical setting of gleak and cm variables. Cell r_in not specified in config.")
-                return
-            
-            # [S / cm2] = 1 / (10^6 Ohm * um2) = 10^6 S / 10^{-8} cm2
-            g_bar_leak = 1 / (R_in * area) * 1e2
-            print(f"Setting {sec}.{gleak_var} = {g_bar_leak:.8f}")
-            setattr(sec, gleak_var, g_bar_leak)
-
-            if sec == self.soma: g_bar_leak = g_bar_leak
-
-            if not tau:
-                print(f"Skipping analytical setting of cm variable. Cell tau not specified in config.")
-                return
-            
-            # tau = (R * C) = R * Area * cm
-            # cm = tau * g_bar_leak * Area
-            # cm/cm2 = (tau*g_bar_leak*Area)/Area = tau * g_bar_leak
-            cm = tau * g_bar_leak * 1e3  # tau ms->s
-            print(f"Setting {sec}.cm = {cm:.8f}")
-            setattr(sec, "cm", cm)
+            if (passive_props.Cm):
+                setattr(sec, "cm", passive_props.Cm)
+            elif (passive_props.R_in) and (passive_props.tau):
+                Cm = passive_props.tau * (1 / passive_props.R_in)
+                setattr(sec, "cm", Cm)
+            else:
+                print(
+                    f"Skipping analytical setting of cm. Cm, R_in and/or tau not specified."
+                )  
 
 class TargetCell(ACTCellModel):
 
-    def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list):
-        super().__init__(hoc_file, mod_folder, cell_name, g_names, [])
+    def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list = [], passive_properties: PassiveProperties = None):
+        super().__init__(hoc_file, mod_folder, cell_name, g_names, passive_properties)
 
 class TrainCell(ACTCellModel):
 
-    def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list):
-        super().__init__(hoc_file, mod_folder, cell_name, g_names, [])
+    def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list = [], passive_properties: PassiveProperties = None):
+        super().__init__(hoc_file, mod_folder, cell_name, g_names, passive_properties)
 
                 
 class ModuleParameters(TypedDict):

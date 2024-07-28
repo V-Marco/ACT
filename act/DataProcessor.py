@@ -20,7 +20,6 @@ from itertools import product
 from act.act_types import SimulationParameters
 from act.cell_model import TrainCell, ACTCellModel
 from act.simulator import Simulator
-from act.act_types import SimulationParameters
 
 import warnings
 
@@ -138,77 +137,6 @@ class DataProcessor:
     #---------------------------------------------
     #PASSIVE PROPERTIES
     #---------------------------------------------
-    # We need the surface area of the cell
-    def get_surface_area(self, cell: ACTCellModel):
-        h.load_file('stdrun.hoc')
-
-        # Initialize the cell
-        h.load_file(cell.hoc_file)
-        init_Cell = getattr(h, cell.cell_name)
-        cell = init_Cell()
-
-        # Print out all of the sections that are found
-        section_list = list(h.allsec())
-        print(f"Found {len(section_list)} section(s) in this cell. Calculating the total surface area of the cell.")
-
-        cell_area = 0
-
-        # Loop through all sections and segments and add up the areas
-        for section in section_list:  
-            for segment in section:
-                segment_area = h.area(segment.x, sec=section)
-                cell_area += segment_area
-        return cell_area
-    
-
-    # leak_conductance_var: the variable name used in the .hoc file for the leak conductance.
-    def simulate_negative_CI(self, output_folder_name, cell: ACTCellModel, leak_conductance_var: str):
-        # Sim params
-        h_dt = 0.01 #ms
-        h_tstop = 1500 #ms
-
-        # Current clamp params
-        I_tstart = 500 #ms
-        I_duration = 1000 # ms
-        I_intensity = -0.1 # pA
-
-        # Block all channels except for leak in the Target Cell. 
-        channels_to_block = [g for g in cell.g_names if g != leak_conductance_var]
-        cell.block_channels(channels_to_block)
-
-        # Simulate the cell with just the leak channel set to non-zero conductance
-        simulator = Simulator(output_folder_name)
-        simulator.submit_job(
-            cell,
-            SimulationParameters(
-                sim_name = "passive_props",
-                sim_idx=0,
-                h_v_init = -70, # (mV)
-                h_tstop = h_tstop,  # (ms)
-                h_dt = h_dt, # (ms)
-                h_celsius = 37, # (deg C)
-                CI = {
-                    "type": "constant",
-                    "amp": I_intensity,
-                    "dur": I_duration,
-                    "delay": I_tstart
-                }
-            )
-        )
-
-        simulator.run(cell.mod_folder)
-
-        # Returning needed simulation information
-        # IMPORTANT: simulator.run() caps dt at 1 ms when it saves the data
-        # For future calculations of passive props, dt = 1
-        dt = 1 #ms
-        cell_area = self.get_surface_area(cell) * 1e-8 # function returns um^2, want it in cm^2
-
-        data = np.load(simulator.path + "/passive_props/out_0.npy")
-        V = data[:,0]
-        
-
-        return V, dt, h_tstop, I_tstart, I_intensity, cell_area
 
     # V: 1D numpy array holding the voltage trace data
     # dt: sample time (ms)
@@ -216,7 +144,7 @@ class DataProcessor:
     # I_tstart: time when the current clamp starts (ms)
     # I_intensity: amps
     # leak_conductance_var: the variable name used in the .hoc file for the leak conductance.
-    def calculate_passive_properties(self, V, dt, I_tend, I_tstart, I_intensity, cell_area, leak_conductance_var: str, leak_reversal_var: str) -> PassiveProperties:
+    def calculate_passive_properties(self, V, train_cell: ACTCellModel, dt, I_tend, I_tstart, I_intensity, leak_conductance_var: str, leak_reversal_var: str) -> PassiveProperties:
 
         # Get the initial and final voltage states of the step input (getting index first)
         index_v_rest = int(I_tstart / dt)
@@ -235,24 +163,29 @@ class DataProcessor:
             index for index, voltage_value in enumerate(list(V[index_v_rest:]))
             if voltage_value < v_t_const
         )
+        
+        # Cell area
+        train_cell.set_surface_area()
 
         tau = index_v_tau * dt                   # ms
-        r_in = (v_diff) / (0 - I_intensity)     # MOhms
-        g_leak = 1 / r_in                       # uS
-        Cm = tau * g_leak                       # nF
-        g_bar_leak = (g_leak / cell_area) / 1e6 # was in uS/cm^2. Divide by 1e6 gives us S/cm^2
+        r_in = (v_diff) / (0 - I_intensity)      # MOhms
+        g_leak = 1 / r_in                        # uS
+        Cm = tau * g_leak                        # nF
+        g_bar_leak = (g_leak / train_cell.cell_area) / 1e6  # was in uS/cm^2. Divide by 1e6 gives us S/cm^2
 
         # Initialize a dictionary to hold all of the passive properties data
-        passive_props: PassiveProperties = {
-            "leak_conductance_variable": leak_conductance_var,
-            "leak_reversal_variable": leak_reversal_var,
-            "g_bar_leak": float(g_bar_leak),    # S/cm^2
-            "r_in": float(r_in),                # MOhm
-            "tau": float(tau),                  # ms
-            "v_rest": float(v_rest),            # mV
-            "Cm": float(Cm)                     # nF
-        }
-
+        passive_props: PassiveProperties = PassiveProperties(
+            V_rest=float(v_rest),         # mV
+            R_in=float(r_in),             # MOhm
+            tau=float(tau),               # ms
+            Cm=float(Cm),                 # nF
+            g_bar_leak=float(g_bar_leak), # S/cm^2
+            cell_area=train_cell.cell_area,
+            leak_conductance_variable=leak_conductance_var,
+            leak_reversal_variable=leak_reversal_var,
+            
+        )
+        
         return passive_props
 
     #---------------------------------------------

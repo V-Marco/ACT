@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from neuron import h
 import numpy as np
 from act.cell_model import TrainCell
-from act.act_types import SimulationParameters
+from act.act_types import SimParams
 from act.DataProcessor import DataProcessor
 
 @contextmanager
@@ -25,7 +25,7 @@ def suppress_neuron_warnings():
             sys.stderr = temp_stderr
 
 class PassivePropertiesModule():
-    def __init__(self, train_cell: TrainCell, sim_params: SimulationParameters, trace_filepath, leak_conductance_variable, leak_reversal_variable):
+    def __init__(self, train_cell: TrainCell, sim_params: SimParams, trace_filepath, leak_conductance_variable, leak_reversal_variable):
         self.train_cell = train_cell
         self.sim_params = sim_params
         self.trace_filepath = trace_filepath
@@ -67,22 +67,23 @@ class PassivePropertiesModule():
                 dataset = np.loadtxt(self.trace_filepath, delimiter=',', skiprows=1)
                 
                 V = dataset[:,0]
-                cell_area = dp.get_surface_area(self.train_cell) * 1e-8
+                
                 I_tend = self.sim_params['CI_delay'] + self.sim_params['CI_dur']
-                print(f"I_tend: {I_tend}")
                 props = dp.calculate_passive_properties(V, 
+                                                        self.train_cell,
                                                         self.sim_params['h_dt'],
                                                         I_tend,
                                                         self.sim_params['CI_delay'],
                                                         self.sim_params['CI_amps'][0],
-                                                        cell_area,
                                                         self.leak_conductance_variable,
                                                         self.leak_reversal_variable)
                 
                 self.train_cell.passive_properties = props
             
             else:
-                print("Could not find voltage trace file. Did not set passive properties.")
+                print("Could not find voltage trace file. Cannot set passive properties.")
+                print("To manually set known passive properties:")
+                print("train_cell.passive_properties = PassiveProperties(...)")
                     
                     
         except Exception as e:
