@@ -79,7 +79,7 @@ class PassivePropertiesModule():
                                                         self.leak_reversal_variable)
                 
                 props.g_bar_leak = round(props.g_bar_leak, 15)
-                props.Cm = 1
+                #props.Cm = 1
                 
                 self.train_cell.passive_properties = props
             
