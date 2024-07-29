@@ -38,7 +38,7 @@ class ACTModule:
         prediction = self.get_rf_prediction()
 
         print("SIMULATING PREDICTIONS")
-        self.simulate_test_cells(self.train_cell, prediction)
+        self.simulate_eval_cells(self.train_cell, prediction)
 
         print("SELECTING BEST PREDICTION")
         prediction_eval_method = self.optim_params.get('prediction_eval_method', 'fi_curve')
@@ -164,7 +164,7 @@ class ACTModule:
         V_target = dataset_target[:,:,0]
         I_target = dataset_target[:,:,1]
 
-        features_target, columns_target = dp.extract_features(V=V_target,I=I_target,inj_dur=self.sim_params['CI_dur'],inj_start=self.sim_params['CI_delay'])
+        features_target, columns_target = dp.extract_features(list_of_features=self.optim_params.get('list_of_features',None), V=V_target,I=I_target,inj_dur=self.sim_params['CI_dur'],inj_start=self.sim_params['CI_delay'])
 
         # Extract Features from TrainCell traces
         dataset_train = np.load(self.output_folder_name + "train/combined_out.npy")
@@ -174,8 +174,8 @@ class ACTModule:
         I_train = dataset_train[:,:,1]
 
         # TODO: ["i_mean_stdev", "v_spike_stats", "v_mean_potential", "v_amplitude_frequency", "v_arima_coefs"]
-        features_train, columns_train = dp.extract_features(V=V_train,I=I_train,inj_dur=self.sim_params['CI_dur'],inj_start=self.sim_params['CI_delay'])
-
+        features_train, columns_train = dp.extract_features(list_of_features=self.optim_params.get('list_of_features',None),V=V_train,I=I_train,inj_dur=self.sim_params['CI_dur'],inj_start=self.sim_params['CI_delay'])
+        print(f"Extracting features: {columns_train}")
 
         # Train Model on data
         X_train = features_train
@@ -189,33 +189,48 @@ class ACTModule:
         rf.fit(X_train, Y_train)
 
         # Evaluate the model performance
+        n_sim_combos = 1
+        for param in self.optim_params['g_ranges_slices']:
+            n_sim_combos = n_sim_combos * param.get('n_slices', 1)
+            
+        n_splits = 10
+        if n_sim_combos < 10:
+            n_splits = n_sim_combos
 
         metrics = Metrics()
-
-        metrics.evaluate_random_forest(rf.model, X_train, Y_train)
+        metrics.evaluate_random_forest(rf.model, 
+                                       X_train, 
+                                       Y_train, 
+                                       random_state=self.optim_params.get('random_state', 42), 
+                                       n_repeats=self.optim_params.get('eval_n_repeats', 3), 
+                                       n_splits=n_splits)
 
         # Predict the conductance values
 
         X_test = features_target
-        prediction = rf.predict(X_test)
-
-        print(f"Predicted Conductances for each current injection intensity: {prediction}")
-
-        return prediction
-
+        predictions = rf.predict(X_test)
         
+        # Round off all predictions to 15 decimal places
+        for i in range(len(predictions)):
+            for j in range(len(predictions[i])):
+                predictions[i][j] = round(predictions[i][j], 15)
+                
+        print(f"Predicted Conductances for each current injection intensity: {predictions}")
 
-    def simulate_test_cells(self, train_cell: TrainCell, prediction):
+        return predictions
+
+
+    def simulate_eval_cells(self, eval_cell: TrainCell, predictions):
         simulator = Simulator(self.output_folder_name)
-        for i in range(len(prediction)):
+        for i in range(len(predictions)):
             for j in range(len(self.sim_params['CI_amps'])):
                 # Set parameters from the grid
-                train_cell.set_g(train_cell.g_names, prediction[i], self.sim_params)
+                eval_cell.set_g(eval_cell.g_names, predictions[i], self.sim_params)
                 simulator.submit_job(
-                    train_cell, 
+                    eval_cell, 
                     SimulationParameters(
                         sim_name = "prediction_eval"+str(i),
-                        sim_idx = i * len(prediction) + j,
+                        sim_idx = i * len(predictions) + j,
                         h_v_init = self.sim_params['h_v_init'], # (mV)
                         h_tstop = self.sim_params['h_tstop'],  # (ms)
                         h_dt = self.sim_params['h_dt'], # (ms)
@@ -232,10 +247,10 @@ class ACTModule:
         simulator.run(self.train_cell.mod_folder)
 
         dp = DataProcessor()
-        for i in range(len(prediction)):
+        for i in range(len(predictions)):
             dp.combine_data(self.output_folder_name + "prediction_eval" + str(i))
 
-    def evaluate_fi_curves(self, prediction):
+    def evaluate_fi_curves(self, predictions):
 
         dp = DataProcessor()
 
@@ -248,7 +263,7 @@ class ACTModule:
 
         # Get train2 Cell Frequencies
         FI_data = []
-        for i in range(len(prediction)):
+        for i in range(len(predictions)):
             dataset = np.load(self.output_folder_name + "prediction_eval" + str(i) + "/combined_out.npy")
             V_test = dataset[:,:,0]
 
@@ -281,9 +296,9 @@ class ACTModule:
         # Get the directory that holds the best prediction simulation data
         best_prediction_data_folder = self.output_folder_name + "prediction_eval" + str(g_best_idx) + "/combined_out.npy"
         
-        return best_prediction_data_folder, prediction[g_best_idx]
+        return best_prediction_data_folder, predictions[g_best_idx]
     
-    def evaluate_v_traces(self, prediction):
+    def evaluate_v_traces(self, predictions):
 
         dp = DataProcessor()
 
@@ -295,7 +310,7 @@ class ACTModule:
         # Get train Cell Frequencies
         metrics = Metrics()
         mean_mae_list = []
-        for i in range(len(prediction)):
+        for i in range(len(predictions)):
             dataset = np.load(self.output_folder_name + "prediction_eval" + str(i) + "/combined_out.npy")
             V_test = dataset[:,:,0]
             prediction_MAEs = []
@@ -309,4 +324,4 @@ class ACTModule:
         # Evaluate FI curves on target FI curve
         g_best_idx = mean_mae_list.index(min(mean_mae_list))
 
-        return g_best_idx, prediction[g_best_idx]
+        return g_best_idx, predictions[g_best_idx]

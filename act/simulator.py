@@ -116,6 +116,12 @@ class Simulator:
         h.dt = parameters.h_dt
         h.steps_per_ms = 1 / h.dt
         h.v_init = parameters.h_v_init
+        
+        print(f"h.celsius: {h.celsius}")
+        print(f"h.tstop: {h.tstop}")
+        print(f"h.dt: {h.dt}")
+        print(f"h.steps_per_ms: {h.steps_per_ms}")
+        print(f"h.v_init: {h.v_init}")
 
         # Build the cell
         cell._build_cell()
@@ -134,7 +140,7 @@ class Simulator:
         if not parameters.set_g_to == None and not len(parameters.set_g_to) == 0:
             cell._set_g(parameters.set_g_to[parameters.sim_idx][0], parameters.set_g_to [parameters.sim_idx][1])
 
-        print_mechanism_conductances(cell.soma[0])
+        #print_mechanism_conductances(cell.soma[0])
         # Simulate
         h.finitialize(h.v_init)
         h.run()

@@ -84,6 +84,7 @@ class ACTCellModel:
     def _add_constant_CI(self, amp: float, dur: int, delay: int, sim_time) -> None:
         inj = h.IClamp(self.soma[0](0.5))
         inj.amp = amp; inj.dur = dur; inj.delay = delay
+        print(f"inj.amp = {amp} | inj.dur = {dur} | inj.delay = {delay}")
         self.CI.append(inj)
         
         remainder = sim_time - delay - dur
@@ -125,6 +126,7 @@ class ACTCellModel:
         for sec in self.all:
             # Setting e_leak
             if (passive_props.V_rest) and (passive_props.leak_reversal_variable):
+                print(f"Setting {passive_props.leak_reversal_variable} = {passive_props.V_rest}")
                 setattr(sec, passive_props.leak_reversal_variable, passive_props.V_rest)
             else:
                 print(
@@ -133,19 +135,29 @@ class ACTCellModel:
                 
             # Setting g_leak
             if (passive_props.g_bar_leak) and (passive_props.leak_conductance_variable):
+                print(f"Setting {passive_props.leak_conductance_variable} = {passive_props.g_bar_leak}")
                 setattr(sec, passive_props.leak_conductance_variable, passive_props.g_bar_leak)
             elif (passive_props.R_in) and (passive_props.cell_area):
                 g_bar_leak = (1/passive_props.R_in) / passive_props.cell_area
+                print(f"Setting {passive_props.leak_conductance_variable} = {g_bar_leak}")
                 setattr(sec, passive_props.leak_conductance_variable, g_bar_leak)
             else:
                 print(
                     f"Skipping analytical setting of g_bar_leak variable. g_bar_leak, leak_conductance_variable, R_in, and/or cell_area not specified."
                 )       
+                
+            cm_value = getattr(sec, 'cm', None)
+            if cm_value is not None:
+                print(f"Capacitance (cm) of soma: {cm_value}")
+            else:
+                print("Capacitance (cm) attribute not found in soma")
             
             if (passive_props.Cm):
+                print(f"Setting cm = {passive_props.Cm}")
                 setattr(sec, "cm", passive_props.Cm)
             elif (passive_props.R_in) and (passive_props.tau):
                 Cm = passive_props.tau * (1 / passive_props.R_in)
+                print(f"Setting cm = {Cm}")
                 setattr(sec, "cm", Cm)
             else:
                 print(

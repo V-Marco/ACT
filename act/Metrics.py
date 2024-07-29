@@ -41,10 +41,10 @@ class Metrics:
             np.mean(np.abs(target_data - simulated_data))
         )
     
-    def evaluate_random_forest(self, reg, X_train, Y_train):
+    def evaluate_random_forest(self, reg, X_train, Y_train, random_state=42, n_repeats=3, n_splits=10):
         print("Evaluating random forest")
         # evaluate the model
-        cv = RepeatedKFold(n_splits=10, n_repeats=3, random_state=1)
+        cv = RepeatedKFold(n_splits=n_splits, n_repeats=n_repeats, random_state=random_state)
         n_scores = abs(cross_val_score(
             reg,
             X_train,

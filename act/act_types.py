@@ -98,7 +98,9 @@ class OptimizationParameters(TypedDict):
     random_state: int
     n_estimators: int
     max_depth: int
+    eval_n_repeats: int
     sample_rate_decimate_factor: int  
+    list_of_features: List[str]
     prediction_eval_method: str
 
 class SummaryFeatures:
