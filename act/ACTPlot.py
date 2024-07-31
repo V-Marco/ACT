@@ -42,8 +42,8 @@ def plot_fi_comparison(fi_data_filepath, amps):
     target_fi = dataset[1,:]
     
     plt.figure(figsize=(8, 6))
-    plt.plot(amps, target_fi, label='Target FI')
-    plt.plot(amps, predicted_fi, label='Prediction FI')
+    plt.plot(amps, target_fi, 'o', label='Target FI')
+    plt.plot(amps, predicted_fi, 'o', label='Prediction FI')
     plt.xlabel('Current Injection Intensity (nA)')
     plt.ylabel('Frequency (Hz)')
     plt.title("FI Curve Comparison")

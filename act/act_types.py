@@ -5,6 +5,7 @@ These types should be used to define the user supplied simulation config/config.
 
 from typing import List, TypedDict
 from dataclasses import dataclass
+from act.optimizer import RandomForestOptimizer
 
 @dataclass
 class PassiveProperties:
@@ -102,6 +103,7 @@ class OptimizationParameters(TypedDict):
     sample_rate_decimate_factor: int  
     list_of_features: List[str]
     prediction_eval_method: str
+    rf_model: RandomForestOptimizer
 
 class SummaryFeatures:
     spike_threshold: int  # (mV)

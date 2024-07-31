@@ -12,6 +12,7 @@ from act.DataProcessor import DataProcessor
 
 from act.optimizer import RandomForestOptimizer
 from act.Metrics import Metrics
+import pickle
 
 class ACTModule:
 
@@ -24,6 +25,7 @@ class ACTModule:
         self.optim_params: OptimizationParameters = params['optim_params']
         
         self.blocked_channels = []
+        self.rf_model = self.optim_params.get('rf_model', None)
         
 
     def run(self):
@@ -43,9 +45,9 @@ class ACTModule:
         print("SELECTING BEST PREDICTION")
         prediction_eval_method = self.optim_params.get('prediction_eval_method', 'fi_curve')
         if prediction_eval_method == 'fi_curve':
-            predicted_g_data_folder, best_prediction = self.evaluate_fi_curves(prediction)
+            predicted_g_data_file, best_prediction = self.evaluate_fi_curves(prediction)
         elif prediction_eval_method == 'voltage':
-            predicted_g_data_folder, best_prediction = self.evaluate_v_traces(prediction)
+            predicted_g_data_file, best_prediction = self.evaluate_v_traces(prediction)
         else:
             print("prediction_eval_method must be 'fi_curve' or 'voltage'.")
 
@@ -55,7 +57,7 @@ class ACTModule:
         
         print(self.train_cell.predicted_g)
         
-        return predicted_g_data_folder
+        return predicted_g_data_file
 
     def convert_csv_to_npy(self):
         # Uses the number of traces held in CI_amps to parse a users 2D csv file to 3D npy file
@@ -166,44 +168,60 @@ class ACTModule:
 
         features_target, columns_target = dp.extract_features(list_of_features=self.optim_params.get('list_of_features',None), V=V_target,I=I_target,inj_dur=self.sim_params['CI_dur'],inj_start=self.sim_params['CI_delay'])
 
-        # Extract Features from TrainCell traces
-        dataset_train = np.load(self.output_folder_name + "train/combined_out.npy")
+        if self.rf_model == None:
+            # Extract Features from TrainCell traces
+            dataset_train = np.load(self.output_folder_name + "train/combined_out.npy")
 
-        g_train = dp.clean_g_bars(dataset_train)
-        V_train = dataset_train[:,:,0]
-        I_train = dataset_train[:,:,1]
+            g_train = dp.clean_g_bars(dataset_train)
+            V_train = dataset_train[:,:,0]
+            I_train = dataset_train[:,:,1]
 
-        # TODO: ["i_mean_stdev", "v_spike_stats", "v_mean_potential", "v_amplitude_frequency", "v_arima_coefs"]
-        features_train, columns_train = dp.extract_features(list_of_features=self.optim_params.get('list_of_features',None),V=V_train,I=I_train,inj_dur=self.sim_params['CI_dur'],inj_start=self.sim_params['CI_delay'])
-        print(f"Extracting features: {columns_train}")
+            # TODO: ["i_mean_stdev", "v_spike_stats", "v_mean_potential", "v_amplitude_frequency", "v_arima_coefs"]
+            features_train, columns_train = dp.extract_features(list_of_features=self.optim_params.get('list_of_features',None),V=V_train,I=I_train,inj_dur=self.sim_params['CI_dur'],inj_start=self.sim_params['CI_delay'])
+            print(f"Extracting features: {columns_train}")
 
-        # Train Model on data
-        X_train = features_train
-        Y_train = g_train
+            # Train Model on data
 
-        rf = RandomForestOptimizer(
-            n_estimators= self.optim_params.get('n_estimators',1000), 
-            random_state=self.optim_params.get('random_state', 42), 
-            max_depth=self.optim_params.get('max_depth', None)
-            )
-        rf.fit(X_train, Y_train)
+            X_train = features_train
+            Y_train = g_train
 
-        # Evaluate the model performance
-        n_sim_combos = 1
-        for param in self.optim_params['g_ranges_slices']:
-            n_sim_combos = n_sim_combos * param.get('n_slices', 1)
+            rf = RandomForestOptimizer(
+                n_estimators= self.optim_params.get('n_estimators',1000), 
+                random_state=self.optim_params.get('random_state', 42), 
+                max_depth=self.optim_params.get('max_depth', None)
+                )
+            rf.fit(X_train, Y_train)
             
-        n_splits = 10
-        if n_sim_combos < 10:
-            n_splits = n_sim_combos
+            # Evaluate the model performance
+            n_sim_combos = 1
+            for param in self.optim_params['g_ranges_slices']:
+                n_sim_combos = n_sim_combos * param.get('n_slices', 1)
+                
+            n_splits = 10
+            if n_sim_combos < 10:
+                n_splits = n_sim_combos
 
-        metrics = Metrics()
-        metrics.evaluate_random_forest(rf.model, 
-                                       X_train, 
-                                       Y_train, 
-                                       random_state=self.optim_params.get('random_state', 42), 
-                                       n_repeats=self.optim_params.get('eval_n_repeats', 3), 
-                                       n_splits=n_splits)
+            metrics = Metrics()
+            metrics.evaluate_random_forest(rf.model, 
+                                        X_train, 
+                                        Y_train, 
+                                        random_state=self.optim_params.get('random_state', 42), 
+                                        n_repeats=self.optim_params.get('eval_n_repeats', 3), 
+                                        n_splits=n_splits)
+        else:
+            try:
+                with open(self.rf_model, 'rb') as file:
+                    rf = pickle.load(file)
+                print("Model loaded successfully.")
+            except FileNotFoundError:
+                print("Error: The model file {self.rf_model} was not found.")
+                raise
+            except pickle.UnpicklingError:
+                print("Error: The file is corrupted or is not a valid pickle file.")
+                raise
+            except Exception as e:
+                print(f"An unexpected error occurred while loading the model: {str(e)}")
+                raise
 
         # Predict the conductance values
 
@@ -218,6 +236,10 @@ class ACTModule:
         print(f"Predicted Conductances for each current injection intensity: {predictions}")
 
         return predictions
+    
+    def pickle_rf(self, rf_model, filename):
+        with open(filename, 'wb') as file:
+            pickle.dump(rf_model, file)
 
 
     def simulate_eval_cells(self, eval_cell: TrainCell, predictions):
@@ -294,9 +316,9 @@ class ACTModule:
         np.save(filepath, data_to_save)
         
         # Get the directory that holds the best prediction simulation data
-        best_prediction_data_folder = self.output_folder_name + "prediction_eval" + str(g_best_idx) + "/combined_out.npy"
+        best_prediction_data_file = self.output_folder_name + "prediction_eval" + str(g_best_idx) + "/combined_out.npy"
         
-        return best_prediction_data_folder, predictions[g_best_idx]
+        return best_prediction_data_file, predictions[g_best_idx]
     
     def evaluate_v_traces(self, predictions):
 
@@ -321,7 +343,9 @@ class ACTModule:
 
             mean_mae_list.append(np.mean(prediction_MAEs))
 
-        # Evaluate FI curves on target FI curve
+        # Evaluate Voltage curves on target voltages
         g_best_idx = mean_mae_list.index(min(mean_mae_list))
+        
+        best_prediction_data_file = self.output_folder_name + "prediction_eval" + str(g_best_idx) + "/combined_out.npy"
 
-        return g_best_idx, predictions[g_best_idx]
+        return best_prediction_data_file, predictions[g_best_idx]

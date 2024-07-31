@@ -46,7 +46,7 @@ class ACTCellModel:
             for segment in section:
                 segment_area = h.area(segment.x, sec=section)
                 cell_area += segment_area
-        self.cell_area = cell_area * 1e-8
+        self.cell_area = cell_area * 1e-8 # cm^2
 
     def _build_cell(self) -> None:
 
@@ -62,6 +62,33 @@ class ACTCellModel:
         self.t = h.Vector().record(h._ref_t)
         self.V = h.Vector().record(self.soma[0](0.5)._ref_v)
         self.I = []
+        
+        for sec in self.all:
+            cm_value = getattr(sec, 'cm', None)
+            if cm_value is not None:
+                print(f"Capacitance (cm) of soma: {cm_value}")
+            else:
+                print("Capacitance (cm) attribute not found in soma")
+            
+            gl_value = getattr(sec, "gl_hh_seg", None)
+            if gl_value is not None:
+                print(f"Leak Conductance (Mho/cm^2) of soma: {gl_value}")
+            else:
+                print("Leak Conductance (Mho/cm^2) attribute not found in soma")
+                
+            el_value = getattr(sec, "el_hh_seg", None)
+            if el_value is not None:
+                print(f"Leak Reversal (mV) of soma: {el_value}")
+            else:
+                print("Leak Reversal (mV) attribute not found in soma")
+                
+            self.set_surface_area()
+            cell_area = self.cell_area
+
+            if cell_area != 0:
+                print(f"Cell Area (cm^2) of soma: {cell_area}")
+            else:
+                print("Cell Area (cm^2) attribute not found in soma")
 
     def get_output(self) -> None:
         g_values = []
@@ -145,12 +172,6 @@ class ACTCellModel:
                 print(
                     f"Skipping analytical setting of g_bar_leak variable. g_bar_leak, leak_conductance_variable, R_in, and/or cell_area not specified."
                 )       
-                
-            cm_value = getattr(sec, 'cm', None)
-            if cm_value is not None:
-                print(f"Capacitance (cm) of soma: {cm_value}")
-            else:
-                print("Capacitance (cm) attribute not found in soma")
             
             if (passive_props.Cm):
                 print(f"Setting cm = {passive_props.Cm}")

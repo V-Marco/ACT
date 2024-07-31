@@ -165,12 +165,15 @@ class DataProcessor:
         )
         
         # Cell area
-        train_cell.set_surface_area()
+        train_cell.set_surface_area()            # cm^2
 
         tau = index_v_tau * dt                   # ms
+        print(f"tau: {tau}")
         r_in = (v_diff) / (0 - I_intensity)      # MOhms
+        print(f"r_in: {r_in}")
         g_leak = 1 / r_in                        # uS
-        Cm = tau * g_leak                        # nF
+        print(f"g_leak: {g_leak}")
+        Cm = ((tau * g_leak)/1000) / train_cell.cell_area           # uF/cm^2
         g_bar_leak = (g_leak / train_cell.cell_area) / 1e6  # was in uS/cm^2. Divide by 1e6 gives us S/cm^2
 
         # Initialize a dictionary to hold all of the passive properties data
@@ -178,7 +181,7 @@ class DataProcessor:
             V_rest=float(v_rest),         # mV
             R_in=float(r_in),             # MOhm
             tau=float(tau),               # ms
-            Cm=float(Cm),                 # nF
+            Cm=float(Cm),                 # uF/cm^2
             g_bar_leak=float(g_bar_leak), # S/cm^2
             cell_area=train_cell.cell_area,
             leak_conductance_variable=leak_conductance_var,
