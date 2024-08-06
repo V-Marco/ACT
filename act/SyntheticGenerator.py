@@ -50,7 +50,7 @@ class SyntheticGenerator:
                         "dur": self.sim_params['CI_dur'],
                         "delay": self.sim_params['CI_delay']
                     },
-                    set_g_to=self.sim_params['set_g_to']
+                    set_g_to=self.sim_params.get('set_g_to', None)
                 )
             )
         

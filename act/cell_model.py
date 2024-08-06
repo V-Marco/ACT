@@ -16,6 +16,7 @@ class ACTCellModel:
         self.passive_properties = passive_properties
         self.cell_area = cell_area
         self.predicted_g = predicted_g
+        self.all = None
 
         # Current injection objects
         self.CI = []
@@ -28,15 +29,8 @@ class ACTCellModel:
         self.g_bar_leak = None
         
     def set_surface_area(self):
-        h.load_file('stdrun.hoc')
-
-        # Initialize the cell
-        h.load_file(self.hoc_file)
-        init_Cell = getattr(h, self.cell_name)
-        cell = init_Cell()
-
         # Print out all of the sections that are found
-        section_list = list(h.allsec())
+        section_list = list(self.all)
         print(f"Found {len(section_list)} section(s) in this cell. Calculating the total surface area of the cell.")
 
         cell_area = 0
@@ -62,33 +56,6 @@ class ACTCellModel:
         self.t = h.Vector().record(h._ref_t)
         self.V = h.Vector().record(self.soma[0](0.5)._ref_v)
         self.I = []
-        
-        for sec in self.all:
-            cm_value = getattr(sec, 'cm', None)
-            if cm_value is not None:
-                print(f"Capacitance (cm) of soma: {cm_value}")
-            else:
-                print("Capacitance (cm) attribute not found in soma")
-            
-            gl_value = getattr(sec, "gl_hh_seg", None)
-            if gl_value is not None:
-                print(f"Leak Conductance (Mho/cm^2) of soma: {gl_value}")
-            else:
-                print("Leak Conductance (Mho/cm^2) attribute not found in soma")
-                
-            el_value = getattr(sec, "el_hh_seg", None)
-            if el_value is not None:
-                print(f"Leak Reversal (mV) of soma: {el_value}")
-            else:
-                print("Leak Reversal (mV) attribute not found in soma")
-                
-            self.set_surface_area()
-            cell_area = self.cell_area
-
-            if cell_area != 0:
-                print(f"Cell Area (cm^2) of soma: {cell_area}")
-            else:
-                print("Cell Area (cm^2) attribute not found in soma")
 
     def get_output(self) -> None:
         g_values = []
@@ -106,18 +73,21 @@ class ACTCellModel:
                 setattr(sec, key, g_values[index])
     
     def block_channels(self, sim_params: SimulationParameters, blocked_channel_list = [], ):
-        self.set_g(blocked_channel_list, [0.0 for _ in blocked_channel_list], sim_params)
+        if not blocked_channel_list == None and not len(blocked_channel_list) == 0:
+            self.set_g(blocked_channel_list, [0.0 for _ in blocked_channel_list], sim_params)
 
-    def _add_constant_CI(self, amp: float, dur: int, delay: int, sim_time) -> None:
+    def _add_constant_CI(self, amp: float, dur: int, delay: int, sim_time: int, dt: float) -> None:
         inj = h.IClamp(self.soma[0](0.5))
         inj.amp = amp; inj.dur = dur; inj.delay = delay
         print(f"inj.amp = {amp} | inj.dur = {dur} | inj.delay = {delay}")
         self.CI.append(inj)
         
-        remainder = sim_time - delay - dur
+        delay_steps = int(delay / dt)
+        dur_steps = int(dur / dt)
+        remainder_steps = int((sim_time - delay - dur) / dt)
 
         # Record injected current
-        self.I = np.array([0.0] * delay + [amp] * dur + [0.0] * remainder)
+        self.I = np.array([0.0] * delay_steps + [amp] * dur_steps + [0.0] * remainder_steps)
     
     def _add_ramp_CI(self, start_amp: float, amp_incr: float, ramp_time: float, dur: int, delay: int) -> None:
         total_delay = delay

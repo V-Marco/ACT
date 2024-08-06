@@ -132,14 +132,42 @@ class Simulator:
 
         # Set CI
         if parameters.CI["type"] == "constant":
-            cell._add_constant_CI(parameters.CI["amp"], parameters.CI["dur"], parameters.CI["delay"], parameters.h_tstop)
+            cell._add_constant_CI(parameters.CI["amp"], parameters.CI["dur"], parameters.CI["delay"], parameters.h_tstop, parameters.h_dt)
         else:
             raise NotImplementedError
         
         # If this is a train cell, load gs to set
         if not parameters.set_g_to == None and not len(parameters.set_g_to) == 0:
+            print(f"Setting G: {parameters.set_g_to[parameters.sim_idx][0]} to {parameters.set_g_to [parameters.sim_idx][1]}")
             cell._set_g(parameters.set_g_to[parameters.sim_idx][0], parameters.set_g_to [parameters.sim_idx][1])
 
+        for sec in cell.all:
+            cm_value = getattr(sec, 'cm', None)
+            if cm_value is not None:
+                print(f"Capacitance (cm) of soma: {cm_value}")
+            else:
+                print("Capacitance (cm) attribute not found in soma")
+            
+            gl_value = getattr(sec, "gbar_leak", None)
+            if gl_value is not None:
+                print(f"Leak Conductance (Mho/cm^2) of soma: {gl_value}")
+            else:
+                print("Leak Conductance (Mho/cm^2) attribute not found in soma")
+                
+            el_value = getattr(sec, "eleak_leak", None)
+            if el_value is not None:
+                print(f"Leak Reversal (mV) of soma: {el_value}")
+            else:
+                print("Leak Reversal (mV) attribute not found in soma")
+                
+            cell.set_surface_area()
+            cell_area = cell.cell_area
+
+            if cell_area != 0:
+                print(f"Cell Area (cm^2) of soma: {cell_area}")
+            else:
+                print("Cell Area (cm^2) attribute not found in soma")
+                
         #print_mechanism_conductances(cell.soma[0])
         # Simulate
         h.finitialize(h.v_init)
@@ -147,9 +175,9 @@ class Simulator:
         V, I, g = cell.get_output()
 
         # Force 1 ms resolution and save
-        out = np.zeros((parameters.h_tstop, 3))
-        out[:, 0] = V[::int(1 / parameters.h_dt)][:parameters.h_tstop]
-        out[:, 1] = I[:parameters.h_tstop]
+        out = np.zeros((int(parameters.h_tstop / parameters.h_dt), 3))
+        out[:, 0] = V[:int(parameters.h_tstop / parameters.h_dt)]
+        out[:, 1] = I[:int(parameters.h_tstop / parameters.h_dt)]
         out[:len(g), 2] = g
         out[len(g):, 2] = np.nan
 

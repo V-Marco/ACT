@@ -165,6 +165,7 @@ class DataProcessor:
         )
         
         # Cell area
+        train_cell._build_cell()
         train_cell.set_surface_area()            # cm^2
 
         tau = index_v_tau * dt                   # ms
