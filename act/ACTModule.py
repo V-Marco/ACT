@@ -192,6 +192,8 @@ class ACTModule:
                 )
             rf.fit(X_train, Y_train)
             
+            self.rf_model = rf
+            
             # Evaluate the model performance
             n_sim_combos = 1
             for param in self.optim_params['g_ranges_slices']:
@@ -233,9 +235,11 @@ class ACTModule:
             for j in range(len(predictions[i])):
                 predictions[i][j] = round(predictions[i][j], 15)
                 
-        print(f"Predicted Conductances for each current injection intensity: {predictions}")
+        print("Predicted Conductances for each current injection intensity: ")
+        print(predictions)
 
         return predictions
+    
     
     def pickle_rf(self, rf_model, filename):
         with open(filename, 'wb') as file:
@@ -243,7 +247,11 @@ class ACTModule:
 
 
     def simulate_eval_cells(self, eval_cell: TrainCell, predictions):
+        # We need to clear out the set_g list which carries over the traing list.
+        self.sim_params['set_g_to'] = []
+        
         simulator = Simulator(self.output_folder_name)
+        sim_index = 0
         for i in range(len(predictions)):
             for j in range(len(self.sim_params['CI_amps'])):
                 # Set parameters from the grid
@@ -252,7 +260,7 @@ class ACTModule:
                     eval_cell, 
                     SimulationParameters(
                         sim_name = "prediction_eval"+str(i),
-                        sim_idx = i * len(predictions) + j,
+                        sim_idx = sim_index,
                         h_v_init = self.sim_params['h_v_init'], # (mV)
                         h_tstop = self.sim_params['h_tstop'],  # (ms)
                         h_dt = self.sim_params['h_dt'], # (ms)
@@ -266,6 +274,8 @@ class ACTModule:
                         set_g_to=self.sim_params['set_g_to']
                     )
                 )
+                sim_index+=1
+                
         simulator.run(self.train_cell.mod_folder)
 
         dp = DataProcessor()
@@ -282,7 +292,7 @@ class ACTModule:
         V_target = dataset[:,:,0]
 
         target_frequencies = dp.get_fi_curve(V_target, self.sim_params['CI_amps'], inj_dur=self.sim_params['CI_dur']).flatten()
-
+        
         # Get train2 Cell Frequencies
         FI_data = []
         for i in range(len(predictions)):
@@ -302,6 +312,9 @@ class ACTModule:
         fi_mae = []
         for fi in list_of_freq:
             fi_mae.append(metrics.mae_score(target_frequencies, fi))
+        
+        print("FI curve MAE for each prediction: ")
+        print(fi_mae)
 
         g_best_idx = fi_mae.index(min(fi_mae))
         

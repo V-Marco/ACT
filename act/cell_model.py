@@ -7,7 +7,7 @@ from typing import List, TypedDict
 
 class ACTCellModel:
 
-    def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list, passive_properties: PassiveProperties = None, cell_area = None, predicted_g: dict = None):
+    def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list, passive_properties: PassiveProperties = None, cell_area = None):
 
         # Hoc cell
         self.hoc_file = hoc_file
@@ -15,8 +15,6 @@ class ACTCellModel:
         self.cell_name = cell_name
         self.passive_properties = passive_properties
         self.cell_area = cell_area
-        self.predicted_g = predicted_g
-        self.all = None
 
         # Current injection objects
         self.CI = []
@@ -79,7 +77,7 @@ class ACTCellModel:
     def _add_constant_CI(self, amp: float, dur: int, delay: int, sim_time: int, dt: float) -> None:
         inj = h.IClamp(self.soma[0](0.5))
         inj.amp = amp; inj.dur = dur; inj.delay = delay
-        print(f"inj.amp = {amp} | inj.dur = {dur} | inj.delay = {delay}")
+        #print(f"inj.amp = {amp} | inj.dur = {dur} | inj.delay = {delay}")
         self.CI.append(inj)
         
         delay_steps = int(delay / dt)
@@ -123,37 +121,31 @@ class ACTCellModel:
         for sec in self.all:
             # Setting e_leak
             if (passive_props.V_rest) and (passive_props.leak_reversal_variable):
-                print(f"Setting {passive_props.leak_reversal_variable} = {passive_props.V_rest}")
+                #print(f"Setting {passive_props.leak_reversal_variable} = {passive_props.V_rest}")
                 setattr(sec, passive_props.leak_reversal_variable, passive_props.V_rest)
             else:
-                print(
-                    f"Skipping analytical setting of e_leak variable. V_rest and/or leak_reversal_variable not specified."
-                )
+                print(f"Skipping analytical setting of e_leak variable. V_rest and/or leak_reversal_variable not specified.")
                 
             # Setting g_leak
             if (passive_props.g_bar_leak) and (passive_props.leak_conductance_variable):
-                print(f"Setting {passive_props.leak_conductance_variable} = {passive_props.g_bar_leak}")
+                #print(f"Setting {passive_props.leak_conductance_variable} = {passive_props.g_bar_leak}")
                 setattr(sec, passive_props.leak_conductance_variable, passive_props.g_bar_leak)
             elif (passive_props.R_in) and (passive_props.cell_area):
                 g_bar_leak = (1/passive_props.R_in) / passive_props.cell_area
-                print(f"Setting {passive_props.leak_conductance_variable} = {g_bar_leak}")
+                #print(f"Setting {passive_props.leak_conductance_variable} = {g_bar_leak}")
                 setattr(sec, passive_props.leak_conductance_variable, g_bar_leak)
             else:
-                print(
-                    f"Skipping analytical setting of g_bar_leak variable. g_bar_leak, leak_conductance_variable, R_in, and/or cell_area not specified."
-                )       
+                print(f"Skipping analytical setting of g_bar_leak variable. g_bar_leak, leak_conductance_variable, R_in, and/or cell_area not specified.")       
             
             if (passive_props.Cm):
-                print(f"Setting cm = {passive_props.Cm}")
+                #print(f"Setting cm = {passive_props.Cm}")
                 setattr(sec, "cm", passive_props.Cm)
             elif (passive_props.R_in) and (passive_props.tau):
                 Cm = passive_props.tau * (1 / passive_props.R_in)
-                print(f"Setting cm = {Cm}")
+                #print(f"Setting cm = {Cm}")
                 setattr(sec, "cm", Cm)
             else:
-                print(
-                    f"Skipping analytical setting of cm. Cm, R_in and/or tau not specified."
-                )  
+                print(f"Skipping analytical setting of cm. Cm, R_in and/or tau not specified.")  
 
 class TargetCell(ACTCellModel):
 

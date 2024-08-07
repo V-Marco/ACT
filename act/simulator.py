@@ -101,7 +101,6 @@ class Simulator:
         
 
     def _run_job(self, cell: ACTCellModel, parameters: SimParams) -> None:
-
         # Create this simulation's folder
         os.makedirs(parameters.path, exist_ok=True)
 
@@ -116,12 +115,6 @@ class Simulator:
         h.dt = parameters.h_dt
         h.steps_per_ms = 1 / h.dt
         h.v_init = parameters.h_v_init
-        
-        print(f"h.celsius: {h.celsius}")
-        print(f"h.tstop: {h.tstop}")
-        print(f"h.dt: {h.dt}")
-        print(f"h.steps_per_ms: {h.steps_per_ms}")
-        print(f"h.v_init: {h.v_init}")
 
         # Build the cell
         cell._build_cell()
@@ -138,35 +131,9 @@ class Simulator:
         
         # If this is a train cell, load gs to set
         if not parameters.set_g_to == None and not len(parameters.set_g_to) == 0:
-            print(f"Setting G: {parameters.set_g_to[parameters.sim_idx][0]} to {parameters.set_g_to [parameters.sim_idx][1]}")
-            cell._set_g(parameters.set_g_to[parameters.sim_idx][0], parameters.set_g_to [parameters.sim_idx][1])
+            #print(f"Setting G: {parameters.set_g_to[parameters.sim_idx][0]} to {parameters.set_g_to [parameters.sim_idx][1]}")
+            cell._set_g(parameters.set_g_to[parameters.sim_idx][0], parameters.set_g_to [parameters.sim_idx][1])   
 
-        for sec in cell.all:
-            cm_value = getattr(sec, 'cm', None)
-            if cm_value is not None:
-                print(f"Capacitance (cm) of soma: {cm_value}")
-            else:
-                print("Capacitance (cm) attribute not found in soma")
-            
-            gl_value = getattr(sec, "gbar_leak", None)
-            if gl_value is not None:
-                print(f"Leak Conductance (Mho/cm^2) of soma: {gl_value}")
-            else:
-                print("Leak Conductance (Mho/cm^2) attribute not found in soma")
-                
-            el_value = getattr(sec, "eleak_leak", None)
-            if el_value is not None:
-                print(f"Leak Reversal (mV) of soma: {el_value}")
-            else:
-                print("Leak Reversal (mV) attribute not found in soma")
-                
-            cell.set_surface_area()
-            cell_area = cell.cell_area
-
-            if cell_area != 0:
-                print(f"Cell Area (cm^2) of soma: {cell_area}")
-            else:
-                print("Cell Area (cm^2) attribute not found in soma")
                 
         #print_mechanism_conductances(cell.soma[0])
         # Simulate

@@ -68,9 +68,16 @@ class PassivePropertiesModule():
                 
                 V = dataset[:,0]
                 
+                train_cell_copy = TrainCell(
+                    hoc_file=self.train_cell.hoc_file,
+                    mod_folder=self.train_cell.mod_folder,
+                    cell_name=self.train_cell.cell_name,
+                    g_names=self.train_cell.g_names
+                )
+                
                 I_tend = self.sim_params['CI_delay'] + self.sim_params['CI_dur']
                 props = dp.calculate_passive_properties(V, 
-                                                        self.train_cell,
+                                                        train_cell_copy,
                                                         self.sim_params['h_dt'],
                                                         I_tend,
                                                         self.sim_params['CI_delay'],
