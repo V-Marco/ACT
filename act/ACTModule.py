@@ -229,11 +229,6 @@ class ACTModule:
 
         X_test = features_target
         predictions = rf.predict(X_test)
-        
-        # Round off all predictions to 15 decimal places
-        for i in range(len(predictions)):
-            for j in range(len(predictions[i])):
-                predictions[i][j] = round(predictions[i][j], 15)
                 
         print("Predicted Conductances for each current injection intensity: ")
         print(predictions)
@@ -324,7 +319,7 @@ class ACTModule:
         os.makedirs(results_folder, exist_ok=True)
         
         data_to_save = np.array([list_of_freq[g_best_idx], target_frequencies])
-        filepath = os.path.join(results_folder, f"frequency_data_{g_best_idx}.npy")
+        filepath = os.path.join(results_folder, f"frequency_data.npy")
         
         np.save(filepath, data_to_save)
         

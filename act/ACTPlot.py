@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 from act.DataProcessor import DataProcessor
 from act.Metrics import Metrics
 from matplotlib import cm
+import plotly.graph_objects as go
 
 def create_overlapped_v_plot(x, y1, y2, module_foldername, title, filename):
     plt.figure(figsize=(8, 6))
@@ -202,6 +203,8 @@ def plot_training_fi_mae_surface_spiker_cell(target_data_filepath, training_data
 
     # Plot the surface
     surf = ax.plot_surface(X, Y, Z, cmap=cm.viridis, linewidth=0, antialiased=False)
+    
+    ax.view_init(elev=30, azim=60)
 
     # Customize the z axis.
     ax.set_xlabel("gNA_bar")
@@ -213,6 +216,23 @@ def plot_training_fi_mae_surface_spiker_cell(target_data_filepath, training_data
     cbar.set_label('MAE')
 
     plt.title('MAE Surface Plot')
-    fig.savefig(results_filename)
+    # Save an interactive figure
+    fig2 = go.Figure(data=[go.Surface(z=Z, x=X, y=Y, colorscale='Viridis')])
+
+    # Customize layout
+    fig2.update_layout(
+        title='MAE Surface Plot',
+        scene=dict(
+            xaxis_title='gNA_bar',
+            yaxis_title='gK_bar',
+            zaxis_title='MAE'
+        ),
+        coloraxis_colorbar=dict(
+            title='MAE'
+        )
+    )
+
+    # Save the plot as an interactive HTML file
+    fig2.write_html(results_filename)
     plt.show()
     
