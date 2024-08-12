@@ -70,6 +70,6 @@ class Metrics:
             amps = amps[amps >= 0]
             spikes = spikes[non_neg_idx]
 
-        spikes = (1000.0 / inj_dur) * spikes  # Convert to Hz
+        spikes_fi = (1000.0 / inj_dur) * spikes  # Convert to Hz
 
-        return spikes
+        return spikes_fi

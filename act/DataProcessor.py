@@ -536,7 +536,7 @@ class DataProcessor:
 
         frequencies =  num_spikes / (inj_dur / 1000)  # Convert to Hz: spikes / time (sec)
         
-        print(f"Number of spikes: {num_spikes}")
-        print(f"Frequencies: {frequencies}")
+        #print(f"Number of spikes: {num_spikes}")
+        #print(f"Frequencies: {frequencies}")
 
         return frequencies
