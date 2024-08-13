@@ -375,7 +375,7 @@ class DataProcessor:
         return traces
 
 
-    def extract_spike_features(self, V, spike_threshold=0, n_spikes=20):
+    def extract_spike_features(self, V, spike_threshold=0, n_spikes=20, dt=1):
         num_spikes_list = []
         interspike_times_list = []
         first_n_spikes_scaled_list = []
@@ -386,13 +386,14 @@ class DataProcessor:
 
             threshold_crossings = np.diff((V_sample > spike_threshold).astype(int), axis=1)
             num_spikes = np.sum(threshold_crossings > 0, axis=1)
-            interspike_times = np.zeros((V_sample.shape[0], 1))
+            
             for j in range(threshold_crossings.shape[0]):
                 spike_times = np.where(threshold_crossings[j, :] > 0)[0]
                 if len(spike_times) > 1:
-                    interspike_times[j, 0] = np.mean(np.diff(spike_times))
+                    intervals = np.diff(spike_times) * dt
+                    interspike_times = intervals
                 else:
-                    interspike_times[j, 0] = 0
+                    interspike_times = []
 
             first_n_spikes = np.zeros((V_sample.shape[0], n_spikes))
             avg_spike_min = np.zeros((V_sample.shape[0], 1))
@@ -413,8 +414,12 @@ class DataProcessor:
             
             first_n_spikes_scaled = first_n_spikes / V_sample.shape[1]
             
+            #print(n_spikes)
+            #print(interspike_times)
+            #print(interspike_times[:n_spikes])
+            
             num_spikes_list.append(num_spikes)
-            interspike_times_list.append(interspike_times)
+            interspike_times_list.append(interspike_times[:n_spikes])
             first_n_spikes_scaled_list.append(first_n_spikes_scaled.squeeze(0))
             avg_spike_min_list.append(avg_spike_min)
             avg_spike_max_list.append(avg_spike_max)

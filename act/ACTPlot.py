@@ -55,6 +55,7 @@ def plot_fi_comparison(fi_data_filepath, amps):
     plt.savefig(results_folder + "FI_Curve_Comparison.png")
     plt.close()
     
+    
 def plot_training_v_mae_scatter_spiker_cell(target_data_filepath, training_data_filepath, delay, dt):
     # load target data
     target_dataset = np.load(target_data_filepath)

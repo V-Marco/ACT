@@ -73,3 +73,42 @@ class Metrics:
         spikes_fi = (1000.0 / inj_dur) * spikes  # Convert to Hz
 
         return spikes_fi
+    
+    def print_interspike_interval_comparison(self, prediction_data_filepath, target_data_filepath, amps, first_n_spikes, dt):
+
+        dp = DataProcessor()
+        
+        # Load target data
+        target_dataset = np.load(target_data_filepath)
+        
+        target_V = target_dataset[:,:,0]
+        
+        # Load prediction data
+        pred_dataset = np.load(prediction_data_filepath)
+        
+        pred_V = pred_dataset[:,:,0]
+        
+        isi_maes = []
+        
+        _, isi_target, _, _, _ = dp.extract_spike_features(target_V, n_spikes=first_n_spikes, dt=dt)
+        
+        _, isi_prediction, _, _, _ = dp.extract_spike_features(pred_V, n_spikes=first_n_spikes, dt=dt)
+        
+        print(f"Interspike times (Target): {np.array(isi_target)}")
+        
+        print(f"Interspike times (Prediction): {np.array(isi_prediction)}")
+            
+        for i in range(len(amps)):
+            # Get mae between the isi (target/pred) for first n spikes
+            isi_maes.append(self.mae_score(np.array(isi_target[i]), np.array(isi_prediction[i])))
+            
+        print(f"MAE for each I injection: {isi_maes}")
+            
+        # Now get the mean/stdev mae for the 3 I injection intensities
+        mean_isi = np.mean(isi_maes)
+        stdev_isi = np.std(isi_maes)
+        
+        print(f"Mean interspike-interval MAE: {mean_isi}")
+        print(f"Standard Deviation interspike-interval MAE: {stdev_isi}")
+        
+        return mean_isi, stdev_isi
