@@ -104,6 +104,7 @@ class OptimizationParameters(TypedDict):
     list_of_features: List[str]
     prediction_eval_method: str
     rf_model: RandomForestOptimizer
+    save_file: str
 
 class SummaryFeatures:
     spike_threshold: int  # (mV)

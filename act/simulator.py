@@ -85,7 +85,7 @@ class Simulator:
                         print(str(e))
                         raise 
 
-            pool = Pool(processes = cpu_count() - 90)
+            pool = Pool(processes = int(cpu_count() * 0.6))
             pool.map(unwrap_self_run_job, zip([self] * len(self.pool), self.pool))
             pool.close()
             pool.join()

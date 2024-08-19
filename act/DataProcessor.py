@@ -339,6 +339,7 @@ class DataProcessor:
         # Extract spike summary features
         (   num_spikes_simulated,
             simulated_interspike_times,
+            mean_interspike_time,
             first_n_spikes, 
             avg_spike_min,
             avg_spike_max
@@ -347,7 +348,7 @@ class DataProcessor:
         features = np.stack(
                 (
                     np.array(num_spikes_simulated).flatten(),
-                    np.array(simulated_interspike_times).flatten(),
+                    np.array(mean_interspike_time).flatten(),
                     np.array(avg_spike_min).flatten(),
                     np.array(avg_spike_max).flatten(),
                 )
@@ -378,6 +379,7 @@ class DataProcessor:
     def extract_spike_features(self, V, spike_threshold=0, n_spikes=20, dt=1):
         num_spikes_list = []
         interspike_times_list = []
+        mean_interspike_times_list = []
         first_n_spikes_scaled_list = []
         avg_spike_min_list = []
         avg_spike_max_list = []
@@ -394,7 +396,7 @@ class DataProcessor:
                     interspike_times = intervals
                 else:
                     interspike_times = []
-
+            mean_interval = np.mean(interspike_times)
             first_n_spikes = np.zeros((V_sample.shape[0], n_spikes))
             avg_spike_min = np.zeros((V_sample.shape[0], 1))
             avg_spike_max = np.zeros((V_sample.shape[0], 1))
@@ -414,19 +416,16 @@ class DataProcessor:
             
             first_n_spikes_scaled = first_n_spikes / V_sample.shape[1]
             
-            #print(n_spikes)
-            #print(interspike_times)
-            #print(interspike_times[:n_spikes])
-            
             num_spikes_list.append(num_spikes)
             interspike_times_list.append(interspike_times[:n_spikes])
+            mean_interspike_times_list.append(mean_interval)
             first_n_spikes_scaled_list.append(first_n_spikes_scaled.squeeze(0))
             avg_spike_min_list.append(avg_spike_min)
             avg_spike_max_list.append(avg_spike_max)
 
         first_n_spikes_final = np.stack(first_n_spikes_scaled_list)
 
-        return np.array(num_spikes_list), np.array(interspike_times_list), first_n_spikes_final, np.array(avg_spike_min_list), np.array(avg_spike_max_list)
+        return np.array(num_spikes_list), np.array(interspike_times_list), np.array(mean_interspike_times_list),first_n_spikes_final, np.array(avg_spike_min_list), np.array(avg_spike_max_list)
     
     def get_amplitude_frequency(self, V, inj_dur, inj_start, fs=1000):
         amplitude, frequency = self.extract_amplitude_frequency(V, inj_dur, inj_start, fs=fs)
@@ -529,6 +528,7 @@ class DataProcessor:
 
         (   num_spikes,
             interspike_times,
+            mean_interspike_times,
             first_n_spikes, 
             avg_spike_min,
             avg_spike_max
@@ -545,3 +545,63 @@ class DataProcessor:
         #print(f"Frequencies: {frequencies}")
 
         return frequencies
+    
+    
+    def save_to_json(self, value, key, filename):
+        
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        new_entry = {key: value}
+        
+        # Get existing data if available
+        try:
+            with open(filename, 'r') as file:
+                existing_data = json.load(file)
+        except FileNotFoundError:
+            existing_data = {}
+        
+        existing_data.update(new_entry)
+        
+        # Write all the data back to the file
+        with open(filename, 'w') as file:
+            json.dump(existing_data, file, indent=4)
+            
+    def load_metric_data(filenames):
+        num_spikes_in_isi_calc_list = []
+        mean_interspike_interval_mae_list = []
+        stdev_interspike_interval_mae_list = []
+        final_g_prediction_list = []
+        rf_mean_g_score_mae_list = []
+        rf_stdev_g_score_mae_list = []
+        prediction_evaluation_method_list = []
+        final_prediction_fi_mae_list = []
+        final_prediction_voltage_mae_list = []
+        module_runtime_list = []
+
+        # Go through each metrics file and get the data
+        for filename in filenames:
+            with open(filename, 'r') as file:
+                data = json.load(file)
+            
+            num_spikes_in_isi_calc_list.append(data.get("num_spikes_in_isi_calc"))
+            mean_interspike_interval_mae_list.append(data.get("mean_interspike_interval_mae"))
+            stdev_interspike_interval_mae_list.append(data.get("stdev_interspike_interval_mae"))
+            final_g_prediction_list.append(data.get("final_g_prediction"))
+            rf_mean_g_score_mae_list.append(data.get("rf_mean_g_score_mae"))
+            rf_stdev_g_score_mae_list.append(data.get("rf_stdev_g_score_mae"))
+            prediction_evaluation_method_list.append(data.get("prediction_evaluation_method"))
+            final_prediction_fi_mae_list.append(data.get("final_prediction_fi_mae"))
+            final_prediction_voltage_mae_list.append(data.get("final_prediction_voltage_mae"))
+            module_runtime_list.append(data.get("module_runtime"))
+
+        return (
+            num_spikes_in_isi_calc_list, 
+            mean_interspike_interval_mae_list, 
+            stdev_interspike_interval_mae_list, 
+            final_g_prediction_list, 
+            rf_mean_g_score_mae_list,
+            rf_stdev_g_score_mae_list,
+            prediction_evaluation_method_list, 
+            final_prediction_fi_mae_list, 
+            final_prediction_voltage_mae_list, 
+            module_runtime_list
+        )

@@ -2,6 +2,7 @@ from sklearn.model_selection import RepeatedKFold
 from sklearn.model_selection import cross_val_score
 import numpy as np
 from act.DataProcessor import DataProcessor
+import json
 
 class Metrics:
     def __init__(self):
@@ -41,7 +42,7 @@ class Metrics:
             np.mean(np.abs(target_data - simulated_data))
         )
     
-    def evaluate_random_forest(self, reg, X_train, Y_train, random_state=42, n_repeats=3, n_splits=10):
+    def evaluate_random_forest(self, reg, X_train, Y_train, random_state=42, n_repeats=3, n_splits=10, save_file=None):
         print("Evaluating random forest")
         # evaluate the model
         cv = RepeatedKFold(n_splits=n_splits, n_repeats=n_repeats, random_state=random_state)
@@ -56,25 +57,15 @@ class Metrics:
         ))
         # report performance
         print("MAE: %.6f (%.6f)" % (np.mean(n_scores), np.std(n_scores)))
-
-    def get_fi_curve(trace, amps, ignore_negative=True, inj_dur=1000):
-        """
-        Returns the spike counts per amp.
-        inj_dur is the duration of the current injection
-        """
+        
         dp = DataProcessor()
-        spikes, interspike_times = dp.get_spike_stats(trace)
-
-        if ignore_negative:
-            non_neg_idx = (amps >= 0).nonzero().flatten()
-            amps = amps[amps >= 0]
-            spikes = spikes[non_neg_idx]
-
-        spikes_fi = (1000.0 / inj_dur) * spikes  # Convert to Hz
-
-        return spikes_fi
+        if not save_file == None:
+            print(f"Saving rf mean/stdev scores to {save_file}")
+            dp.save_to_json(np.mean(n_scores), "rf_mean_g_score_mae", save_file)
+            dp.save_to_json(np.std(n_scores), "rf_stdev_g_score_mae", save_file)
     
-    def print_interspike_interval_comparison(self, prediction_data_filepath, target_data_filepath, amps, first_n_spikes, dt):
+    
+    def print_interspike_interval_comparison(self, prediction_data_filepath, target_data_filepath, amps, first_n_spikes, dt, save_file=None):
 
         dp = DataProcessor()
         
@@ -90,9 +81,9 @@ class Metrics:
         
         isi_maes = []
         
-        _, isi_target, _, _, _ = dp.extract_spike_features(target_V, n_spikes=first_n_spikes, dt=dt)
+        _, isi_target, _, _, _, _ = dp.extract_spike_features(target_V, n_spikes=first_n_spikes, dt=dt)
         
-        _, isi_prediction, _, _, _ = dp.extract_spike_features(pred_V, n_spikes=first_n_spikes, dt=dt)
+        _, isi_prediction, _, _, _, _ = dp.extract_spike_features(pred_V, n_spikes=first_n_spikes, dt=dt)
         
         print(f"Interspike times (Target): {np.array(isi_target)}")
         
@@ -100,7 +91,7 @@ class Metrics:
             
         for i in range(len(amps)):
             # Get mae between the isi (target/pred) for first n spikes
-            isi_maes.append(self.mae_score(np.array(isi_target[i]), np.array(isi_prediction[i])))
+            isi_maes.append(self.mae_score(np.array(isi_target[0,i]), np.array(isi_prediction[0,i])))
             
         print(f"MAE for each I injection: {isi_maes}")
             
@@ -111,4 +102,80 @@ class Metrics:
         print(f"Mean interspike-interval MAE: {mean_isi}")
         print(f"Standard Deviation interspike-interval MAE: {stdev_isi}")
         
+        if not save_file == None:
+            dp = DataProcessor()
+            dp.save_to_json(first_n_spikes, "num_spikes_in_isi_calc", save_file)
+            dp.save_to_json(mean_isi, "mean_interspike_interval_mae", save_file)
+            dp.save_to_json(stdev_isi, "stdev_interspike_interval_mae", save_file)
+            
         return mean_isi, stdev_isi
+    
+    def average_metrics_across_seeds(metric_filename_list, save_filename):
+        
+        dp = DataProcessor()
+        
+        # Load in as much data as possible from the metrics files
+        (
+            num_spikes_in_isi_calc_list, 
+            mean_interspike_interval_mae_list, 
+            stdev_interspike_interval_mae_list, 
+            final_g_prediction_list, 
+            rf_mean_g_score_mae_list,
+            rf_stdev_g_score_mae_list,
+            prediction_evaluation_method_list, 
+            final_prediction_fi_mae_list, 
+            final_prediction_voltage_mae_list, 
+            module_runtime_list
+        ) = dp.load_metric_data(metric_filename_list)
+        
+        # Average/STDEV of the MAE of the final predicted conductances
+        avg_rf_mean_g_score_mae = np.mean(rf_mean_g_score_mae_list)
+        stdev_rf_mean_g_score_mae = np.std(rf_mean_g_score_mae_list)
+        
+        avg_rf_stdev_g_score_mae = np.mean(rf_stdev_g_score_mae_list)
+        stdev_rf_stdev_g_score_mae = np.std(rf_stdev_g_score_mae_list)
+        
+        # Average/STDEV of the MAE of the final predicted voltage traces
+        avg_voltage_mae = np.mean(final_prediction_voltage_mae_list)
+        stdev_voltage_mae = np.std(final_prediction_voltage_mae_list)
+        
+        # Average/STDEV of the MAE of the final predicted FI values
+        avg_fi_mae = np.mean(final_prediction_fi_mae_list)
+        stdev_fi_mae = np.std(final_prediction_fi_mae_list)
+        
+        # Average/STDEV of the MAE of the final predicted interspike intervals
+        avg_mean_isi_mae = np.mean(mean_interspike_interval_mae_list)
+        stdev_mean_isi_mae = np.std(mean_interspike_interval_mae_list)
+        
+        avg_stdev_isi_mae = np.mean(stdev_interspike_interval_mae_list)
+        stdev_stdev_isi_mae = np.std(stdev_interspike_interval_mae_list)
+        
+        # Average/STDEV of the Module Runtime
+        avg_runtime = np.mean(module_runtime_list)
+        stdev_runtime = np.std(module_runtime_list)
+        
+        # Write all of these values to an output json file
+        data_to_save = {
+            "final_g_predictions": final_g_prediction_list,
+            "avg_rf_mean_g_score_mae": avg_rf_mean_g_score_mae,
+            "stdev_rf_mean_g_score_mae": stdev_rf_mean_g_score_mae,
+            "avg_rf_stdev_g_score_mae": avg_rf_stdev_g_score_mae,
+            "stdev_rf_stdev_g_score_mae": stdev_rf_stdev_g_score_mae,
+            "prediction_evaluation_methods": prediction_evaluation_method_list,
+            "avg_voltage_mae": avg_voltage_mae,
+            "stdev_voltage_mae": stdev_voltage_mae,
+            "avg_fi_mae ": avg_fi_mae ,
+            "stdev_fi_mae": stdev_fi_mae,
+            "num_spikes_in_isi_calcs": num_spikes_in_isi_calc_list,
+            "avg_mean_isi_mae": avg_mean_isi_mae,
+            "stdev_mean_isi_mae": stdev_mean_isi_mae,
+            "avg_stdev_isi_mae": avg_stdev_isi_mae,
+            "stdev_stdev_isi_mae": stdev_stdev_isi_mae,
+            "avg_module_runtime": avg_runtime,
+            "stdev__module_runtime": stdev_runtime
+        }
+        
+        with open(save_filename, 'w') as json_file:
+            json.dump(data_to_save, json_file, indent=4)
+        
+        print(f"Saved metrics to: {save_filename}")

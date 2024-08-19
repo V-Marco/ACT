@@ -1,4 +1,6 @@
 import os
+import time
+from datetime import timedelta
 
 from act.cell_model import TrainCell, TargetCell
 import matplotlib.pyplot as plt
@@ -29,6 +31,7 @@ class ACTModule:
         
 
     def run(self):
+        start_time = time.time()
         print("RUNNING THE MODULE")
         print("LOADING TARGET TRACES")
         self.convert_csv_to_npy()
@@ -43,19 +46,46 @@ class ACTModule:
         self.simulate_eval_cells(self.train_cell, prediction)
 
         print("SELECTING BEST PREDICTION")
+        dp = DataProcessor()
         prediction_eval_method = self.optim_params.get('prediction_eval_method', 'fi_curve')
+        save_file = self.optim_params.get('save_file', None)
+        if not save_file == None:
+            dp.save_to_json(prediction_eval_method, "prediction_evaluation_method", save_file)
+            
         if prediction_eval_method == 'fi_curve':
             predicted_g_data_file, best_prediction = self.evaluate_fi_curves(prediction)
+            # save v_trace mae anyway
+            self.evaluate_v_traces(prediction)
         elif prediction_eval_method == 'voltage':
             predicted_g_data_file, best_prediction = self.evaluate_v_traces(prediction)
+            # save fi mae anyway
+            self.evaluate_fi_curves(prediction)
         else:
             print("prediction_eval_method must be 'fi_curve' or 'voltage'.")
 
         # Save predictions as a conductance dictionary in the train cell
         param_names_list = [param['param'] for param in self.optim_params['g_ranges_slices']]
-        self.train_cell.predicted_g = dict(zip(param_names_list, best_prediction))
+        final_prediction = dict(zip(param_names_list, best_prediction))
+        self.train_cell.predicted_g = final_prediction
         
         print(self.train_cell.predicted_g)
+        
+        # Also save the prediction to a json file for more permanent recording
+        save_file = self.optim_params.get('save_file', None)
+        if not save_file == None:
+            dp.save_to_json(final_prediction, "final_g_prediction", save_file)
+            
+        end_time = time.time()
+        run_time = end_time - start_time
+        runtime_timedelta = timedelta(seconds=run_time)
+
+        # Format DD:HH:MM:SS
+        formatted_runtime = str(runtime_timedelta)
+        
+        print(f"Module runtime: {formatted_runtime}")
+        
+        if not save_file == None:
+            dp.save_to_json(formatted_runtime, "module_runtime", save_file)
         
         return predicted_g_data_file
 
@@ -204,12 +234,14 @@ class ACTModule:
                 n_splits = n_sim_combos
 
             metrics = Metrics()
+            save_file = self.optim_params.get('save_file', None)
             metrics.evaluate_random_forest(rf.model, 
                                         X_train, 
                                         Y_train, 
                                         random_state=self.optim_params.get('random_state', 42), 
                                         n_repeats=self.optim_params.get('eval_n_repeats', 3), 
-                                        n_splits=n_splits)
+                                        n_splits=n_splits,
+                                        save_file=save_file)
         else:
             try:
                 with open(self.rf_model, 'rb') as file:
@@ -326,6 +358,11 @@ class ACTModule:
         # Get the directory that holds the best prediction simulation data
         best_prediction_data_file = self.output_folder_name + "prediction_eval" + str(g_best_idx) + "/combined_out.npy"
         
+        dp = DataProcessor()
+        save_file = self.optim_params.get('save_file', None)
+        if not save_file == None:
+            dp.save_to_json(min(fi_mae), "final_prediction_fi_mae", save_file)
+        
         return best_prediction_data_file, predictions[g_best_idx]
     
     def evaluate_v_traces(self, predictions):
@@ -355,5 +392,9 @@ class ACTModule:
         g_best_idx = mean_mae_list.index(min(mean_mae_list))
         
         best_prediction_data_file = self.output_folder_name + "prediction_eval" + str(g_best_idx) + "/combined_out.npy"
+        
+        save_file = self.optim_params.get('save_file', None)
+        if not save_file == None:
+            dp.save_to_json(min(mean_mae_list), "final_prediction_voltage_mae", save_file)
 
         return best_prediction_data_file, predictions[g_best_idx]
