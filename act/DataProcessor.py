@@ -2,26 +2,22 @@ import os
 import json
 from io import StringIO
 import glob
+import warnings
 
 import numpy as np
 import pandas as pd
-from statsmodels.tsa.arima.model import ARIMA
+from scipy.signal import find_peaks
+from itertools import product
 
-from scipy import signal
 import timeout_decorator
 import multiprocessing as mp
 from tqdm import tqdm
+from statsmodels.tsa.arima.model import ARIMA
 
-from neuron import h
 from act.act_types import PassiveProperties
-from typing import Tuple
-from itertools import product
+from act.cell_model import ACTCellModel
 
-from act.act_types import SimulationParameters
-from act.cell_model import TrainCell, ACTCellModel
-from act.simulator import Simulator
 
-import warnings
 
 # Data Processor 
 # Broken into main sections:
@@ -36,7 +32,7 @@ import warnings
 #       a. ARIMA STATS  : methods for generating ARIMA stats from a numpy array of voltage traces
 #       b. VOLT  STATS  : 
 #       c. CURRENT STATS:
-# 3. VOLTAGE TRACE MANIPULATION AND FILTERING
+# 3. UTILS
 
 
 class DataProcessor:
@@ -49,90 +45,38 @@ class DataProcessor:
 
         # If a specific list is not provided, extract all features
         if(list_of_features is None):
-            list_of_features = ["i_mean_stdev", "v_spike_stats", "v_mean_potential", "v_amplitude_frequency", "v_arima_coefs"]
+            list_of_features = ["i_trace_stats", "v_trace_stats", "v_arima_coefs"]
 
         # I and V should be the same length
         columns = []
         summary_features = None
+        
+        def concatenate_features(existing_features, new_features):
+            if existing_features is None:
+                return new_features
+            else:
+                return np.concatenate((existing_features, new_features), axis=1)
        
         # Mean and StdDev of the current input trace as features
-        if "i_mean_stdev" in list_of_features and I is not None:
+        if "i_trace_stats" in list_of_features and I is not None:
             features, column_names = self.get_current_stats(I)
-            columns = columns + column_names
-            if(not isinstance(summary_features, np.ndarray)):
-                summary_features = features
-            else:
-                summary_features =  np.concatenate(
-                        (
-                            summary_features,
-                            features
-                        ),
-                        axis=0,
-                    )
+            columns += column_names
+            summary_features = concatenate_features(summary_features, features)
                 
         # Spike Features (Necessary Feature Extraction)
         # Includes number of spikes, interspike interval, average minimum spike height, and average max spike height
-        if "v_spike_stats" in list_of_features and V is not None:
-            features, column_names = self.get_spike_stats(V)
-            columns = columns + column_names
-            if(not isinstance(summary_features, np.ndarray)):
-                summary_features = features
-            else:
-                summary_features =  np.concatenate(
-                        (
-                            summary_features,
-                            features
-                        ),
-                        axis=0,
-                    )
-
-        # Mean potential of voltage trace as a feature
-        if "v_mean_potential" in list_of_features and V is not None:
-            features, column_names = self.get_mean_potential(V, inj_dur, inj_start)
-            columns = columns + column_names
-            if(not isinstance(summary_features, np.ndarray)):
-                summary_features = features
-            else:
-                summary_features =  np.concatenate(
-                        (
-                            summary_features,
-                            features
-                        ),
-                        axis=0,
-                    )
-
-        # Amplitude of voltage trace as a feature
-        if "v_amplitude_frequency" in list_of_features and V is not None:
-            features, column_names = self.get_amplitude_frequency(V, inj_dur, inj_start)
-            columns = columns + column_names
-            if(not isinstance(summary_features, np.ndarray)):
-                summary_features = features
-            else:
-                summary_features =  np.concatenate(
-                        (
-                            summary_features,
-                            features
-                        ),
-                        axis=0,
-                    )
+        if "v_trace_stats" in list_of_features and V is not None:
+            features, column_names = self.get_voltage_stats(V)
+            columns += column_names
+            summary_features = concatenate_features(summary_features, features)
 
         # ARIMA coefficients of voltage trace as features # Calculated as one unit for all voltage traces. utilizing multithreading
         if "v_arima_coefs" in list_of_features and (arima_file or V is not None):
             features, column_names = self.get_arima_features(V=V, arima_file=arima_file)
-            columns = columns + column_names
-            if(not isinstance(summary_features, np.ndarray)):
-                summary_features = features
-            else:
-                summary_features =  np.concatenate(
-                        (
-                            summary_features,
-                            features
-                        ),
-                        axis=0,
-                    )
+            columns += column_names
+            summary_features = concatenate_features(summary_features, features)
     
-        return np.transpose(summary_features), columns
-
+        return summary_features, columns
 
     #---------------------------------------------
     #PASSIVE PROPERTIES
@@ -157,7 +101,7 @@ class DataProcessor:
         v_diff = v_rest - v_final
         v_t_const = v_rest - (v_diff * 0.632)
 
-        # Find index of first occurance where the voltage is less than the time constant for tau
+        # Find index of the first occurance where the voltage is less than the time constant for tau
         # Looking only after the start of the step input (where index_v_rest is)
         index_v_tau = next(
             index for index, voltage_value in enumerate(list(V[index_v_rest:]))
@@ -166,28 +110,24 @@ class DataProcessor:
         
         # Cell area
         train_cell._build_cell()
-        train_cell.set_surface_area()            # cm^2
+        train_cell.set_surface_area()                               # cm^2
 
-        tau = index_v_tau * dt                   # ms
-        #print(f"tau: {tau}")
-        r_in = (v_diff) / (0 - I_intensity)      # MOhms
-        #print(f"r_in: {r_in}")
-        g_leak = 1 / r_in                        # uS
-        #print(f"g_leak: {g_leak}")
+        tau = index_v_tau * dt                                      # ms
+        r_in = (v_diff) / (0 - I_intensity)                         # MOhms
+        g_leak = 1 / r_in                                           # uS
         Cm = ((tau * g_leak)/1000) / train_cell.cell_area           # uF/cm^2
-        g_bar_leak = (g_leak / train_cell.cell_area) / 1e6  # was in uS/cm^2. Divide by 1e6 gives us S/cm^2
+        g_bar_leak = (g_leak / train_cell.cell_area) / 1e6  # g_leak in uS. Divide by 1e6 gives us S/cm^2
 
         # Initialize a dictionary to hold all of the passive properties data
         passive_props: PassiveProperties = PassiveProperties(
-            V_rest=float(v_rest),         # mV
-            R_in=float(r_in),             # MOhm
-            tau=float(tau),               # ms
-            Cm=float(Cm),                 # uF/cm^2
-            g_bar_leak=float(g_bar_leak), # S/cm^2
-            cell_area=train_cell.cell_area,
+            V_rest=float(v_rest),                                   # mV
+            R_in=float(r_in),                                       # MOhm
+            tau=float(tau),                                         # ms
+            Cm=float(Cm),                                           # uF/cm^2
+            g_bar_leak=float(g_bar_leak),                           # S/cm^2
+            cell_area=train_cell.cell_area,                         # cm^2
             leak_conductance_variable=leak_conductance_var,
-            leak_reversal_variable=leak_reversal_var,
-            
+            leak_reversal_variable=leak_reversal_var
         )
         
         return passive_props
@@ -205,9 +145,9 @@ class DataProcessor:
         elif isinstance(V, np.ndarray):
             # Generate new data
             self.generate_arima_coefficients(V)
-            # "./arima_output/arima_coefs.json"
+
             features = self.load_arima_coefs("./arima_output/arima_stats.json")
-            column_names =  [f"arima{i}" for i in range(features.shape[0])]
+            column_names =  [f"arima{i}" for i in range(len(features[0]))]
             return features, column_names
         else:
             print("Arima file not found and voltage data not provided.")
@@ -217,7 +157,7 @@ class DataProcessor:
     def load_arima_coefs(self, input_file):
         with open(input_file) as json_file:
             arima_dict = json.load(json_file)
-        return np.transpose(arima_dict["arima_coefs"])
+        return arima_dict["arima_coefs"]
     
 
     def generate_arima_coefficients(self, V, arima_order=(4,0,4), output_folder="./arima_output/", num_procs=64):
@@ -312,58 +252,124 @@ class DataProcessor:
     #CURRENT STATS
     #---------------------------------------------
     def get_current_stats(self, I, decimate_factor=None):
-
         I = self.apply_decimate_factor(I, decimate_factor)
-
-        features = self.extract_current_stats(I)
-
-        column_names = []
-        column_names.append("I_mean")
-        column_names.append("I_stdev")
+        
+        features = self.extract_i_traces_stats(I)
+        column_names = ["I_mean", "I_stdev"]
+        
         return features, column_names
 
-    def extract_current_stats(self, I):
+    def extract_i_traces_stats(self, I):
         I_features = []
-        for i in range(len(I)):
-            sample_features = np.array([np.mean(I[i]), np.std(I[i])])
+        for i_trace in I:
+            sample_features = np.array([np.mean(i_trace), np.std(i_trace)])
             I_features.append(sample_features)
-        return np.stack(I_features).T
+        return np.stack(I_features)
     
     #---------------------------------------------
     #VOLTAGE STATS
     #---------------------------------------------
-    def get_spike_stats(self, V, decimate_factor=None):
+    def get_voltage_stats(self, V, decimate_factor=None):
         
         V = self.apply_decimate_factor(V, decimate_factor)
 
         # Extract spike summary features
-        (   num_spikes_simulated,
-            simulated_interspike_times,
-            mean_interspike_time,
-            first_n_spikes, 
-            avg_spike_min,
-            avg_spike_max
-        ) = self.extract_spike_features(V)
+        (
+        num_of_spikes_list,
+        spike_times_list,
+        interspike_intervals_list,
+        min_spike_height_list,
+        max_spike_height_list,
+        avg_spike_height_list,
+        std_spike_height_list,
+        mean_voltage_list,
+        std_voltage_list
+        ) = self.extract_v_traces_features(V)
+        
+        # Dynamically create column names for each interval (length = 20 by default)
+        num_intervals = interspike_intervals_list.shape[1]
 
-        features = np.stack(
+        # Create column names for the interspike intervals
+        interval_column_names = [f"Interspike Interval {i+1}" for i in range(num_intervals)]
+
+        features = np.column_stack(
                 (
-                    np.array(num_spikes_simulated).flatten(),
-                    np.array(mean_interspike_time).flatten(),
-                    np.array(avg_spike_min).flatten(),
-                    np.array(avg_spike_max).flatten(),
+                    num_of_spikes_list,
+                    interspike_intervals_list,
+                    min_spike_height_list,
+                    max_spike_height_list,
+                    avg_spike_height_list,
+                    std_spike_height_list,
+                    mean_voltage_list,
+                    std_voltage_list
                 )
             )
 
-        column_names = [
-            "Num Spikes",
-            "Interspike Interval",
-            "Avg Min Spike Height",
-            "Avg Max Spike Height"
-        ]
+        column_names = ["Num Spikes"] + interval_column_names + ["Min Spike Height", "Max Spike Height", "Avg Spike Height", "Std Spike Height", "Mean Voltage", "Std Voltage"]
 
         return features, column_names
 
-    # Also useful for current traces if needed
+
+    def extract_v_traces_features(self, traces, spike_threshold = 0, num_spikes=20, dt=1):
+        num_of_spikes_list = []
+        spike_times_list = []
+        interspike_intervals_list = []
+        min_spike_height_list = []
+        max_spike_height_list = []
+        avg_spike_height_list = []
+        std_spike_height_list = []
+        mean_voltage_list = []
+        std_voltage_list = []
+        
+        pad_value=1e6
+        
+        for trace in traces:
+
+            peak_idxs, _ = find_peaks(trace, threshold=spike_threshold, height=spike_threshold)
+            
+            num_of_spikes = len(peak_idxs)
+            num_of_spikes_list.append(num_of_spikes)
+            
+            spike_times = peak_idxs[:num_spikes] * dt
+            spike_times_padded = np.pad(spike_times, (0, num_spikes - len(spike_times)), 'constant', constant_values=pad_value)
+            spike_times_list.append(spike_times_padded)
+            
+            interspike_intervals = np.diff(spike_times)
+            interspike_intervals_padded = np.pad(interspike_intervals, (0,num_spikes - 1 - len(interspike_intervals)), 'constant', constant_values=pad_value)
+            interspike_intervals_list.append(interspike_intervals_padded)
+            
+            spike_heights = trace[peak_idxs]
+            min_spike_height = np.min(spike_heights) if len(spike_heights) > 0 else np.nan
+            max_spike_height = np.max(spike_heights) if len(spike_heights) > 0 else np.nan
+            avg_spike_height = np.mean(spike_heights) if len(spike_heights) > 0 else np.nan
+            std_spike_height = np.std(spike_heights) if len(spike_heights) > 0 else np.nan
+            
+            min_spike_height_list.append(min_spike_height)
+            max_spike_height_list.append(max_spike_height)
+            avg_spike_height_list.append(avg_spike_height)
+            std_spike_height_list.append(std_spike_height)
+            
+            mean_voltage = np.mean(trace)
+            std_voltage = np.std(trace)
+            
+            mean_voltage_list.append(mean_voltage)
+            std_voltage_list.append(std_voltage)
+            
+        return (
+            np.array(num_of_spikes_list), 
+            np.array(spike_times_list), 
+            np.array(interspike_intervals_list), 
+            np.array(min_spike_height_list), 
+            np.array(max_spike_height_list),
+            np.array(avg_spike_height_list),
+            np.array(std_spike_height_list),
+            np.array(mean_voltage_list),
+            np.array(std_voltage_list)
+        )
+    
+    #---------------------------------------------
+    # UTILS 
+    #---------------------------------------------
     def apply_decimate_factor(self, traces, decimate_factor=None):
         if decimate_factor:
 
@@ -374,112 +380,6 @@ class DataProcessor:
                 traces, decimate_factor
             ).copy()  
         return traces
-
-
-    def extract_spike_features(self, V, spike_threshold=0, n_spikes=20, dt=1):
-        num_spikes_list = []
-        interspike_times_list = []
-        mean_interspike_times_list = []
-        first_n_spikes_scaled_list = []
-        avg_spike_min_list = []
-        avg_spike_max_list = []
-        for i in range(len(V)):
-            V_sample = np.expand_dims(np.array(V[i]), axis=0)
-
-            threshold_crossings = np.diff((V_sample > spike_threshold).astype(int), axis=1)
-            num_spikes = np.sum(threshold_crossings > 0, axis=1)
-            
-            for j in range(threshold_crossings.shape[0]):
-                spike_times = np.where(threshold_crossings[j, :] > 0)[0]
-                if len(spike_times) > 1:
-                    intervals = np.diff(spike_times) * dt
-                    interspike_times = intervals
-                else:
-                    interspike_times = []
-            mean_interval = np.mean(interspike_times)
-            first_n_spikes = np.zeros((V_sample.shape[0], n_spikes))
-            avg_spike_min = np.zeros((V_sample.shape[0], 1))
-            avg_spike_max = np.zeros((V_sample.shape[0], 1))
-            for j in range(threshold_crossings.shape[0]):
-                spike_times = np.where(threshold_crossings[j, :] > 0)[0]
-                spike_maxes = []
-                spike_mins = []
-                for k in range(len(spike_times)):
-                    start_ind = max(0, spike_times[k] - 1)
-                    end_ind = min(spike_times[k] + 5, V_sample.shape[1]) if k < len(spike_times) - 1 else V_sample.shape[1]
-                    spike_maxes.append(np.max(V_sample[j, start_ind:end_ind]))
-                    spike_mins.append(np.min(V_sample[j, start_ind:end_ind]))
-                
-                first_n_spikes[j, :min(n_spikes, len(spike_times))] = spike_times[:n_spikes]
-                avg_spike_max[j] = np.mean(spike_maxes) if spike_maxes else 0
-                avg_spike_min[j] = np.mean(spike_mins) if spike_mins else 0
-            
-            first_n_spikes_scaled = first_n_spikes / V_sample.shape[1]
-            
-            num_spikes_list.append(num_spikes)
-            interspike_times_list.append(interspike_times[:n_spikes])
-            mean_interspike_times_list.append(mean_interval)
-            first_n_spikes_scaled_list.append(first_n_spikes_scaled.squeeze(0))
-            avg_spike_min_list.append(avg_spike_min)
-            avg_spike_max_list.append(avg_spike_max)
-
-        first_n_spikes_final = np.stack(first_n_spikes_scaled_list)
-
-        return np.array(num_spikes_list), np.array(interspike_times_list), np.array(mean_interspike_times_list),first_n_spikes_final, np.array(avg_spike_min_list), np.array(avg_spike_max_list)
-    
-    def get_amplitude_frequency(self, V, inj_dur, inj_start, fs=1000):
-        amplitude, frequency = self.extract_amplitude_frequency(V, inj_dur, inj_start, fs=fs)
-
-        features = np.concatenate(
-            (amplitude.reshape(-1, 1), frequency.reshape(-1, 1)), axis=1
-        ).T
-        column_names = []
-        column_names.append("amplitude")
-        column_names.append("frequency")
-
-        return features, column_names
-        
-        
-    def extract_amplitude_frequency(self, V, inj_dur, inj_start, fs=1000):
-        amplitudes = []
-        frequencies = []
-        for V_sample in V:
-            x = V_sample[inj_start : inj_start + inj_dur]
-            secs = len(x) / fs
-            peaks = signal.find_peaks(x, prominence=0.1)[0].tolist()
-            with warnings.catch_warnings():
-                warnings.filterwarnings(action='ignore', message='Mean of empty slice')
-                amplitude = np.mean(x[peaks]) if peaks else 0
-            frequency = int(len(peaks) / (secs)) if secs > 0 else 0
-            amplitudes.append(amplitude)
-            frequencies.append(frequency)
-
-        amplitudes = np.array(amplitudes)
-        frequencies = np.array(frequencies)
-
-        amplitudes[np.isnan(amplitudes)] = 0
-        frequencies[np.isnan(frequencies)] = 0
-
-        return amplitudes, frequencies
-        
-    def get_mean_potential(self, V, inj_dur, inj_start, decimate_factor=None):
-        V = self.apply_decimate_factor(V, decimate_factor)
-
-        features = self.extract_mean_potential(V, inj_dur, inj_start)
-        columns =  ["V_mean"]
-
-        return features, columns
-        
-    def extract_mean_potential(self, V, inj_dur, inj_start):
-        mean_potential_list = []
-        for V_sample in V:
-            mean_potential = V_sample[inj_start:inj_start+inj_dur].mean(axis=0)
-            mean_potential_list.append(mean_potential)
-        return np.expand_dims(mean_potential_list, axis=0)
-    
-    #---------------------------------------------
-    # UTILS 
-    #---------------------------------------------
 
     def combine_data(self, output_path: str):
         print(output_path)
@@ -525,21 +425,14 @@ class DataProcessor:
     
 
     def get_fi_curve(self, V_test, amps, ignore_negative=True, inj_dur=1000):
-
-        (   num_spikes,
-            interspike_times,
-            mean_interspike_times,
-            first_n_spikes, 
-            avg_spike_min,
-            avg_spike_max
-        ) = self.extract_spike_features(V_test)
+        num_of_spikes_list,_,_,_,_,_,_,_,_ = self.extract_v_traces_features(V_test)
 
         if ignore_negative:
             non_neg_idx = [i for i, amp in enumerate(amps) if amp >= 0]
             amps = [amp for i, amp in enumerate(amps) if amp >= 0]
-            num_spikes = num_spikes[non_neg_idx]
+            num_of_spikes_list = num_of_spikes_list[non_neg_idx]
 
-        frequencies =  num_spikes / (inj_dur / 1000)  # Convert to Hz: spikes / time (sec)
+        frequencies =  num_of_spikes_list / (inj_dur / 1000)  # Convert to Hz: spikes / time (sec)
         
         #print(f"Number of spikes: {num_spikes}")
         #print(f"Frequencies: {frequencies}")

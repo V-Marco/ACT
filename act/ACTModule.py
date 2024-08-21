@@ -1,20 +1,18 @@
 import os
 import time
 from datetime import timedelta
-
-from act.cell_model import TrainCell, TargetCell
-import matplotlib.pyplot as plt
 import numpy as np
 from typing import List
+import pickle
 
-from act.act_types import SimulationParameters, OptimizationParameters, OptimizationParam, PassiveProperties, SimParams
-from act.cell_model import ModuleParameters, TargetCell, TrainCell
+from act.act_types import SimulationParameters, OptimizationParameters, OptimizationParam, SimParams
+from act.cell_model import ModuleParameters, TrainCell
 from act.simulator import Simulator
 from act.DataProcessor import DataProcessor
-
 from act.optimizer import RandomForestOptimizer
 from act.Metrics import Metrics
-import pickle
+
+
 
 class ACTModule:
 

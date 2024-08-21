@@ -81,17 +81,17 @@ class Metrics:
         
         isi_maes = []
         
-        _, isi_target, _, _, _, _ = dp.extract_spike_features(target_V, n_spikes=first_n_spikes, dt=dt)
+        _,isi_target,_,_,_,_,_,_,_ = dp.extract_v_traces_features(target_V, num_spikes=first_n_spikes, dt=dt)
         
-        _, isi_prediction, _, _, _, _ = dp.extract_spike_features(pred_V, n_spikes=first_n_spikes, dt=dt)
+        _,isi_prediction,_,_,_,_,_,_,_ = dp.extract_v_traces_features(pred_V, num_spikes=first_n_spikes, dt=dt)
         
-        print(f"Interspike times (Target): {np.array(isi_target)}")
+        print(f"Interspike times (Target): {isi_target}")
         
-        print(f"Interspike times (Prediction): {np.array(isi_prediction)}")
+        print(f"Interspike times (Prediction): {isi_prediction}")
             
         for i in range(len(amps)):
             # Get mae between the isi (target/pred) for first n spikes
-            isi_maes.append(self.mae_score(np.array(isi_target[0,i]), np.array(isi_prediction[0,i])))
+            isi_maes.append(self.mae_score(isi_target[i], isi_prediction[i]))
             
         print(f"MAE for each I injection: {isi_maes}")
             

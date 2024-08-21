@@ -58,8 +58,7 @@ class Simulator:
         print(f"Total number of proccessors: {cpu_count()}")
 
         # Create the simulation parent folder if it doesn't exist
-        if not os.path.exists(self.path):
-            os.mkdir(self.path)
+        os.makedirs(self.path, exist_ok=True)
         try:
 
             # Compile the modfiles and suppress output
