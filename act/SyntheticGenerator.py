@@ -10,7 +10,7 @@ class SyntheticGenerator:
 
     def __init__(self, params: ModuleParameters):
 
-        self.output_folder_name: str = os.path.join(os.getcwd(), "model", params['module_folder_name']) + "/"
+        self.output_folder_name: str = os.path.join(os.getcwd(), params['module_folder_name']) + "/"
         self.target_cell: TargetCell = params["cell"]
         self.sim_params: SimParams = params['sim_params']
         self.optim_params: OptimizationParameters = params['optim_params']

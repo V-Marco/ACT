@@ -17,12 +17,12 @@ def create_overlapped_v_plot(x, y1, y2, module_foldername, title, filename):
     plt.savefig(module_foldername + "/results/" + filename)
     plt.close()  # Close the figure to free up memory
 
-def plot_v_comparison(predicted_g_data_file, target_data_folder, module_foldername, amps):
+def plot_v_comparison(predicted_g_data_file, module_foldername, amps):
     results_folder = module_foldername + "/results/"
     os.makedirs(results_folder, exist_ok=True)
 
     # load target traces
-    target_traces = np.load(target_data_folder + "/combined_out.npy")
+    target_traces = np.load(module_foldername + "/target/combined_out.npy")
     target_v = target_traces[:,:,0]
 
     # load final prediction voltage traces
@@ -36,12 +36,12 @@ def plot_v_comparison(predicted_g_data_file, target_data_folder, module_folderna
         create_overlapped_v_plot(time, target_v[i], selected_v[i], module_foldername, f"V Trace Comparison: {amps} nA", f"V_trace_{amps[i]}nA.png")
 
 
-def plot_fi_comparison(fi_data_filepath, amps):
+def plot_fi_comparison(module_foldername, amps):
     # Plot the FI curves of predicted and target
-    results_folder = os.path.dirname(fi_data_filepath) + "/"
+    results_folder = f"{module_foldername}/results/"
     
     os.makedirs(results_folder, exist_ok=True)
-    dataset = np.load(fi_data_filepath)
+    dataset = np.load(f"{results_folder}/frequency_data.npy")
     predicted_fi = dataset[0,:]
     target_fi = dataset[1,:]
     
@@ -56,15 +56,15 @@ def plot_fi_comparison(fi_data_filepath, amps):
     plt.close()
     
     
-def plot_training_v_mae_scatter_spiker_cell(target_data_filepath, training_data_filepath, delay, dt):
+def plot_training_v_mae_scatter_spiker_cell(module_foldername, delay, dt):
     # load target data
-    target_dataset = np.load(target_data_filepath)
+    target_dataset = np.load(f"{module_foldername}/target/combined_out.npy")
     
     target_V = target_dataset[:,:,0]
     target_I = target_dataset[:,:,1]
     
     # load training data
-    train_dataset = np.load(training_data_filepath)
+    train_dataset = np.load(f"{module_foldername}/train/combined_out.npy")
     train_V = train_dataset[:,:,0]
     train_I = train_dataset[:,:,1]
     train_g = train_dataset[:,:,2]
@@ -121,12 +121,12 @@ def plot_training_v_mae_scatter_spiker_cell(target_data_filepath, training_data_
     
     
     
-def plot_training_fi_mae_surface_spiker_cell(target_data_filepath, training_data_filepath, amps, inj_dur, delay, dt, results_filename):
+def plot_training_fi_mae_surface_spiker_cell(module_foldername, amps, inj_dur, delay, dt, results_filename):
     dp = DataProcessor()
     metrics = Metrics()
     
     # load target data
-    target_dataset = np.load(target_data_filepath)
+    target_dataset = np.load(f"{module_foldername}/target/combined_out.npy")
     
     target_V = target_dataset[:,:,0]
     
@@ -134,7 +134,7 @@ def plot_training_fi_mae_surface_spiker_cell(target_data_filepath, training_data
     target_frequencies = dp.get_fi_curve(target_V, amps, inj_dur=inj_dur).flatten()
     
     # load training data
-    train_dataset = np.load(training_data_filepath)
+    train_dataset = np.load(f"{module_foldername}/train/combined_out.npy")
     train_V = train_dataset[:,:,0]
     train_I = train_dataset[:,:,1]
     train_g = train_dataset[:,:3,2]
@@ -227,12 +227,12 @@ def plot_training_fi_mae_surface_spiker_cell(target_data_filepath, training_data
     plt.show()
     
     
-def plot_training_fi_mae_contour_plot(target_data_filepath, training_data_filepath, amps, inj_dur, delay, dt, num_levels, results_filename):
+def plot_training_fi_mae_contour_plot(module_foldername, amps, inj_dur, delay, dt, num_levels=100, results_filename=None):
     dp = DataProcessor()
     metrics = Metrics()
     
     # load target data
-    target_dataset = np.load(target_data_filepath)
+    target_dataset = np.load(f"{module_foldername}/target/combined_out.npy")
     
     target_V = target_dataset[:,:,0]
     
@@ -240,7 +240,7 @@ def plot_training_fi_mae_contour_plot(target_data_filepath, training_data_filepa
     target_frequencies = dp.get_fi_curve(target_V, amps, inj_dur=inj_dur).flatten()
     
     # load training data
-    train_dataset = np.load(training_data_filepath)
+    train_dataset = np.load(f"{module_foldername}/train/combined_out.npy")
     train_V = train_dataset[:,:,0]
     train_I = train_dataset[:,:,1]
     train_g = train_dataset[:,:3,2]
@@ -311,6 +311,9 @@ def plot_training_fi_mae_contour_plot(target_data_filepath, training_data_filepa
     plt.title('MAE Contour Plot')
     
     # Save the plot as a PNG file
+    if(not results_filename):
+        results_filename = f"{module_foldername}/results/contour_plot.png"
+    
     plt.savefig(results_filename)
     
     # Show the plot

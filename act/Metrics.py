@@ -2,6 +2,7 @@ from sklearn.model_selection import RepeatedKFold
 from sklearn.model_selection import cross_val_score
 import numpy as np
 from act.DataProcessor import DataProcessor
+from datetime import datetime, timedelta
 import json
 
 class Metrics:
@@ -65,12 +66,12 @@ class Metrics:
             dp.save_to_json(np.std(n_scores), "rf_stdev_g_score_mae", save_file)
     
     
-    def print_interspike_interval_comparison(self, prediction_data_filepath, target_data_filepath, amps, first_n_spikes, dt, save_file=None):
+    def print_interspike_interval_comparison(self, module_foldername, prediction_data_filepath, amps, dt, first_n_spikes=5,save_file=None):
 
         dp = DataProcessor()
         
         # Load target data
-        target_dataset = np.load(target_data_filepath)
+        target_dataset = np.load(f"{module_foldername}/target/combined_out.npy")
         
         target_V = target_dataset[:,:,0]
         
@@ -81,9 +82,9 @@ class Metrics:
         
         isi_maes = []
         
-        _,isi_target,_,_,_,_,_,_,_ = dp.extract_v_traces_features(target_V, num_spikes=first_n_spikes, dt=dt)
+        _,_,isi_target,_,_,_,_,_,_ = dp.extract_v_traces_features(target_V, num_spikes=first_n_spikes, dt=dt)
         
-        _,isi_prediction,_,_,_,_,_,_,_ = dp.extract_v_traces_features(pred_V, num_spikes=first_n_spikes, dt=dt)
+        _,_,isi_prediction,_,_,_,_,_,_ = dp.extract_v_traces_features(pred_V, num_spikes=first_n_spikes, dt=dt)
         
         print(f"Interspike times (Target): {isi_target}")
         
@@ -110,7 +111,24 @@ class Metrics:
             
         return mean_isi, stdev_isi
     
-    def average_metrics_across_seeds(metric_filename_list, save_filename):
+    def print_prediction_g_mae(self, actual_g, save_file):
+        with open(save_file, 'r') as file:
+            data = json.load(file)
+        
+        final_g_prediction = data.get('final_g_prediction', None)
+        predicted_g = list(final_g_prediction.values())
+        
+        actual_g = list(actual_g.values())
+        
+        mae = self.mae_score(np.array(actual_g),np.array(predicted_g))
+        
+        print(f"MAE of final g prediction: {mae}")
+        
+        dp = DataProcessor()
+        dp.save_to_json(mae, "mae_final_predicted_g", save_file)
+
+    
+    def average_metrics_across_seeds(self, metric_filename_list, save_filename):
         
         dp = DataProcessor()
         
@@ -122,18 +140,23 @@ class Metrics:
             final_g_prediction_list, 
             rf_mean_g_score_mae_list,
             rf_stdev_g_score_mae_list,
+            mae_final_predicted_g_list,
             prediction_evaluation_method_list, 
             final_prediction_fi_mae_list, 
             final_prediction_voltage_mae_list, 
             module_runtime_list
         ) = dp.load_metric_data(metric_filename_list)
         
-        # Average/STDEV of the MAE of the final predicted conductances
+        # Average/STDEV of the MAE of cross validation of kfold
         avg_rf_mean_g_score_mae = np.mean(rf_mean_g_score_mae_list)
         stdev_rf_mean_g_score_mae = np.std(rf_mean_g_score_mae_list)
         
         avg_rf_stdev_g_score_mae = np.mean(rf_stdev_g_score_mae_list)
         stdev_rf_stdev_g_score_mae = np.std(rf_stdev_g_score_mae_list)
+        
+        # Average/STDEV of the MAE of the final predicted g vs real g
+        avg_final_g_predictions_mae = np.mean(mae_final_predicted_g_list)
+        stdev_final_g_predictions_mae = np.std(mae_final_predicted_g_list)
         
         # Average/STDEV of the MAE of the final predicted voltage traces
         avg_voltage_mae = np.mean(final_prediction_voltage_mae_list)
@@ -151,12 +174,17 @@ class Metrics:
         stdev_stdev_isi_mae = np.std(stdev_interspike_interval_mae_list)
         
         # Average/STDEV of the Module Runtime
-        avg_runtime = np.mean(module_runtime_list)
-        stdev_runtime = np.std(module_runtime_list)
+        avg_runtime_s = np.mean(module_runtime_list)
+        stdev_runtime_s = np.std(module_runtime_list)
+        
+        avg_time_obj = f"{timedelta(seconds=avg_runtime_s)}"
+        stdev_time_obj = f"{timedelta(seconds=stdev_runtime_s)}"
         
         # Write all of these values to an output json file
         data_to_save = {
             "final_g_predictions": final_g_prediction_list,
+            "avg_final_g_predictions_mae": avg_final_g_predictions_mae,
+            "stdev_final_g_predictions_mae": stdev_final_g_predictions_mae,
             "avg_rf_mean_g_score_mae": avg_rf_mean_g_score_mae,
             "stdev_rf_mean_g_score_mae": stdev_rf_mean_g_score_mae,
             "avg_rf_stdev_g_score_mae": avg_rf_stdev_g_score_mae,
@@ -171,8 +199,8 @@ class Metrics:
             "stdev_mean_isi_mae": stdev_mean_isi_mae,
             "avg_stdev_isi_mae": avg_stdev_isi_mae,
             "stdev_stdev_isi_mae": stdev_stdev_isi_mae,
-            "avg_module_runtime": avg_runtime,
-            "stdev__module_runtime": stdev_runtime
+            "avg_module_runtime": avg_time_obj,
+            "stdev__module_runtime": stdev_time_obj
         }
         
         with open(save_filename, 'w') as json_file:

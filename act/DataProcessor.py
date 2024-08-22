@@ -13,6 +13,7 @@ import timeout_decorator
 import multiprocessing as mp
 from tqdm import tqdm
 from statsmodels.tsa.arima.model import ARIMA
+from datetime import datetime, timedelta
 
 from act.act_types import PassiveProperties
 from act.cell_model import ACTCellModel
@@ -458,13 +459,14 @@ class DataProcessor:
         with open(filename, 'w') as file:
             json.dump(existing_data, file, indent=4)
             
-    def load_metric_data(filenames):
+    def load_metric_data(self, filenames):
         num_spikes_in_isi_calc_list = []
         mean_interspike_interval_mae_list = []
         stdev_interspike_interval_mae_list = []
         final_g_prediction_list = []
         rf_mean_g_score_mae_list = []
         rf_stdev_g_score_mae_list = []
+        mae_final_predicted_g_list = []
         prediction_evaluation_method_list = []
         final_prediction_fi_mae_list = []
         final_prediction_voltage_mae_list = []
@@ -481,10 +483,16 @@ class DataProcessor:
             final_g_prediction_list.append(data.get("final_g_prediction"))
             rf_mean_g_score_mae_list.append(data.get("rf_mean_g_score_mae"))
             rf_stdev_g_score_mae_list.append(data.get("rf_stdev_g_score_mae"))
+            mae_final_predicted_g_list.append(data.get("mae_final_predicted_g"))
             prediction_evaluation_method_list.append(data.get("prediction_evaluation_method"))
             final_prediction_fi_mae_list.append(data.get("final_prediction_fi_mae"))
             final_prediction_voltage_mae_list.append(data.get("final_prediction_voltage_mae"))
-            module_runtime_list.append(data.get("module_runtime"))
+            
+            module_runtime = data.get("module_runtime")
+            time_obj = datetime.strptime(module_runtime, "%H:%M:%S.%f")
+            total_seconds = time_obj.hour * 3600 + time_obj.minute * 60 + time_obj.second + time_obj.microsecond / 1e6
+            
+            module_runtime_list.append(total_seconds)
 
         return (
             num_spikes_in_isi_calc_list, 
@@ -493,6 +501,7 @@ class DataProcessor:
             final_g_prediction_list, 
             rf_mean_g_score_mae_list,
             rf_stdev_g_score_mae_list,
+            mae_final_predicted_g_list,
             prediction_evaluation_method_list, 
             final_prediction_fi_mae_list, 
             final_prediction_voltage_mae_list, 

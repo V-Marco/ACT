@@ -150,7 +150,7 @@ special.nrn
 
 ~lock.*
 
-model/*
+output/*
 
 simulation/components
 simulation/network

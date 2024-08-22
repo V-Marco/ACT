@@ -18,7 +18,7 @@ class ACTModule:
 
     def __init__(self, params: ModuleParameters):
 
-        self.output_folder_name: str = os.path.join(os.getcwd(), "model", params['module_folder_name']) + "/"
+        self.output_folder_name: str = os.path.join(os.getcwd(), params['module_folder_name']) + "/"
         self.target_traces_file = params["target_traces_file"]
         self.train_cell: TrainCell = params["cell"]
         self.sim_params: SimParams = params['sim_params']
@@ -84,6 +84,7 @@ class ACTModule:
         
         if not save_file == None:
             dp.save_to_json(formatted_runtime, "module_runtime", save_file)
+            dp.save_to_json(predicted_g_data_file, "predicted_g_data_file", save_file)
         
         return predicted_g_data_file
 
