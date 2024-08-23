@@ -92,14 +92,15 @@ class ACTModule:
         # Uses the number of traces held in CI_amps to parse a users 2D csv file to 3D npy file
         num_traces = len(self.sim_params['CI_amps'])
         
-        data = np.loadtxt(self.output_folder_name + "target/" + self.target_traces_file, delimiter=',', skiprows=1)
+        data = np.loadtxt(self.target_traces_file, delimiter=',', skiprows=1)
         
         # Calculate the number of samples from the number of traces
         csv_num_rows = data.shape[0]
         num_samples = csv_num_rows // num_traces
         
         V_I_data = data.reshape(num_traces, num_samples, 2)
-        np.save(self. output_folder_name + 'target/combined_out.npy', V_I_data)
+        os.makedirs(self.output_folder_name + 'target/', exist_ok=True)
+        np.save(self.output_folder_name + 'target/combined_out.npy', V_I_data)
 
 
     def get_I_g_combinations(self):

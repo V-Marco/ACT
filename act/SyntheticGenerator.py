@@ -70,7 +70,6 @@ class SyntheticGenerator:
         num_samples, num_traces, _ = voltage_current.shape
         flat_array = voltage_current.reshape(num_samples * num_traces, 2)
         
-        if not os.path.exists(self.output_folder_name + "target/"):
-            os.makedirs(self.output_folder_name + "target/")
-        np.savetxt(self.output_folder_name + "target/" + filename, flat_array, delimiter=',', header='Voltage,Current', comments='')
+        os.makedirs(self.output_folder_name, exist_ok=True)
+        np.savetxt(self.output_folder_name + filename, flat_array, delimiter=',', header='Voltage,Current', comments='')
 
