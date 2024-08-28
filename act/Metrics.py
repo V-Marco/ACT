@@ -82,9 +82,9 @@ class Metrics:
         
         isi_maes = []
         
-        _,_,isi_target,_,_,_,_,_,_ = dp.extract_v_traces_features(target_V, num_spikes=first_n_spikes, dt=dt)
+        _,_,isi_target,*_ = dp.extract_v_traces_features(target_V, num_spikes=first_n_spikes, dt=dt)
         
-        _,_,isi_prediction,_,_,_,_,_,_ = dp.extract_v_traces_features(pred_V, num_spikes=first_n_spikes, dt=dt)
+        _,_,isi_prediction,*_ = dp.extract_v_traces_features(pred_V, num_spikes=first_n_spikes, dt=dt)
         
         print(f"Interspike times (Target): {isi_target}")
         

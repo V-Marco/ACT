@@ -160,7 +160,7 @@ class ACTModule:
             print(e)
             return
     
-
+        self.sim_params['set_g_to'] = []
         for i in range(len(conductance_groups)):
                 # Set parameters from the grid
                 train_cell.set_g(train_cell.g_names, conductance_groups[i], self.sim_params)

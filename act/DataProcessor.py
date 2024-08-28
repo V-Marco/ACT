@@ -66,8 +66,14 @@ class DataProcessor:
                 
         # Spike Features (Necessary Feature Extraction)
         # Includes number of spikes, interspike interval, average minimum spike height, and average max spike height
-        if "v_trace_stats" in list_of_features and V is not None:
-            features, column_names = self.get_voltage_stats(V)
+
+        if( "number_of_spikes" in list_of_features or 
+            "spike_times" in list_of_features or 
+            "spike_height_stats" in list_of_features or 
+            "trough_times" in list_of_features or
+            "trough_height_stats" in list_of_features or
+            "spike_intervals" in list_of_features):
+            features, column_names = self.get_voltage_stats(V, list_of_features=list_of_features)
             columns += column_names
             summary_features = concatenate_features(summary_features, features)
 
@@ -270,45 +276,72 @@ class DataProcessor:
     #---------------------------------------------
     #VOLTAGE STATS
     #---------------------------------------------
-    def get_voltage_stats(self, V, decimate_factor=None):
+    def get_voltage_stats(self, V, list_of_features=None, decimate_factor=None):
         
         V = self.apply_decimate_factor(V, decimate_factor)
 
         # Extract spike summary features
         (
-        num_of_spikes_list,
-        spike_times_list,
-        interspike_intervals_list,
-        min_spike_height_list,
+        num_of_spikes_list, 
+        spike_times_list, 
+        interspike_intervals_list, 
+        min_spike_height_list, 
         max_spike_height_list,
         avg_spike_height_list,
         std_spike_height_list,
+        num_of_troughs_list,
+        trough_times_list,
+        min_trough_height_list,
+        max_trough_height_list,
+        avg_trough_height_list,
+        std_trough_height_list,
         mean_voltage_list,
         std_voltage_list
         ) = self.extract_v_traces_features(V)
         
-        # Dynamically create column names for each interval (length = 20 by default)
-        num_intervals = interspike_intervals_list.shape[1]
+        features = []
+        column_names = []
+        
+        if "number_of_spikes" in list_of_features:
+            features.append(num_of_spikes_list)
+            column_names += ["Num Spikes"]
+        if "spike_times" in list_of_features:
+            features.append(spike_times_list)
+            num_times = spike_times_list.shape[1]
+            column_names += [f"Spike Time {i+1}" for i in range(num_times)]
+        if "spike_height_stats" in list_of_features:
+            features.append(min_spike_height_list)
+            features.append(max_spike_height_list)
+            features.append(avg_spike_height_list)
+            features.append(std_spike_height_list)
+            column_names += ["Min Spike Height", 
+                            "Max Spike Height", 
+                            "Avg Spike Height", 
+                            "Std Spike Height"]
+        if "number_of_troughs" in list_of_features:
+            features.append(num_of_troughs_list)
+            column_names += ["Num Troughs"]
+        if "trough_times" in list_of_features:
+            features.append(trough_times_list)
+            num_times = trough_times_list.shape[1]
+            column_names += [f"Trough Time {i+1}" for i in range(num_times)]
+        if "trough_height_stats" in list_of_features:
+            features.append(min_trough_height_list)
+            features.append(max_trough_height_list)
+            features.append(avg_trough_height_list)
+            features.append(std_trough_height_list)
+            column_names += ["Min Trough Height", 
+                            "Max Trough Height", 
+                            "Avg Trough Height",
+                            "Std Trough Height"]
+        if "spike_intervals" in list_of_features:
+            features.append(interspike_intervals_list)
+            num_intervals = interspike_intervals_list.shape[1]
+            column_names += [f"Interspike Interval {i+1}" for i in range(num_intervals)]
+            
+        features_final = np.column_stack(features)
 
-        # Create column names for the interspike intervals
-        interval_column_names = [f"Interspike Interval {i+1}" for i in range(num_intervals)]
-
-        features = np.column_stack(
-                (
-                    num_of_spikes_list,
-                    interspike_intervals_list,
-                    min_spike_height_list,
-                    max_spike_height_list,
-                    avg_spike_height_list,
-                    std_spike_height_list,
-                    mean_voltage_list,
-                    std_voltage_list
-                )
-            )
-
-        column_names = ["Num Spikes"] + interval_column_names + ["Min Spike Height", "Max Spike Height", "Avg Spike Height", "Std Spike Height", "Mean Voltage", "Std Voltage"]
-
-        return features, column_names
+        return features_final, column_names
 
 
     def extract_v_traces_features(self, traces, spike_threshold = 0, num_spikes=20, dt=1):
@@ -319,8 +352,15 @@ class DataProcessor:
         max_spike_height_list = []
         avg_spike_height_list = []
         std_spike_height_list = []
+        num_of_troughs_list = []
+        trough_times_list = []
+        min_trough_height_list = []
+        max_trough_height_list = []
+        avg_trough_height_list = []
+        std_trough_height_list = []
         mean_voltage_list = []
         std_voltage_list = []
+        
         
         pad_value=1e6
         
@@ -356,6 +396,38 @@ class DataProcessor:
             mean_voltage_list.append(mean_voltage)
             std_voltage_list.append(std_voltage)
             
+            inverted_trace = -trace  
+            trough_idxs, _ = find_peaks(inverted_trace, threshold=-spike_threshold) 
+            
+            # Filter troughs that are between spikes (within the current injection time)
+            valid_trough_idx = []
+            for idx in trough_idxs:
+                before_spike = peak_idxs[peak_idxs < idx]
+                after_spike = peak_idxs[peak_idxs > idx]
+                
+                if len(before_spike) > 0 and len(after_spike) > 0:
+                    valid_trough_idx.append(idx)
+
+            valid_trough_idx = np.array(valid_trough_idx, dtype=int)
+            
+            num_of_troughs = len(valid_trough_idx)
+            num_of_troughs_list.append(num_of_troughs)
+            
+            trough_times = valid_trough_idx[:num_spikes] * dt
+            trough_times_padded = np.pad(trough_times, (0, num_spikes - len(trough_times)), 'constant', constant_values=pad_value)
+            trough_times_list.append(trough_times_padded)
+            
+            trough_heights = trace[valid_trough_idx]
+            min_trough_height = np.min(trough_heights) if len(trough_heights) > 0 else np.nan
+            max_trough_height = np.max(trough_heights) if len(trough_heights) > 0 else np.nan
+            avg_trough_height = np.mean(trough_heights) if len(trough_heights) > 0 else np.nan
+            std_trough_height = np.std(trough_heights) if len(trough_heights) > 0 else np.nan
+            
+            min_trough_height_list.append(min_trough_height)
+            max_trough_height_list.append(max_trough_height)
+            avg_trough_height_list.append(avg_trough_height)
+            std_trough_height_list.append(std_trough_height)
+            
         return (
             np.array(num_of_spikes_list), 
             np.array(spike_times_list), 
@@ -364,6 +436,12 @@ class DataProcessor:
             np.array(max_spike_height_list),
             np.array(avg_spike_height_list),
             np.array(std_spike_height_list),
+            np.array(num_of_troughs_list),
+            np.array(trough_times_list),
+            np.array(min_trough_height_list),
+            np.array(max_trough_height_list),
+            np.array(avg_trough_height_list),
+            np.array(std_trough_height_list),
             np.array(mean_voltage_list),
             np.array(std_voltage_list)
         )
@@ -426,7 +504,7 @@ class DataProcessor:
     
 
     def get_fi_curve(self, V_test, amps, ignore_negative=True, inj_dur=1000):
-        num_of_spikes_list,_,_,_,_,_,_,_,_ = self.extract_v_traces_features(V_test)
+        num_of_spikes_list,*_ = self.extract_v_traces_features(V_test)
 
         if ignore_negative:
             non_neg_idx = [i for i, amp in enumerate(amps) if amp >= 0]
