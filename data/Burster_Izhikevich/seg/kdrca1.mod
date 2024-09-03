@@ -75,7 +75,7 @@ PROCEDURE rates(v (mV)) { :callable from hoc
         qt=q10^((celsius-24)/10)
         a = alpn(v)
         : ninf = 1/(1+a)
-        if (v < -55 ) {
+        if (v < -57.5 ) {
             ninf = 0
         } else {
 	    ninf = 1 / ( 1 + exp( ( - v + 13 ) / 8.738 ) )
