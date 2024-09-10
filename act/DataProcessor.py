@@ -33,7 +33,8 @@ from act.cell_model import ACTCellModel
 #       a. ARIMA STATS  : methods for generating ARIMA stats from a numpy array of voltage traces
 #       b. VOLT  STATS  : 
 #       c. CURRENT STATS:
-# 3. UTILS
+# 3. FILTERING
+# 4. UTILS
 
 
 class DataProcessor:
@@ -42,11 +43,11 @@ class DataProcessor:
         pass
 
     # Spike features automatically included. Must provide a voltage trace
-    def extract_features(self,list_of_features=None, V=None, I=None, arima_file=None, inj_dur=None, inj_start=None, fs=None):
+    def extract_features(self,train_features=None, V=None, I=None, arima_file=None, threshold=0, num_spikes=20,dt=1):
 
         # If a specific list is not provided, extract all features
-        if(list_of_features is None):
-            list_of_features = ["i_trace_stats", "v_trace_stats", "v_arima_coefs"]
+        if(train_features is None):
+            train_features = ["i_trace_stats", "v_trace_stats", "v_arima_coefs"]
 
         # I and V should be the same length
         columns = []
@@ -59,7 +60,7 @@ class DataProcessor:
                 return np.concatenate((existing_features, new_features), axis=1)
        
         # Mean and StdDev of the current input trace as features
-        if "i_trace_stats" in list_of_features and I is not None:
+        if "i_trace_stats" in train_features and I is not None:
             features, column_names = self.get_current_stats(I)
             columns += column_names
             summary_features = concatenate_features(summary_features, features)
@@ -67,18 +68,18 @@ class DataProcessor:
         # Spike Features (Necessary Feature Extraction)
         # Includes number of spikes, interspike interval, average minimum spike height, and average max spike height
 
-        if( "number_of_spikes" in list_of_features or 
-            "spike_times" in list_of_features or 
-            "spike_height_stats" in list_of_features or 
-            "trough_times" in list_of_features or
-            "trough_height_stats" in list_of_features or
-            "spike_intervals" in list_of_features):
-            features, column_names = self.get_voltage_stats(V, list_of_features=list_of_features)
+        if( "number_of_spikes" in train_features or 
+            "spike_times" in train_features or 
+            "spike_height_stats" in train_features or 
+            "trough_times" in train_features or
+            "trough_height_stats" in train_features or
+            "spike_intervals" in train_features):
+            features, column_names = self.get_voltage_stats(V, train_features=train_features,threshold=threshold,num_spikes=num_spikes,dt=dt)
             columns += column_names
             summary_features = concatenate_features(summary_features, features)
 
         # ARIMA coefficients of voltage trace as features # Calculated as one unit for all voltage traces. utilizing multithreading
-        if "v_arima_coefs" in list_of_features and (arima_file or V is not None):
+        if "v_arima_coefs" in train_features and (arima_file or V is not None):
             features, column_names = self.get_arima_features(V=V, arima_file=arima_file)
             columns += column_names
             summary_features = concatenate_features(summary_features, features)
@@ -276,7 +277,7 @@ class DataProcessor:
     #---------------------------------------------
     #VOLTAGE STATS
     #---------------------------------------------
-    def get_voltage_stats(self, V, list_of_features=None, decimate_factor=None):
+    def get_voltage_stats(self, V, train_features=None, decimate_factor=None, threshold=0, num_spikes=20, dt=1):
         
         V = self.apply_decimate_factor(V, decimate_factor)
 
@@ -297,19 +298,19 @@ class DataProcessor:
         std_trough_height_list,
         mean_voltage_list,
         std_voltage_list
-        ) = self.extract_v_traces_features(V)
+        ) = self.extract_v_traces_features(V, spike_threshold=threshold, num_spikes=num_spikes, dt=dt)
         
         features = []
         column_names = []
         
-        if "number_of_spikes" in list_of_features:
+        if "number_of_spikes" in train_features:
             features.append(num_of_spikes_list)
             column_names += ["Num Spikes"]
-        if "spike_times" in list_of_features:
+        if "spike_times" in train_features:
             features.append(spike_times_list)
             num_times = spike_times_list.shape[1]
             column_names += [f"Spike Time {i+1}" for i in range(num_times)]
-        if "spike_height_stats" in list_of_features:
+        if "spike_height_stats" in train_features:
             features.append(min_spike_height_list)
             features.append(max_spike_height_list)
             features.append(avg_spike_height_list)
@@ -318,14 +319,14 @@ class DataProcessor:
                             "Max Spike Height", 
                             "Avg Spike Height", 
                             "Std Spike Height"]
-        if "number_of_troughs" in list_of_features:
+        if "number_of_troughs" in train_features:
             features.append(num_of_troughs_list)
             column_names += ["Num Troughs"]
-        if "trough_times" in list_of_features:
+        if "trough_times" in train_features:
             features.append(trough_times_list)
             num_times = trough_times_list.shape[1]
             column_names += [f"Trough Time {i+1}" for i in range(num_times)]
-        if "trough_height_stats" in list_of_features:
+        if "trough_height_stats" in train_features:
             features.append(min_trough_height_list)
             features.append(max_trough_height_list)
             features.append(avg_trough_height_list)
@@ -334,7 +335,7 @@ class DataProcessor:
                             "Max Trough Height", 
                             "Avg Trough Height",
                             "Std Trough Height"]
-        if "spike_intervals" in list_of_features:
+        if "spike_intervals" in train_features:
             features.append(interspike_intervals_list)
             num_intervals = interspike_intervals_list.shape[1]
             column_names += [f"Interspike Interval {i+1}" for i in range(num_intervals)]
@@ -445,7 +446,35 @@ class DataProcessor:
             np.array(mean_voltage_list),
             np.array(std_voltage_list)
         )
-    
+        
+    #---------------------------------------------
+    # FILTERING
+    #---------------------------------------------
+    def get_nonsaturated_traces(self,data, window_of_inspection, threshold=-50, dt=1):
+        inspection_window_start = int(window_of_inspection[0] / dt)
+        inspection_window_end = int(window_of_inspection[1] / dt)
+        
+        V_traces = data[:, :, 0]  
+        V_traces_inspection_window = V_traces[:, inspection_window_start:inspection_window_end]
+
+        nonsaturated_ind = ~np.all(V_traces_inspection_window > threshold, axis=1)
+
+        filtered_data = data[nonsaturated_ind, :, :]
+        
+        print(f"Dropping {len(data) - len(filtered_data)} traces where: All values in the window ({inspection_window_start}:{inspection_window_end}) are saturated (above {threshold} mV).")
+        
+        return filtered_data
+        
+    def get_traces_with_spikes(self, data, spike_threshold=0, dt=1):
+        V_traces = data[:, :, 0]  
+        num_of_spikes_list, *_ = self.extract_v_traces_features(V_traces, spike_threshold=spike_threshold, dt=dt)
+        traces_with_spikes = data[num_of_spikes_list > 0]
+        
+        print(f"Dropping {len(data) - len(traces_with_spikes)} traces where: No spikes are in the voltage trace.")
+
+        return traces_with_spikes
+
+
     #---------------------------------------------
     # UTILS 
     #---------------------------------------------

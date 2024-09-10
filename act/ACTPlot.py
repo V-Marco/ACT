@@ -17,7 +17,7 @@ def create_overlapped_v_plot(x, y1, y2, module_foldername, title, filename):
     plt.savefig(module_foldername + "/results/" + filename)
     plt.close()  # Close the figure to free up memory
 
-def plot_v_comparison(predicted_g_data_file, module_foldername, amps):
+def plot_v_comparison(predicted_g_data_file, module_foldername, amps, dt):
     results_folder = module_foldername + "/results/"
     os.makedirs(results_folder, exist_ok=True)
 
@@ -29,7 +29,7 @@ def plot_v_comparison(predicted_g_data_file, module_foldername, amps):
     selected_traces = np.load(predicted_g_data_file)
     selected_v = selected_traces[:,:,0]
 
-    time = np.linspace(0, len(target_v[0]), len(target_v[0]))
+    time = np.linspace(0, len(target_v[0]), len(target_v[0])) * dt
 
     # Plot all pairs of traces
     for i in range(len(selected_v)):

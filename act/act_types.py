@@ -101,7 +101,12 @@ class OptimizationParameters(TypedDict):
     max_depth: int
     eval_n_repeats: int
     sample_rate_decimate_factor: int  
-    list_of_features: List[str]
+    train_features: List[str]
+    spike_threshold: float
+    filtered_out_features: List[str]
+    window_of_inspection: tuple
+    saturation_threshold: float
+    first_n_spikes: int
     prediction_eval_method: str
     rf_model: RandomForestOptimizer
     save_file: str

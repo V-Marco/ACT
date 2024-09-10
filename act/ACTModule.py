@@ -36,6 +36,9 @@ class ACTModule:
 
         print("SIMULATING TRAINING DATA")
         self.simulate_train_cells(self.train_cell)
+        
+        print("FILTERING DATA")
+        self.filter_data()
 
         print("TRAINING RANDOM FOREST REGRESSOR")
         prediction = self.get_rf_prediction()
@@ -187,6 +190,30 @@ class ACTModule:
 
         dp = DataProcessor()
         dp.combine_data(self.output_folder_name + "train")
+        
+    def filter_data(self):
+        dp = DataProcessor()
+        
+        data = np.load(self.output_folder_name + "train/combined_out.npy")
+        filtered_out_features = self.optim_params.get("filtered_out_features", None)
+        if filtered_out_features is None:
+            return
+        else:
+            if "saturated" in filtered_out_features:
+                inspection_start = self.sim_params.get("CI_delay") + int(self.sim_params.get("CI_dur") * 0.7)
+                inspection_end = self.sim_params.get("CI_delay") + self.sim_params.get("CI_dur")
+                window_of_inspection = (inspection_start, inspection_end)
+                saturation_threshold = self.optim_params.get("saturation_threshold",-50)
+                dt = self.sim_params.get('h_dt',1)
+                data = dp.get_nonsaturated_traces(data,window_of_inspection, threshold=saturation_threshold,dt=dt)
+            
+            if "no_spikes" in filtered_out_features:
+                spike_threshold = self.optim_params.get("spike_threshold",0)
+                data = dp.get_traces_with_spikes(data,spike_threshold=spike_threshold,dt=dt)
+            
+            output_path = self.output_folder_name + "train"    
+            print(f"Dataset size after filtering: {len(data)}. Saving to {os.path.join(output_path, 'filtered_out.npy')}")
+            np.save(os.path.join(output_path, f"filtered_out.npy"), data)
 
     def get_rf_prediction(self):
         # Extract Features from TargetCell traces
@@ -195,19 +222,27 @@ class ACTModule:
         dataset_target = np.load(self.output_folder_name + "target/combined_out.npy")
         V_target = dataset_target[:,:,0]
         I_target = dataset_target[:,:,1]
+        
+        threshold = self.optim_params.get('spike_threshold',0)
+        first_n_spikes = self.optim_params.get('first_n_spikes',20)
+        dt = self.sim_params.get('h_dt',1)
 
-        features_target, columns_target = dp.extract_features(list_of_features=self.optim_params.get('list_of_features',None), V=V_target,I=I_target,inj_dur=self.sim_params['CI_dur'],inj_start=self.sim_params['CI_delay'])
+        features_target, columns_target = dp.extract_features(train_features=self.optim_params.get('train_features',None), V=V_target,I=I_target,threshold=threshold,num_spikes=first_n_spikes,dt=dt)
 
         if self.rf_model == None:
-            # Extract Features from TrainCell traces
-            dataset_train = np.load(self.output_folder_name + "train/combined_out.npy")
+            # Extract Features from TrainCell traces (Get filtered data if it exists)
+            if os.path.isfile(self.output_folder_name + "train/filtered_out.npy"):
+                print("Training Random Forest on Filtered Data")
+                dataset_train = np.load(self.output_folder_name + "train/filtered_out.npy")
+            else:
+                dataset_train = np.load(self.output_folder_name + "train/combined_out.npy")
 
             g_train = dp.clean_g_bars(dataset_train)
             V_train = dataset_train[:,:,0]
             I_train = dataset_train[:,:,1]
 
             # TODO: ["i_mean_stdev", "v_spike_stats", "v_mean_potential", "v_amplitude_frequency", "v_arima_coefs"]
-            features_train, columns_train = dp.extract_features(list_of_features=self.optim_params.get('list_of_features',None),V=V_train,I=I_train,inj_dur=self.sim_params['CI_dur'],inj_start=self.sim_params['CI_delay'])
+            features_train, columns_train = dp.extract_features(train_features=self.optim_params.get('train_features',None),V=V_train,I=I_train,threshold=threshold,num_spikes=first_n_spikes,dt=dt)
             print(f"Extracting features: {columns_train}")
 
             # Train Model on data
