@@ -124,8 +124,8 @@ class ACTModule:
                 final_g_ranges_slices.append(
                     OptimizationParam(
                         param=optim_param['param'],
-                        low=optim_param['prediction'] - optim_param['bounds_variation'],
-                        high=optim_param['prediction'] + optim_param['bounds_variation'],
+                        low=optim_param['prediction'] - (optim_param['prediction'] * optim_param['bounds_variation']),
+                        high=optim_param['prediction'] + (optim_param['prediction'] * optim_param['bounds_variation']),
                         n_slices=optim_param['n_slices']
                     )
                 )
@@ -200,9 +200,11 @@ class ACTModule:
             return
         else:
             if "saturated" in filtered_out_features:
-                inspection_start = self.sim_params.get("CI_delay") + int(self.sim_params.get("CI_dur") * 0.7)
-                inspection_end = self.sim_params.get("CI_delay") + self.sim_params.get("CI_dur")
-                window_of_inspection = (inspection_start, inspection_end)
+                window_of_inspection = self.optim_params.get("window_of_inspection", None)
+                if window_of_inspection is None:
+                    inspection_start = self.sim_params.get("CI_delay") + int(self.sim_params.get("CI_dur") * 0.7)
+                    inspection_end = self.sim_params.get("CI_delay") + self.sim_params.get("CI_dur")
+                    window_of_inspection = (inspection_start, inspection_end)
                 saturation_threshold = self.optim_params.get("saturation_threshold",-50)
                 dt = self.sim_params.get('h_dt',1)
                 data = dp.get_nonsaturated_traces(data,window_of_inspection, threshold=saturation_threshold,dt=dt)

@@ -458,7 +458,7 @@ class DataProcessor:
         V_traces_inspection_window = V_traces[:, inspection_window_start:inspection_window_end]
 
         nonsaturated_ind = ~np.all(V_traces_inspection_window > threshold, axis=1)
-
+        
         filtered_data = data[nonsaturated_ind, :, :]
         
         print(f"Dropping {len(data) - len(filtered_data)} traces where: All values in the window ({inspection_window_start}:{inspection_window_end}) are saturated (above {threshold} mV).")
