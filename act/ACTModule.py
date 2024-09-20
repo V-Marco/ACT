@@ -130,14 +130,24 @@ class ACTModule:
                     )
                 )
             elif optim_param.get('low', None) != None and optim_param.get('high', None) !=None:
-                final_g_ranges_slices.append(
-                    OptimizationParam(
-                        param=optim_param['param'],
-                        low=optim_param['low'],
-                        high=optim_param['high'],
-                        n_slices=optim_param['n_slices']
+                if optim_param['n_slices'] == 1:
+                  final_g_ranges_slices.append(
+                        OptimizationParam(
+                            param=optim_param['param'],
+                            low=optim_param['low'] + ((optim_param['high'] - optim_param['low'])/2),
+                            high=optim_param['low'] + ((optim_param['high'] - optim_param['low'])/2),
+                            n_slices=optim_param['n_slices']
+                        )
                     )
-                )
+                else:
+                    final_g_ranges_slices.append(
+                        OptimizationParam(
+                            param=optim_param['param'],
+                            low=optim_param['low'],
+                            high=optim_param['high'],
+                            n_slices=optim_param['n_slices']
+                        )
+                    )
             else: 
                 raise Exception("OptimizationParm not defined fully. Need either (low & high) or (prediction & variation).")
 

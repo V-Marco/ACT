@@ -47,7 +47,7 @@ class DataProcessor:
 
         # If a specific list is not provided, extract all features
         if(train_features is None):
-            train_features = ["i_trace_stats", "v_trace_stats", "v_arima_coefs"]
+            train_features = ["i_trace_stats", "number_of_spikes", "spike_times", "spike_height_stats", "trough_times", "trough_height_stats", "spike_intervals", "v_arima_coefs"]
 
         # I and V should be the same length
         columns = []
