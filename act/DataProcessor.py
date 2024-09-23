@@ -47,7 +47,7 @@ class DataProcessor:
 
         # If a specific list is not provided, extract all features
         if(train_features is None):
-            train_features = ["i_trace_stats", "number_of_spikes", "spike_times", "spike_height_stats", "trough_times", "trough_height_stats", "spike_intervals", "v_arima_coefs"]
+            train_features = ["i_trace_stats", "number_of_spikes", "spike_times", "spike_height_stats", "trough_times", "trough_height_stats", "spike_intervals", "lto-hto_amplitude", "lto-hto_frequency","v_arima_coefs"]
 
         # I and V should be the same length
         columns = []
@@ -75,6 +75,11 @@ class DataProcessor:
             "trough_height_stats" in train_features or
             "spike_intervals" in train_features):
             features, column_names = self.get_voltage_stats(V, train_features=train_features,threshold=threshold,num_spikes=num_spikes,dt=dt)
+            columns += column_names
+            summary_features = concatenate_features(summary_features, features)
+            
+        if "lto-hto_amplitude" in train_features or "lto-hto_frequency" in train_features:
+            #features, column_names = self.get_lto-hto_stats(V, train_features=train_features, n_splits, ramp_splits, ramp_time, dt=dt)
             columns += column_names
             summary_features = concatenate_features(summary_features, features)
 

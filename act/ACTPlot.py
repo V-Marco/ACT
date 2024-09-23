@@ -156,7 +156,7 @@ def plot_training_v_mae_surface_spiker_cell(module_foldername, amps, inj_dur, de
     plt.show()
     
     
-def plot_training_v_mae_contour_plot(module_foldername, amps, inj_dur, delay, dt, num_levels=100, results_filename=None):
+def plot_training_v_mae_contour_plot_spiker(module_foldername, amps, inj_dur, delay, dt, num_levels=100, results_filename=None):
     dp = DataProcessor()
     metrics = Metrics()
     
@@ -226,6 +226,98 @@ def plot_training_v_mae_contour_plot(module_foldername, amps, inj_dur, delay, dt
     contour = ax.contourf(X, Y, Z, levels=num_levels, cmap='viridis')
     ax.set_xlabel("gNA_bar")
     ax.set_ylabel("gK_bar")
+    
+    # Add a color bar which maps values to colors.
+    cbar = fig.colorbar(contour)
+    cbar.set_label('MAE')
+    
+    plt.title('Voltage MAE Contour Plot')
+    
+    # Save the plot as a PNG file
+    if(not results_filename):
+        results_filename = f"{module_foldername}/results/Voltage_MAE_Contour_Plot.png"
+    
+    plt.savefig(results_filename)
+    
+    # Show the plot
+    plt.show()
+    
+
+def plot_training_v_mae_contour_plot(module_foldername, amps, delay, dt, index1, index2, g_names, num_levels=100, results_filename=None):
+    dp = DataProcessor()
+    metrics = Metrics()
+    
+    g_name1 = g_names[index1]
+    g_name2 = g_names[index2]
+    length_g = len(g_names)
+    
+    # load target data
+    #
+    target_dataset = np.load(f"{module_foldername}/target/combined_out.npy")
+    
+    target_V = target_dataset[:,:,0]
+    
+    # load training data
+    train_dataset = np.load(f"{module_foldername}/train/combined_out.npy")
+    train_V = train_dataset[:,:,0]
+    train_I = train_dataset[:,:,1]
+    train_g = train_dataset[:,:length_g,2]
+
+    # Get a list of unique conductance sets (should be n copies consolidated where n is len(amps))
+    conductance_values = np.unique(train_g, axis=0)
+    
+    # Go through unique conductance sets and find the indices where there are copies
+    v_sample_sets = []
+    for g in conductance_values:
+
+        conductance_idx = np.where((train_g == g).all(axis=1))[0]
+        
+        # Now we want to ensure the sets are ordered properly.
+        # Find where I value == amps
+        index_where_inj_occurs = int(delay / dt + 1)
+        
+        ordered_idices = []
+        for amp in amps:
+            ordered_idx = np.where(train_I[conductance_idx,index_where_inj_occurs] == amp)[0]
+            ordered_idices.append(conductance_idx[ordered_idx][0])
+            
+        ordered_idices = np.array(ordered_idices)
+            
+        # Get a set of ordered voltage traces with the matching conductances. Get FI curve from this
+        V_subset = train_V[ordered_idices]
+        
+        v_sample_sets.append(V_subset)
+
+    # Get MAE of v for each I injection
+    maes = []
+    
+    for idx, g in enumerate(conductance_values):
+        maes.append((g[index1], g[index2], metrics.mae_score(target_V, v_sample_sets[idx])))
+    maes = np.array(maes)
+    
+    sorted_maes = maes[maes[:, 2].argsort()]
+    print(f"Smallest MAE values ({g_name1}, {g_name2}, MAE): ")
+    print(sorted_maes[:6])
+
+    # Create meshgrid for contour  map
+    g1_bar = np.unique(maes[:, 0])
+    g2_bar = np.unique(maes[:, 1])
+    X, Y = np.meshgrid(g1_bar, g2_bar)
+
+    # Initialize a Z matrix with NaNs
+    Z = np.empty(X.shape)
+    Z[:] = np.nan
+
+    # Fill Z with MAE values
+    for i in range(len(maes)):
+        x_idx = np.where(g1_bar == maes[i, 0])[0][0]
+        y_idx = np.where(g2_bar == maes[i, 1])[0][0]
+        Z[y_idx, x_idx] = maes[i, 2]
+
+    fig, ax = plt.subplots()
+    contour = ax.contourf(X, Y, Z, levels=num_levels, cmap='viridis')
+    ax.set_xlabel(g_name1)
+    ax.set_ylabel(g_name2)
     
     # Add a color bar which maps values to colors.
     cbar = fig.colorbar(contour)
