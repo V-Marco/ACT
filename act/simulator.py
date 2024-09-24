@@ -125,6 +125,9 @@ class Simulator:
         # Set CI
         if parameters.CI["type"] == "constant":
             cell._add_constant_CI(parameters.CI["amp"], parameters.CI["dur"], parameters.CI["delay"], parameters.h_tstop, parameters.h_dt)
+        elif parameters.CI["type"] == "ramp":
+            #cell._add_ramp_CI(parameters.CI["start_amp"], )
+            pass
         else:
             raise NotImplementedError
         

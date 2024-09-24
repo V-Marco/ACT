@@ -252,7 +252,6 @@ def plot_training_v_mae_contour_plot(module_foldername, amps, delay, dt, index1,
     length_g = len(g_names)
     
     # load target data
-    #
     target_dataset = np.load(f"{module_foldername}/target/combined_out.npy")
     
     target_V = target_dataset[:,:,0]

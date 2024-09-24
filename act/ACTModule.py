@@ -34,13 +34,12 @@ class ACTModule:
         print("LOADING TARGET TRACES")
         self.convert_csv_to_npy()
 
-        print("SIMULATING TRAINING DATA")
-        self.simulate_train_cells(self.train_cell)
-        
-        print("FILTERING DATA")
-        self.filter_data()
+        if self.rf_model == None:
+            print("SIMULATING TRAINING DATA")
+            self.simulate_train_cells(self.train_cell)
+            self.filter_data()
 
-        print("TRAINING RANDOM FOREST REGRESSOR")
+
         prediction = self.get_rf_prediction()
 
         print("SIMULATING PREDICTIONS")
@@ -204,11 +203,12 @@ class ACTModule:
     def filter_data(self):
         dp = DataProcessor()
         
-        data = np.load(self.output_folder_name + "train/combined_out.npy")
         filtered_out_features = self.optim_params.get("filtered_out_features", None)
         if filtered_out_features is None:
             return
         else:
+            print("FILTERING DATA")
+            data = np.load(self.output_folder_name + "train/combined_out.npy")
             if "saturated" in filtered_out_features:
                 window_of_inspection = self.optim_params.get("window_of_inspection", None)
                 if window_of_inspection is None:
@@ -242,6 +242,7 @@ class ACTModule:
         features_target, columns_target = dp.extract_features(train_features=self.optim_params.get('train_features',None), V=V_target,I=I_target,threshold=threshold,num_spikes=first_n_spikes,dt=dt)
 
         if self.rf_model == None:
+            print("TRAINING RANDOM FOREST REGRESSOR")
             # Extract Features from TrainCell traces (Get filtered data if it exists)
             if os.path.isfile(self.output_folder_name + "train/filtered_out.npy"):
                 print("Training Random Forest on Filtered Data")

@@ -87,7 +87,7 @@ class ACTCellModel:
         # Record injected current
         self.I = np.array([0.0] * delay_steps + [amp] * dur_steps + [0.0] * remainder_steps)
     
-    def _add_ramp_CI(self, start_amp: float, amp_incr: float, ramp_time: float, dur: int, delay: int) -> None:
+    def _add_ramp_CI(self, start_amp: float, amp_incr: float, ramp_time: float, dur: int, delay: int, sim_time: int, dt: float) -> None:
         total_delay = delay
         amp = start_amp
 
@@ -95,10 +95,13 @@ class ACTCellModel:
         I = [0] * total_delay
 
         for _ in range(0, dur, ramp_time):
-            self.add_constant_CI(amp, ramp_time, total_delay)
+            self._add_constant_CI(amp, ramp_time, total_delay, sim_time, dt)
             I += [amp] * ramp_time
             total_delay += ramp_time
             amp += amp_incr
+        # TODO constant CI for final amp and stop time    
+        #remainder_time = 1
+        #self._add_constant_CI(amp, remainder_time, total_delay, sim_time, dt)
         
         self.I = np.array(I)
 
