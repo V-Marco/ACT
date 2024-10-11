@@ -386,10 +386,10 @@ class DataProcessor:
             interspike_intervals_list.append(interspike_intervals_padded)
             
             spike_heights = trace[peak_idxs]
-            min_spike_height = np.min(spike_heights) if len(spike_heights) > 0 else np.nan
-            max_spike_height = np.max(spike_heights) if len(spike_heights) > 0 else np.nan
-            avg_spike_height = np.mean(spike_heights) if len(spike_heights) > 0 else np.nan
-            std_spike_height = np.std(spike_heights) if len(spike_heights) > 0 else np.nan
+            min_spike_height = np.min(spike_heights) if len(spike_heights) > 0 else 1e6
+            max_spike_height = np.max(spike_heights) if len(spike_heights) > 0 else 1e6
+            avg_spike_height = np.mean(spike_heights) if len(spike_heights) > 0 else 1e6
+            std_spike_height = np.std(spike_heights) if len(spike_heights) > 0 else 1e6
             
             min_spike_height_list.append(min_spike_height)
             max_spike_height_list.append(max_spike_height)
@@ -424,10 +424,10 @@ class DataProcessor:
             trough_times_list.append(trough_times_padded)
             
             trough_heights = trace[valid_trough_idx]
-            min_trough_height = np.min(trough_heights) if len(trough_heights) > 0 else np.nan
-            max_trough_height = np.max(trough_heights) if len(trough_heights) > 0 else np.nan
-            avg_trough_height = np.mean(trough_heights) if len(trough_heights) > 0 else np.nan
-            std_trough_height = np.std(trough_heights) if len(trough_heights) > 0 else np.nan
+            min_trough_height = np.min(trough_heights) if len(trough_heights) > 0 else 1e6
+            max_trough_height = np.max(trough_heights) if len(trough_heights) > 0 else 1e6
+            avg_trough_height = np.mean(trough_heights) if len(trough_heights) > 0 else 1e6
+            std_trough_height = np.std(trough_heights) if len(trough_heights) > 0 else 1e6
             
             min_trough_height_list.append(min_trough_height)
             max_trough_height_list.append(max_trough_height)
@@ -582,7 +582,9 @@ class DataProcessor:
         prediction_evaluation_method_list = []
         final_prediction_fi_mae_list = []
         final_prediction_voltage_mae_list = []
+        feature_mae_list = []
         module_runtime_list = []
+        
 
         # Go through each metrics file and get the data
         for filename in filenames:
@@ -599,6 +601,7 @@ class DataProcessor:
             prediction_evaluation_method_list.append(data.get("prediction_evaluation_method"))
             final_prediction_fi_mae_list.append(data.get("final_prediction_fi_mae"))
             final_prediction_voltage_mae_list.append(data.get("final_prediction_voltage_mae"))
+            feature_mae_list.append(data.get("summary_stats_mae_final_prediction"))
             
             module_runtime = data.get("module_runtime")
             time_obj = datetime.strptime(module_runtime, "%H:%M:%S.%f")
@@ -617,5 +620,6 @@ class DataProcessor:
             prediction_evaluation_method_list, 
             final_prediction_fi_mae_list, 
             final_prediction_voltage_mae_list, 
+            feature_mae_list,
             module_runtime_list
         )

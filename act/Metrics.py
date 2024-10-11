@@ -66,7 +66,7 @@ class Metrics:
             dp.save_to_json(np.std(n_scores), "rf_stdev_g_score_mae", save_file)
     
     
-    def print_interspike_interval_comparison(self, module_foldername, prediction_data_filepath, amps, dt, first_n_spikes=5,save_file=None):
+    def save_interspike_interval_comparison(self, module_foldername, prediction_data_filepath, amps, dt, first_n_spikes=5,save_file=None):
 
         dp = DataProcessor()
         
@@ -111,7 +111,7 @@ class Metrics:
             
         return mean_isi, stdev_isi
     
-    def print_prediction_g_mae(self, actual_g, save_file):
+    def save_prediction_g_mae(self, actual_g, save_file):
         with open(save_file, 'r') as file:
             data = json.load(file)
         
@@ -126,6 +126,32 @@ class Metrics:
         
         dp = DataProcessor()
         dp.save_to_json(mae, "mae_final_predicted_g", save_file)
+        
+    def save_feature_mae(self, module_foldername, prediction_data_filepath, train_features, dt, threshold=0, first_n_spikes=5, save_file=None):
+        dp = DataProcessor()
+        
+        # Load target data
+        target_dataset = np.load(f"{module_foldername}/target/combined_out.npy")
+        
+        target_V = target_dataset[:,:,0]
+        target_I = target_dataset[:,:,1]
+        
+        # Load prediction data
+        pred_dataset = np.load(prediction_data_filepath)
+        
+        pred_V = pred_dataset[:,:,0]
+        pred_I = pred_dataset[:,:,1]
+        
+        target_V_features, _ = dp.extract_features(train_features=train_features, V=target_V,I=target_I, threshold=threshold, num_spikes=first_n_spikes, dt=dt)
+        
+        pred_V_features, _ = dp.extract_features(train_features=train_features, V=pred_V,I=pred_I, threshold=threshold, num_spikes=first_n_spikes, dt=dt)
+        
+        # Calculate the MAE between the features
+        feature_mae = self.mae_score(target_V_features, pred_V_features)
+        print(f"MAE of summary features for final prediction: {feature_mae}")
+        
+        dp.save_to_json(feature_mae, "summary_stats_mae_final_prediction", save_file)
+        
 
     
     def average_metrics_across_seeds(self, metric_filename_list, save_filename):
@@ -144,6 +170,7 @@ class Metrics:
             prediction_evaluation_method_list, 
             final_prediction_fi_mae_list, 
             final_prediction_voltage_mae_list, 
+            feature_mae_list,
             module_runtime_list
         ) = dp.load_metric_data(metric_filename_list)
         
@@ -173,6 +200,10 @@ class Metrics:
         avg_stdev_isi_mae = np.mean(stdev_interspike_interval_mae_list)
         stdev_stdev_isi_mae = np.std(stdev_interspike_interval_mae_list)
         
+        # Average/STDEV of the MAE of the summary stat features
+        avg_feature_mae = np.mean(feature_mae_list)
+        stdev_feature_mae = np.std(feature_mae_list)
+        
         # Average/STDEV of the Module Runtime
         avg_runtime_s = np.mean(module_runtime_list)
         stdev_runtime_s = np.std(module_runtime_list)
@@ -199,6 +230,8 @@ class Metrics:
             "stdev_mean_isi_mae": stdev_mean_isi_mae,
             "avg_stdev_isi_mae": avg_stdev_isi_mae,
             "stdev_stdev_isi_mae": stdev_stdev_isi_mae,
+            "avg_feature_mae": avg_feature_mae,
+            "stdev_feature_mae": stdev_feature_mae,
             "avg_module_runtime": avg_time_obj,
             "stdev__module_runtime": stdev_time_obj
         }
