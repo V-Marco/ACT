@@ -48,13 +48,13 @@ proc init() {
 		gbar_cas = 0.01
 
         insert ka
-	gbar_ka = 0.17
+		gbar_ka = 0.17
 
         insert kca
-	gbar_kca = 0.02
+		gbar_kca = 0.02
 
         insert cat
-	gbar_cat = 0.005
+		gbar_cat = 0.005
 
 	}
 }

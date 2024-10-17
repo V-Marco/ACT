@@ -43,7 +43,7 @@ class DataProcessor:
         pass
 
     # Spike features automatically included. Must provide a voltage trace
-    def extract_features(self,train_features=None, V=None, I=None, arima_file=None, threshold=0, num_spikes=20,dt=1):
+    def extract_features(self,train_features=None, V=None, I=None, arima_file=None, threshold=0, num_spikes=20, dt=1, n_steps = None, step_time=None, dur=None, delay=None):
 
         # If a specific list is not provided, extract all features
         if(train_features is None):
@@ -79,7 +79,7 @@ class DataProcessor:
             summary_features = concatenate_features(summary_features, features)
             
         if "lto-hto_amplitude" in train_features or "lto-hto_frequency" in train_features:
-            #features, column_names = self.get_lto-hto_stats(V, train_features=train_features, n_splits, ramp_splits, ramp_time, dt=dt)
+            features, column_names = self.get_hto_lto_stats(V, train_features=train_features, n_steps=n_steps, step_time=step_time, dur=dur, delay=delay, dt=dt)
             columns += column_names
             summary_features = concatenate_features(summary_features, features)
 
@@ -451,6 +451,80 @@ class DataProcessor:
             np.array(mean_voltage_list),
             np.array(std_voltage_list)
         )
+  
+        
+    def get_hto_lto_stats(self, V, train_features=None, dt=1, n_steps = None, step_time=None, dur=None, delay=None):
+        start_time = delay + (step_time * (n_steps-1))
+        end_time = delay + dur
+        
+        features = []
+        column_names = []
+        
+        if "hto_lto_frequency" in train_features:
+            features.append(self.calculate_hto_lto_frequency(V, start_time, end_time, dt))
+            column_names += ["hto_lto_frequency"]
+        elif "hto_lto_amplitude" in train_features:
+            features.append(self.calculate_hto_lto_amplitude(V, start_time, end_time, dt))
+            column_names += ["hto_lto_amplitude"]
+        
+        features_final = np.column_stack(features)
+        
+        return features_final, column_names
+        
+        
+    def calculate_hto_lto_frequency(V, start_time, stop_time, dt):
+        frequencies = []
+        for v_trace in V:
+            start_idx = int(np.round(start_time / dt))
+            end_idx = int(np.round(stop_time / dt))
+            end_idx = min(end_idx, len(v_trace)) 
+
+            # Extract the window of the voltage trace
+            window = v_trace[start_idx:end_idx]
+
+            # Number of samples in the window
+            n = len(window)
+
+            # Check if the window has enough data
+            if n == 0:
+                raise ValueError("Delay larger than simulation duration.")
+
+            # Perform FFT on the real-valued window
+            fft_result = np.fft.rfft(window)
+            fft_magnitude = np.abs(fft_result)
+
+            # Frequencies corresponding to the FFT components
+            freqs = np.fft.rfftfreq(n, d=dt)
+
+            # Exclude the zero frequency (DC component) if necessary
+            if freqs[0] == 0:
+                fft_magnitude[0] = 0
+
+            # Find the index of the maximum magnitude in the FFT result
+            max_index = np.argmax(fft_magnitude)
+
+            # Principal frequency corresponding to the maximum magnitude
+            principal_freq = freqs[max_index]
+            frequencies.append(principal_freq)
+
+        return np.array(frequencies)
+    
+    def calculate_hto_lto_amplitude(V, start_time, stop_time, dt):
+        amplitudes = []
+        for v_trace in V:
+            start_idx = int(np.round(start_time / dt))
+            end_idx = int(np.round(stop_time / dt))
+            end_idx = min(end_idx, len(v_trace)) 
+
+            # Extract the window of the voltage trace
+            window = v_trace[start_idx:end_idx]
+            
+            min_voltage = min(window)
+            max_voltage = max(window)
+            
+            amplitudes.append(max_voltage - min_voltage)
+        
+        return np.array(amplitudes)
         
     #---------------------------------------------
     # FILTERING

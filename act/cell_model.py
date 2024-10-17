@@ -87,21 +87,28 @@ class ACTCellModel:
         # Record injected current
         self.I = np.array([0.0] * delay_steps + [amp] * dur_steps + [0.0] * remainder_steps)
     
-    def _add_ramp_CI(self, start_amp: float, amp_incr: float, ramp_time: float, dur: int, delay: int, sim_time: int, dt: float) -> None:
+    def _add_ramp_CI(self, start_amp: float, amp_incr: float, num_steps: int, step_time: float, dur: int, delay: int, sim_time: int, dt: float) -> None:
         total_delay = delay
         amp = start_amp
 
         # Record injected current
         I = [0] * total_delay
 
-        for _ in range(0, dur, ramp_time):
-            self._add_constant_CI(amp, ramp_time, total_delay, sim_time, dt)
-            I += [amp] * ramp_time
-            total_delay += ramp_time
+        for _ in range(num_steps):
+            self._add_constant_CI(amp, step_time, total_delay, sim_time, dt)
+            I += [amp] * (step_time / dt)
+            total_delay += step_time
             amp += amp_incr
-        # TODO constant CI for final amp and stop time    
-        #remainder_time = 1
-        #self._add_constant_CI(amp, remainder_time, total_delay, sim_time, dt)
+
+        # Current injection plateau after ramp
+        amp -= amp_incr # undo the last increase in for-loop
+        remainder_inj_time = (dur + delay) - total_delay
+        self._add_constant_CI(amp, remainder_inj_time, total_delay, sim_time, dt)
+        I += [amp] * (remainder_inj_time / dt)
+        
+        # no current injection after plateau
+        remainder_no_injection = sim_time - dur - delay
+        I += [amp - amp_incr] * (remainder_no_injection / dt)
         
         self.I = np.array(I)
 

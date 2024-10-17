@@ -126,7 +126,7 @@ class Simulator:
         if parameters.CI["type"] == "constant":
             cell._add_constant_CI(parameters.CI["amp"], parameters.CI["dur"], parameters.CI["delay"], parameters.h_tstop, parameters.h_dt)
         elif parameters.CI["type"] == "ramp":
-            #cell._add_ramp_CI(parameters.CI["start_amp"], )
+            cell._add_ramp_CI(parameters.CI["start_amp"], parameters.CI["amp_incr"],parameters.CI["num_steps"],parameters.CI["step_time"],parameters.CI["dur"], parameters.CI["delay"], parameters.h_tstop, parameters.h_dt)
             pass
         else:
             raise NotImplementedError
