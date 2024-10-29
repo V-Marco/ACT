@@ -109,6 +109,7 @@ class OptimizationParameters(TypedDict):
     first_n_spikes: int
     prediction_eval_method: str
     rf_model: RandomForestOptimizer
+    previous_modules: List[str]
     save_file: str
 
 class SummaryFeatures:

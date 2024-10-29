@@ -150,7 +150,22 @@ special.nrn
 
 ~lock.*
 
-output/*
+/output/*
+/home/mwsrgf/proj/ACT/experiments/Spiker/filtered/output/*
+/home/mwsrgf/proj/ACT/experiments/BursterCA3/filtered/output/*
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/*
+/home/mwsrgf/proj/ACT/experiments/BursterS3/filtered/output/*
+/home/mwsrgf/proj/ACT/experiments/L5/filtered/output/*
+/home/mwsrgf/proj/ACT/experiments/LA_A/filtered/output/*
+/home/mwsrgf/proj/ACT/experiments/LA_C/filtered/output/*
+
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/*
+/home/mwsrgf/proj/ACT/experiments/BursterCA3/not-filtered/output/*
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/not-filtered/output/*
+/home/mwsrgf/proj/ACT/experiments/BursterS3/not-filtered/output/*
+/home/mwsrgf/proj/ACT/experiments/L5/not-filtered/output/*
+/home/mwsrgf/proj/ACT/experiments/LA_A/not-filtered/output/*
+/home/mwsrgf/proj/ACT/experiments/LA_C/not-filtered/output/*
 
 simulation/components
 simulation/network

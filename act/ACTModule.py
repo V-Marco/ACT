@@ -4,6 +4,7 @@ from datetime import timedelta
 import numpy as np
 from typing import List
 import pickle
+import json
 
 from act.act_types import SimulationParameters, OptimizationParameters, OptimizationParam, SimParams
 from act.cell_model import ModuleParameters, TrainCell
@@ -84,8 +85,22 @@ class ACTModule:
         
         print(f"Module runtime: {formatted_runtime}")
         
+        previous_modules = self.optim_params.get('previous_modules', None)
+        total_runtime = run_time
+        if not previous_modules == None:
+            
+            for module in previous_modules:
+                # Get the runtime of the module
+                base_directory = self.output_folder_name.replace("/module_final", "")
+                prev_module_file = base_directory + module + "/results/saved_metrics.json"
+                with open(prev_module_file, 'r') as file:
+                    data = json.load(file)
+                
+                module_time = data.get('module_runtime', None)
+                total_runtime += module_time
+        
         if not save_file == None:
-            dp.save_to_json(formatted_runtime, "module_runtime", save_file)
+            dp.save_to_json(total_runtime, "module_runtime", save_file)
             dp.save_to_json(predicted_g_data_file, "predicted_g_data_file", save_file)
         
         return predicted_g_data_file

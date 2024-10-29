@@ -1,0 +1,331 @@
+/home/mwsrgf/act-venv/lib64/python3.9/site-packages/torch/__init__.py:955: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:432.)
+  _C._set_default_tensor_type(t)
+Warning: no DISPLAY environment variable.
+--No graphics will be displayed.
+Blocking: []
+Total number of jobs: 3
+Total number of proccessors: 192
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/42/target/synthetic_0.1_0.2_0.3_
+RUNNING THE MODULE
+LOADING TARGET TRACES
+SIMULATING TRAINING DATA
+Total number of jobs: 81
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/42/final/train
+TRAINING RANDOM FOREST REGRESSOR
+Extracting features: ['I_mean', 'I_stdev', 'Num Spikes', 'Spike Time 1', 'Spike Time 2', 'Spike Time 3', 'Spike Time 4', 'Spike Time 5', 'Spike Time 6', 'Spike Time 7', 'Spike Time 8', 'Spike Time 9', 'Spike Time 10', 'Spike Time 11', 'Spike Time 12', 'Spike Time 13', 'Spike Time 14', 'Spike Time 15', 'Spike Time 16', 'Spike Time 17', 'Spike Time 18', 'Spike Time 19', 'Spike Time 20', 'Min Spike Height', 'Max Spike Height', 'Avg Spike Height', 'Std Spike Height', 'Num Troughs', 'Trough Time 1', 'Trough Time 2', 'Trough Time 3', 'Trough Time 4', 'Trough Time 5', 'Trough Time 6', 'Trough Time 7', 'Trough Time 8', 'Trough Time 9', 'Trough Time 10', 'Trough Time 11', 'Trough Time 12', 'Trough Time 13', 'Trough Time 14', 'Trough Time 15', 'Trough Time 16', 'Trough Time 17', 'Trough Time 18', 'Trough Time 19', 'Trough Time 20', 'Min Trough Height', 'Max Trough Height', 'Avg Trough Height', 'Std Trough Height']
+Evaluating random forest
+MAE: 0.091619 (0.014582)
+Saving rf mean/stdev scores to output/Spiker_Original_sl-3/42/final/results/saved_metrics.json
+Predicted Conductances for each current injection intensity: 
+[[0.16245 0.28605 0.     ]
+ [0.1623  0.261   0.     ]
+ [0.16845 0.252   0.     ]]
+SIMULATING PREDICTIONS
+Total number of jobs: 9
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/42/final/prediction_eval0
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/42/final/prediction_eval1
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/42/final/prediction_eval2
+SELECTING BEST PREDICTION
+FI curve MAE for each prediction: 
+[77.77777777777779, 77.77777777777779, 77.77777777777779]
+{'gnabar_hh_seg': 0.16245000000000284, 'gkbar_hh_seg': 0.28605000000000497, 'gl_hh_seg': 0.0}
+Module runtime: 0:00:10.279250
+Interspike times (Target): [[15.8 15.5 15.5 15.5]
+ [12.7 12.3 12.2 12.2]
+ [11.3 10.8 10.7 10.7]]
+Interspike times (Prediction): [[1000000. 1000000. 1000000. 1000000.]
+ [1000000. 1000000. 1000000. 1000000.]
+ [1000000. 1000000. 1000000. 1000000.]]
+MAE for each I injection: [999984.425, 999987.6499999999, 999989.125]
+Mean interspike-interval MAE: 999987.0666666668
+Standard Deviation interspike-interval MAE: 1.9626017312326332
+MAE of final g prediction: 0.09760000000000263
+MAE of summary features for final prediction: 590868.5888412638
+Smallest FI MAE values (gkbar_hh_orig, gl_hh_orig, FI MAE): 
+[[ 0.15        0.         77.77777778]
+ [ 0.15        0.15       77.77777778]
+ [ 0.15        0.3        77.77777778]
+ [ 0.3         0.         77.77777778]
+ [ 0.3         0.15       77.77777778]
+ [ 0.3         0.3        77.77777778]]
+Smallest MAE values (gkbar_hh_orig, gl_hh_orig, V MAE): 
+[[ 0.3         0.15       13.50736493]
+ [ 0.15        0.15       13.69866905]
+ [ 0.          0.15       14.01439906]
+ [ 0.3         0.3        14.15565671]
+ [ 0.15        0.3        14.32321201]
+ [ 0.          0.3        14.43950206]]
+Smallest MAE values (gkbar_hh_orig, gl_hh_orig, Summary Stats MAE): 
+[[1.50000000e-01 3.00000000e-01 8.20349715e+05]
+ [1.50000000e-01 1.50000000e-01 8.20349982e+05]
+ [3.00000000e-01 3.00000000e-01 8.20350061e+05]
+ [3.00000000e-01 1.50000000e-01 8.20350232e+05]
+ [3.00000000e-01 0.00000000e+00 8.20509009e+05]
+ [1.50000000e-01 0.00000000e+00 8.20568584e+05]]
+Blocking: []
+Total number of jobs: 3
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/43/target/synthetic_0.1_0.2_0.3_
+RUNNING THE MODULE
+LOADING TARGET TRACES
+SIMULATING TRAINING DATA
+Total number of jobs: 81
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/43/final/train
+TRAINING RANDOM FOREST REGRESSOR
+Extracting features: ['I_mean', 'I_stdev', 'Num Spikes', 'Spike Time 1', 'Spike Time 2', 'Spike Time 3', 'Spike Time 4', 'Spike Time 5', 'Spike Time 6', 'Spike Time 7', 'Spike Time 8', 'Spike Time 9', 'Spike Time 10', 'Spike Time 11', 'Spike Time 12', 'Spike Time 13', 'Spike Time 14', 'Spike Time 15', 'Spike Time 16', 'Spike Time 17', 'Spike Time 18', 'Spike Time 19', 'Spike Time 20', 'Min Spike Height', 'Max Spike Height', 'Avg Spike Height', 'Std Spike Height', 'Num Troughs', 'Trough Time 1', 'Trough Time 2', 'Trough Time 3', 'Trough Time 4', 'Trough Time 5', 'Trough Time 6', 'Trough Time 7', 'Trough Time 8', 'Trough Time 9', 'Trough Time 10', 'Trough Time 11', 'Trough Time 12', 'Trough Time 13', 'Trough Time 14', 'Trough Time 15', 'Trough Time 16', 'Trough Time 17', 'Trough Time 18', 'Trough Time 19', 'Trough Time 20', 'Min Trough Height', 'Max Trough Height', 'Avg Trough Height', 'Std Trough Height']
+Evaluating random forest
+MAE: 0.093220 (0.014996)
+Saving rf mean/stdev scores to output/Spiker_Original_sl-3/43/final/results/saved_metrics.json
+Predicted Conductances for each current injection intensity: 
+[[0.16365 0.28305 0.     ]
+ [0.1638  0.2604  0.     ]
+ [0.1707  0.25575 0.     ]]
+SIMULATING PREDICTIONS
+Total number of jobs: 9
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/43/final/prediction_eval0
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/43/final/prediction_eval1
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/43/final/prediction_eval2
+SELECTING BEST PREDICTION
+FI curve MAE for each prediction: 
+[77.77777777777779, 77.77777777777779, 77.77777777777779]
+{'gnabar_hh_seg': 0.16365000000000282, 'gkbar_hh_seg': 0.2830500000000049, 'gl_hh_seg': 0.0}
+Module runtime: 0:00:08.488446
+Interspike times (Target): [[15.8 15.5 15.5 15.5]
+ [12.7 12.3 12.2 12.2]
+ [11.3 10.8 10.7 10.7]]
+Interspike times (Prediction): [[1000000. 1000000. 1000000. 1000000.]
+ [1000000. 1000000. 1000000. 1000000.]
+ [1000000. 1000000. 1000000. 1000000.]]
+MAE for each I injection: [999984.425, 999987.6499999999, 999989.125]
+Mean interspike-interval MAE: 999987.0666666668
+Standard Deviation interspike-interval MAE: 1.9626017312326332
+MAE of final g prediction: 0.09700000000000258
+MAE of summary features for final prediction: 590868.6143920439
+Smallest FI MAE values (gkbar_hh_orig, gl_hh_orig, FI MAE): 
+[[ 0.15        0.         77.77777778]
+ [ 0.15        0.15       77.77777778]
+ [ 0.15        0.3        77.77777778]
+ [ 0.3         0.         77.77777778]
+ [ 0.3         0.15       77.77777778]
+ [ 0.3         0.3        77.77777778]]
+Smallest MAE values (gkbar_hh_orig, gl_hh_orig, V MAE): 
+[[ 0.3         0.15       13.50736493]
+ [ 0.15        0.15       13.69866905]
+ [ 0.          0.15       14.01439906]
+ [ 0.3         0.3        14.15565671]
+ [ 0.15        0.3        14.32321201]
+ [ 0.          0.3        14.43950206]]
+Smallest MAE values (gkbar_hh_orig, gl_hh_orig, Summary Stats MAE): 
+[[1.50000000e-01 3.00000000e-01 8.20349715e+05]
+ [1.50000000e-01 1.50000000e-01 8.20349982e+05]
+ [3.00000000e-01 3.00000000e-01 8.20350061e+05]
+ [3.00000000e-01 1.50000000e-01 8.20350232e+05]
+ [3.00000000e-01 0.00000000e+00 8.20509009e+05]
+ [1.50000000e-01 0.00000000e+00 8.20568584e+05]]
+Blocking: []
+Total number of jobs: 3
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/44/target/synthetic_0.1_0.2_0.3_
+RUNNING THE MODULE
+LOADING TARGET TRACES
+SIMULATING TRAINING DATA
+Total number of jobs: 81
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/44/final/train
+TRAINING RANDOM FOREST REGRESSOR
+Extracting features: ['I_mean', 'I_stdev', 'Num Spikes', 'Spike Time 1', 'Spike Time 2', 'Spike Time 3', 'Spike Time 4', 'Spike Time 5', 'Spike Time 6', 'Spike Time 7', 'Spike Time 8', 'Spike Time 9', 'Spike Time 10', 'Spike Time 11', 'Spike Time 12', 'Spike Time 13', 'Spike Time 14', 'Spike Time 15', 'Spike Time 16', 'Spike Time 17', 'Spike Time 18', 'Spike Time 19', 'Spike Time 20', 'Min Spike Height', 'Max Spike Height', 'Avg Spike Height', 'Std Spike Height', 'Num Troughs', 'Trough Time 1', 'Trough Time 2', 'Trough Time 3', 'Trough Time 4', 'Trough Time 5', 'Trough Time 6', 'Trough Time 7', 'Trough Time 8', 'Trough Time 9', 'Trough Time 10', 'Trough Time 11', 'Trough Time 12', 'Trough Time 13', 'Trough Time 14', 'Trough Time 15', 'Trough Time 16', 'Trough Time 17', 'Trough Time 18', 'Trough Time 19', 'Trough Time 20', 'Min Trough Height', 'Max Trough Height', 'Avg Trough Height', 'Std Trough Height']
+Evaluating random forest
+MAE: 0.092918 (0.014128)
+Saving rf mean/stdev scores to output/Spiker_Original_sl-3/44/final/results/saved_metrics.json
+Predicted Conductances for each current injection intensity: 
+[[0.1626  0.2862  0.     ]
+ [0.16425 0.26055 0.     ]
+ [0.17145 0.2559  0.     ]]
+SIMULATING PREDICTIONS
+Total number of jobs: 9
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/44/final/prediction_eval0
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/44/final/prediction_eval1
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/44/final/prediction_eval2
+SELECTING BEST PREDICTION
+FI curve MAE for each prediction: 
+[77.77777777777779, 77.77777777777779, 77.77777777777779]
+{'gnabar_hh_seg': 0.1626000000000028, 'gkbar_hh_seg': 0.28620000000000495, 'gl_hh_seg': 0.0}
+Module runtime: 0:00:08.542938
+Interspike times (Target): [[15.8 15.5 15.5 15.5]
+ [12.7 12.3 12.2 12.2]
+ [11.3 10.8 10.7 10.7]]
+Interspike times (Prediction): [[1000000. 1000000. 1000000. 1000000.]
+ [1000000. 1000000. 1000000. 1000000.]
+ [1000000. 1000000. 1000000. 1000000.]]
+MAE for each I injection: [999984.425, 999987.6499999999, 999989.125]
+Mean interspike-interval MAE: 999987.0666666668
+Standard Deviation interspike-interval MAE: 1.9626017312326332
+MAE of final g prediction: 0.0977000000000026
+MAE of summary features for final prediction: 590868.5896228808
+Smallest FI MAE values (gkbar_hh_orig, gl_hh_orig, FI MAE): 
+[[ 0.15        0.         77.77777778]
+ [ 0.15        0.15       77.77777778]
+ [ 0.15        0.3        77.77777778]
+ [ 0.3         0.         77.77777778]
+ [ 0.3         0.15       77.77777778]
+ [ 0.3         0.3        77.77777778]]
+Smallest MAE values (gkbar_hh_orig, gl_hh_orig, V MAE): 
+[[ 0.3         0.15       13.50736493]
+ [ 0.15        0.15       13.69866905]
+ [ 0.          0.15       14.01439906]
+ [ 0.3         0.3        14.15565671]
+ [ 0.15        0.3        14.32321201]
+ [ 0.          0.3        14.43950206]]
+Smallest MAE values (gkbar_hh_orig, gl_hh_orig, Summary Stats MAE): 
+[[1.50000000e-01 3.00000000e-01 8.20349715e+05]
+ [1.50000000e-01 1.50000000e-01 8.20349982e+05]
+ [3.00000000e-01 3.00000000e-01 8.20350061e+05]
+ [3.00000000e-01 1.50000000e-01 8.20350232e+05]
+ [3.00000000e-01 0.00000000e+00 8.20509009e+05]
+ [1.50000000e-01 0.00000000e+00 8.20568584e+05]]
+Blocking: []
+Total number of jobs: 3
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/45/target/synthetic_0.1_0.2_0.3_
+RUNNING THE MODULE
+LOADING TARGET TRACES
+SIMULATING TRAINING DATA
+Total number of jobs: 81
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/45/final/train
+TRAINING RANDOM FOREST REGRESSOR
+Extracting features: ['I_mean', 'I_stdev', 'Num Spikes', 'Spike Time 1', 'Spike Time 2', 'Spike Time 3', 'Spike Time 4', 'Spike Time 5', 'Spike Time 6', 'Spike Time 7', 'Spike Time 8', 'Spike Time 9', 'Spike Time 10', 'Spike Time 11', 'Spike Time 12', 'Spike Time 13', 'Spike Time 14', 'Spike Time 15', 'Spike Time 16', 'Spike Time 17', 'Spike Time 18', 'Spike Time 19', 'Spike Time 20', 'Min Spike Height', 'Max Spike Height', 'Avg Spike Height', 'Std Spike Height', 'Num Troughs', 'Trough Time 1', 'Trough Time 2', 'Trough Time 3', 'Trough Time 4', 'Trough Time 5', 'Trough Time 6', 'Trough Time 7', 'Trough Time 8', 'Trough Time 9', 'Trough Time 10', 'Trough Time 11', 'Trough Time 12', 'Trough Time 13', 'Trough Time 14', 'Trough Time 15', 'Trough Time 16', 'Trough Time 17', 'Trough Time 18', 'Trough Time 19', 'Trough Time 20', 'Min Trough Height', 'Max Trough Height', 'Avg Trough Height', 'Std Trough Height']
+Evaluating random forest
+MAE: 0.091494 (0.012819)
+Saving rf mean/stdev scores to output/Spiker_Original_sl-3/45/final/results/saved_metrics.json
+Predicted Conductances for each current injection intensity: 
+[[0.1623  0.28515 0.     ]
+ [0.1632  0.2604  0.     ]
+ [0.1695  0.2538  0.     ]]
+SIMULATING PREDICTIONS
+Total number of jobs: 9
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/45/final/prediction_eval0
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/45/final/prediction_eval1
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/45/final/prediction_eval2
+SELECTING BEST PREDICTION
+FI curve MAE for each prediction: 
+[77.77777777777779, 77.77777777777779, 77.77777777777779]
+{'gnabar_hh_seg': 0.1623000000000028, 'gkbar_hh_seg': 0.28515000000000484, 'gl_hh_seg': 0.0}
+Module runtime: 0:00:08.596349
+Interspike times (Target): [[15.8 15.5 15.5 15.5]
+ [12.7 12.3 12.2 12.2]
+ [11.3 10.8 10.7 10.7]]
+Interspike times (Prediction): [[1000000. 1000000. 1000000. 1000000.]
+ [1000000. 1000000. 1000000. 1000000.]
+ [1000000. 1000000. 1000000. 1000000.]]
+MAE for each I injection: [999984.425, 999987.6499999999, 999989.125]
+Mean interspike-interval MAE: 999987.0666666668
+Standard Deviation interspike-interval MAE: 1.9626017312326332
+MAE of final g prediction: 0.09725000000000256
+MAE of summary features for final prediction: 590868.5928409635
+Smallest FI MAE values (gkbar_hh_orig, gl_hh_orig, FI MAE): 
+[[ 0.15        0.         77.77777778]
+ [ 0.15        0.15       77.77777778]
+ [ 0.15        0.3        77.77777778]
+ [ 0.3         0.         77.77777778]
+ [ 0.3         0.15       77.77777778]
+ [ 0.3         0.3        77.77777778]]
+Smallest MAE values (gkbar_hh_orig, gl_hh_orig, V MAE): 
+[[ 0.3         0.15       13.50736493]
+ [ 0.15        0.15       13.69866905]
+ [ 0.          0.15       14.01439906]
+ [ 0.3         0.3        14.15565671]
+ [ 0.15        0.3        14.32321201]
+ [ 0.          0.3        14.43950206]]
+Smallest MAE values (gkbar_hh_orig, gl_hh_orig, Summary Stats MAE): 
+[[1.50000000e-01 3.00000000e-01 8.20349715e+05]
+ [1.50000000e-01 1.50000000e-01 8.20349982e+05]
+ [3.00000000e-01 3.00000000e-01 8.20350061e+05]
+ [3.00000000e-01 1.50000000e-01 8.20350232e+05]
+ [3.00000000e-01 0.00000000e+00 8.20509009e+05]
+ [1.50000000e-01 0.00000000e+00 8.20568584e+05]]
+Blocking: []
+Total number of jobs: 3
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/46/target/synthetic_0.1_0.2_0.3_
+RUNNING THE MODULE
+LOADING TARGET TRACES
+SIMULATING TRAINING DATA
+Total number of jobs: 81
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/46/final/train
+TRAINING RANDOM FOREST REGRESSOR
+Extracting features: ['I_mean', 'I_stdev', 'Num Spikes', 'Spike Time 1', 'Spike Time 2', 'Spike Time 3', 'Spike Time 4', 'Spike Time 5', 'Spike Time 6', 'Spike Time 7', 'Spike Time 8', 'Spike Time 9', 'Spike Time 10', 'Spike Time 11', 'Spike Time 12', 'Spike Time 13', 'Spike Time 14', 'Spike Time 15', 'Spike Time 16', 'Spike Time 17', 'Spike Time 18', 'Spike Time 19', 'Spike Time 20', 'Min Spike Height', 'Max Spike Height', 'Avg Spike Height', 'Std Spike Height', 'Num Troughs', 'Trough Time 1', 'Trough Time 2', 'Trough Time 3', 'Trough Time 4', 'Trough Time 5', 'Trough Time 6', 'Trough Time 7', 'Trough Time 8', 'Trough Time 9', 'Trough Time 10', 'Trough Time 11', 'Trough Time 12', 'Trough Time 13', 'Trough Time 14', 'Trough Time 15', 'Trough Time 16', 'Trough Time 17', 'Trough Time 18', 'Trough Time 19', 'Trough Time 20', 'Min Trough Height', 'Max Trough Height', 'Avg Trough Height', 'Std Trough Height']
+Evaluating random forest
+MAE: 0.092259 (0.013099)
+Saving rf mean/stdev scores to output/Spiker_Original_sl-3/46/final/results/saved_metrics.json
+Predicted Conductances for each current injection intensity: 
+[[0.16005 0.2859  0.     ]
+ [0.16245 0.26235 0.     ]
+ [0.1692  0.2562  0.     ]]
+SIMULATING PREDICTIONS
+Total number of jobs: 9
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/46/final/prediction_eval0
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/46/final/prediction_eval1
+/home/mwsrgf/proj/ACT/experiments/Spiker/not-filtered/output/Spiker_Original_sl-3/46/final/prediction_eval2
+SELECTING BEST PREDICTION
+FI curve MAE for each prediction: 
+[77.77777777777779, 77.77777777777779, 77.77777777777779]
+{'gnabar_hh_seg': 0.16005000000000288, 'gkbar_hh_seg': 0.28590000000000504, 'gl_hh_seg': 0.0}
+Module runtime: 0:00:08.604504
+Interspike times (Target): [[15.8 15.5 15.5 15.5]
+ [12.7 12.3 12.2 12.2]
+ [11.3 10.8 10.7 10.7]]
+Interspike times (Prediction): [[1000000. 1000000. 1000000. 1000000.]
+ [1000000. 1000000. 1000000. 1000000.]
+ [1000000. 1000000. 1000000. 1000000.]]
+MAE for each I injection: [999984.425, 999987.6499999999, 999989.125]
+Mean interspike-interval MAE: 999987.0666666668
+Standard Deviation interspike-interval MAE: 1.9626017312326332
+MAE of final g prediction: 0.09675000000000265
+MAE of summary features for final prediction: 590868.5786521647
+Smallest FI MAE values (gkbar_hh_orig, gl_hh_orig, FI MAE): 
+[[ 0.15        0.         77.77777778]
+ [ 0.15        0.15       77.77777778]
+ [ 0.15        0.3        77.77777778]
+ [ 0.3         0.         77.77777778]
+ [ 0.3         0.15       77.77777778]
+ [ 0.3         0.3        77.77777778]]
+Smallest MAE values (gkbar_hh_orig, gl_hh_orig, V MAE): 
+[[ 0.3         0.15       13.50736493]
+ [ 0.15        0.15       13.69866905]
+ [ 0.          0.15       14.01439906]
+ [ 0.3         0.3        14.15565671]
+ [ 0.15        0.3        14.32321201]
+ [ 0.          0.3        14.43950206]]
+Smallest MAE values (gkbar_hh_orig, gl_hh_orig, Summary Stats MAE): 
+[[1.50000000e-01 3.00000000e-01 8.20349715e+05]
+ [1.50000000e-01 1.50000000e-01 8.20349982e+05]
+ [3.00000000e-01 3.00000000e-01 8.20350061e+05]
+ [3.00000000e-01 1.50000000e-01 8.20350232e+05]
+ [3.00000000e-01 0.00000000e+00 8.20509009e+05]
+ [1.50000000e-01 0.00000000e+00 8.20568584e+05]]
+Start: Tue Oct 29 13:26:03 CDT 2024 
+End:   Tue Oct 29 13:27:12 CDT 2024
+Done running model at Tue Oct 29 13:27:12 CDT 2024
