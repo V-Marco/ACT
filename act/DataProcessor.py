@@ -676,12 +676,7 @@ class DataProcessor:
             final_prediction_fi_mae_list.append(data.get("final_prediction_fi_mae"))
             final_prediction_voltage_mae_list.append(data.get("final_prediction_voltage_mae"))
             feature_mae_list.append(data.get("summary_stats_mae_final_prediction"))
-            
-            module_runtime = data.get("module_runtime")
-            time_obj = datetime.strptime(module_runtime, "%H:%M:%S.%f")
-            total_seconds = time_obj.hour * 3600 + time_obj.minute * 60 + time_obj.second + time_obj.microsecond / 1e6
-            
-            module_runtime_list.append(total_seconds)
+            module_runtime_list.append(data.get("module_runtime"))
 
         return (
             num_spikes_in_isi_calc_list, 

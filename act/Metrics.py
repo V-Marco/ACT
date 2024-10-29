@@ -213,19 +213,12 @@ class Metrics:
         
         # Write all of these values to an output json file
         data_to_save = {
-            "final_g_predictions": final_g_prediction_list,
             "avg_final_g_predictions_mae": avg_final_g_predictions_mae,
             "stdev_final_g_predictions_mae": stdev_final_g_predictions_mae,
-            "avg_rf_mean_g_score_mae": avg_rf_mean_g_score_mae,
-            "stdev_rf_mean_g_score_mae": stdev_rf_mean_g_score_mae,
-            "avg_rf_stdev_g_score_mae": avg_rf_stdev_g_score_mae,
-            "stdev_rf_stdev_g_score_mae": stdev_rf_stdev_g_score_mae,
-            "prediction_evaluation_methods": prediction_evaluation_method_list,
             "avg_voltage_mae": avg_voltage_mae,
             "stdev_voltage_mae": stdev_voltage_mae,
             "avg_fi_mae ": avg_fi_mae ,
             "stdev_fi_mae": stdev_fi_mae,
-            "num_spikes_in_isi_calcs": num_spikes_in_isi_calc_list,
             "avg_mean_isi_mae": avg_mean_isi_mae,
             "stdev_mean_isi_mae": stdev_mean_isi_mae,
             "avg_stdev_isi_mae": avg_stdev_isi_mae,
@@ -233,7 +226,14 @@ class Metrics:
             "avg_feature_mae": avg_feature_mae,
             "stdev_feature_mae": stdev_feature_mae,
             "avg_module_runtime": avg_time_obj,
-            "stdev__module_runtime": stdev_time_obj
+            "stdev__module_runtime": stdev_time_obj,
+            "avg_rf_mean_g_score_mae": avg_rf_mean_g_score_mae,
+            "stdev_rf_mean_g_score_mae": stdev_rf_mean_g_score_mae,
+            "avg_rf_stdev_g_score_mae": avg_rf_stdev_g_score_mae,
+            "stdev_rf_stdev_g_score_mae": stdev_rf_stdev_g_score_mae,
+            "final_g_predictions": final_g_prediction_list,
+            "prediction_evaluation_methods": prediction_evaluation_method_list,
+            "num_spikes_in_isi_calcs": num_spikes_in_isi_calc_list,
         }
         
         with open(save_filename, 'w') as json_file:
