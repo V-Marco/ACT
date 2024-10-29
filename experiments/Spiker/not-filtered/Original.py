@@ -7,7 +7,7 @@ def run():
         from act.cell_model import TargetCell, ModuleParameters
 
         random_seed = seed
-        num_slices = 3
+        num_slices = 10
 
         experiment_folder = f"output/Spiker_Original_sl-{num_slices}/{random_seed}"
         target_folder = experiment_folder + "/target"
