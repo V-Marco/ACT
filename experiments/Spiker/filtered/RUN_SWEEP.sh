@@ -1,0 +1,19 @@
+#!/bin/bash
+
+#SBATCH -W
+#SBATCH --qos=normal
+#SBATCH --job-name=act_all_spiker
+#SBATCH --output=./bmtk_sim.out
+#SBATCH --time 0-12:00
+
+START=$(date)
+python Original.py
+python Qualitative_passive_spike.py
+python Full_vhalf_vcutoff.py
+
+
+END=$(date)
+
+printf "Start: $START \nEnd:   $END\n"
+
+echo "Done running model at $(date)"
