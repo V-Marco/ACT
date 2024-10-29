@@ -7,9 +7,9 @@
 #SBATCH --time 0-12:00
 
 START=$(date)
-python Original.py
-
-#python Full_vhalf.py
+#python Original.py
+#python Qualitative_passive_spike.py
+python Full_vhalf_vcutoff.py
 
 
 END=$(date)

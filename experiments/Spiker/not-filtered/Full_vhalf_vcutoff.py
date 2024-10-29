@@ -9,7 +9,7 @@ def run():
         random_seed = seed
         num_slices_new = 10
         num_slices_old = 5
-        experiment_folder = f"output/Spiker_Full_vhalf_sl-{num_slices_new}_{num_slices_old}/{random_seed}"
+        experiment_folder = f"output/Spiker_Full_vhalf_vcutoff_sl-{num_slices_new}_{num_slices_old}/{random_seed}"
         target_folder = experiment_folder + "/target"
 
         # module 1 is for spiking, final is a refinement of all previous modules (except passive props)
@@ -107,11 +107,11 @@ def run():
                 target_traces_file = f"{target_folder}/target_data.csv",
                 sim_params= sim_par,
                 optim_params= OptimizationParameters(
-                    g_ranges_slices= [
-                        OptimizationParam(param="gnabar_hh_seg", low=0.06, high=0.18, n_slices=num_slices_new),
-                        OptimizationParam(param="gkbar_hh_seg", low=0.018, high=0.054, n_slices=1),
-                        OptimizationParam(param="gl_hh_seg", prediction=train_cell.passive_properties.g_bar_leak, bounds_variation=0.0, n_slices=1)
-                    ],
+                g_ranges_slices= [
+                    OptimizationParam(param="gnabar_hh_seg", low=0.06, high=0.18, n_slices=1),
+                    OptimizationParam(param="gkbar_hh_seg", low=0.018, high=0.054, n_slices=num_slices_new),
+                    OptimizationParam(param="gl_hh_seg", prediction=train_cell.passive_properties.g_bar_leak, bounds_variation=0.0, n_slices=1)
+                ],
                     #filtered_out_features = ["no_spikes", "saturated"],
                     train_features=["i_trace_stats", "number_of_spikes", "spike_times", "spike_height_stats", "number_of_troughs", "trough_times", "trough_height_stats"],
                     prediction_eval_method='fi_curve',
@@ -140,11 +140,11 @@ def run():
                 target_traces_file = f"{target_folder}/target_data.csv",
                 sim_params= sim_par,
                 optim_params= OptimizationParameters(
-                    g_ranges_slices= [
-                        OptimizationParam(param="gnabar_hh_seg",  prediction=train_cell.predicted_g["gnabar_hh_seg"], bounds_variation=bounds_variation, n_slices=num_slices_old),
-                        OptimizationParam(param="gkbar_hh_seg", low=0.018, high=0.054, n_slices=num_slices_new),
-                        OptimizationParam(param="gl_hh_seg", prediction=train_cell.passive_properties.g_bar_leak, bounds_variation=0.0, n_slices=1)
-                    ],
+                g_ranges_slices= [
+                    OptimizationParam(param="gnabar_hh_seg",  low=0.06, high=0.18, n_slices=num_slices_new),
+                    OptimizationParam(param="gkbar_hh_seg", prediction=train_cell.predicted_g["gkbar_hh_seg"], bounds_variation=train_cell.predicted_g["gkbar_hh_seg"] * bounds_variation, n_slices=num_slices_old),
+                    OptimizationParam(param="gl_hh_seg", prediction=train_cell.passive_properties.g_bar_leak, bounds_variation=0.0, n_slices=1)
+                ],
                     #filtered_out_features = ["no_spikes", "saturated"],
                     train_features=["i_trace_stats", "number_of_spikes", "spike_times", "spike_height_stats", "number_of_troughs", "trough_times", "trough_height_stats"],
                     prediction_eval_method='fi_curve',
