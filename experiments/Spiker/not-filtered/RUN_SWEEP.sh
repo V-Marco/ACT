@@ -1,5 +1,6 @@
 #!/bin/bash
-
+#SBATCH -N 1
+#SBATCH -n 1
 #SBATCH -W
 #SBATCH --qos=normal
 #SBATCH --job-name=act_Full_vhalf
@@ -9,7 +10,8 @@
 START=$(date)
 #python Original.py
 #python Qualitative_passive_spike.py
-python Full_vhalf_vcutoff.py
+#python Full_vhalf_vcutoff.py
+python Full_vhalf_vcutoff_blocked.py
 
 
 END=$(date)
