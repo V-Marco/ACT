@@ -55,12 +55,19 @@ class ACTModule:
             
         if prediction_eval_method == 'fi_curve':
             predicted_g_data_file, best_prediction = self.evaluate_fi_curves(prediction)
-            # save v_trace mae anyway
+            # save v_trace mae and features mae anyway
             self.evaluate_v_traces(prediction)
+            self.evaluate_features(prediction)
         elif prediction_eval_method == 'voltage':
             predicted_g_data_file, best_prediction = self.evaluate_v_traces(prediction)
-            # save fi mae anyway
+            # save fi mae and features mae anyway
             self.evaluate_fi_curves(prediction)
+            self.evaluate_features(prediction)
+        elif prediction_eval_method == 'features':
+            predicted_g_data_file, best_prediction = self.evaluate_features(prediction)
+            # save fi mae and v_trace mae anyway
+            self.evaluate_fi_curves(prediction)
+            self.evaluate_v_traces(prediction)
         else:
             print("prediction_eval_method must be 'fi_curve' or 'voltage'.")
 
@@ -403,8 +410,7 @@ class ACTModule:
         for fi in list_of_freq:
             fi_mae.append(metrics.mae_score(target_frequencies, fi))
         
-        print("FI curve MAE for each prediction: ")
-        print(fi_mae)
+        print(f"FI curve MAE for each prediction: {fi_mae}")
 
         g_best_idx = fi_mae.index(min(fi_mae))
         
@@ -450,6 +456,8 @@ class ACTModule:
                 prediction_MAEs.append(v_mae)
 
             mean_mae_list.append(np.mean(prediction_MAEs))
+            
+        print(f"Mean voltage mae for each prediction: {mean_mae_list}")
 
         # Evaluate Voltage curves on target voltages
         g_best_idx = mean_mae_list.index(min(mean_mae_list))
@@ -459,5 +467,50 @@ class ACTModule:
         save_file = self.optim_params.get('save_file', None)
         if not save_file == None:
             dp.save_to_json(min(mean_mae_list), "final_prediction_voltage_mae", save_file)
+
+        return best_prediction_data_file, predictions[g_best_idx]
+    
+    def evaluate_features(self, predictions):
+        dp = DataProcessor()
+
+        # Get Target Cell Frequencies
+        dataset = np.load(self.output_folder_name + "target/combined_out.npy")
+
+        V_target = dataset[:,:,0]
+        I_target = dataset[:,:,1]
+        
+        train_features = self.optim_params.get('train_features',None)
+        threshold = self.optim_params.get('spike_threshold', 0)
+        first_n_spikes = self.optim_params.get('first_n_spikes', 20)
+        dt = self.sim_params.get('h_dt',1)
+        
+        target_V_features, _ = dp.extract_features(train_features=train_features, V=V_target,I=I_target, threshold=threshold, num_spikes=first_n_spikes, dt=dt)
+
+        # Get train Cell Frequencies
+        metrics = Metrics()
+        mean_mae_list = []
+        for i in range(len(predictions)):
+            dataset = np.load(self.output_folder_name + "prediction_eval" + str(i) + "/combined_out.npy")
+            V_test = dataset[:,:,0]
+            I_test = dataset[:,:,1]
+            test_V_features, _ = dp.extract_features(train_features=train_features, V=V_test,I=I_test, threshold=threshold, num_spikes=first_n_spikes, dt=dt)
+            
+            prediction_MAEs = []
+            
+            for j in range(len(V_test)):
+                v_mae = metrics.mae_score(test_V_features[j],target_V_features[j])
+                prediction_MAEs.append(v_mae)
+
+            mean_mae_list.append(np.mean(prediction_MAEs))
+
+        print(f"Mean Feature MAE for each prediction: {mean_mae_list}")
+        # Evaluate Voltage curves on target voltages
+        g_best_idx = mean_mae_list.index(min(mean_mae_list))
+        
+        best_prediction_data_file = self.output_folder_name + "prediction_eval" + str(g_best_idx) + "/combined_out.npy"
+        
+        save_file = self.optim_params.get('save_file', None)
+        if not save_file == None:
+            dp.save_to_json(min(mean_mae_list), "summary_stats_mae_final_prediction", save_file)
 
         return best_prediction_data_file, predictions[g_best_idx]
