@@ -1,0 +1,9 @@
+netpyne
+NEURON
+matplotlib
+psutil
+neuron_reduce
+h5py
+scikit-learn
+seaborn
+tqdm

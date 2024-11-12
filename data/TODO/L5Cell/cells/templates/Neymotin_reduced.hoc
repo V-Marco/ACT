@@ -1,0 +1,184 @@
+//(switch SKv3_1=>kdr, K_Tst=>kap, K_Pst=>kdmc)
+//      gbar_kap = 0.0812  // From K_Tst
+//      gbar_kdmc = 0.00223  // From K_Pst
+
+
+begintemplate L5PCbiophys
+public biophys
+proc biophys() {
+  forsec $o1.all {
+    insert pas
+    cm = 0.700445928608//1
+    Ra = 114.510490019//137.494564931//90//114.510490019// morph.py: 137.494564931//ziao:114.510490019//orig:100
+    e_pas = -88.5366550238//-90.220509483//orig:-90
+    
+    //insert k_ion // zc
+    //insert na_ion // zc
+
+  }
+
+  forsec $o1.somatic {
+      // ZC biophys
+      //e_pas = -88.5366550238
+      //Ra = 137.494564931//100//137.494564931//114.510490019 //Ra all for M1
+      cm = 1.78829677463 // ziao model soma Capictance
+      g_pas = (1/18501.7540916)*3//ziao:(1/38457.4393085)//morph.py:(1/18501.7540916) // 1 / soma membrane resistance
+      // Na
+      insert na_ion
+      ena = 42.0
+      insert nax
+      gbar_nax = 0.0345117294903//morphy.py:0.0153130368342//ziao:0.0345117294903
+      // K
+      insert k_ion
+      ek = -104.0
+      insert kdr // K delayed rectifier current
+      gbar_kdr = 0.0131103978049//morph.py:0.0084715576279//ziao:0.0131103978049
+      vhalfn_kdr = 11.6427471384//morph.py:13//ziao:11.6427471384// KDR kinetics
+      insert kdmc //zc K-D current in soma & axon only
+      gbar_kdmc = 0.000404311891107//morph.py:0.00110907315064//ziao:0.000404311891107
+      insert kap // zc K-A current
+      gbar_kap = 0.0898600246397//morph.py:0.0614003391814//ziao:0.0898600246397
+      vhalfn_kap = 32.7885075379//morph.py:35//ziao:32.7885075379// K-A kinetics
+      vhalfl_kap = -59.7867409796//morph.py:-56//ziao:-59.7867409796
+      tq_kap = -52.0967985869//morph.py:-45//ziao:-52.0967985869
+      insert kBK // ca and v dependent k channel
+		  gpeak_kBK = 5.09733585163e-05//morph.py:7.25128017201e-05//ziao:5.09733585163e-05
+			caVhmin_kBK = -46.08 + 43.8900261407//43.8900261407 //kBK_caVhminShift
+      // Ca
+      insert ca_ion
+      insert cal
+      gcalbar_cal = 4.41583533572e-06
+      insert can
+			gcanbar_can = 4.60717910591e-06
+      insert cadad // calcium decay
+			depth_cadad = 0.102468419281//0.119408607923
+			taur_cadad = 99.1146852282//morphy.py:16.0181691392//Ziao: 99.1146852282
+      // h-current
+      insert ih
+			erev_ih = -37.0 // Ih
+			gbar_ih = 0.000140956438043//morph.py:6.6129403774e-05//ziao:0.000140956438043
+      
+      
+      // hay et all biophys
+  	  //insert Ca_LVAst// from hay
+	    //insert Ca_HVA // from hay
+      //insert CaDynamics_E2
+      //insert Ih
+      //insert SK_E2
+      //ek = -85
+      //ena = 50
+      //gIhbar_Ih = 0.0002
+      //g_pas = 0.0000338
+      //decay_CaDynamics_E2 = 460.0
+      //gamma_CaDynamics_E2 = 0.000501
+      //gCa_LVAstbar_Ca_LVAst = 0.00343
+      //gCa_HVAbar_Ca_HVA = 0.000992
+      // sodium
+   	  //insert Nap_Et2 
+      //insert NaTa_t
+      //gNap_Et2bar_Nap_Et2 = 0.00172 
+      //gNaTa_tbar_NaTa_t = 2.04 
+      // potassium
+      //gSKv3_1bar_SKv3_1 = 0.693  // kdr
+      //gK_Tstbar_K_Tst = 0.0812  // kap?
+      //gK_Pstbar_K_Pst = 0.00223  // kdmc?
+      //gSK_E2bar_SK_E2 = 0.0441  // SK_E2 remains the same
+  }
+
+	forsec $o1.apical {
+    Ra = 137.494564931+30
+		cm = 1.03418636866 //orig:2
+    g_pas = (1/10751.193413)/2//0.0000589//  neymotin:1/10751.193413 //orig:0.0000589
+		insert Ih
+  	insert SK_E2 
+  	insert Ca_LVAst 
+  	insert Ca_HVA 
+  	insert SKv3_1 
+  	insert NaTa_t 
+  	insert Im 
+  	insert CaDynamics_E2
+		ek = -104.0//orig:-85
+		ena = 42.0//orig:50
+    decay_CaDynamics_E2 = 122 
+    gamma_CaDynamics_E2 = 0.000509 
+    gSK_E2bar_SK_E2 = 0.0012 
+  	gSKv3_1bar_SKv3_1 = 0.000261 
+  	gNaTa_tbar_NaTa_t = 3*0.0213 
+  	gImbar_Im = 0.0000675
+    insert kdr
+    gbar_kdr = 0
+    insert kap
+    gbar_kap = 0
+    insert nax
+    gbar_nax = 0
+    insert kdmc
+    gbar_kdmc = 0  
+	}
+	$o1.distribute_channels("apic","gIhbar_Ih",2,-0.8696,3.6161,0.0,2.0870,0.00020000000) 
+	$o1.distribute_channels("apic","gCa_LVAstbar_Ca_LVAst",3,1.000000,0.010000,685.000000,885.000000,0.0187000000) 
+	$o1.distribute_channels("apic","gCa_HVAbar_Ca_HVA",3,1.000000,0.100000,685.000000,885.000000,0.0005550000) 
+	
+  forsec $o1.basal {
+    Ra = 137.494564931+20
+		cm = 1.89771901209  //orig:2
+    g_pas = 0.0000467//neymotin: 1/13123.00174  //orig:0.0000467
+    // original
+		insert Ih
+		gIhbar_Ih = 0.0002
+    // Ben added
+   	insert SK_E2 
+  	insert Ca_LVAst 
+  	insert Ca_HVA 
+  	insert SKv3_1 
+  	insert NaTa_t 
+  	insert Im 
+  	insert CaDynamics_E2
+		ek = -104.0 //orig:-85
+		ena = 42.0 //orig:50
+    decay_CaDynamics_E2 = 122 
+    gamma_CaDynamics_E2 = 0.000509 
+    gSK_E2bar_SK_E2 = 0.0012 
+  	gSKv3_1bar_SKv3_1 = 0.000261 
+  	gNaTa_tbar_NaTa_t = 3*0.0213 
+  	gImbar_Im = 0.0000675
+    insert kdr
+    gbar_kdr = 0
+    insert kap
+    gbar_kap = 0
+    insert nax
+    gbar_nax = 0
+    insert kdmc
+    gbar_kdmc = 0 
+	}
+
+  forsec $o1.axonal {
+    // ZC biophys
+		Ra = 100//114.510490019//100//137.494564931//114.510490019 //Ra all
+    g_pas = (1/3945.2107187)*5//morph.py:(1/38457.4393085) //ziao:1/3945.2107187 //1 / axon membrane resistance
+    cm = 1.01280903702// morph.py:0.700445928608//ziao model: 1.01280903702 // capacitance
+		//e_pas = -90.220509483//-88.5366550238 // passive reversal (mV)
+    // Na
+    insert na_ion
+		ena = 42.0 // Na+ current reversal potential (mV)
+    insert nax
+    gbar_nax = 0.0345117294903 * 5.0//morph.py:0.0153130368342 * 5.0 //ziao:0.0345117294903 * 5.0//nax_gbar_axonm
+    // K
+    insert k_ion
+    ek = -104.0  // K+ current reversal potential (mV)
+    insert kdmc
+    gbar_kdmc = 0.000404311891107 * 20//morphy.py: 0.00110907315064 * 20//ziao:0.000404311891107 * 20//kdmc_gbar_axonm
+    insert kdr
+    gbar_kdr = 0.0131103978049 * 5.0//morph.py: 0.0084715576279 * 5.0 //ziao: 0.0131103978049 * 5.0//kdr_gbar * kdr_gbar_axonm
+    vhalfn_kdr = 13//11.6427471384 // KDR kinetics
+    insert kap
+    gbar_kap = 0.0898600246397 * 5.0//morph.py:0.0614003391814 * 5.0 //ziao:0.0898600246397 * 5.0//kap_gbar * kap_gbar_axonm
+		vhalfn_kap = 32.7885075379//morph.py:35//ziao:32.7885075379 // K-A kinetics
+		vhalfl_kap = -59.7867409796//morph.py:-56//ziao:-59.7867409796
+		tq_kap = -52.0967985869//morph.py:-45//ziao:-52.0967985869
+   
+    // L5PC original biophys
+    // g_pas = 0.0000325
+	}
+}
+
+endtemplate L5PCbiophys
