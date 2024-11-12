@@ -1,0 +1,1213 @@
+/home/mwsrgf/act-venv/lib64/python3.9/site-packages/torch/__init__.py:955: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:432.)
+  _C._set_default_tensor_type(t)
+Warning: no DISPLAY environment variable.
+--No graphics will be displayed.
+Blocking: []
+Total number of jobs: 3
+Total number of proccessors: 192
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/42/target/synthetic_0.1_0.3_0.5_
+Blocking: []
+Total number of jobs: 1
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/42/target/synthetic_-1_
+MECHANISMS already loaded.
+Found 1 section(s) in this cell. Calculating the total surface area of the cell.
+PassiveProperties(V_rest=-73.13651954425167, R_in=312.05761345489105, tau=73.173, Cm=2.586815449244476, g_bar_leak=3.535204855950249e-05, cell_area=9.064641486925113e-05, leak_conductance_variable='glbar_leak', leak_reversal_variable='el_leak')
+RUNNING THE MODULE
+LOADING TARGET TRACES
+SIMULATING TRAINING DATA
+Total number of jobs: 30000
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/42/module/train
+FILTERING DATA
+Dropping 1363 traces where: All values in the window (3100:4000) are saturated (above -55 mV).
+Dropping 4525 traces where: No spikes are in the voltage trace.
+Dataset size after filtering: 24112. Saving to /home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/42/module/train/filtered_out.npy
+TRAINING RANDOM FOREST REGRESSOR
+Training Random Forest on Filtered Data
+Extracting features: ['I_mean', 'I_stdev', 'Num Spikes', 'Spike Time 1', 'Spike Time 2', 'Spike Time 3', 'Spike Time 4', 'Spike Time 5', 'Spike Time 6', 'Spike Time 7', 'Spike Time 8', 'Spike Time 9', 'Spike Time 10', 'Spike Time 11', 'Spike Time 12', 'Spike Time 13', 'Spike Time 14', 'Spike Time 15', 'Spike Time 16', 'Spike Time 17', 'Spike Time 18', 'Spike Time 19', 'Spike Time 20', 'Min Spike Height', 'Max Spike Height', 'Avg Spike Height', 'Std Spike Height', 'Trough Time 1', 'Trough Time 2', 'Trough Time 3', 'Trough Time 4', 'Trough Time 5', 'Trough Time 6', 'Trough Time 7', 'Trough Time 8', 'Trough Time 9', 'Trough Time 10', 'Trough Time 11', 'Trough Time 12', 'Trough Time 13', 'Trough Time 14', 'Trough Time 15', 'Trough Time 16', 'Trough Time 17', 'Trough Time 18', 'Trough Time 19', 'Trough Time 20', 'Min Trough Height', 'Max Trough Height', 'Avg Trough Height', 'Std Trough Height']
+Evaluating random forest
+MAE: 0.000657 (0.000014)
+Saving rf mean/stdev scores to output/BursterIzh_Original_passmod_fsl-10/42/module/results/saved_metrics.json
+Predicted Conductances for each current injection intensity: 
+[[3.09833333e-02 3.27573333e-02 3.18433333e-04 3.15223333e-03
+  3.53520486e-05]
+ [3.01933333e-02 2.74497778e-02 2.66933333e-04 3.30256667e-03
+  3.53520486e-05]
+ [3.15933333e-02 2.96462222e-02 3.47900000e-04 3.46023333e-03
+  3.53520486e-05]]
+SIMULATING PREDICTIONS
+Total number of jobs: 9
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/42/module/prediction_eval0
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/42/module/prediction_eval1
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/42/module/prediction_eval2
+SELECTING BEST PREDICTION
+Mean Feature MAE for each prediction: [26139.416180588334, 32678.01357503334, 13069.747388552243]
+FI curve MAE for each prediction: [2.2222222222222223, 1.1111111111111112, 1.111111111111111]
+Mean voltage mae for each prediction: [1.5369399331805926, 2.5054145332438105, 1.8691412382549089]
+{'gbar_na3': 0.03159333333333302, 'gkdrbar_kdr': 0.029646222222222525, 'gbar_nap': 0.0003479000000000044, 'gmbar_im': 0.003460233333333333, 'glbar_leak': 3.5352048559502146e-05}
+Module runtime: 0:12:11.312459
+{'gbar_na3': 0.03159333333333302, 'gkdrbar_kdr': 0.029646222222222525, 'gbar_nap': 0.0003479000000000044, 'gmbar_im': 0.003460233333333333, 'glbar_leak': 3.5352048559502146e-05}
+Interspike times (Target): [[1.00e+06 1.00e+06 1.00e+06 1.00e+06]
+ [2.52e+01 1.00e+06 1.00e+06 1.00e+06]
+ [1.95e+01 2.26e+01 1.00e+06 1.00e+06]]
+Interspike times (Prediction): [[1.00e+06 1.00e+06 1.00e+06 1.00e+06]
+ [2.35e+01 4.55e+01 1.00e+06 1.00e+06]
+ [1.90e+01 2.11e+01 1.00e+06 1.00e+06]]
+MAE for each I injection: [0.0, 249989.05, 0.49999999999999645]
+Mean interspike-interval MAE: 83329.84999999999
+Standard Deviation interspike-interval MAE: 117845.85046730185
+MAE of final g prediction: 0.0006896081874896775
+Smallest MAE values (gbar_na3, gkdrbar_kdr, Summary Stats MAE): 
+[[0.03166667 0.02522222 0.13083209]
+ [0.03166667 0.03144444 0.13397843]
+ [0.03166667 0.02522222 0.14105329]
+ [0.03166667 0.02833333 0.1604302 ]
+ [0.03166667 0.03455556 0.16364868]
+ [0.035      0.02833333 0.16399329]]
+Smallest MAE values (gbar_na3, gbar_nap, Summary Stats MAE): 
+[[0.03166667 0.00025    0.13083209]
+ [0.03166667 0.00038333 0.13397843]
+ [0.03166667 0.00035    0.14105329]
+ [0.03166667 0.00038333 0.1604302 ]
+ [0.03166667 0.00038333 0.16364868]
+ [0.035      0.00035    0.16399329]]
+Smallest MAE values (gbar_na3, gmbar_im, Summary Stats MAE): 
+[[0.03166667 0.00275    0.13083209]
+ [0.03166667 0.00385    0.13397843]
+ [0.03166667 0.00348333 0.14105329]
+ [0.03166667 0.00385    0.1604302 ]
+ [0.03166667 0.00385    0.16364868]
+ [0.035      0.00348333 0.16399329]]
+Smallest FI MAE values (gbar_na3, gkdrbar_kdr, FI MAE): 
+[[0.03833333 0.02522222 0.        ]
+ [0.04166667 0.03455556 0.        ]
+ [0.035      0.03766667 0.        ]
+ [0.035      0.03766667 0.        ]
+ [0.035      0.03766667 0.        ]
+ [0.035      0.03766667 0.        ]]
+Smallest FI MAE values (gbar_na3, gbar_nap, FI MAE): 
+[[0.03833333 0.00038333 0.        ]
+ [0.04166667 0.00045    0.        ]
+ [0.035      0.00045    0.        ]
+ [0.035      0.00041667 0.        ]
+ [0.035      0.00038333 0.        ]
+ [0.035      0.00038333 0.        ]]
+Smallest FI MAE values (gbar_na3, gmbar_im, FI MAE): 
+[[0.03833333 0.00421667 0.        ]
+ [0.04166667 0.00458333 0.        ]
+ [0.035      0.00458333 0.        ]
+ [0.035      0.00421667 0.        ]
+ [0.035      0.00421667 0.        ]
+ [0.035      0.00385    0.        ]]
+Smallest MAE values (gbar_na3, gkdrbar_kdr, V MAE): 
+[[0.035      0.02833333 1.09020212]
+ [0.03833333 0.03455556 1.12686473]
+ [0.04166667 0.03455556 1.14228146]
+ [0.04166667 0.03144444 1.14294481]
+ [0.03833333 0.03144444 1.15543084]
+ [0.04166667 0.03766667 1.16541175]]
+Smallest MAE values (gbar_na3, gbar_nap, V MAE): 
+[[3.50000000e-02 3.50000000e-04 1.09020212e+00]
+ [3.83333333e-02 3.50000000e-04 1.12686473e+00]
+ [4.16666667e-02 3.50000000e-04 1.14228146e+00]
+ [4.16666667e-02 3.50000000e-04 1.14294481e+00]
+ [3.83333333e-02 3.50000000e-04 1.15543084e+00]
+ [4.16666667e-02 3.50000000e-04 1.16541175e+00]]
+Smallest MAE values (gbar_na3, gmbar_im, V MAE): 
+[[0.035      0.00348333 1.09020212]
+ [0.03833333 0.00348333 1.12686473]
+ [0.04166667 0.00348333 1.14228146]
+ [0.04166667 0.00348333 1.14294481]
+ [0.03833333 0.00348333 1.15543084]
+ [0.04166667 0.00348333 1.16541175]]
+Blocking: []
+Total number of jobs: 3
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/43/target/synthetic_0.1_0.3_0.5_
+Blocking: []
+Total number of jobs: 1
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/43/target/synthetic_-1_
+MECHANISMS already loaded.
+Found 1 section(s) in this cell. Calculating the total surface area of the cell.
+PassiveProperties(V_rest=-73.13651954425167, R_in=312.05761345489105, tau=73.173, Cm=2.586815449244476, g_bar_leak=3.535204855950249e-05, cell_area=9.064641486925113e-05, leak_conductance_variable='glbar_leak', leak_reversal_variable='el_leak')
+RUNNING THE MODULE
+LOADING TARGET TRACES
+SIMULATING TRAINING DATA
+Total number of jobs: 30000
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/43/module/train
+FILTERING DATA
+Dropping 1363 traces where: All values in the window (3100:4000) are saturated (above -55 mV).
+Dropping 4525 traces where: No spikes are in the voltage trace.
+Dataset size after filtering: 24112. Saving to /home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/43/module/train/filtered_out.npy
+TRAINING RANDOM FOREST REGRESSOR
+Training Random Forest on Filtered Data
+Extracting features: ['I_mean', 'I_stdev', 'Num Spikes', 'Spike Time 1', 'Spike Time 2', 'Spike Time 3', 'Spike Time 4', 'Spike Time 5', 'Spike Time 6', 'Spike Time 7', 'Spike Time 8', 'Spike Time 9', 'Spike Time 10', 'Spike Time 11', 'Spike Time 12', 'Spike Time 13', 'Spike Time 14', 'Spike Time 15', 'Spike Time 16', 'Spike Time 17', 'Spike Time 18', 'Spike Time 19', 'Spike Time 20', 'Min Spike Height', 'Max Spike Height', 'Avg Spike Height', 'Std Spike Height', 'Trough Time 1', 'Trough Time 2', 'Trough Time 3', 'Trough Time 4', 'Trough Time 5', 'Trough Time 6', 'Trough Time 7', 'Trough Time 8', 'Trough Time 9', 'Trough Time 10', 'Trough Time 11', 'Trough Time 12', 'Trough Time 13', 'Trough Time 14', 'Trough Time 15', 'Trough Time 16', 'Trough Time 17', 'Trough Time 18', 'Trough Time 19', 'Trough Time 20', 'Min Trough Height', 'Max Trough Height', 'Avg Trough Height', 'Std Trough Height']
+Evaluating random forest
+MAE: 0.000658 (0.000013)
+Saving rf mean/stdev scores to output/BursterIzh_Original_passmod_fsl-10/43/module/results/saved_metrics.json
+Predicted Conductances for each current injection intensity: 
+[[3.11033333e-02 3.35320000e-02 3.20466667e-04 3.15883333e-03
+  3.53520486e-05]
+ [3.02400000e-02 2.74280000e-02 2.65766667e-04 3.27946667e-03
+  3.53520486e-05]
+ [3.16033333e-02 2.95746667e-02 3.50300000e-04 3.48150000e-03
+  3.53520486e-05]]
+SIMULATING PREDICTIONS
+Total number of jobs: 9
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/43/module/prediction_eval0
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/43/module/prediction_eval1
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/43/module/prediction_eval2
+SELECTING BEST PREDICTION
+Mean Feature MAE for each prediction: [26139.427487003388, 32678.011814666563, 13069.740513156117]
+FI curve MAE for each prediction: [2.2222222222222223, 1.1111111111111112, 1.111111111111111]
+Mean voltage mae for each prediction: [1.5570901634418417, 2.513202072320594, 1.889164643809023]
+{'gbar_na3': 0.031603333333333025, 'gkdrbar_kdr': 0.029574666666666964, 'gbar_nap': 0.00035030000000000445, 'gmbar_im': 0.0034814999999999976, 'glbar_leak': 3.5352048559502146e-05}
+Module runtime: 0:12:00.747403
+{'gbar_na3': 0.031603333333333025, 'gkdrbar_kdr': 0.029574666666666964, 'gbar_nap': 0.00035030000000000445, 'gmbar_im': 0.0034814999999999976, 'glbar_leak': 3.5352048559502146e-05}
+Interspike times (Target): [[1.00e+06 1.00e+06 1.00e+06 1.00e+06]
+ [2.52e+01 1.00e+06 1.00e+06 1.00e+06]
+ [1.95e+01 2.26e+01 1.00e+06 1.00e+06]]
+Interspike times (Prediction): [[1.00e+06 1.00e+06 1.00e+06 1.00e+06]
+ [2.35e+01 4.72e+01 1.00e+06 1.00e+06]
+ [1.90e+01 2.11e+01 1.00e+06 1.00e+06]]
+MAE for each I injection: [0.0, 249988.625, 0.49999999999999645]
+Mean interspike-interval MAE: 83329.70833333333
+Standard Deviation interspike-interval MAE: 117845.65012038052
+MAE of final g prediction: 0.0006820304097118989
+Smallest MAE values (gbar_na3, gkdrbar_kdr, Summary Stats MAE): 
+[[0.03166667 0.02522222 0.13083209]
+ [0.03166667 0.03144444 0.13397843]
+ [0.03166667 0.02522222 0.14105329]
+ [0.03166667 0.02833333 0.1604302 ]
+ [0.03166667 0.03455556 0.16364868]
+ [0.035      0.02833333 0.16399329]]
+Smallest MAE values (gbar_na3, gbar_nap, Summary Stats MAE): 
+[[0.03166667 0.00025    0.13083209]
+ [0.03166667 0.00038333 0.13397843]
+ [0.03166667 0.00035    0.14105329]
+ [0.03166667 0.00038333 0.1604302 ]
+ [0.03166667 0.00038333 0.16364868]
+ [0.035      0.00035    0.16399329]]
+Smallest MAE values (gbar_na3, gmbar_im, Summary Stats MAE): 
+[[0.03166667 0.00275    0.13083209]
+ [0.03166667 0.00385    0.13397843]
+ [0.03166667 0.00348333 0.14105329]
+ [0.03166667 0.00385    0.1604302 ]
+ [0.03166667 0.00385    0.16364868]
+ [0.035      0.00348333 0.16399329]]
+Smallest FI MAE values (gbar_na3, gkdrbar_kdr, FI MAE): 
+[[0.03833333 0.02522222 0.        ]
+ [0.04166667 0.03455556 0.        ]
+ [0.035      0.03766667 0.        ]
+ [0.035      0.03766667 0.        ]
+ [0.035      0.03766667 0.        ]
+ [0.035      0.03766667 0.        ]]
+Smallest FI MAE values (gbar_na3, gbar_nap, FI MAE): 
+[[0.03833333 0.00038333 0.        ]
+ [0.04166667 0.00045    0.        ]
+ [0.035      0.00045    0.        ]
+ [0.035      0.00041667 0.        ]
+ [0.035      0.00038333 0.        ]
+ [0.035      0.00038333 0.        ]]
+Smallest FI MAE values (gbar_na3, gmbar_im, FI MAE): 
+[[0.03833333 0.00421667 0.        ]
+ [0.04166667 0.00458333 0.        ]
+ [0.035      0.00458333 0.        ]
+ [0.035      0.00421667 0.        ]
+ [0.035      0.00421667 0.        ]
+ [0.035      0.00385    0.        ]]
+Smallest MAE values (gbar_na3, gkdrbar_kdr, V MAE): 
+[[0.035      0.02833333 1.09020212]
+ [0.03833333 0.03455556 1.12686473]
+ [0.04166667 0.03455556 1.14228146]
+ [0.04166667 0.03144444 1.14294481]
+ [0.03833333 0.03144444 1.15543084]
+ [0.04166667 0.03766667 1.16541175]]
+Smallest MAE values (gbar_na3, gbar_nap, V MAE): 
+[[3.50000000e-02 3.50000000e-04 1.09020212e+00]
+ [3.83333333e-02 3.50000000e-04 1.12686473e+00]
+ [4.16666667e-02 3.50000000e-04 1.14228146e+00]
+ [4.16666667e-02 3.50000000e-04 1.14294481e+00]
+ [3.83333333e-02 3.50000000e-04 1.15543084e+00]
+ [4.16666667e-02 3.50000000e-04 1.16541175e+00]]
+Smallest MAE values (gbar_na3, gmbar_im, V MAE): 
+[[0.035      0.00348333 1.09020212]
+ [0.03833333 0.00348333 1.12686473]
+ [0.04166667 0.00348333 1.14228146]
+ [0.04166667 0.00348333 1.14294481]
+ [0.03833333 0.00348333 1.15543084]
+ [0.04166667 0.00348333 1.16541175]]
+Blocking: []
+Total number of jobs: 3
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/44/target/synthetic_0.1_0.3_0.5_
+Blocking: []
+Total number of jobs: 1
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/44/target/synthetic_-1_
+MECHANISMS already loaded.
+Found 1 section(s) in this cell. Calculating the total surface area of the cell.
+PassiveProperties(V_rest=-73.13651954425167, R_in=312.05761345489105, tau=73.173, Cm=2.586815449244476, g_bar_leak=3.535204855950249e-05, cell_area=9.064641486925113e-05, leak_conductance_variable='glbar_leak', leak_reversal_variable='el_leak')
+RUNNING THE MODULE
+LOADING TARGET TRACES
+SIMULATING TRAINING DATA
+Total number of jobs: 30000
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/44/module/train
+FILTERING DATA
+Dropping 1363 traces where: All values in the window (3100:4000) are saturated (above -55 mV).
+Dropping 4525 traces where: No spikes are in the voltage trace.
+Dataset size after filtering: 24112. Saving to /home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/44/module/train/filtered_out.npy
+TRAINING RANDOM FOREST REGRESSOR
+Training Random Forest on Filtered Data
+Extracting features: ['I_mean', 'I_stdev', 'Num Spikes', 'Spike Time 1', 'Spike Time 2', 'Spike Time 3', 'Spike Time 4', 'Spike Time 5', 'Spike Time 6', 'Spike Time 7', 'Spike Time 8', 'Spike Time 9', 'Spike Time 10', 'Spike Time 11', 'Spike Time 12', 'Spike Time 13', 'Spike Time 14', 'Spike Time 15', 'Spike Time 16', 'Spike Time 17', 'Spike Time 18', 'Spike Time 19', 'Spike Time 20', 'Min Spike Height', 'Max Spike Height', 'Avg Spike Height', 'Std Spike Height', 'Trough Time 1', 'Trough Time 2', 'Trough Time 3', 'Trough Time 4', 'Trough Time 5', 'Trough Time 6', 'Trough Time 7', 'Trough Time 8', 'Trough Time 9', 'Trough Time 10', 'Trough Time 11', 'Trough Time 12', 'Trough Time 13', 'Trough Time 14', 'Trough Time 15', 'Trough Time 16', 'Trough Time 17', 'Trough Time 18', 'Trough Time 19', 'Trough Time 20', 'Min Trough Height', 'Max Trough Height', 'Avg Trough Height', 'Std Trough Height']
+Evaluating random forest
+MAE: 0.000657 (0.000018)
+Saving rf mean/stdev scores to output/BursterIzh_Original_passmod_fsl-10/44/module/results/saved_metrics.json
+Predicted Conductances for each current injection intensity: 
+[[3.10000000e-02 3.28755556e-02 3.23433333e-04 3.18706667e-03
+  3.53520486e-05]
+ [3.03500000e-02 2.75866667e-02 2.70566667e-04 3.33483333e-03
+  3.53520486e-05]
+ [3.16233333e-02 2.98422222e-02 3.52200000e-04 3.50900000e-03
+  3.53520486e-05]]
+SIMULATING PREDICTIONS
+Total number of jobs: 9
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/act/ACTPlot.py:344: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`). Consider using `matplotlib.pyplot.close()`.
+  fig, ax = plt.subplots()
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/44/module/prediction_eval0
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/44/module/prediction_eval1
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/44/module/prediction_eval2
+SELECTING BEST PREDICTION
+Mean Feature MAE for each prediction: [26139.427787964058, 32678.012803962174, 13069.73321334399]
+FI curve MAE for each prediction: [2.2222222222222223, 1.1111111111111112, 1.111111111111111]
+Mean voltage mae for each prediction: [1.5712784882192903, 2.521652236307267, 1.9469725350230764]
+{'gbar_na3': 0.03162333333333303, 'gkdrbar_kdr': 0.029842222222222544, 'gbar_nap': 0.0003522000000000043, 'gmbar_im': 0.0035089999999999948, 'glbar_leak': 3.5352048559502146e-05}
+Module runtime: 0:13:07.546384
+{'gbar_na3': 0.03162333333333303, 'gkdrbar_kdr': 0.029842222222222544, 'gbar_nap': 0.0003522000000000043, 'gmbar_im': 0.0035089999999999948, 'glbar_leak': 3.5352048559502146e-05}
+Interspike times (Target): [[1.00e+06 1.00e+06 1.00e+06 1.00e+06]
+ [2.52e+01 1.00e+06 1.00e+06 1.00e+06]
+ [1.95e+01 2.26e+01 1.00e+06 1.00e+06]]
+Interspike times (Prediction): [[1.00e+06 1.00e+06 1.00e+06 1.00e+06]
+ [2.35e+01 4.94e+01 1.00e+06 1.00e+06]
+ [1.91e+01 2.10e+01 1.00e+06 1.00e+06]]
+MAE for each I injection: [0.0, 249988.07499999998, 0.49999999999999645]
+Mean interspike-interval MAE: 83329.525
+Standard Deviation interspike-interval MAE: 117845.39084789407
+MAE of final g prediction: 0.0007454215208230155
+Smallest MAE values (gbar_na3, gkdrbar_kdr, Summary Stats MAE): 
+[[0.03166667 0.02522222 0.13083209]
+ [0.03166667 0.03144444 0.13397843]
+ [0.03166667 0.02522222 0.14105329]
+ [0.03166667 0.02833333 0.1604302 ]
+ [0.03166667 0.03455556 0.16364868]
+ [0.035      0.02833333 0.16399329]]
+Smallest MAE values (gbar_na3, gbar_nap, Summary Stats MAE): 
+[[0.03166667 0.00025    0.13083209]
+ [0.03166667 0.00038333 0.13397843]
+ [0.03166667 0.00035    0.14105329]
+ [0.03166667 0.00038333 0.1604302 ]
+ [0.03166667 0.00038333 0.16364868]
+ [0.035      0.00035    0.16399329]]
+Smallest MAE values (gbar_na3, gmbar_im, Summary Stats MAE): 
+[[0.03166667 0.00275    0.13083209]
+ [0.03166667 0.00385    0.13397843]
+ [0.03166667 0.00348333 0.14105329]
+ [0.03166667 0.00385    0.1604302 ]
+ [0.03166667 0.00385    0.16364868]
+ [0.035      0.00348333 0.16399329]]
+Smallest FI MAE values (gbar_na3, gkdrbar_kdr, FI MAE): 
+[[0.03833333 0.02522222 0.        ]
+ [0.04166667 0.03455556 0.        ]
+ [0.035      0.03766667 0.        ]
+ [0.035      0.03766667 0.        ]
+ [0.035      0.03766667 0.        ]
+ [0.035      0.03766667 0.        ]]
+Smallest FI MAE values (gbar_na3, gbar_nap, FI MAE): 
+[[0.03833333 0.00038333 0.        ]
+ [0.04166667 0.00045    0.        ]
+ [0.035      0.00045    0.        ]
+ [0.035      0.00041667 0.        ]
+ [0.035      0.00038333 0.        ]
+ [0.035      0.00038333 0.        ]]
+Smallest FI MAE values (gbar_na3, gmbar_im, FI MAE): 
+[[0.03833333 0.00421667 0.        ]
+ [0.04166667 0.00458333 0.        ]
+ [0.035      0.00458333 0.        ]
+ [0.035      0.00421667 0.        ]
+ [0.035      0.00421667 0.        ]
+ [0.035      0.00385    0.        ]]
+Smallest MAE values (gbar_na3, gkdrbar_kdr, V MAE): 
+[[0.035      0.02833333 1.09020212]
+ [0.03833333 0.03455556 1.12686473]
+ [0.04166667 0.03455556 1.14228146]
+ [0.04166667 0.03144444 1.14294481]
+ [0.03833333 0.03144444 1.15543084]
+ [0.04166667 0.03766667 1.16541175]]
+Smallest MAE values (gbar_na3, gbar_nap, V MAE): 
+[[3.50000000e-02 3.50000000e-04 1.09020212e+00]
+ [3.83333333e-02 3.50000000e-04 1.12686473e+00]
+ [4.16666667e-02 3.50000000e-04 1.14228146e+00]
+ [4.16666667e-02 3.50000000e-04 1.14294481e+00]
+ [3.83333333e-02 3.50000000e-04 1.15543084e+00]
+ [4.16666667e-02 3.50000000e-04 1.16541175e+00]]
+Smallest MAE values (gbar_na3, gmbar_im, V MAE): 
+[[0.035      0.00348333 1.09020212]
+ [0.03833333 0.00348333 1.12686473]
+ [0.04166667 0.00348333 1.14228146]
+ [0.04166667 0.00348333 1.14294481]
+ [0.03833333 0.00348333 1.15543084]
+ [0.04166667 0.00348333 1.16541175]]
+Blocking: []
+Total number of jobs: 3
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/45/target/synthetic_0.1_0.3_0.5_
+Blocking: []
+Total number of jobs: 1
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/45/target/synthetic_-1_
+MECHANISMS already loaded.
+Found 1 section(s) in this cell. Calculating the total surface area of the cell.
+PassiveProperties(V_rest=-73.13651954425167, R_in=312.05761345489105, tau=73.173, Cm=2.586815449244476, g_bar_leak=3.535204855950249e-05, cell_area=9.064641486925113e-05, leak_conductance_variable='glbar_leak', leak_reversal_variable='el_leak')
+RUNNING THE MODULE
+LOADING TARGET TRACES
+SIMULATING TRAINING DATA
+Total number of jobs: 30000
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/45/module/train
+FILTERING DATA
+Dropping 1363 traces where: All values in the window (3100:4000) are saturated (above -55 mV).
+Dropping 4525 traces where: No spikes are in the voltage trace.
+Dataset size after filtering: 24112. Saving to /home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/45/module/train/filtered_out.npy
+TRAINING RANDOM FOREST REGRESSOR
+Training Random Forest on Filtered Data
+Extracting features: ['I_mean', 'I_stdev', 'Num Spikes', 'Spike Time 1', 'Spike Time 2', 'Spike Time 3', 'Spike Time 4', 'Spike Time 5', 'Spike Time 6', 'Spike Time 7', 'Spike Time 8', 'Spike Time 9', 'Spike Time 10', 'Spike Time 11', 'Spike Time 12', 'Spike Time 13', 'Spike Time 14', 'Spike Time 15', 'Spike Time 16', 'Spike Time 17', 'Spike Time 18', 'Spike Time 19', 'Spike Time 20', 'Min Spike Height', 'Max Spike Height', 'Avg Spike Height', 'Std Spike Height', 'Trough Time 1', 'Trough Time 2', 'Trough Time 3', 'Trough Time 4', 'Trough Time 5', 'Trough Time 6', 'Trough Time 7', 'Trough Time 8', 'Trough Time 9', 'Trough Time 10', 'Trough Time 11', 'Trough Time 12', 'Trough Time 13', 'Trough Time 14', 'Trough Time 15', 'Trough Time 16', 'Trough Time 17', 'Trough Time 18', 'Trough Time 19', 'Trough Time 20', 'Min Trough Height', 'Max Trough Height', 'Avg Trough Height', 'Std Trough Height']
+Evaluating random forest
+MAE: 0.000656 (0.000014)
+Saving rf mean/stdev scores to output/BursterIzh_Original_passmod_fsl-10/45/module/results/saved_metrics.json
+Predicted Conductances for each current injection intensity: 
+[[3.10033333e-02 3.30093333e-02 3.19933333e-04 3.16176667e-03
+  3.53520486e-05]
+ [3.02366667e-02 2.74311111e-02 2.65900000e-04 3.30440000e-03
+  3.53520486e-05]
+ [3.16200000e-02 2.96866667e-02 3.48833333e-04 3.47563333e-03
+  3.53520486e-05]]
+SIMULATING PREDICTIONS
+Total number of jobs: 9
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/45/module/prediction_eval0
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/45/module/prediction_eval1
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/45/module/prediction_eval2
+SELECTING BEST PREDICTION
+Mean Feature MAE for each prediction: [26139.421796095412, 32678.018965037638, 13069.733134284872]
+FI curve MAE for each prediction: [2.2222222222222223, 1.1111111111111112, 1.111111111111111]
+Mean voltage mae for each prediction: [1.541642105148955, 2.50208143133613, 1.9019298818869868]
+{'gbar_na3': 0.0316199999999997, 'gkdrbar_kdr': 0.029686666666666996, 'gbar_nap': 0.0003488333333333379, 'gmbar_im': 0.0034756333333333285, 'glbar_leak': 3.5352048559502146e-05}
+Module runtime: 0:11:50.528198
+{'gbar_na3': 0.0316199999999997, 'gkdrbar_kdr': 0.029686666666666996, 'gbar_nap': 0.0003488333333333379, 'gmbar_im': 0.0034756333333333285, 'glbar_leak': 3.5352048559502146e-05}
+Interspike times (Target): [[1.00e+06 1.00e+06 1.00e+06 1.00e+06]
+ [2.52e+01 1.00e+06 1.00e+06 1.00e+06]
+ [1.95e+01 2.26e+01 1.00e+06 1.00e+06]]
+Interspike times (Prediction): [[1.00e+06 1.00e+06 1.00e+06 1.00e+06]
+ [2.36e+01 4.85e+01 1.00e+06 1.00e+06]
+ [1.90e+01 2.11e+01 1.00e+06 1.00e+06]]
+MAE for each I injection: [0.0, 249988.275, 0.49999999999999645]
+Mean interspike-interval MAE: 83329.59166666666
+Standard Deviation interspike-interval MAE: 117845.48512879825
+MAE of final g prediction: 0.0007062970763785725
+Smallest MAE values (gbar_na3, gkdrbar_kdr, Summary Stats MAE): 
+[[0.03166667 0.02522222 0.13083209]
+ [0.03166667 0.03144444 0.13397843]
+ [0.03166667 0.02522222 0.14105329]
+ [0.03166667 0.02833333 0.1604302 ]
+ [0.03166667 0.03455556 0.16364868]
+ [0.035      0.02833333 0.16399329]]
+Smallest MAE values (gbar_na3, gbar_nap, Summary Stats MAE): 
+[[0.03166667 0.00025    0.13083209]
+ [0.03166667 0.00038333 0.13397843]
+ [0.03166667 0.00035    0.14105329]
+ [0.03166667 0.00038333 0.1604302 ]
+ [0.03166667 0.00038333 0.16364868]
+ [0.035      0.00035    0.16399329]]
+Smallest MAE values (gbar_na3, gmbar_im, Summary Stats MAE): 
+[[0.03166667 0.00275    0.13083209]
+ [0.03166667 0.00385    0.13397843]
+ [0.03166667 0.00348333 0.14105329]
+ [0.03166667 0.00385    0.1604302 ]
+ [0.03166667 0.00385    0.16364868]
+ [0.035      0.00348333 0.16399329]]
+Smallest FI MAE values (gbar_na3, gkdrbar_kdr, FI MAE): 
+[[0.03833333 0.02522222 0.        ]
+ [0.04166667 0.03455556 0.        ]
+ [0.035      0.03766667 0.        ]
+ [0.035      0.03766667 0.        ]
+ [0.035      0.03766667 0.        ]
+ [0.035      0.03766667 0.        ]]
+Smallest FI MAE values (gbar_na3, gbar_nap, FI MAE): 
+[[0.03833333 0.00038333 0.        ]
+ [0.04166667 0.00045    0.        ]
+ [0.035      0.00045    0.        ]
+ [0.035      0.00041667 0.        ]
+ [0.035      0.00038333 0.        ]
+ [0.035      0.00038333 0.        ]]
+Smallest FI MAE values (gbar_na3, gmbar_im, FI MAE): 
+[[0.03833333 0.00421667 0.        ]
+ [0.04166667 0.00458333 0.        ]
+ [0.035      0.00458333 0.        ]
+ [0.035      0.00421667 0.        ]
+ [0.035      0.00421667 0.        ]
+ [0.035      0.00385    0.        ]]
+Smallest MAE values (gbar_na3, gkdrbar_kdr, V MAE): 
+[[0.035      0.02833333 1.09020212]
+ [0.03833333 0.03455556 1.12686473]
+ [0.04166667 0.03455556 1.14228146]
+ [0.04166667 0.03144444 1.14294481]
+ [0.03833333 0.03144444 1.15543084]
+ [0.04166667 0.03766667 1.16541175]]
+Smallest MAE values (gbar_na3, gbar_nap, V MAE): 
+[[3.50000000e-02 3.50000000e-04 1.09020212e+00]
+ [3.83333333e-02 3.50000000e-04 1.12686473e+00]
+ [4.16666667e-02 3.50000000e-04 1.14228146e+00]
+ [4.16666667e-02 3.50000000e-04 1.14294481e+00]
+ [3.83333333e-02 3.50000000e-04 1.15543084e+00]
+ [4.16666667e-02 3.50000000e-04 1.16541175e+00]]
+Smallest MAE values (gbar_na3, gmbar_im, V MAE): 
+[[0.035      0.00348333 1.09020212]
+ [0.03833333 0.00348333 1.12686473]
+ [0.04166667 0.00348333 1.14228146]
+ [0.04166667 0.00348333 1.14294481]
+ [0.03833333 0.00348333 1.15543084]
+ [0.04166667 0.00348333 1.16541175]]
+Blocking: []
+Total number of jobs: 3
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/46/target/synthetic_0.1_0.3_0.5_
+Blocking: []
+Total number of jobs: 1
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/46/target/synthetic_-1_
+MECHANISMS already loaded.
+Found 1 section(s) in this cell. Calculating the total surface area of the cell.
+PassiveProperties(V_rest=-73.13651954425167, R_in=312.05761345489105, tau=73.173, Cm=2.586815449244476, g_bar_leak=3.535204855950249e-05, cell_area=9.064641486925113e-05, leak_conductance_variable='glbar_leak', leak_reversal_variable='el_leak')
+RUNNING THE MODULE
+LOADING TARGET TRACES
+SIMULATING TRAINING DATA
+Total number of jobs: 30000
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/46/module/train
+FILTERING DATA
+Dropping 1363 traces where: All values in the window (3100:4000) are saturated (above -55 mV).
+Dropping 4525 traces where: No spikes are in the voltage trace.
+Dataset size after filtering: 24112. Saving to /home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/46/module/train/filtered_out.npy
+TRAINING RANDOM FOREST REGRESSOR
+Training Random Forest on Filtered Data
+Extracting features: ['I_mean', 'I_stdev', 'Num Spikes', 'Spike Time 1', 'Spike Time 2', 'Spike Time 3', 'Spike Time 4', 'Spike Time 5', 'Spike Time 6', 'Spike Time 7', 'Spike Time 8', 'Spike Time 9', 'Spike Time 10', 'Spike Time 11', 'Spike Time 12', 'Spike Time 13', 'Spike Time 14', 'Spike Time 15', 'Spike Time 16', 'Spike Time 17', 'Spike Time 18', 'Spike Time 19', 'Spike Time 20', 'Min Spike Height', 'Max Spike Height', 'Avg Spike Height', 'Std Spike Height', 'Trough Time 1', 'Trough Time 2', 'Trough Time 3', 'Trough Time 4', 'Trough Time 5', 'Trough Time 6', 'Trough Time 7', 'Trough Time 8', 'Trough Time 9', 'Trough Time 10', 'Trough Time 11', 'Trough Time 12', 'Trough Time 13', 'Trough Time 14', 'Trough Time 15', 'Trough Time 16', 'Trough Time 17', 'Trough Time 18', 'Trough Time 19', 'Trough Time 20', 'Min Trough Height', 'Max Trough Height', 'Avg Trough Height', 'Std Trough Height']
+Evaluating random forest
+MAE: 0.000656 (0.000016)
+Saving rf mean/stdev scores to output/BursterIzh_Original_passmod_fsl-10/46/module/results/saved_metrics.json
+Predicted Conductances for each current injection intensity: 
+[[3.09533333e-02 3.28102222e-02 3.19766667e-04 3.15846667e-03
+  3.53520486e-05]
+ [3.04033333e-02 2.76426667e-02 2.72200000e-04 3.29780000e-03
+  3.53520486e-05]
+ [3.16033333e-02 2.97146667e-02 3.48966667e-04 3.46830000e-03
+  3.53520486e-05]]
+SIMULATING PREDICTIONS
+Total number of jobs: 9
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/46/module/prediction_eval0
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/46/module/prediction_eval1
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_passmod_fsl-10/46/module/prediction_eval2
+SELECTING BEST PREDICTION
+Mean Feature MAE for each prediction: [26139.42001494075, 32677.99569143039, 13069.74568835462]
+FI curve MAE for each prediction: [2.2222222222222223, 1.1111111111111112, 1.111111111111111]
+Mean voltage mae for each prediction: [1.5570104030994132, 3.0234850228995214, 1.8844659568734448]
+{'gbar_na3': 0.031603333333333025, 'gkdrbar_kdr': 0.029714666666667004, 'gbar_nap': 0.0003489666666666712, 'gmbar_im': 0.003468299999999995, 'glbar_leak': 3.5352048559502146e-05}
+Module runtime: 0:11:51.629438
+{'gbar_na3': 0.031603333333333025, 'gkdrbar_kdr': 0.029714666666667004, 'gbar_nap': 0.0003489666666666712, 'gmbar_im': 0.003468299999999995, 'glbar_leak': 3.5352048559502146e-05}
+Interspike times (Target): [[1.00e+06 1.00e+06 1.00e+06 1.00e+06]
+ [2.52e+01 1.00e+06 1.00e+06 1.00e+06]
+ [1.95e+01 2.26e+01 1.00e+06 1.00e+06]]
+Interspike times (Prediction): [[1.00e+06 1.00e+06 1.00e+06 1.00e+06]
+ [2.35e+01 4.59e+01 1.00e+06 1.00e+06]
+ [1.90e+01 2.11e+01 1.00e+06 1.00e+06]]
+MAE for each I injection: [0.0, 249988.94999999998, 0.49999999999999645]
+Mean interspike-interval MAE: 83329.81666666667
+Standard Deviation interspike-interval MAE: 117845.80332684975
+MAE of final g prediction: 0.0007071237430452395
+Smallest MAE values (gbar_na3, gkdrbar_kdr, Summary Stats MAE): 
+[[0.03166667 0.02522222 0.13083209]
+ [0.03166667 0.03144444 0.13397843]
+ [0.03166667 0.02522222 0.14105329]
+ [0.03166667 0.02833333 0.1604302 ]
+ [0.03166667 0.03455556 0.16364868]
+ [0.035      0.02833333 0.16399329]]
+Smallest MAE values (gbar_na3, gbar_nap, Summary Stats MAE): 
+[[0.03166667 0.00025    0.13083209]
+ [0.03166667 0.00038333 0.13397843]
+ [0.03166667 0.00035    0.14105329]
+ [0.03166667 0.00038333 0.1604302 ]
+ [0.03166667 0.00038333 0.16364868]
+ [0.035      0.00035    0.16399329]]
+Smallest MAE values (gbar_na3, gmbar_im, Summary Stats MAE): 
+[[0.03166667 0.00275    0.13083209]
+ [0.03166667 0.00385    0.13397843]
+ [0.03166667 0.00348333 0.14105329]
+ [0.03166667 0.00385    0.1604302 ]
+ [0.03166667 0.00385    0.16364868]
+ [0.035      0.00348333 0.16399329]]
+Smallest FI MAE values (gbar_na3, gkdrbar_kdr, FI MAE): 
+[[0.03833333 0.02522222 0.        ]
+ [0.04166667 0.03455556 0.        ]
+ [0.035      0.03766667 0.        ]
+ [0.035      0.03766667 0.        ]
+ [0.035      0.03766667 0.        ]
+ [0.035      0.03766667 0.        ]]
+Smallest FI MAE values (gbar_na3, gbar_nap, FI MAE): 
+[[0.03833333 0.00038333 0.        ]
+ [0.04166667 0.00045    0.        ]
+ [0.035      0.00045    0.        ]
+ [0.035      0.00041667 0.        ]
+ [0.035      0.00038333 0.        ]
+ [0.035      0.00038333 0.        ]]
+Smallest FI MAE values (gbar_na3, gmbar_im, FI MAE): 
+[[0.03833333 0.00421667 0.        ]
+ [0.04166667 0.00458333 0.        ]
+ [0.035      0.00458333 0.        ]
+ [0.035      0.00421667 0.        ]
+ [0.035      0.00421667 0.        ]
+ [0.035      0.00385    0.        ]]
+Smallest MAE values (gbar_na3, gkdrbar_kdr, V MAE): 
+[[0.035      0.02833333 1.09020212]
+ [0.03833333 0.03455556 1.12686473]
+ [0.04166667 0.03455556 1.14228146]
+ [0.04166667 0.03144444 1.14294481]
+ [0.03833333 0.03144444 1.15543084]
+ [0.04166667 0.03766667 1.16541175]]
+Smallest MAE values (gbar_na3, gbar_nap, V MAE): 
+[[3.50000000e-02 3.50000000e-04 1.09020212e+00]
+ [3.83333333e-02 3.50000000e-04 1.12686473e+00]
+ [4.16666667e-02 3.50000000e-04 1.14228146e+00]
+ [4.16666667e-02 3.50000000e-04 1.14294481e+00]
+ [3.83333333e-02 3.50000000e-04 1.15543084e+00]
+ [4.16666667e-02 3.50000000e-04 1.16541175e+00]]
+Smallest MAE values (gbar_na3, gmbar_im, V MAE): 
+[[0.035      0.00348333 1.09020212]
+ [0.03833333 0.00348333 1.12686473]
+ [0.04166667 0.00348333 1.14228146]
+ [0.04166667 0.00348333 1.14294481]
+ [0.03833333 0.00348333 1.15543084]
+ [0.04166667 0.00348333 1.16541175]]
+/home/mwsrgf/act-venv/lib64/python3.9/site-packages/torch/__init__.py:955: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:432.)
+  _C._set_default_tensor_type(t)
+Warning: no DISPLAY environment variable.
+--No graphics will be displayed.
+Blocking: []
+Total number of jobs: 3
+Total number of proccessors: 192
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/42/target/synthetic_0.1_0.3_0.5_
+RUNNING THE MODULE
+LOADING TARGET TRACES
+SIMULATING TRAINING DATA
+Total number of jobs: 300000
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/42/module/train
+FILTERING DATA
+Dropping 1541 traces where: All values in the window (3100:4000) are saturated (above -55 mV).
+Dropping 270432 traces where: No spikes are in the voltage trace.
+Dataset size after filtering: 28027. Saving to /home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/42/module/train/filtered_out.npy
+TRAINING RANDOM FOREST REGRESSOR
+Training Random Forest on Filtered Data
+Extracting features: ['I_mean', 'I_stdev', 'Num Spikes', 'Spike Time 1', 'Spike Time 2', 'Spike Time 3', 'Spike Time 4', 'Spike Time 5', 'Spike Time 6', 'Spike Time 7', 'Spike Time 8', 'Spike Time 9', 'Spike Time 10', 'Spike Time 11', 'Spike Time 12', 'Spike Time 13', 'Spike Time 14', 'Spike Time 15', 'Spike Time 16', 'Spike Time 17', 'Spike Time 18', 'Spike Time 19', 'Spike Time 20', 'Min Spike Height', 'Max Spike Height', 'Avg Spike Height', 'Std Spike Height', 'Trough Time 1', 'Trough Time 2', 'Trough Time 3', 'Trough Time 4', 'Trough Time 5', 'Trough Time 6', 'Trough Time 7', 'Trough Time 8', 'Trough Time 9', 'Trough Time 10', 'Trough Time 11', 'Trough Time 12', 'Trough Time 13', 'Trough Time 14', 'Trough Time 15', 'Trough Time 16', 'Trough Time 17', 'Trough Time 18', 'Trough Time 19', 'Trough Time 20', 'Min Trough Height', 'Max Trough Height', 'Avg Trough Height', 'Std Trough Height']
+Evaluating random forest
+MAE: 0.000688 (0.000012)
+Saving rf mean/stdev scores to output/BursterIzh_Original_fsl-10/42/module/results/saved_metrics.json
+Predicted Conductances for each current injection intensity: 
+[[3.11600000e-02 3.53831111e-02 2.80866667e-04 4.18293333e-03
+  0.00000000e+00]
+ [2.93233333e-02 2.79880000e-02 2.92600000e-04 3.52476667e-03
+  1.11111111e-05]
+ [2.99833333e-02 2.81995556e-02 3.35233333e-04 3.60286667e-03
+  5.55555556e-07]]
+SIMULATING PREDICTIONS
+Total number of jobs: 9
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/42/module/prediction_eval0
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/42/module/prediction_eval1
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/42/module/prediction_eval2
+SELECTING BEST PREDICTION
+Mean Feature MAE for each prediction: [0.24299584867225513, 0.12759932783000746, 13070.009626567524]
+FI curve MAE for each prediction: [0.0, 0.0, 1.111111111111111]
+Mean voltage mae for each prediction: [2.891996825609508, 1.299667743454638, 2.3664903573398224]
+{'gbar_na3': 0.02932333333333312, 'gkdrbar_kdr': 0.02798800000000006, 'gbar_nap': 0.0002925999999999997, 'gmbar_im': 0.003524766666666677, 'glbar_leak': 1.1111111111111112e-05}
+Module runtime: 0:28:52.864995
+{'gbar_na3': 0.02932333333333312, 'gkdrbar_kdr': 0.02798800000000006, 'gbar_nap': 0.0002925999999999997, 'gmbar_im': 0.003524766666666677, 'glbar_leak': 1.1111111111111112e-05}
+Interspike times (Target): [[1.00e+06 1.00e+06 1.00e+06 1.00e+06]
+ [2.52e+01 1.00e+06 1.00e+06 1.00e+06]
+ [1.95e+01 2.26e+01 1.00e+06 1.00e+06]]
+Interspike times (Prediction): [[1.00e+06 1.00e+06 1.00e+06 1.00e+06]
+ [2.50e+01 1.00e+06 1.00e+06 1.00e+06]
+ [1.95e+01 2.32e+01 1.00e+06 1.00e+06]]
+MAE for each I injection: [0.0, 0.05000000000000071, 0.15000000000000924]
+Mean interspike-interval MAE: 0.06666666666666998
+Standard Deviation interspike-interval MAE: 0.062360956446236404
+MAE of final g prediction: 0.00018894444444447653
+Smallest MAE values (gbar_na3, gkdrbar_kdr, Summary Stats MAE): 
+[[0.03166667 0.03144444 0.15330989]
+ [0.03166667 0.03455556 0.15752345]
+ [0.03166667 0.03766667 0.16450056]
+ [0.03166667 0.03455556 0.17328413]
+ [0.03166667 0.03766667 0.17587032]
+ [0.03166667 0.03144444 0.17888474]]
+Smallest MAE values (gbar_na3, gbar_nap, Summary Stats MAE): 
+[[0.03166667 0.00041667 0.15330989]
+ [0.03166667 0.00041667 0.15752345]
+ [0.03166667 0.00041667 0.16450056]
+ [0.03166667 0.00038333 0.17328413]
+ [0.03166667 0.00038333 0.17587032]
+ [0.03166667 0.00038333 0.17888474]]
+Smallest MAE values (gbar_na3, gmbar_im, Summary Stats MAE): 
+[[0.03166667 0.00495    0.15330989]
+ [0.03166667 0.00495    0.15752345]
+ [0.03166667 0.00495    0.16450056]
+ [0.03166667 0.00495    0.17328413]
+ [0.03166667 0.00495    0.17587032]
+ [0.03166667 0.00458333 0.17888474]]
+Smallest FI MAE values (gbar_na3, gkdrbar_kdr, FI MAE): 
+[[0.045      0.047      0.        ]
+ [0.02833333 0.04388889 0.        ]
+ [0.02833333 0.04388889 0.        ]
+ [0.02833333 0.04388889 0.        ]
+ [0.02833333 0.04388889 0.        ]
+ [0.02833333 0.04388889 0.        ]]
+Smallest FI MAE values (gbar_na3, gbar_nap, FI MAE): 
+[[0.045      0.00045    0.        ]
+ [0.02833333 0.00025    0.        ]
+ [0.02833333 0.00025    0.        ]
+ [0.02833333 0.00028333 0.        ]
+ [0.02833333 0.00028333 0.        ]
+ [0.02833333 0.00031667 0.        ]]
+Smallest FI MAE values (gbar_na3, gmbar_im, FI MAE): 
+[[0.045      0.00495    0.        ]
+ [0.02833333 0.00348333 0.        ]
+ [0.02833333 0.00385    0.        ]
+ [0.02833333 0.00385    0.        ]
+ [0.02833333 0.00421667 0.        ]
+ [0.02833333 0.00385    0.        ]]
+Smallest MAE values (gbar_na3, gkdrbar_kdr, V MAE): 
+[[0.02833333 0.02833333 1.43900468]
+ [0.02833333 0.03144444 1.49960846]
+ [0.03166667 0.03144444 1.52007275]
+ [0.02833333 0.02522222 1.55793777]
+ [0.03166667 0.03455556 1.56022067]
+ [0.025      0.02211111 1.56353802]]
+Smallest MAE values (gbar_na3, gbar_nap, V MAE): 
+[[2.83333333e-02 2.83333333e-04 1.43900468e+00]
+ [2.83333333e-02 2.83333333e-04 1.49960846e+00]
+ [3.16666667e-02 2.83333333e-04 1.52007275e+00]
+ [2.83333333e-02 2.83333333e-04 1.55793777e+00]
+ [3.16666667e-02 2.83333333e-04 1.56022067e+00]
+ [2.50000000e-02 2.50000000e-04 1.56353802e+00]]
+Smallest MAE values (gbar_na3, gmbar_im, V MAE): 
+[[0.02833333 0.00348333 1.43900468]
+ [0.02833333 0.00348333 1.49960846]
+ [0.03166667 0.00348333 1.52007275]
+ [0.02833333 0.00348333 1.55793777]
+ [0.03166667 0.00348333 1.56022067]
+ [0.025      0.00311667 1.56353802]]
+Blocking: []
+Total number of jobs: 3
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/43/target/synthetic_0.1_0.3_0.5_
+RUNNING THE MODULE
+LOADING TARGET TRACES
+SIMULATING TRAINING DATA
+Total number of jobs: 300000
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/43/module/train
+FILTERING DATA
+Dropping 1541 traces where: All values in the window (3100:4000) are saturated (above -55 mV).
+Dropping 270432 traces where: No spikes are in the voltage trace.
+Dataset size after filtering: 28027. Saving to /home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/43/module/train/filtered_out.npy
+TRAINING RANDOM FOREST REGRESSOR
+Training Random Forest on Filtered Data
+Extracting features: ['I_mean', 'I_stdev', 'Num Spikes', 'Spike Time 1', 'Spike Time 2', 'Spike Time 3', 'Spike Time 4', 'Spike Time 5', 'Spike Time 6', 'Spike Time 7', 'Spike Time 8', 'Spike Time 9', 'Spike Time 10', 'Spike Time 11', 'Spike Time 12', 'Spike Time 13', 'Spike Time 14', 'Spike Time 15', 'Spike Time 16', 'Spike Time 17', 'Spike Time 18', 'Spike Time 19', 'Spike Time 20', 'Min Spike Height', 'Max Spike Height', 'Avg Spike Height', 'Std Spike Height', 'Trough Time 1', 'Trough Time 2', 'Trough Time 3', 'Trough Time 4', 'Trough Time 5', 'Trough Time 6', 'Trough Time 7', 'Trough Time 8', 'Trough Time 9', 'Trough Time 10', 'Trough Time 11', 'Trough Time 12', 'Trough Time 13', 'Trough Time 14', 'Trough Time 15', 'Trough Time 16', 'Trough Time 17', 'Trough Time 18', 'Trough Time 19', 'Trough Time 20', 'Min Trough Height', 'Max Trough Height', 'Avg Trough Height', 'Std Trough Height']
+Evaluating random forest
+MAE: 0.000687 (0.000015)
+Saving rf mean/stdev scores to output/BursterIzh_Original_fsl-10/43/module/results/saved_metrics.json
+Predicted Conductances for each current injection intensity: 
+[[3.12200000e-02 3.57066667e-02 2.87000000e-04 4.22546667e-03
+  0.00000000e+00]
+ [2.92966667e-02 2.79102222e-02 2.92000000e-04 3.55006667e-03
+  1.00000000e-05]
+ [2.99900000e-02 2.82586667e-02 3.37066667e-04 3.58453333e-03
+  5.55555556e-07]]
+SIMULATING PREDICTIONS
+Total number of jobs: 9
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/43/module/prediction_eval0
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/43/module/prediction_eval1
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/43/module/prediction_eval2
+SELECTING BEST PREDICTION
+Mean Feature MAE for each prediction: [0.24287014931828801, 0.13721809547674205, 13070.031684300375]
+FI curve MAE for each prediction: [0.0, 0.0, 1.111111111111111]
+Mean voltage mae for each prediction: [2.918399186385468, 1.4002419188525137, 2.6105400652533115]
+{'gbar_na3': 0.029296666666666485, 'gkdrbar_kdr': 0.027910222222222336, 'gbar_nap': 0.0002919999999999993, 'gmbar_im': 0.0035500666666666673, 'glbar_leak': 1e-05}
+Module runtime: 0:28:37.624804
+{'gbar_na3': 0.029296666666666485, 'gkdrbar_kdr': 0.027910222222222336, 'gbar_nap': 0.0002919999999999993, 'gmbar_im': 0.0035500666666666673, 'glbar_leak': 1e-05}
+Interspike times (Target): [[1.00e+06 1.00e+06 1.00e+06 1.00e+06]
+ [2.52e+01 1.00e+06 1.00e+06 1.00e+06]
+ [1.95e+01 2.26e+01 1.00e+06 1.00e+06]]
+Interspike times (Prediction): [[1.00e+06 1.00e+06 1.00e+06 1.00e+06]
+ [2.51e+01 1.00e+06 1.00e+06 1.00e+06]
+ [1.95e+01 2.32e+01 1.00e+06 1.00e+06]]
+MAE for each I injection: [0.0, 0.025000000000005684, 0.15000000000000213]
+Mean interspike-interval MAE: 0.058333333333335936
+Standard Deviation interspike-interval MAE: 0.06561673228343179
+MAE of final g prediction: 0.0002152355555555693
+Smallest MAE values (gbar_na3, gkdrbar_kdr, Summary Stats MAE): 
+[[0.03166667 0.03144444 0.15330989]
+ [0.03166667 0.03455556 0.15752345]
+ [0.03166667 0.03766667 0.16450056]
+ [0.03166667 0.03455556 0.17328413]
+ [0.03166667 0.03766667 0.17587032]
+ [0.03166667 0.03144444 0.17888474]]
+Smallest MAE values (gbar_na3, gbar_nap, Summary Stats MAE): 
+[[0.03166667 0.00041667 0.15330989]
+ [0.03166667 0.00041667 0.15752345]
+ [0.03166667 0.00041667 0.16450056]
+ [0.03166667 0.00038333 0.17328413]
+ [0.03166667 0.00038333 0.17587032]
+ [0.03166667 0.00038333 0.17888474]]
+Smallest MAE values (gbar_na3, gmbar_im, Summary Stats MAE): 
+[[0.03166667 0.00495    0.15330989]
+ [0.03166667 0.00495    0.15752345]
+ [0.03166667 0.00495    0.16450056]
+ [0.03166667 0.00495    0.17328413]
+ [0.03166667 0.00495    0.17587032]
+ [0.03166667 0.00458333 0.17888474]]
+Smallest FI MAE values (gbar_na3, gkdrbar_kdr, FI MAE): 
+[[0.045      0.047      0.        ]
+ [0.02833333 0.04388889 0.        ]
+ [0.02833333 0.04388889 0.        ]
+ [0.02833333 0.04388889 0.        ]
+ [0.02833333 0.04388889 0.        ]
+ [0.02833333 0.04388889 0.        ]]
+Smallest FI MAE values (gbar_na3, gbar_nap, FI MAE): 
+[[0.045      0.00045    0.        ]
+ [0.02833333 0.00025    0.        ]
+ [0.02833333 0.00025    0.        ]
+ [0.02833333 0.00028333 0.        ]
+ [0.02833333 0.00028333 0.        ]
+ [0.02833333 0.00031667 0.        ]]
+Smallest FI MAE values (gbar_na3, gmbar_im, FI MAE): 
+[[0.045      0.00495    0.        ]
+ [0.02833333 0.00348333 0.        ]
+ [0.02833333 0.00385    0.        ]
+ [0.02833333 0.00385    0.        ]
+ [0.02833333 0.00421667 0.        ]
+ [0.02833333 0.00385    0.        ]]
+Smallest MAE values (gbar_na3, gkdrbar_kdr, V MAE): 
+[[0.02833333 0.02833333 1.43900468]
+ [0.02833333 0.03144444 1.49960846]
+ [0.03166667 0.03144444 1.52007275]
+ [0.02833333 0.02522222 1.55793777]
+ [0.03166667 0.03455556 1.56022067]
+ [0.025      0.02211111 1.56353802]]
+Smallest MAE values (gbar_na3, gbar_nap, V MAE): 
+[[2.83333333e-02 2.83333333e-04 1.43900468e+00]
+ [2.83333333e-02 2.83333333e-04 1.49960846e+00]
+ [3.16666667e-02 2.83333333e-04 1.52007275e+00]
+ [2.83333333e-02 2.83333333e-04 1.55793777e+00]
+ [3.16666667e-02 2.83333333e-04 1.56022067e+00]
+ [2.50000000e-02 2.50000000e-04 1.56353802e+00]]
+Smallest MAE values (gbar_na3, gmbar_im, V MAE): 
+[[0.02833333 0.00348333 1.43900468]
+ [0.02833333 0.00348333 1.49960846]
+ [0.03166667 0.00348333 1.52007275]
+ [0.02833333 0.00348333 1.55793777]
+ [0.03166667 0.00348333 1.56022067]
+ [0.025      0.00311667 1.56353802]]
+Blocking: []
+Total number of jobs: 3
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/44/target/synthetic_0.1_0.3_0.5_
+RUNNING THE MODULE
+LOADING TARGET TRACES
+SIMULATING TRAINING DATA
+Total number of jobs: 300000
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/44/module/train
+FILTERING DATA
+Dropping 1541 traces where: All values in the window (3100:4000) are saturated (above -55 mV).
+Dropping 270432 traces where: No spikes are in the voltage trace.
+Dataset size after filtering: 28027. Saving to /home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/44/module/train/filtered_out.npy
+TRAINING RANDOM FOREST REGRESSOR
+Training Random Forest on Filtered Data
+Extracting features: ['I_mean', 'I_stdev', 'Num Spikes', 'Spike Time 1', 'Spike Time 2', 'Spike Time 3', 'Spike Time 4', 'Spike Time 5', 'Spike Time 6', 'Spike Time 7', 'Spike Time 8', 'Spike Time 9', 'Spike Time 10', 'Spike Time 11', 'Spike Time 12', 'Spike Time 13', 'Spike Time 14', 'Spike Time 15', 'Spike Time 16', 'Spike Time 17', 'Spike Time 18', 'Spike Time 19', 'Spike Time 20', 'Min Spike Height', 'Max Spike Height', 'Avg Spike Height', 'Std Spike Height', 'Trough Time 1', 'Trough Time 2', 'Trough Time 3', 'Trough Time 4', 'Trough Time 5', 'Trough Time 6', 'Trough Time 7', 'Trough Time 8', 'Trough Time 9', 'Trough Time 10', 'Trough Time 11', 'Trough Time 12', 'Trough Time 13', 'Trough Time 14', 'Trough Time 15', 'Trough Time 16', 'Trough Time 17', 'Trough Time 18', 'Trough Time 19', 'Trough Time 20', 'Min Trough Height', 'Max Trough Height', 'Avg Trough Height', 'Std Trough Height']
+Evaluating random forest
+MAE: 0.000687 (0.000017)
+Saving rf mean/stdev scores to output/BursterIzh_Original_fsl-10/44/module/results/saved_metrics.json
+Predicted Conductances for each current injection intensity: 
+[[3.11500000e-02 3.53457778e-02 2.83433333e-04 4.20016667e-03
+  0.00000000e+00]
+ [2.93266667e-02 2.81155556e-02 2.96566667e-04 3.59003333e-03
+  8.88888889e-06]
+ [2.99333333e-02 2.82555556e-02 3.33666667e-04 3.59406667e-03
+  5.55555556e-07]]
+SIMULATING PREDICTIONS
+Total number of jobs: 9
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/act/ACTPlot.py:344: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`). Consider using `matplotlib.pyplot.close()`.
+  fig, ax = plt.subplots()
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/44/module/prediction_eval0
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/44/module/prediction_eval1
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/44/module/prediction_eval2
+SELECTING BEST PREDICTION
+Mean Feature MAE for each prediction: [0.24524787134992787, 0.13509363149676973, 13070.004150213457]
+FI curve MAE for each prediction: [0.0, 0.0, 1.111111111111111]
+Mean voltage mae for each prediction: [2.9127826699915804, 1.394031149230744, 2.325225823507143]
+{'gbar_na3': 0.029326666666666473, 'gkdrbar_kdr': 0.028115555555555668, 'gbar_nap': 0.0002965666666666662, 'gmbar_im': 0.00359003333333334, 'glbar_leak': 8.888888888888888e-06}
+Module runtime: 0:29:53.949918
+{'gbar_na3': 0.029326666666666473, 'gkdrbar_kdr': 0.028115555555555668, 'gbar_nap': 0.0002965666666666662, 'gmbar_im': 0.00359003333333334, 'glbar_leak': 8.888888888888888e-06}
+Interspike times (Target): [[1.00e+06 1.00e+06 1.00e+06 1.00e+06]
+ [2.52e+01 1.00e+06 1.00e+06 1.00e+06]
+ [1.95e+01 2.26e+01 1.00e+06 1.00e+06]]
+Interspike times (Prediction): [[1.00e+06 1.00e+06 1.00e+06 1.00e+06]
+ [2.49e+01 1.00e+06 1.00e+06 1.00e+06]
+ [1.95e+01 2.31e+01 1.00e+06 1.00e+06]]
+MAE for each I injection: [0.0, 0.07500000000000284, 0.12500000000000355]
+Mean interspike-interval MAE: 0.0666666666666688
+Standard Deviation interspike-interval MAE: 0.05137011669140964
+MAE of final g prediction: 0.00022169333333339555
+Smallest MAE values (gbar_na3, gkdrbar_kdr, Summary Stats MAE): 
+[[0.03166667 0.03144444 0.15330989]
+ [0.03166667 0.03455556 0.15752345]
+ [0.03166667 0.03766667 0.16450056]
+ [0.03166667 0.03455556 0.17328413]
+ [0.03166667 0.03766667 0.17587032]
+ [0.03166667 0.03144444 0.17888474]]
+Smallest MAE values (gbar_na3, gbar_nap, Summary Stats MAE): 
+[[0.03166667 0.00041667 0.15330989]
+ [0.03166667 0.00041667 0.15752345]
+ [0.03166667 0.00041667 0.16450056]
+ [0.03166667 0.00038333 0.17328413]
+ [0.03166667 0.00038333 0.17587032]
+ [0.03166667 0.00038333 0.17888474]]
+Smallest MAE values (gbar_na3, gmbar_im, Summary Stats MAE): 
+[[0.03166667 0.00495    0.15330989]
+ [0.03166667 0.00495    0.15752345]
+ [0.03166667 0.00495    0.16450056]
+ [0.03166667 0.00495    0.17328413]
+ [0.03166667 0.00495    0.17587032]
+ [0.03166667 0.00458333 0.17888474]]
+Smallest FI MAE values (gbar_na3, gkdrbar_kdr, FI MAE): 
+[[0.045      0.047      0.        ]
+ [0.02833333 0.04388889 0.        ]
+ [0.02833333 0.04388889 0.        ]
+ [0.02833333 0.04388889 0.        ]
+ [0.02833333 0.04388889 0.        ]
+ [0.02833333 0.04388889 0.        ]]
+Smallest FI MAE values (gbar_na3, gbar_nap, FI MAE): 
+[[0.045      0.00045    0.        ]
+ [0.02833333 0.00025    0.        ]
+ [0.02833333 0.00025    0.        ]
+ [0.02833333 0.00028333 0.        ]
+ [0.02833333 0.00028333 0.        ]
+ [0.02833333 0.00031667 0.        ]]
+Smallest FI MAE values (gbar_na3, gmbar_im, FI MAE): 
+[[0.045      0.00495    0.        ]
+ [0.02833333 0.00348333 0.        ]
+ [0.02833333 0.00385    0.        ]
+ [0.02833333 0.00385    0.        ]
+ [0.02833333 0.00421667 0.        ]
+ [0.02833333 0.00385    0.        ]]
+Smallest MAE values (gbar_na3, gkdrbar_kdr, V MAE): 
+[[0.02833333 0.02833333 1.43900468]
+ [0.02833333 0.03144444 1.49960846]
+ [0.03166667 0.03144444 1.52007275]
+ [0.02833333 0.02522222 1.55793777]
+ [0.03166667 0.03455556 1.56022067]
+ [0.025      0.02211111 1.56353802]]
+Smallest MAE values (gbar_na3, gbar_nap, V MAE): 
+[[2.83333333e-02 2.83333333e-04 1.43900468e+00]
+ [2.83333333e-02 2.83333333e-04 1.49960846e+00]
+ [3.16666667e-02 2.83333333e-04 1.52007275e+00]
+ [2.83333333e-02 2.83333333e-04 1.55793777e+00]
+ [3.16666667e-02 2.83333333e-04 1.56022067e+00]
+ [2.50000000e-02 2.50000000e-04 1.56353802e+00]]
+Smallest MAE values (gbar_na3, gmbar_im, V MAE): 
+[[0.02833333 0.00348333 1.43900468]
+ [0.02833333 0.00348333 1.49960846]
+ [0.03166667 0.00348333 1.52007275]
+ [0.02833333 0.00348333 1.55793777]
+ [0.03166667 0.00348333 1.56022067]
+ [0.025      0.00311667 1.56353802]]
+Blocking: []
+Total number of jobs: 3
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/45/target/synthetic_0.1_0.3_0.5_
+RUNNING THE MODULE
+LOADING TARGET TRACES
+SIMULATING TRAINING DATA
+Total number of jobs: 300000
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/45/module/train
+FILTERING DATA
+Dropping 1541 traces where: All values in the window (3100:4000) are saturated (above -55 mV).
+Dropping 270432 traces where: No spikes are in the voltage trace.
+Dataset size after filtering: 28027. Saving to /home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/45/module/train/filtered_out.npy
+TRAINING RANDOM FOREST REGRESSOR
+Training Random Forest on Filtered Data
+Extracting features: ['I_mean', 'I_stdev', 'Num Spikes', 'Spike Time 1', 'Spike Time 2', 'Spike Time 3', 'Spike Time 4', 'Spike Time 5', 'Spike Time 6', 'Spike Time 7', 'Spike Time 8', 'Spike Time 9', 'Spike Time 10', 'Spike Time 11', 'Spike Time 12', 'Spike Time 13', 'Spike Time 14', 'Spike Time 15', 'Spike Time 16', 'Spike Time 17', 'Spike Time 18', 'Spike Time 19', 'Spike Time 20', 'Min Spike Height', 'Max Spike Height', 'Avg Spike Height', 'Std Spike Height', 'Trough Time 1', 'Trough Time 2', 'Trough Time 3', 'Trough Time 4', 'Trough Time 5', 'Trough Time 6', 'Trough Time 7', 'Trough Time 8', 'Trough Time 9', 'Trough Time 10', 'Trough Time 11', 'Trough Time 12', 'Trough Time 13', 'Trough Time 14', 'Trough Time 15', 'Trough Time 16', 'Trough Time 17', 'Trough Time 18', 'Trough Time 19', 'Trough Time 20', 'Min Trough Height', 'Max Trough Height', 'Avg Trough Height', 'Std Trough Height']
+Evaluating random forest
+MAE: 0.000688 (0.000013)
+Saving rf mean/stdev scores to output/BursterIzh_Original_fsl-10/45/module/results/saved_metrics.json
+Predicted Conductances for each current injection intensity: 
+[[3.11733333e-02 3.54360000e-02 2.83733333e-04 4.20383333e-03
+  0.00000000e+00]
+ [2.92600000e-02 2.79444444e-02 2.91600000e-04 3.54603333e-03
+  1.05555556e-05]
+ [3.00166667e-02 2.82493333e-02 3.33900000e-04 3.61533333e-03
+  2.22222222e-06]]
+SIMULATING PREDICTIONS
+Total number of jobs: 9
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/45/module/prediction_eval0
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/45/module/prediction_eval1
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/45/module/prediction_eval2
+SELECTING BEST PREDICTION
+Mean Feature MAE for each prediction: [0.24257236499473103, 0.13032417514040498, 13069.969093946665]
+FI curve MAE for each prediction: [0.0, 0.0, 1.111111111111111]
+Mean voltage mae for each prediction: [2.9067611001244185, 1.3989347170189486, 2.170248866929258]
+{'gbar_na3': 0.0292599999999998, 'gkdrbar_kdr': 0.027944444444444543, 'gbar_nap': 0.0002915999999999996, 'gmbar_im': 0.0035460333333333423, 'glbar_leak': 1.0555555555555555e-05}
+Module runtime: 0:29:40.666963
+{'gbar_na3': 0.0292599999999998, 'gkdrbar_kdr': 0.027944444444444543, 'gbar_nap': 0.0002915999999999996, 'gmbar_im': 0.0035460333333333423, 'glbar_leak': 1.0555555555555555e-05}
+Interspike times (Target): [[1.00e+06 1.00e+06 1.00e+06 1.00e+06]
+ [2.52e+01 1.00e+06 1.00e+06 1.00e+06]
+ [1.95e+01 2.26e+01 1.00e+06 1.00e+06]]
+Interspike times (Prediction): [[1.00e+06 1.00e+06 1.00e+06 1.00e+06]
+ [2.51e+01 1.00e+06 1.00e+06 1.00e+06]
+ [1.95e+01 2.33e+01 1.00e+06 1.00e+06]]
+MAE for each I injection: [0.0, 0.025000000000005684, 0.1750000000000007]
+Mean interspike-interval MAE: 0.0666666666666688
+Standard Deviation interspike-interval MAE: 0.07728015412913017
+MAE of final g prediction: 0.0002148866666666888
+Smallest MAE values (gbar_na3, gkdrbar_kdr, Summary Stats MAE): 
+[[0.03166667 0.03144444 0.15330989]
+ [0.03166667 0.03455556 0.15752345]
+ [0.03166667 0.03766667 0.16450056]
+ [0.03166667 0.03455556 0.17328413]
+ [0.03166667 0.03766667 0.17587032]
+ [0.03166667 0.03144444 0.17888474]]
+Smallest MAE values (gbar_na3, gbar_nap, Summary Stats MAE): 
+[[0.03166667 0.00041667 0.15330989]
+ [0.03166667 0.00041667 0.15752345]
+ [0.03166667 0.00041667 0.16450056]
+ [0.03166667 0.00038333 0.17328413]
+ [0.03166667 0.00038333 0.17587032]
+ [0.03166667 0.00038333 0.17888474]]
+Smallest MAE values (gbar_na3, gmbar_im, Summary Stats MAE): 
+[[0.03166667 0.00495    0.15330989]
+ [0.03166667 0.00495    0.15752345]
+ [0.03166667 0.00495    0.16450056]
+ [0.03166667 0.00495    0.17328413]
+ [0.03166667 0.00495    0.17587032]
+ [0.03166667 0.00458333 0.17888474]]
+Smallest FI MAE values (gbar_na3, gkdrbar_kdr, FI MAE): 
+[[0.045      0.047      0.        ]
+ [0.02833333 0.04388889 0.        ]
+ [0.02833333 0.04388889 0.        ]
+ [0.02833333 0.04388889 0.        ]
+ [0.02833333 0.04388889 0.        ]
+ [0.02833333 0.04388889 0.        ]]
+Smallest FI MAE values (gbar_na3, gbar_nap, FI MAE): 
+[[0.045      0.00045    0.        ]
+ [0.02833333 0.00025    0.        ]
+ [0.02833333 0.00025    0.        ]
+ [0.02833333 0.00028333 0.        ]
+ [0.02833333 0.00028333 0.        ]
+ [0.02833333 0.00031667 0.        ]]
+Smallest FI MAE values (gbar_na3, gmbar_im, FI MAE): 
+[[0.045      0.00495    0.        ]
+ [0.02833333 0.00348333 0.        ]
+ [0.02833333 0.00385    0.        ]
+ [0.02833333 0.00385    0.        ]
+ [0.02833333 0.00421667 0.        ]
+ [0.02833333 0.00385    0.        ]]
+Smallest MAE values (gbar_na3, gkdrbar_kdr, V MAE): 
+[[0.02833333 0.02833333 1.43900468]
+ [0.02833333 0.03144444 1.49960846]
+ [0.03166667 0.03144444 1.52007275]
+ [0.02833333 0.02522222 1.55793777]
+ [0.03166667 0.03455556 1.56022067]
+ [0.025      0.02211111 1.56353802]]
+Smallest MAE values (gbar_na3, gbar_nap, V MAE): 
+[[2.83333333e-02 2.83333333e-04 1.43900468e+00]
+ [2.83333333e-02 2.83333333e-04 1.49960846e+00]
+ [3.16666667e-02 2.83333333e-04 1.52007275e+00]
+ [2.83333333e-02 2.83333333e-04 1.55793777e+00]
+ [3.16666667e-02 2.83333333e-04 1.56022067e+00]
+ [2.50000000e-02 2.50000000e-04 1.56353802e+00]]
+Smallest MAE values (gbar_na3, gmbar_im, V MAE): 
+[[0.02833333 0.00348333 1.43900468]
+ [0.02833333 0.00348333 1.49960846]
+ [0.03166667 0.00348333 1.52007275]
+ [0.02833333 0.00348333 1.55793777]
+ [0.03166667 0.00348333 1.56022067]
+ [0.025      0.00311667 1.56353802]]
+Blocking: []
+Total number of jobs: 3
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/46/target/synthetic_0.1_0.3_0.5_
+RUNNING THE MODULE
+LOADING TARGET TRACES
+SIMULATING TRAINING DATA
+Total number of jobs: 300000
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/46/module/train
+FILTERING DATA
+Dropping 1541 traces where: All values in the window (3100:4000) are saturated (above -55 mV).
+Dropping 270432 traces where: No spikes are in the voltage trace.
+Dataset size after filtering: 28027. Saving to /home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/46/module/train/filtered_out.npy
+TRAINING RANDOM FOREST REGRESSOR
+Training Random Forest on Filtered Data
+Extracting features: ['I_mean', 'I_stdev', 'Num Spikes', 'Spike Time 1', 'Spike Time 2', 'Spike Time 3', 'Spike Time 4', 'Spike Time 5', 'Spike Time 6', 'Spike Time 7', 'Spike Time 8', 'Spike Time 9', 'Spike Time 10', 'Spike Time 11', 'Spike Time 12', 'Spike Time 13', 'Spike Time 14', 'Spike Time 15', 'Spike Time 16', 'Spike Time 17', 'Spike Time 18', 'Spike Time 19', 'Spike Time 20', 'Min Spike Height', 'Max Spike Height', 'Avg Spike Height', 'Std Spike Height', 'Trough Time 1', 'Trough Time 2', 'Trough Time 3', 'Trough Time 4', 'Trough Time 5', 'Trough Time 6', 'Trough Time 7', 'Trough Time 8', 'Trough Time 9', 'Trough Time 10', 'Trough Time 11', 'Trough Time 12', 'Trough Time 13', 'Trough Time 14', 'Trough Time 15', 'Trough Time 16', 'Trough Time 17', 'Trough Time 18', 'Trough Time 19', 'Trough Time 20', 'Min Trough Height', 'Max Trough Height', 'Avg Trough Height', 'Std Trough Height']
+Evaluating random forest
+MAE: 0.000688 (0.000015)
+Saving rf mean/stdev scores to output/BursterIzh_Original_fsl-10/46/module/results/saved_metrics.json
+Predicted Conductances for each current injection intensity: 
+[[3.11400000e-02 3.51933333e-02 2.81966667e-04 4.19210000e-03
+  0.00000000e+00]
+ [2.92233333e-02 2.80128889e-02 2.92900000e-04 3.57683333e-03
+  7.22222222e-06]
+ [3.00166667e-02 2.82897778e-02 3.38900000e-04 3.60873333e-03
+  0.00000000e+00]]
+SIMULATING PREDICTIONS
+Total number of jobs: 9
+Total number of proccessors: 192
+MECHANISMS already loaded.
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/46/module/prediction_eval0
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/46/module/prediction_eval1
+/home/mwsrgf/proj/ACT/experiments/BursterIzhikevich/filtered/output/BursterIzh_Original_fsl-10/46/module/prediction_eval2
+SELECTING BEST PREDICTION
+Mean Feature MAE for each prediction: [0.2420640010331053, 0.14634207418432174, 13070.032241712324]
+FI curve MAE for each prediction: [0.0, 0.0, 1.111111111111111]
+Mean voltage mae for each prediction: [2.90392762626209, 1.4653206039132372, 2.609385335726572]
+{'gbar_na3': 0.029223333333333143, 'gkdrbar_kdr': 0.028012888888888997, 'gbar_nap': 0.0002928999999999999, 'gmbar_im': 0.00357683333333334, 'glbar_leak': 7.222222222222223e-06}
+Module runtime: 0:31:42.577956
+{'gbar_na3': 0.029223333333333143, 'gkdrbar_kdr': 0.028012888888888997, 'gbar_nap': 0.0002928999999999999, 'gmbar_im': 0.00357683333333334, 'glbar_leak': 7.222222222222223e-06}
+Interspike times (Target): [[1.00e+06 1.00e+06 1.00e+06 1.00e+06]
+ [2.52e+01 1.00e+06 1.00e+06 1.00e+06]
+ [1.95e+01 2.26e+01 1.00e+06 1.00e+06]]
+Interspike times (Prediction): [[1.00e+06 1.00e+06 1.00e+06 1.00e+06]
+ [2.49e+01 1.00e+06 1.00e+06 1.00e+06]
+ [1.95e+01 2.33e+01 1.00e+06 1.00e+06]]
+MAE for each I injection: [0.0, 0.07500000000000284, 0.1750000000000007]
+Mean interspike-interval MAE: 0.08333333333333452
+Standard Deviation interspike-interval MAE: 0.07168604389202207
+MAE of final g prediction: 0.000220253333333394
+Smallest MAE values (gbar_na3, gkdrbar_kdr, Summary Stats MAE): 
+[[0.03166667 0.03144444 0.15330989]
+ [0.03166667 0.03455556 0.15752345]
+ [0.03166667 0.03766667 0.16450056]
+ [0.03166667 0.03455556 0.17328413]
+ [0.03166667 0.03766667 0.17587032]
+ [0.03166667 0.03144444 0.17888474]]
+Smallest MAE values (gbar_na3, gbar_nap, Summary Stats MAE): 
+[[0.03166667 0.00041667 0.15330989]
+ [0.03166667 0.00041667 0.15752345]
+ [0.03166667 0.00041667 0.16450056]
+ [0.03166667 0.00038333 0.17328413]
+ [0.03166667 0.00038333 0.17587032]
+ [0.03166667 0.00038333 0.17888474]]
+Smallest MAE values (gbar_na3, gmbar_im, Summary Stats MAE): 
+[[0.03166667 0.00495    0.15330989]
+ [0.03166667 0.00495    0.15752345]
+ [0.03166667 0.00495    0.16450056]
+ [0.03166667 0.00495    0.17328413]
+ [0.03166667 0.00495    0.17587032]
+ [0.03166667 0.00458333 0.17888474]]
+Smallest FI MAE values (gbar_na3, gkdrbar_kdr, FI MAE): 
+[[0.045      0.047      0.        ]
+ [0.02833333 0.04388889 0.        ]
+ [0.02833333 0.04388889 0.        ]
+ [0.02833333 0.04388889 0.        ]
+ [0.02833333 0.04388889 0.        ]
+ [0.02833333 0.04388889 0.        ]]
+Smallest FI MAE values (gbar_na3, gbar_nap, FI MAE): 
+[[0.045      0.00045    0.        ]
+ [0.02833333 0.00025    0.        ]
+ [0.02833333 0.00025    0.        ]
+ [0.02833333 0.00028333 0.        ]
+ [0.02833333 0.00028333 0.        ]
+ [0.02833333 0.00031667 0.        ]]
+Smallest FI MAE values (gbar_na3, gmbar_im, FI MAE): 
+[[0.045      0.00495    0.        ]
+ [0.02833333 0.00348333 0.        ]
+ [0.02833333 0.00385    0.        ]
+ [0.02833333 0.00385    0.        ]
+ [0.02833333 0.00421667 0.        ]
+ [0.02833333 0.00385    0.        ]]
+Smallest MAE values (gbar_na3, gkdrbar_kdr, V MAE): 
+[[0.02833333 0.02833333 1.43900468]
+ [0.02833333 0.03144444 1.49960846]
+ [0.03166667 0.03144444 1.52007275]
+ [0.02833333 0.02522222 1.55793777]
+ [0.03166667 0.03455556 1.56022067]
+ [0.025      0.02211111 1.56353802]]
+Smallest MAE values (gbar_na3, gbar_nap, V MAE): 
+[[2.83333333e-02 2.83333333e-04 1.43900468e+00]
+ [2.83333333e-02 2.83333333e-04 1.49960846e+00]
+ [3.16666667e-02 2.83333333e-04 1.52007275e+00]
+ [2.83333333e-02 2.83333333e-04 1.55793777e+00]
+ [3.16666667e-02 2.83333333e-04 1.56022067e+00]
+ [2.50000000e-02 2.50000000e-04 1.56353802e+00]]
+Smallest MAE values (gbar_na3, gmbar_im, V MAE): 
+[[0.02833333 0.00348333 1.43900468]
+ [0.02833333 0.00348333 1.49960846]
+ [0.03166667 0.00348333 1.52007275]
+ [0.02833333 0.00348333 1.55793777]
+ [0.03166667 0.00348333 1.56022067]
+ [0.025      0.00311667 1.56353802]]
+Start: Thu Oct 31 14:09:14 CDT 2024 
+End:   Thu Oct 31 20:13:05 CDT 2024
+Done running model at Thu Oct 31 20:13:05 CDT 2024
