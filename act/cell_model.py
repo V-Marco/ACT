@@ -1,83 +1,89 @@
-from neuron import h
 import numpy as np
-import os
+import functools
+from neuron import h
 
-from act.act_types import PassiveProperties, OptimizationParameters, SimulationParameters
-from typing import List, TypedDict
+from act.act_types import PassiveProperties, SimulationParameters
 
 class ACTCellModel:
 
-    def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list, passive_properties: PassiveProperties = None, cell_area = None):
+    def __init__(
+            self, 
+            path_to_hoc_file: str, 
+            path_to_modfiles: str, 
+            active_channels: list,
+            passive_properties: PassiveProperties,
+            cell_name: str = None
+            ):
 
         # Hoc cell
-        self.hoc_file = hoc_file
-        self.mod_folder = mod_folder
+        self.path_to_hoc_file = path_to_hoc_file
+        self.path_to_modfiles = path_to_modfiles
         self.cell_name = cell_name
         self.passive_properties = passive_properties
-        self.cell_area = cell_area
+
+        # Conductances to consider
+        self.active_channels = active_channels.copy()
+
+        # Sections
+        self.all = None
+        self.soma = None
 
         # Current injection objects
         self.CI = []
 
-        # Conductances to consider
-        self.g_names = g_names.copy()
-
-        # Passive properties
-        self.gleak_var = None
-        self.g_bar_leak = None
-        
-    def set_surface_area(self):
-        # Print out all of the sections that are found
-        section_list = list(self.all)
-        print(f"Found {len(section_list)} section(s) in this cell. Calculating the total surface area of the cell.")
-
-        cell_area = 0
-
-        # Loop through all sections and segments and add up the areas
-        for section in section_list:  
-            for segment in section:
-                segment_area = h.area(segment.x, sec=section)
-                cell_area += segment_area
-        self.cell_area = cell_area * 1e-8 # cm^2
+        # Recorders
+        self.t = None
+        self.V = None
+        self.I = None
 
     def _build_cell(self) -> None:
 
         # Load the .hoc file
-        h.load_file(self.hoc_file)
+        h.load_file(self.path_to_hoc_file)
 
         # Morphology
         hoc_cell = getattr(h, self.cell_name)()
-        self.all = hoc_cell.all
+        self.all = list(hoc_cell.all)
         self.soma = hoc_cell.soma
 
         # Recorders
         self.t = h.Vector().record(h._ref_t)
         self.V = h.Vector().record(self.soma[0](0.5)._ref_v)
-        self.I = []
+        
+    def compute_surface_area(self) -> None:
 
-    def get_output(self) -> None:
+        # Print out all of the sections that are found
+        section_list = self.all
+        print(f"Found {len(section_list)} section(s) in this cell. Calculating the total surface area of the cell.")
+
+        # Loop through all sections and segments and add up the areas
+        cell_area = 0
+        for section in section_list:  
+            for segment in section:
+                segment_area = h.area(segment.x, sec = section)
+                cell_area += segment_area
+        self.passive_properties.cell_area = cell_area * 1e-8 # (cm2)
+        print(f"Cell area is set to {self.passive_properties.cell_area} cm2.")
+
+    def get_output(self) -> tuple:
+        # https://stackoverflow.com/questions/31174295/getattr-and-setattr-on-nested-subobjects-chained-properties
+        def rgetattr(obj, attr, *args):
+            def _getattr(obj, attr):
+                return getattr(obj, attr, *args)
+            return functools.reduce(_getattr, [obj] + attr.split('.'))
+        
         g_values = []
-        for channel in self.g_names:
-            g_values.append(getattr(self.soma[0], channel))
+        for channel in self.active_channels:
+            g_values.append(rgetattr(self.soma[0](0.5), channel))
 
         return self.V.as_numpy().flatten(), self.I.flatten(), np.array(g_values).flatten()
-    
-    def set_g(self, g_names: list, g_values: list, sim_params: SimulationParameters) -> None:
-        sim_params['set_g_to'].append((g_names, g_values))
 
-    def _set_g(self, g_names: list, g_values: list) -> None:
-        for sec in self.all:
-            for index, key in enumerate(g_names):
-                setattr(sec, key, g_values[index])
-    
-    def block_channels(self, sim_params: SimulationParameters, blocked_channel_list = [], ):
-        if not blocked_channel_list == None and not len(blocked_channel_list) == 0:
-            self.set_g(blocked_channel_list, [0.0 for _ in blocked_channel_list], sim_params)
+    ########## Current injection ##########
 
     def _add_constant_CI(self, amp: float, dur: int, delay: int, sim_time: int, dt: float) -> None:
+
         inj = h.IClamp(self.soma[0](0.5))
         inj.amp = amp; inj.dur = dur; inj.delay = delay
-        #print(f"inj.amp = {amp} | inj.dur = {dur} | inj.delay = {delay}")
         self.CI.append(inj)
         
         delay_steps = int(delay / dt)
@@ -126,6 +132,20 @@ class ACTCellModel:
             total_delay += 1
         
         self.I = np.array(I)
+
+    ########## TODO -- potentially adjust to the new outline
+
+    def set_g(self, g_names: list, g_values: list, sim_params: SimulationParameters) -> None:
+        sim_params['set_g_to'].append((g_names, g_values))
+
+    def _set_g(self, g_names: list, g_values: list) -> None:
+        for sec in self.all:
+            for index, key in enumerate(g_names):
+                setattr(sec, key, g_values[index])
+    
+    def block_channels(self, sim_params: SimulationParameters, blocked_channel_list = [], ):
+        if not blocked_channel_list == None and not len(blocked_channel_list) == 0:
+            self.set_g(blocked_channel_list, [0.0 for _ in blocked_channel_list], sim_params)
     
     def set_passive_properties(self, passive_props: PassiveProperties) -> None:
         for sec in self.all:
@@ -168,9 +188,9 @@ class TrainCell(ACTCellModel):
         super().__init__(hoc_file, mod_folder, cell_name, g_names, passive_properties)
 
                 
-class ModuleParameters(TypedDict):
-    module_folder_name: str
-    target_traces_file: str
-    cell: ACTCellModel
-    sim_params: SimulationParameters
-    optim_params: OptimizationParameters
+# class ModuleParameters(TypedDict):
+#     module_folder_name: str
+#     target_traces_file: str
+#     cell: ACTCellModel
+#     sim_params: SimulationParameters
+#     optim_params: OptimizationParameters

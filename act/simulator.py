@@ -1,15 +1,13 @@
-from neuron import h
 from multiprocessing import Pool, cpu_count
 
-from act.act_types import SimulationParameters, SimParams
+from act.act_types import SimulationParameters
 from act.cell_model import ACTCellModel, TargetCell, TrainCell
 
-
+from neuron import h
 import numpy as np
 
 import os
 import sys
-import time
 import shutil
 
 from contextlib import contextmanager
@@ -29,7 +27,7 @@ def suppress_neuron_warnings():
 
 # https://stackoverflow.com/questions/31729008/python-multiprocessing-seems-near-impossible-to-do-within-classes-using-any-clas
 def unwrap_self_run_job(args):
-    return Simulator._run_job(args[0], args[1][0], args[1][1])
+    return ACTSimulator._run_job(args[0], args[1][0], args[1][1])
 
 def print_mechanism_conductances(sec):
     print(f"\nMechanisms in section '{sec.name()}':")
@@ -43,70 +41,89 @@ def print_mechanism_conductances(sec):
                     value = getattr(mech, var)
                     print(f"      {var} = {value}")
 
-class Simulator:
+class ACTSimulator:
 
     def __init__(self, output_folder_name) -> None:
         self.path = output_folder_name
         self.pool = []
+        print("""
+        ACTSimulator (2024)
+        ----------
+        When submitting multiple jobs, note that the cells must share modfiles.
+        """)
+
+    def run(self, cell: ACTCellModel, parameters: SimulationParameters) -> None:
+
+        # Compile the modfiles and suppress output
+        os.system(f"nrnivmodl {cell.path_to_modfiles} > /dev/null 2>&1")
+
+        # Load the stdrun
+        h.load_file('stdrun.hoc')
+
+        # Mechanisms might already be loaded
+        try:
+            with suppress_neuron_warnings():
+                h.nrn_load_dll("./x86_64/.libs/libnrnmech.so")
+        except:
+            pass
+
+        # Set parameters
+        h.celsius = parameters.h_celsius
+        h.tstop = parameters.h_tstop
+        h.dt = parameters.h_dt
+        h.steps_per_ms = 1 / h.dt
+        h.v_init = parameters.h_v_init
+
+        # Build the cell
+        cell._build_cell()
+
+        # Set CI
+        if parameters.CI.type == "constant":
+            cell._add_constant_CI(parameters.CI.amp, parameters.CI.dur, parameters.CI.delay, parameters.h_tstop, parameters.h_dt)
+
+        h.finitialize(h.v_init)
+        h.run()
+
+        return cell
 
     def submit_job(self, cell: ACTCellModel, parameters: SimulationParameters) -> None:
-        parameters.path = os.path.join(self.path, parameters.sim_name)
+        parameters._path = os.path.join(self.path, parameters.sim_name)
         self.pool.append((cell, parameters))
 
-    def run(self, path_to_modfiles: str):
-        print(f"Total number of jobs: {len(self.pool)}")
-        print(f"Total number of proccessors: {cpu_count()}")
+    def run_jobs(self, n_cpu: int = None) -> None:
 
         # Create the simulation parent folder if it doesn't exist
-        os.makedirs(self.path, exist_ok=True)
-        try:
-
-            # Compile the modfiles and suppress output
-            os.system(f"nrnivmodl {path_to_modfiles} > /dev/null 2>&1")
-
-            time.sleep(2)
-
-            # Attempt to load the compiled mechanisms
-            max_attempts = 3
-            for attempt in range(max_attempts):
-                try:
-                    with suppress_neuron_warnings():
-                        h.nrn_load_dll("./x86_64/.libs/libnrnmech.so")
-                    break
-                except RuntimeError as e:
-                    if "hocobj_call" in str(e):
-                        print("MECHANISMS already loaded.")
-                        break
-                    elif "is not a MECHANISM" in str(e) and attempt < max_attempts - 1:
-                        print(f"Loading compiled mechanisms failed {attempt + 1} time(s). Trying again (Max tries: {max_attempts})")
-                        time.sleep(2) 
-                    else:
-                        print(str(e))
-                        raise 
-
-            pool = Pool(processes = int(cpu_count() * 0.6))
-            pool.map(unwrap_self_run_job, zip([self] * len(self.pool), self.pool))
-            pool.close()
-            pool.join()
-
-        except Exception as e:
-                    print(f"An error occurred during the simulation: {e}")
-                    raise
-        finally:
-            try:
-                shutil.rmtree("x86_64")
-            except OSError as e:
-                print(f"Error removing x86_64 directory: {e}")
+        os.makedirs(self.path, exist_ok = True)
         
+        if n_cpu is None:
+            n_cpu = cpu_count()
 
-    def _run_job(self, cell: ACTCellModel, parameters: SimParams) -> None:
+        # Compile the modfiles and suppress output
+        os.system(f"nrnivmodl {self.pool[0][0].path_to_modfiles} > /dev/null 2>&1")
+        
+        pool = Pool(processes = n_cpu)
+        pool.map(unwrap_self_run_job, zip([self] * len(self.pool), self.pool))
+        pool.close()
+        pool.join()
+
+        # Clean
+        self.pool = []
+        shutil.rmtree("x86_64")
+
+    def _run_job(self, cell: ACTCellModel, parameters: SimulationParameters) -> None:
+
         # Create this simulation's folder
-        os.makedirs(parameters.path, exist_ok=True)
+        os.makedirs(parameters._path, exist_ok = True)
 
-        h.nrn_load_dll(os.path.join(cell.mod_folder, "libnrnmech.so"))
-        
-        # Load standard run files
+        # Load the stdrun
         h.load_file('stdrun.hoc')
+
+        # Mechanisms might already be loaded
+        try:
+            with suppress_neuron_warnings():
+                h.nrn_load_dll("./x86_64/.libs/libnrnmech.so")
+        except:
+            pass
 
         # Set parameters
         h.celsius = parameters.h_celsius
@@ -119,25 +136,26 @@ class Simulator:
         cell._build_cell()
         
         # Set passive properties
-        if not cell.passive_properties == None:
-            cell.set_passive_properties(cell.passive_properties)
+        # if not cell.passive_properties == None:
+        #     cell.set_passive_properties(cell.passive_properties)
 
         # Set CI
-        if parameters.CI["type"] == "constant":
-            cell._add_constant_CI(parameters.CI["amp"], parameters.CI["dur"], parameters.CI["delay"], parameters.h_tstop, parameters.h_dt)
-        elif parameters.CI["type"] == "ramp":
-            cell._add_ramp_CI(parameters.CI["start_amp"], parameters.CI["amp_incr"],parameters.CI["num_steps"],parameters.CI["step_time"],parameters.CI["dur"], parameters.CI["delay"], parameters.h_tstop, parameters.h_dt)
-            pass
-        else:
-            raise NotImplementedError
+        if parameters.CI.type == "constant":
+            cell._add_constant_CI(parameters.CI.amp, parameters.CI.dur, parameters.CI.delay, parameters.h_tstop, parameters.h_dt)
+        # elif parameters.CI["type"] == "ramp":
+        #     cell._add_ramp_CI(parameters.CI["start_amp"], parameters.CI["amp_incr"],parameters.CI["num_steps"],parameters.CI["step_time"],parameters.CI["dur"], parameters.CI["delay"], parameters.h_tstop, parameters.h_dt)
+        #     pass
+        # else:
+        #     raise NotImplementedError
         
         # If this is a train cell, load gs to set
-        if not parameters.set_g_to == None and not len(parameters.set_g_to) == 0:
-            #print(f"Setting G: {parameters.set_g_to[parameters.sim_idx][0]} to {parameters.set_g_to [parameters.sim_idx][1]}")
-            cell._set_g(parameters.set_g_to[parameters.sim_idx][0], parameters.set_g_to [parameters.sim_idx][1])   
+        # if not parameters.set_g_to == None and not len(parameters.set_g_to) == 0:
+        #     #print(f"Setting G: {parameters.set_g_to[parameters.sim_idx][0]} to {parameters.set_g_to [parameters.sim_idx][1]}")
+        #     cell._set_g(parameters.set_g_to[parameters.sim_idx][0], parameters.set_g_to [parameters.sim_idx][1])   
 
                 
         #print_mechanism_conductances(cell.soma[0])
+
         # Simulate
         h.finitialize(h.v_init)
         h.run()
@@ -149,6 +167,6 @@ class Simulator:
         out[:, 1] = I[:int(parameters.h_tstop / parameters.h_dt)]
         out[:len(g), 2] = g
         out[len(g):, 2] = np.nan
-
-        np.save(os.path.join(parameters.path, f"out_{parameters.sim_idx}.npy"), out)
+    
+        np.save(os.path.join(parameters._path, f"out_{parameters.sim_idx}.npy"), out)
         
