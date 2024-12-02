@@ -11,7 +11,7 @@ import numpy as np
 if __name__ == "__main__":
     
     sim = Simulation(SkeletonCell.Hay)
-    for i in range(1):
+    for i in range(100):
         sim.submit_job(
             HayParameters(
                 f"sim_{i}", 
@@ -20,5 +20,5 @@ if __name__ == "__main__":
                 h_i_duration = 900, # (ms)
                 h_i_delay = 100 # (ms)
                 ))
-    sim.run(batch_size = 1)
+    sim.run(batch_size = 10)
 

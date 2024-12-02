@@ -1,0 +1,2 @@
+load_file("ca3b-cell1zr.hoc")
+nrncontrolmenu()

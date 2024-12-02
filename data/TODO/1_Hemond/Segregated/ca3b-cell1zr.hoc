@@ -1,0 +1,225 @@
+load_file("nrngui.hoc")
+cvode_active(1)
+
+Vrest = -61//-64
+dt = 0.1//0.05
+celsius = 35.0  
+freq=20
+
+v_init = -80
+
+numaxon=1
+numsoma=1
+numbasal=52
+numapical=81
+
+Rm = 25370
+Cm    = 1.41
+RaAll= 150 
+AXONM = 5
+
+gna =  .0
+gkdr = 0.0
+KMULT =  0.0
+gkm=0
+gkd=0.0
+gc=0
+gcal=gc
+gcan=gc
+gcat=gc
+gKc=0
+gahp=0
+ghd=0.00001
+
+
+tstop=650//500
+
+xopen("geo-cell1zr.hoc")
+xopen("fixnseg.hoc")           
+
+objref stim, time, y, y2, infile, ifile, currt, curr
+
+access soma
+
+soma {
+	stim = new IClamp(0.5)
+	stim.amp=2
+	stim.dur=400
+	stim.del=150 // 50
+}
+
+forall {insert pas area(.5) e_pas=Vrest cm=Cm}
+
+forsec "dendrite" { 
+	insert ds
+	insert hd 
+        insert na3 
+        insert kdr 
+	insert kap 
+	insert cacum depth_cacum=diam/2
+        insert cal 
+        insert can 
+        insert cat 
+	insert cagk  
+	insert KahpM95 
+}
+
+forsec "soma" { 
+	insert ds
+	insert hd 
+        insert na3 
+        insert kdr 
+	insert kap 
+	insert km
+	insert kd
+	insert cacum depth_cacum=diam/2
+        insert cal 
+        insert can 
+        insert cat 
+	insert cagk  
+	insert KahpM95 
+}
+
+forsec "axon" {   
+	insert na3 
+        insert kdr 
+        insert kap 
+}
+
+        // forall {v=Vrest e_pas=Vrest g_pas = 1/Rm Ra=RaAll cm=Cm ek=-90 ena=55}
+		forall {e_pas=Vrest g_pas = 1/Rm Ra=RaAll cm=Cm ek=-90 ena=55}
+	geom_nseg()
+	distance()
+	tot=0
+	forall {tot=tot+nseg}
+	maxdist=0
+	forall for(x) {if (distance(x)>maxdist) {maxdist=distance(x)}}
+
+forsec "axon" Ra=RaAll/3
+forall if(ismembrane("hd")) {ehd_hd=-30}
+
+load_file("ca3b-cell1zr.ses")
+
+proc init() {
+	access soma
+        forall {
+		/*v=Vrest*/ e_pas=Vrest
+	        if (ismembrane("cal")) {
+                gcalbar_cal=gc
+                gcanbar_can=gc
+                gcatbar_cat=gc
+		gbar_cagk= gKc 
+		gbar_KahpM95 = gahp 
+		}
+	}
+
+forsec "axon" {   
+	gbar_na3=gna*AXONM 
+        gkdrbar_kdr=gkdr 
+        gkabar_kap = KMULTP  sh_kap=0
+}
+
+forsec "soma" {   
+	ghdbar_hd=ghd
+        gbar_na3=gna  
+        gkdrbar_kdr=gkdr 
+        gkabar_kap = KMULTP 
+	gbar_km= gkm
+	gkdbar_kd = gkd
+}
+
+for i=0, numbasal-1 dendrite[i] {
+	ghdbar_hd=ghd
+        gbar_na3=gna 
+        gkdrbar_kdr=gkdr
+	gkabar_kap=KMULTP
+}
+                
+forsec "apical_dendrite" {
+	ghdbar_hd=ghd
+        gbar_na3=gna 
+        gkdrbar_kdr=gkdr
+	gkabar_kap=KMULTP
+
+}
+
+
+	finitialize(v)
+       // fcurrent()
+	//finitialize(v)
+    //    forall for(x) {
+	//if (ismembrane("cal")) {e_pas(x)=v(x)+(i_hd(x)+ina(x)+ik(x)+ica(x))/g_pas(x)
+	//	} else {
+	//	e_pas(x)=v(x)+(ina(x)+ik(x))/g_pas(x)
+	//	}
+	// }
+	cvode.re_init()
+}
+
+proc fig9e() {          ////////// Weakly-adapting cell
+gna =  .022
+gkdr = 0.01
+KMULTP =  0.02
+gkm=0
+gkd=0.00055
+gahp=0.0
+gc=1.e-5
+gcal=gc
+gcan=gc
+gcat=gc
+gKc=0
+ghd=1e-5
+Vrest=-60
+stim.amp=0.583
+run()
+}
+
+proc fig9b() {         ////////// Burst-firing cell
+gna =  .022
+gkdr = 0.006
+KMULTP =  0.023
+gc=1.e-5
+gKc=5e-5
+gkm=0.019
+gkd=0.0
+gahp=0.0001
+gcal=gc
+gcan=gc
+gcat=gc
+ghd=2e-5
+stim.amp=1.53
+run()
+}
+
+proc fig9c() {        ////////// Adapting cell
+gna =  .022
+gkdr = 0.01
+KMULTP =  0.02
+gc=1.e-5
+gKc=0
+gkm=0.018
+gkd=0.0
+gahp=0.0
+gcal=gc
+gcan=gc
+gcat=gc
+ghd=1e-5
+stim.amp=1.37
+run()
+}
+
+proc fig9d() {
+gna =  .022
+gkdr = 0.01
+KMULT =  0.02
+gc=1.e-5
+gKc=0
+gkm=0.0
+gkd=0.0
+gahp=0.0
+gcal=gc
+gcan=gc
+gcat=gc
+stim.amp=0.58
+run()
+}
