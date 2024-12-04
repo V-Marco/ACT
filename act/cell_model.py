@@ -8,16 +8,16 @@ class ACTCellModel:
 
     def __init__(
             self, 
-            path_to_hoc_file: str, 
-            path_to_modfiles: str, 
-            active_channels: list,
-            passive_properties: PassiveProperties,
-            cell_name: str = None
+            cell_name: str = None,
+            hoc_file: str = None, 
+            mod_folder: str = None, 
+            active_channels: list = [],
+            passive_properties: PassiveProperties = None
             ):
 
         # Hoc cell
-        self.path_to_hoc_file = path_to_hoc_file
-        self.path_to_modfiles = path_to_modfiles
+        self.hoc_file = hoc_file
+        self.mod_folder = mod_folder
         self.cell_name = cell_name
         self.passive_properties = passive_properties
 
@@ -39,7 +39,7 @@ class ACTCellModel:
     def _build_cell(self) -> None:
 
         # Load the .hoc file
-        h.load_file(self.path_to_hoc_file)
+        h.load_file(self.hoc_file)
 
         # Morphology
         hoc_cell = getattr(h, self.cell_name)()
@@ -186,11 +186,3 @@ class TrainCell(ACTCellModel):
 
     def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list = [], passive_properties: PassiveProperties = None):
         super().__init__(hoc_file, mod_folder, cell_name, g_names, passive_properties)
-
-                
-# class ModuleParameters(TypedDict):
-#     module_folder_name: str
-#     target_traces_file: str
-#     cell: ACTCellModel
-#     sim_params: SimulationParameters
-#     optim_params: OptimizationParameters

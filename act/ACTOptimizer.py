@@ -7,7 +7,7 @@ from act.act_types import PassiveProperties, SimulationConfig
 from act.cell_model import CellModel
 from act.logger import ACTDummyLogger
 from act import utils
-from proj.ACT.act.DataProcessor_old import DataProcessor
+from legacy.legacy_from_act.DataProcessor_old import DataProcessor
 from typing import Tuple
 
 # ACTOptimizer is the base class for all optimization algorithms

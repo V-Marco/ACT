@@ -6,9 +6,10 @@ from typing import List
 import pickle
 import json
 
-from act.act_types import SimulationParameters, OptimizationParameters, OptimizationParam, SimParams
-from act.cell_model import ModuleParameters, TrainCell
-from act.simulator import Simulator
+from act.act_types import SimulationParameters, OptimizationParameters, OptimizationParam
+from act.cell_model import TrainCell
+from act.module_parameters import ModuleParameters
+from act.simulator import ACTSimulator
 from act.DataProcessor import DataProcessor
 from act.optimizer import RandomForestOptimizer
 from act.Metrics import Metrics
@@ -22,7 +23,7 @@ class ACTModule:
         self.output_folder_name: str = os.path.join(os.getcwd(), params['module_folder_name']) + "/"
         self.target_traces_file = params["target_traces_file"]
         self.train_cell: TrainCell = params["cell"]
-        self.sim_params: SimParams = params['sim_params']
+        self.sim_params: SimulationParameters = params['sim_params']
         self.optim_params: OptimizationParameters = params['optim_params']
         
         self.blocked_channels = []
@@ -186,7 +187,7 @@ class ACTModule:
     
 
     def simulate_train_cells(self, train_cell: TrainCell):
-        simulator = Simulator(self.output_folder_name)
+        simulator = ACTSimulator(self.output_folder_name)
             
         try:
             conductance_groups, current_settings = self.get_I_g_combinations()
@@ -347,7 +348,7 @@ class ACTModule:
         # We need to clear out the set_g list which carries over the traing list.
         self.sim_params['set_g_to'] = []
         
-        simulator = Simulator(self.output_folder_name)
+        simulator = ACTSimulator(self.output_folder_name)
         sim_index = 0
         for i in range(len(predictions)):
             for j in range(len(self.sim_params['CI_amps'])):
