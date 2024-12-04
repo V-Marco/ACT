@@ -3,7 +3,7 @@
 //The parameters in this model are based on Type C cell of 3-compartment model 
 
 
-begintemplate LAC_orig
+begintemplate LAC_seg
 
 public soma, connect2target, type
 
@@ -60,7 +60,7 @@ proc init() {
 	gbar_na3=0.03 //soma and p_dend are different
 	
 	insert nap 
-	gbar_nap= 0.0003
+	gbar_nap= 0.0002
 	
 	insert kdr 
 	gkdrbar_kdr = gkdr
@@ -69,7 +69,7 @@ proc init() {
 	fcas_capool = 0.05
 	
 	insert im 
-	gmbar_im = 0.0033
+	gmbar_im = 0.0035
 		
 	ena = 45
 	ek = -80
@@ -84,6 +84,6 @@ obfunc connect2target() { localobj nc
 	if (numarg() == 2) ($o2 = nc)
 	return nc
 	}
-endtemplate LAC_orig
+endtemplate LAC_seg
 
 

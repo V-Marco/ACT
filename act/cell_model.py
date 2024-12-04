@@ -9,15 +9,15 @@ class ACTCellModel:
     def __init__(
             self, 
             cell_name: str = None,
-            hoc_file: str = None, 
-            mod_folder: str = None, 
+            path_to_hoc_file: str = None, 
+            path_to_mod_files: str = None, 
             active_channels: list = [],
             passive_properties: PassiveProperties = None
             ):
 
         # Hoc cell
-        self.hoc_file = hoc_file
-        self.mod_folder = mod_folder
+        self.path_to_hoc_file = path_to_hoc_file
+        self.path_to_mod_files = path_to_mod_files
         self.cell_name = cell_name
         self.passive_properties = passive_properties
 
@@ -39,7 +39,7 @@ class ACTCellModel:
     def _build_cell(self) -> None:
 
         # Load the .hoc file
-        h.load_file(self.hoc_file)
+        h.load_file(self.path_to_hoc_file)
 
         # Morphology
         hoc_cell = getattr(h, self.cell_name)()
@@ -136,7 +136,7 @@ class ACTCellModel:
     ########## TODO -- potentially adjust to the new outline
 
     def set_g(self, g_names: list, g_values: list, sim_params: SimulationParameters) -> None:
-        sim_params['set_g_to'].append((g_names, g_values))
+        sim_params.set_g_to.append((g_names, g_values))
 
     def _set_g(self, g_names: list, g_values: list) -> None:
         for sec in self.all:
@@ -179,10 +179,10 @@ class ACTCellModel:
 
 class TargetCell(ACTCellModel):
 
-    def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list = [], passive_properties: PassiveProperties = None):
-        super().__init__(hoc_file, mod_folder, cell_name, g_names, passive_properties)
+    def __init__(self, path_to_hoc_file: str, path_to_mod_files: str, cell_name: str, active_channels: list = [], passive_properties: PassiveProperties = None):
+        super().__init__(path_to_hoc_file, path_to_mod_files, cell_name, active_channels, passive_properties)
 
 class TrainCell(ACTCellModel):
 
-    def __init__(self, hoc_file: str, mod_folder: str, cell_name: str, g_names: list = [], passive_properties: PassiveProperties = None):
-        super().__init__(hoc_file, mod_folder, cell_name, g_names, passive_properties)
+    def __init__(self, path_to_hoc_file: str, path_to_mod_files: str, cell_name: str, active_channels: list = [], passive_properties: PassiveProperties = None):
+        super().__init__(path_to_hoc_file, path_to_mod_files, cell_name, active_channels, passive_properties)

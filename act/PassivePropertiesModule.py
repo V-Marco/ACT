@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from neuron import h
 import numpy as np
 from act.cell_model import TrainCell
-from act.act_types import SimParams
+from act.act_types import SimulationParameters
 from act.DataProcessor import DataProcessor
 
 @contextmanager
@@ -25,7 +25,7 @@ def suppress_neuron_warnings():
             sys.stderr = temp_stderr
 
 class PassivePropertiesModule():
-    def __init__(self, train_cell: TrainCell, sim_params: SimParams, trace_filepath, leak_conductance_variable, leak_reversal_variable):
+    def __init__(self, train_cell: TrainCell, sim_params: SimulationParameters, trace_filepath, leak_conductance_variable, leak_reversal_variable):
         self.train_cell = train_cell
         self.sim_params = sim_params
         self.trace_filepath = trace_filepath
@@ -69,10 +69,10 @@ class PassivePropertiesModule():
                 V = dataset[:,0]
                 
                 train_cell_copy = TrainCell(
-                    hoc_file=self.train_cell.hoc_file,
-                    mod_folder=self.train_cell.mod_folder,
+                    path_to_hoc_file=self.train_cell.path_to_hoc_file,
+                    path_to_mod_files=self.train_cell.path_to_mod_files,
                     cell_name=self.train_cell.cell_name,
-                    g_names=self.train_cell.g_names
+                    g_names=self.train_cell.active_channels
                 )
                 
                 I_tend = self.sim_params['CI_delay'] + self.sim_params['CI_dur']
@@ -102,8 +102,4 @@ class PassivePropertiesModule():
                 shutil.rmtree("x86_64")
             except OSError as e:
                 print(f"Error removing x86_64 directory: {e}")
-
-
-            
-        
-        
+                

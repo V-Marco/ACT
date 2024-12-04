@@ -55,7 +55,7 @@ class ACTSimulator:
     def run(self, cell: ACTCellModel, parameters: SimulationParameters) -> None:
 
         # Compile the modfiles and suppress output
-        os.system(f"nrnivmodl {cell.path_to_modfiles} > /dev/null 2>&1")
+        os.system(f"nrnivmodl {cell.path_to_mod_files} > /dev/null 2>&1")
 
         # Load the stdrun
         h.load_file('stdrun.hoc')
@@ -79,7 +79,7 @@ class ACTSimulator:
 
         # Set CI
         if parameters.CI.type == "constant":
-            cell._add_constant_CI(parameters.CI.amp, parameters.CI.dur, parameters.CI.delay, parameters.h_tstop, parameters.h_dt)
+            cell._add_constant_CI(parameters.CI.amps, parameters.CI.dur, parameters.CI.delay, parameters.h_tstop, parameters.h_dt)
 
         h.finitialize(h.v_init)
         h.run()
@@ -99,7 +99,7 @@ class ACTSimulator:
             n_cpu = cpu_count()
 
         # Compile the modfiles and suppress output
-        os.system(f"nrnivmodl {self.pool[0][0].path_to_modfiles} > /dev/null 2>&1")
+        os.system(f"nrnivmodl {self.pool[0][0].path_to_mod_files} > /dev/null 2>&1")
         
         pool = Pool(processes = n_cpu)
         pool.map(unwrap_self_run_job, zip([self] * len(self.pool), self.pool))
@@ -140,8 +140,8 @@ class ACTSimulator:
         #     cell.set_passive_properties(cell.passive_properties)
 
         # Set CI
-        if parameters.CI['type'] == "constant":
-            cell._add_constant_CI(parameters.CI['amps'][0], parameters.CI['dur'], parameters.CI['delay'], parameters.h_tstop, parameters.h_dt)
+        if parameters.CI.type == "constant":
+            cell._add_constant_CI(parameters.CI.amp, parameters.CI.dur, parameters.CI.delay, parameters.h_tstop, parameters.h_dt)
         # elif parameters.CI["type"] == "ramp":
         #     cell._add_ramp_CI(parameters.CI["start_amp"], parameters.CI["amp_incr"],parameters.CI["num_steps"],parameters.CI["step_time"],parameters.CI["dur"], parameters.CI["delay"], parameters.h_tstop, parameters.h_dt)
         #     pass

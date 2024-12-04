@@ -23,7 +23,7 @@ class PassiveProperties:
 @dataclass
 class CurrentInjection:
     type: str = "constant"
-    amps: List[float] = None # (nA)
+    amp: float = 1 # (nA)
     dur: float = 400 # (ms)
     delay: float = 50 # (ms)
     
@@ -53,6 +53,7 @@ class ConductanceOptions:
 @dataclass
 class OptimizationParameters:
     conductance_options: List[ConductanceOptions] = None
+    amps: List[float] = None
     random_state: int = None
     n_estimators: int = None
     max_depth: int = None
