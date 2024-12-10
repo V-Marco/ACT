@@ -4,6 +4,7 @@ from io import StringIO
 import glob
 import warnings
 
+from typing import List
 import numpy as np
 import pandas as pd
 from scipy.signal import find_peaks
@@ -15,7 +16,7 @@ from tqdm import tqdm
 from statsmodels.tsa.arima.model import ARIMA
 from datetime import datetime, timedelta
 
-from act.act_types import PassiveProperties
+from act.act_types import PassiveProperties, CurrentInjection
 from act.cell_model import ACTCellModel
 
 
@@ -592,7 +593,7 @@ class DataProcessor:
         cleaned_g_bars = np.array([remove_nan_from_sample(sample) for sample in dataset[:,:,2]])
         return cleaned_g_bars
     
-    def generate_I_g_combinations(self, channel_ranges: list, channel_slices: list, current_intensities: list):
+    def generate_I_g_combinations(self, channel_ranges: list, channel_slices: list, current_injections: List[CurrentInjection]):
         channel_values = [
             np.linspace(low, high, num=slices)
             for (low, high), slices in zip(channel_ranges, channel_slices)
@@ -602,6 +603,7 @@ class DataProcessor:
         conductance_combinations = list(product(*channel_values))
         
         # Create a list of all combinations with current intensities
+        current_intensities = [current_injection.amp for current_injection in current_injections]
         all_combinations = list(product(conductance_combinations, current_intensities))
         
         # Separate conductance groups and current intensities
@@ -611,18 +613,16 @@ class DataProcessor:
         return conductance_groups, current_intensities
     
 
-    def get_fi_curve(self, V_test, amps, ignore_negative=True, inj_dur=1000):
+    def get_fi_curve(self, V_test, current_injections: List[CurrentInjection], ignore_negative=True):
         num_of_spikes_list,*_ = self.extract_v_traces_features(V_test)
-
+        amps = [current_inj.amp for current_inj in current_injections]
+        injection_durations = np.array([current_inj.dur for current_inj in current_injections])
         if ignore_negative:
             non_neg_idx = [i for i, amp in enumerate(amps) if amp >= 0]
             amps = [amp for i, amp in enumerate(amps) if amp >= 0]
             num_of_spikes_list = num_of_spikes_list[non_neg_idx]
 
-        frequencies =  num_of_spikes_list / (inj_dur / 1000)  # Convert to Hz: spikes / time (sec)
-        
-        #print(f"Number of spikes: {num_spikes}")
-        #print(f"Frequencies: {frequencies}")
+        frequencies =  num_of_spikes_list / (injection_durations / 1000)  # Convert to Hz: spikes / time (sec)
 
         return frequencies
     

@@ -78,8 +78,8 @@ class ACTSimulator:
         cell._build_cell()
 
         # Set CI
-        if parameters.CI.type == "constant":
-            cell._add_constant_CI(parameters.CI.amps, parameters.CI.dur, parameters.CI.delay, parameters.h_tstop, parameters.h_dt)
+        if parameters.CI[0].type == "constant":
+            cell._add_constant_CI(parameters.CI[0].amp, parameters.CI[0].dur, parameters.CI[0].delay, parameters.h_tstop, parameters.h_dt)
 
         h.finitialize(h.v_init)
         h.run()
@@ -140,8 +140,8 @@ class ACTSimulator:
         #     cell.set_passive_properties(cell.passive_properties)
 
         # Set CI
-        if parameters.CI.type == "constant":
-            cell._add_constant_CI(parameters.CI.amp, parameters.CI.dur, parameters.CI.delay, parameters.h_tstop, parameters.h_dt)
+        if parameters.CI[0].type == "constant":
+            cell._add_constant_CI(parameters.CI[0].amp, parameters.CI[0].dur, parameters.CI[0].delay, parameters.h_tstop, parameters.h_dt)
         # elif parameters.CI["type"] == "ramp":
         #     cell._add_ramp_CI(parameters.CI["start_amp"], parameters.CI["amp_incr"],parameters.CI["num_steps"],parameters.CI["step_time"],parameters.CI["dur"], parameters.CI["delay"], parameters.h_tstop, parameters.h_dt)
         #     pass

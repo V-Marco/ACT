@@ -39,9 +39,11 @@ class ACTCellModel:
     def _build_cell(self) -> None:
 
         # Load the .hoc file
+        print(self.path_to_hoc_file)
         h.load_file(self.path_to_hoc_file)
 
         # Morphology
+        print(self.cell_name)
         hoc_cell = getattr(h, self.cell_name)()
         self.all = list(hoc_cell.all)
         self.soma = hoc_cell.soma
@@ -180,9 +182,9 @@ class ACTCellModel:
 class TargetCell(ACTCellModel):
 
     def __init__(self, path_to_hoc_file: str, path_to_mod_files: str, cell_name: str, active_channels: list = [], passive_properties: PassiveProperties = None):
-        super().__init__(path_to_hoc_file, path_to_mod_files, cell_name, active_channels, passive_properties)
+        super().__init__(path_to_hoc_file=path_to_hoc_file, path_to_mod_files=path_to_mod_files, cell_name=cell_name, active_channels=active_channels, passive_properties=passive_properties)
 
 class TrainCell(ACTCellModel):
 
     def __init__(self, path_to_hoc_file: str, path_to_mod_files: str, cell_name: str, active_channels: list = [], passive_properties: PassiveProperties = None):
-        super().__init__(path_to_hoc_file, path_to_mod_files, cell_name, active_channels, passive_properties)
+        super().__init__(path_to_hoc_file=path_to_hoc_file, path_to_mod_files=path_to_mod_files, cell_name=cell_name, active_channels=active_channels, passive_properties=passive_properties)

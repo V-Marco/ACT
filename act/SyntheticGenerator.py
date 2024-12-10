@@ -18,8 +18,8 @@ class SyntheticGenerator:
         self.optim_params: OptimizationParameters = params.optim_params
         
         sim_folder = ""
-        for i, intensity in enumerate(self.sim_params.CI.amps):
-            sim_folder = sim_folder + "_" + str(intensity)
+        for i, current_injection in enumerate(self.sim_params.CI):
+            sim_folder = sim_folder + "_" + str(current_injection.amp)
             
         self.job_name = "synthetic" + sim_folder
 
@@ -32,7 +32,7 @@ class SyntheticGenerator:
 
     def simulate_target_cell(self):
         simulator = ACTSimulator(self.output_folder_name)
-        for i, intensity in enumerate(self.sim_params.CI.amps):
+        for i, current_inj in enumerate(self.sim_params.CI):
             simulator.submit_job(
                 self.target_cell,
                 SimulationParameters(
@@ -42,19 +42,19 @@ class SyntheticGenerator:
                     h_tstop = self.sim_params.h_tstop,     # (ms)
                     h_dt = self.sim_params.h_dt,           # (ms)
                     h_celsius = self.sim_params.h_celsius, # (deg C)
-                    CI = CurrentInjection
+                    CI = [CurrentInjection
                     (
-                        type = self.sim_params.CI.type,    
-                        amps = [intensity],
-                        dur = self.sim_params.CI.dur,
-                        delay = self.sim_params.CI.delay
-                    ),
+                        type = current_inj.type,    
+                        amp = current_inj.amp,
+                        dur = current_inj.dur,
+                        delay = current_inj.delay
+                    )],
                     set_g_to=self.sim_params.set_g_to
                 )
             )
         
 
-        simulator.run(self.target_cell.mod_folder)
+        simulator.run(self.target_cell,self.sim_params)
 
         
         dp = DataProcessor()

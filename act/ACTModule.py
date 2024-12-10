@@ -6,7 +6,7 @@ from typing import List
 import pickle
 import json
 
-from act.act_types import SimulationParameters, OptimizationParameters, OptimizationParam
+from act.act_types import SimulationParameters, OptimizationParameters, ConductanceOptions, CurrentInjection
 from act.cell_model import TrainCell
 from act.module_parameters import ModuleParameters
 from act.simulator import ACTSimulator
@@ -20,14 +20,14 @@ class ACTModule:
 
     def __init__(self, params: ModuleParameters):
 
-        self.output_folder_name: str = os.path.join(os.getcwd(), params['module_folder_name']) + "/"
-        self.target_traces_file = params["target_traces_file"]
-        self.train_cell: TrainCell = params["cell"]
-        self.sim_params: SimulationParameters = params['sim_params']
-        self.optim_params: OptimizationParameters = params['optim_params']
+        self.output_folder_name: str = os.path.join(os.getcwd(), params.module_folder_name) + "/"
+        self.target_traces_file = params.target_traces_file
+        self.train_cell: TrainCell = params.cell
+        self.sim_params: SimulationParameters = params.sim_params
+        self.optim_params: OptimizationParameters = params.optim_params
         
         self.blocked_channels = []
-        self.rf_model = self.optim_params.get('rf_model', None)
+        self.rf_model = self.optim_params.rf_model
         
 
     def run(self):
@@ -50,7 +50,7 @@ class ACTModule:
         print("SELECTING BEST PREDICTION")
         dp = DataProcessor()
         prediction_eval_method = self.optim_params.get('prediction_eval_method', 'fi_curve')
-        save_file = self.optim_params.get('save_file', None)
+        save_file = self.optim_params.save_file
         if not save_file == None:
             dp.save_to_json(prediction_eval_method, "prediction_evaluation_method", save_file)
             
@@ -73,14 +73,14 @@ class ACTModule:
             print("prediction_eval_method must be 'fi_curve' or 'voltage'.")
 
         # Save predictions as a conductance dictionary in the train cell
-        param_names_list = [param['param'] for param in self.optim_params['g_ranges_slices']]
+        param_names_list = [param.variable_name for param in self.optim_params.conductance_options]
         final_prediction = dict(zip(param_names_list, best_prediction))
         self.train_cell.predicted_g = final_prediction
         
         print(self.train_cell.predicted_g)
         
         # Also save the prediction to a json file for more permanent recording
-        save_file = self.optim_params.get('save_file', None)
+        save_file = self.optim_params.save_file
         if not save_file == None:
             dp.save_to_json(final_prediction, "final_g_prediction", save_file)
             
@@ -93,7 +93,7 @@ class ACTModule:
         
         print(f"Module runtime: {formatted_runtime}")
         
-        previous_modules = self.optim_params.get('previous_modules', None)
+        previous_modules = self.optim_params.previous_modules
         total_runtime = run_time
         if not previous_modules == None:
             
@@ -115,7 +115,7 @@ class ACTModule:
 
     def convert_csv_to_npy(self):
         # Uses the number of traces held in CI_amps to parse a users 2D csv file to 3D npy file
-        num_traces = len(self.sim_params['CI_amps'])
+        num_traces = len(self.sim_params.CI)
         
         data = np.loadtxt(self.target_traces_file, delimiter=',', skiprows=1)
         
@@ -129,22 +129,22 @@ class ACTModule:
 
 
     def get_I_g_combinations(self):
-        final_g_ranges_slices: List[OptimizationParam] = []
-        for i, optim_param in enumerate(self.optim_params['g_ranges_slices']):
+        final_g_ranges_slices: List[ConductanceOptions] = []
+        for i, optim_param in enumerate(self.optim_params.conductance_options):
             # Handle Blocked channels
             if optim_param.get('blocked', False):
                 #self.blocked_channels.append(optim_param['param'])
                 final_g_ranges_slices.append(
-                        OptimizationParam(
+                        ConductanceOptions(
                             param=optim_param['param'],
                             low=0.0,
                             high=0.0,
                             n_slices=1
                         )
                     )
-            elif optim_param.get('prediction', None) != None and optim_param.get('bounds_variation', None) != None:
+            elif optim_param.get('prediction', None) != None and optim_param.bounds_variation != None:
                 final_g_ranges_slices.append(
-                    OptimizationParam(
+                    ConductanceOptions(
                         param=optim_param['param'],
                         low=optim_param['prediction'] - (optim_param['prediction'] * optim_param['bounds_variation']),
                         high=optim_param['prediction'] + (optim_param['prediction'] * optim_param['bounds_variation']),
@@ -154,7 +154,7 @@ class ACTModule:
             elif optim_param.get('low', None) != None and optim_param.get('high', None) !=None:
                 if optim_param['n_slices'] == 1:
                   final_g_ranges_slices.append(
-                        OptimizationParam(
+                        ConductanceOptions(
                             param=optim_param['param'],
                             low=optim_param['low'] + ((optim_param['high'] - optim_param['low'])/2),
                             high=optim_param['low'] + ((optim_param['high'] - optim_param['low'])/2),
@@ -163,7 +163,7 @@ class ACTModule:
                     )
                 else:
                     final_g_ranges_slices.append(
-                        OptimizationParam(
+                        ConductanceOptions(
                             param=optim_param['param'],
                             low=optim_param['low'],
                             high=optim_param['high'],
@@ -181,7 +181,7 @@ class ACTModule:
             slices.append(g_params["n_slices"])
 
         dp = DataProcessor()
-        conductance_groups, current_settings = dp.generate_I_g_combinations(channel_ranges, slices, self.sim_params['CI_amps'])
+        conductance_groups, current_settings = dp.generate_I_g_combinations(channel_ranges, slices, self.sim_params.CI)
 
         return conductance_groups, current_settings
     
@@ -195,30 +195,30 @@ class ACTModule:
             print(e)
             return
     
-        self.sim_params['set_g_to'] = []
+        self.sim_params.set_g_to = []
         for i in range(len(conductance_groups)):
                 # Set parameters from the grid
-                train_cell.set_g(train_cell.g_names, conductance_groups[i], self.sim_params)
+                train_cell.set_g(train_cell.active_channels, conductance_groups[i], self.sim_params)
                 simulator.submit_job(
                     train_cell, 
                     SimulationParameters(
                         sim_name = "train",
                         sim_idx = i,
-                        h_v_init = self.sim_params['h_v_init'], # (mV)
-                        h_tstop = self.sim_params['h_tstop'],  # (ms)
-                        h_dt = self.sim_params['h_dt'], # (ms)
-                        h_celsius = self.sim_params['h_celsius'], # (deg C)
-                        CI = {
-                            "type": self.sim_params['CI_type'],
-                            "amp": current_settings[i],
-                            "dur": self.sim_params['CI_dur'],
-                            "delay": self.sim_params['CI_delay']
-                        },
-                        set_g_to=self.sim_params['set_g_to']
+                        h_v_init = self.sim_params.h_v_init, # (mV)
+                        h_tstop = self.sim_params.h_tstop,  # (ms)
+                        h_dt = self.sim_params.h_dt, # (ms)
+                        h_celsius = self.sim_params.h_celsius, # (deg C)
+                        CI = CurrentInjection(
+                            type=self.sim_params.CI[i],
+                            amp=current_settings[i],
+                            dur=self.sim_params.CI[i],
+                            delay=self.sim_params.CI[i]
+                        ),
+                        set_g_to=self.sim_params.set_g_to
                     )
                 )
         
-        simulator.run(self.train_cell.mod_folder)
+        simulator.run(self.train_cell, self.sim_params)
 
         dp = DataProcessor()
         dp.combine_data(self.output_folder_name + "train")
@@ -226,17 +226,17 @@ class ACTModule:
     def filter_data(self):
         dp = DataProcessor()
         
-        filtered_out_features = self.optim_params.get("filtered_out_features", None)
+        filtered_out_features = self.optim_params.filtered_out_features
         if filtered_out_features is None:
             return
         else:
             print("FILTERING DATA")
             data = np.load(self.output_folder_name + "train/combined_out.npy")
             if "saturated" in filtered_out_features:
-                window_of_inspection = self.optim_params.get("window_of_inspection", None)
+                window_of_inspection = self.optim_params.window_of_inspection
                 if window_of_inspection is None:
-                    inspection_start = self.sim_params.get("CI_delay") + int(self.sim_params.get("CI_dur") * 0.7)
-                    inspection_end = self.sim_params.get("CI_delay") + self.sim_params.get("CI_dur")
+                    inspection_start = self.sim_params.CI[0].delay + int(self.sim_params.CI[0].dur * 0.7)
+                    inspection_end = self.sim_params.CI[0].delay + self.sim_params.CI[0].dur
                     window_of_inspection = (inspection_start, inspection_end)
                 saturation_threshold = self.optim_params.get("saturation_threshold",-50)
                 dt = self.sim_params.get('h_dt',1)
@@ -262,7 +262,7 @@ class ACTModule:
         first_n_spikes = self.optim_params.get('first_n_spikes',20)
         dt = self.sim_params.get('h_dt',1)
 
-        features_target, columns_target = dp.extract_features(train_features=self.optim_params.get('train_features',None), V=V_target,I=I_target,threshold=threshold,num_spikes=first_n_spikes,dt=dt)
+        features_target, columns_target = dp.extract_features(train_features=self.optim_params.train_features, V=V_target,I=I_target,threshold=threshold,num_spikes=first_n_spikes,dt=dt)
 
         if self.rf_model == None:
             print("TRAINING RANDOM FOREST REGRESSOR")
@@ -278,7 +278,7 @@ class ACTModule:
             I_train = dataset_train[:,:,1]
 
             # TODO: ["i_mean_stdev", "v_spike_stats", "v_mean_potential", "v_amplitude_frequency", "v_arima_coefs"]
-            features_train, columns_train = dp.extract_features(train_features=self.optim_params.get('train_features',None),V=V_train,I=I_train,threshold=threshold,num_spikes=first_n_spikes,dt=dt)
+            features_train, columns_train = dp.extract_features(train_features=self.optim_params.train_features,V=V_train,I=I_train,threshold=threshold,num_spikes=first_n_spikes,dt=dt)
             print(f"Extracting features: {columns_train}")
 
             # Train Model on data
@@ -289,7 +289,7 @@ class ACTModule:
             rf = RandomForestOptimizer(
                 n_estimators= self.optim_params.get('n_estimators',1000), 
                 random_state=self.optim_params.get('random_state', 42), 
-                max_depth=self.optim_params.get('max_depth', None)
+                max_depth=self.optim_params.max_depth
                 )
             rf.fit(X_train, Y_train)
             
@@ -297,7 +297,7 @@ class ACTModule:
             
             # Evaluate the model performance
             n_sim_combos = 1
-            for param in self.optim_params['g_ranges_slices']:
+            for param in self.optim_params.conductance_options:
                 n_sim_combos = n_sim_combos * param.get('n_slices', 1)
                 
             n_splits = 10
@@ -305,7 +305,7 @@ class ACTModule:
                 n_splits = n_sim_combos
 
             metrics = Metrics()
-            save_file = self.optim_params.get('save_file', None)
+            save_file = self.optim_params.save_file
             metrics.evaluate_random_forest(rf.model, 
                                         X_train, 
                                         Y_train, 
@@ -346,35 +346,35 @@ class ACTModule:
 
     def simulate_eval_cells(self, eval_cell: TrainCell, predictions):
         # We need to clear out the set_g list which carries over the traing list.
-        self.sim_params['set_g_to'] = []
+        self.sim_params.set_g_to = []
         
         simulator = ACTSimulator(self.output_folder_name)
         sim_index = 0
         for i in range(len(predictions)):
-            for j in range(len(self.sim_params['CI_amps'])):
+            for j in range(len(self.sim_params.CI)):
                 # Set parameters from the grid
-                eval_cell.set_g(eval_cell.g_names, predictions[i], self.sim_params)
+                eval_cell.set_g(eval_cell.active_channels, predictions[i], self.sim_params)
                 simulator.submit_job(
                     eval_cell, 
                     SimulationParameters(
                         sim_name = "prediction_eval"+str(i),
                         sim_idx = sim_index,
-                        h_v_init = self.sim_params['h_v_init'], # (mV)
-                        h_tstop = self.sim_params['h_tstop'],  # (ms)
-                        h_dt = self.sim_params['h_dt'], # (ms)
-                        h_celsius = self.sim_params['h_celsius'], # (deg C)
+                        h_v_init = self.sim_params.h_v_init, # (mV)
+                        h_tstop = self.sim_params.h_tstop,  # (ms)
+                        h_dt = self.sim_params.h_dt, # (ms)
+                        h_celsius = self.sim_params.h_celsius, # (deg C)
                         CI = {
-                            "type": "constant",
-                            "amp": self.sim_params['CI_amps'][j],
-                            "dur": self.sim_params['CI_dur'],
-                            "delay": self.sim_params['CI_delay']
+                            "type": self.sim_params.CI[j].type,
+                            "amp": self.sim_params.CI[j].amp,
+                            "dur": self.sim_params.CI[j].dur,
+                            "delay": self.sim_params.CI[j].delay
                         },
-                        set_g_to=self.sim_params['set_g_to']
+                        set_g_to=self.sim_params.set_g_to
                     )
                 )
                 sim_index+=1
                 
-        simulator.run(self.train_cell.mod_folder)
+        simulator.run(self.train_cell, self.sim_params)
 
         dp = DataProcessor()
         for i in range(len(predictions)):
@@ -389,7 +389,7 @@ class ACTModule:
 
         V_target = dataset[:,:,0]
 
-        target_frequencies = dp.get_fi_curve(V_target, self.sim_params['CI_amps'], inj_dur=self.sim_params['CI_dur']).flatten()
+        target_frequencies = dp.get_fi_curve(V_target, self.sim_params.CI).flatten()
         
         # Get train2 Cell Frequencies
         FI_data = []
@@ -398,7 +398,7 @@ class ACTModule:
             V_test = dataset[:,:,0]
 
             #Get FI curve info
-            frequencies = dp.get_fi_curve(V_test, self.sim_params['CI_amps'], inj_dur=self.sim_params['CI_dur'])
+            frequencies = dp.get_fi_curve(V_test, self.sim_params.CI)
 
             FI_data.append(frequencies.flatten())
 
@@ -429,7 +429,7 @@ class ACTModule:
         best_prediction_data_file = self.output_folder_name + "prediction_eval" + str(g_best_idx) + "/combined_out.npy"
         
         dp = DataProcessor()
-        save_file = self.optim_params.get('save_file', None)
+        save_file = self.optim_params.save_file
         if not save_file == None:
             dp.save_to_json(min(fi_mae), "final_prediction_fi_mae", save_file)
         
@@ -465,7 +465,7 @@ class ACTModule:
         
         best_prediction_data_file = self.output_folder_name + "prediction_eval" + str(g_best_idx) + "/combined_out.npy"
         
-        save_file = self.optim_params.get('save_file', None)
+        save_file = self.optim_params.save_file
         if not save_file == None:
             dp.save_to_json(min(mean_mae_list), "final_prediction_voltage_mae", save_file)
 
@@ -480,7 +480,7 @@ class ACTModule:
         V_target = dataset[:,:,0]
         I_target = dataset[:,:,1]
         
-        train_features = self.optim_params.get('train_features',None)
+        train_features = self.optim_params.train_features
         threshold = self.optim_params.get('spike_threshold', 0)
         first_n_spikes = self.optim_params.get('first_n_spikes', 20)
         dt = self.sim_params.get('h_dt',1)
@@ -510,7 +510,7 @@ class ACTModule:
         
         best_prediction_data_file = self.output_folder_name + "prediction_eval" + str(g_best_idx) + "/combined_out.npy"
         
-        save_file = self.optim_params.get('save_file', None)
+        save_file = self.optim_params.save_file
         if not save_file == None:
             dp.save_to_json(min(mean_mae_list), "summary_stats_mae_final_prediction", save_file)
 
