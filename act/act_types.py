@@ -5,7 +5,6 @@ These types should be used to define the user supplied simulation config/config.
 
 from typing import List
 from dataclasses import dataclass
-from act.optimizer import RandomForestOptimizer
 
 @dataclass
 class PassiveProperties:
@@ -16,8 +15,6 @@ class PassiveProperties:
     Cm: float = None
     g_leak: str = None
     g_bar_leak: float = None
-    leak_conductance_variable: str = None # eg: glbar_leak
-    leak_reversal_variable: str = None # eg: el_leak
 
 
 @dataclass
@@ -39,36 +36,36 @@ class SimulationParameters:
     CI: List[CurrentInjection] = None
     _path: str = None
 
-@dataclass
-class ConductanceOptions:
-    variable_name: str
-    blocked: bool
-    low: float
-    high: float
-    prediction: float
-    bounds_variation: float
-    n_slices: int
+# @dataclass
+# class ConductanceOptions:
+#     variable_name: str
+#     blocked: bool
+#     low: float
+#     high: float
+#     prediction: float
+#     bounds_variation: float
+#     n_slices: int
 
 
-@dataclass
-class OptimizationParameters:
-    conductance_options: List[ConductanceOptions] = None
-    amps: List[float] = None
-    random_state: int = None
-    n_estimators: int = None
-    max_depth: int = None
-    eval_n_repeats: int = None
-    sample_rate_decimate_factor: int = None
-    train_features: List[str] = None
-    spike_threshold: float = None
-    filtered_out_features: List[str] = None
-    window_of_inspection: tuple = None
-    saturation_threshold: float = None
-    first_n_spikes: int = None
-    prediction_eval_method: str = None
-    rf_model: RandomForestOptimizer = None
-    previous_modules: List[str] = None
-    save_file: str = None
+# @dataclass
+# class OptimizationParameters:
+#     conductance_options: List[ConductanceOptions] = None
+#     amps: List[float] = None
+#     random_state: int = None
+#     n_estimators: int = None
+#     max_depth: int = None
+#     eval_n_repeats: int = None
+#     sample_rate_decimate_factor: int = None
+#     train_features: List[str] = None
+#     spike_threshold: float = None
+#     filtered_out_features: List[str] = None
+#     window_of_inspection: tuple = None
+#     saturation_threshold: float = None
+#     first_n_spikes: int = None
+#     prediction_eval_method: str = None
+#     rf_model: RandomForestOptimizer = None
+#     previous_modules: List[str] = None
+#     save_file: str = None
 
 
 # class ParametricDistribution(TypedDict):

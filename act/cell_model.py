@@ -10,14 +10,14 @@ class ACTCellModel:
             self, 
             cell_name: str = None,
             path_to_hoc_file: str = None, 
-            path_to_mod_files: str = None, 
+            path_to_modfiles: str = None, 
             active_channels: list = [],
             passive_properties: PassiveProperties = None
             ):
 
         # Hoc cell
         self.path_to_hoc_file = path_to_hoc_file
-        self.path_to_mod_files = path_to_mod_files
+        self.path_to_mod_files = path_to_modfiles
         self.cell_name = cell_name
         self.passive_properties = passive_properties
 
@@ -36,21 +36,29 @@ class ACTCellModel:
         self.V = None
         self.I = None
 
+        # Custom cell builder function
+        self._custom_cell_builder = None
+
     def _build_cell(self) -> None:
 
-        # Load the .hoc file
-        print(self.path_to_hoc_file)
-        h.load_file(self.path_to_hoc_file)
+        # If there is a custom cell builder provided, use it
+        if self._custom_cell_builder is not None:
+            hoc_cell = self._custom_cell_builder()
+        else: # Otherwise, use the standard build procedure
+            # Load the .hoc file
+            h.load_file(self.path_to_hoc_file)
+            # Morphology
+            hoc_cell = getattr(h, self.cell_name)()
 
-        # Morphology
-        print(self.cell_name)
-        hoc_cell = getattr(h, self.cell_name)()
         self.all = list(hoc_cell.all)
         self.soma = hoc_cell.soma
 
         # Recorders
         self.t = h.Vector().record(h._ref_t)
         self.V = h.Vector().record(self.soma[0](0.5)._ref_v)
+
+    def set_custom_cell_builder(self, cell_builder: callable) -> None:
+        self._custom_cell_builder = cell_builder
         
     def compute_surface_area(self) -> None:
 
