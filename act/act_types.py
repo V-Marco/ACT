@@ -73,19 +73,3 @@ class OptimizationParameters:
     rf_model: RandomForestOptimizer = None
     previous_modules: List[str] = None
     save_file: str = None
-
-
-# class ParametricDistribution(TypedDict):
-#     n_slices: int  # slice each variable min to max, into n equal slices
-#     simulations_per_amp: int  # each amp will be split equally
-
-# class SummaryFeatures:
-#     spike_threshold: int  # (mV)
-#     arima_order: list
-#     num_first_spikes: int
-#     # Target-sim match conditions (max abs diff between sim and target)
-#     mc_num_spikes: int
-#     mc_interspike_time: int  # (ms)
-#     mc_min_v: int  # (mV)
-#     mc_mean_v: int  # (mV)
-#     mc_max_v: int  # (mV)
