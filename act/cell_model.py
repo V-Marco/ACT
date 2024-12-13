@@ -10,14 +10,14 @@ class ACTCellModel:
             self, 
             cell_name: str = None,
             path_to_hoc_file: str = None, 
-            path_to_modfiles: str = None, 
+            path_to_mod_files: str = None, 
             active_channels: list = [],
             passive_properties: PassiveProperties = None
             ):
 
         # Hoc cell
         self.path_to_hoc_file = path_to_hoc_file
-        self.path_to_mod_files = path_to_modfiles
+        self.path_to_mod_files = path_to_mod_files
         self.cell_name = cell_name
         self.passive_properties = passive_properties
 
@@ -38,6 +38,20 @@ class ACTCellModel:
 
         # Custom cell builder function
         self._custom_cell_builder = None
+        
+    def set_surface_area(self):
+        # Print out all of the sections that are found
+        section_list = list(self.all)
+        print(f"Found {len(section_list)} section(s) in this cell. Calculating the total surface area of the cell.")
+
+        cell_area = 0
+
+        # Loop through all sections and segments and add up the areas
+        for section in section_list:  
+            for segment in section:
+                segment_area = h.area(segment.x, sec=section)
+                cell_area += segment_area
+        self.cell_area = cell_area * 1e-8 # cm^2
 
     def _build_cell(self) -> None:
 
@@ -146,6 +160,7 @@ class ACTCellModel:
     ########## TODO -- potentially adjust to the new outline
 
     def set_g(self, g_names: list, g_values: list, sim_params: SimulationParameters) -> None:
+        print(f"Setting {g_names} to {g_values}")
         sim_params.set_g_to.append((g_names, g_values))
 
     def _set_g(self, g_names: list, g_values: list) -> None:

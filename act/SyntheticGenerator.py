@@ -54,7 +54,7 @@ class SyntheticGenerator:
             )
         
 
-        simulator.run(self.target_cell,self.sim_params)
+        simulator.run_jobs()
 
         
         dp = DataProcessor()

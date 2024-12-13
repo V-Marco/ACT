@@ -8,8 +8,8 @@ import plotly.graph_objects as go
 
 def create_overlapped_v_plot(x, y1, y2, module_foldername, title, filename):
     plt.figure(figsize=(8, 6))
-    plt.plot(x, y1, label='Target')
-    plt.plot(x, y2, label='Prediction')
+    plt.plot(x, y1, label='Target', c = 'blue')
+    plt.plot(x, y2, label='Prediction', ls = '--', c = 'red')
     plt.xlabel('Time (ms)')
     plt.ylabel('Voltage (mV)')
     plt.title(title)
@@ -17,9 +17,11 @@ def create_overlapped_v_plot(x, y1, y2, module_foldername, title, filename):
     plt.savefig(module_foldername + "/results/" + filename)
     plt.close()  # Close the figure to free up memory
 
-def plot_v_comparison(predicted_g_data_file, module_foldername, amps, dt):
+def plot_v_comparison(predicted_g_data_file, module_foldername, current_injections, dt):
     results_folder = module_foldername + "/results/"
     os.makedirs(results_folder, exist_ok=True)
+    
+    amps = [current_injection.amp for current_injection in current_injections]
 
     # load target traces
     target_traces = np.load(module_foldername + "/target/combined_out.npy")
@@ -36,7 +38,7 @@ def plot_v_comparison(predicted_g_data_file, module_foldername, amps, dt):
         create_overlapped_v_plot(time, target_v[i], selected_v[i], module_foldername, f"V Trace Comparison: {amps} nA", f"V_trace_{amps[i]}nA.png")
 
 
-def plot_fi_comparison(module_foldername, amps):
+def plot_fi_comparison(module_foldername, current_injections):
     # Plot the FI curves of predicted and target
     results_folder = f"{module_foldername}/results/"
     
@@ -44,6 +46,8 @@ def plot_fi_comparison(module_foldername, amps):
     dataset = np.load(f"{results_folder}/frequency_data.npy")
     predicted_fi = dataset[0,:]
     target_fi = dataset[1,:]
+    
+    amps = [current_injection.amp for current_injection in current_injections]
     
     plt.figure(figsize=(8, 6))
     plt.plot(amps, target_fi, 'o', label='Target FI')
@@ -56,7 +60,7 @@ def plot_fi_comparison(module_foldername, amps):
     plt.close()
     
     
-def plot_training_v_mae_surface(module_foldername, amps, inj_dur, delay, dt, index1, index2, g_names, results_filename):
+def plot_training_v_mae_surface(module_foldername, current_injections, inj_dur, delay, dt, index1, index2, g_names, results_filename):
     dp = DataProcessor()
     metrics = Metrics()
     
@@ -88,6 +92,7 @@ def plot_training_v_mae_surface(module_foldername, amps, inj_dur, delay, dt, ind
         # Find where I value == amps
         index_where_inj_occurs = int(delay / dt + 1)
         
+        amps = [current_injection.amp for current_injection in current_injections]
         ordered_indices = []
         for amp in amps:
             ordered_idx = np.where(train_I[conductance_idx,index_where_inj_occurs] == amp)[0]
@@ -160,9 +165,11 @@ def plot_training_v_mae_surface(module_foldername, amps, inj_dur, delay, dt, ind
     plt.show()
     
 
-def plot_training_v_mae_contour_plot(module_foldername, amps, delay, dt, index1, index2, g_names, num_levels=100, results_filename=None):
+def plot_training_v_mae_contour_plot(module_foldername, current_injections, delay, dt, index1, index2, g_names, num_levels=100, results_filename=None):
     dp = DataProcessor()
     metrics = Metrics()
+    
+    amps = [current_injection.amp for current_injection in current_injections]
     
     g_name1 = g_names[index1]
     g_name2 = g_names[index2]
@@ -250,9 +257,11 @@ def plot_training_v_mae_contour_plot(module_foldername, amps, delay, dt, index1,
     # Show the plot
     plt.show()
     
-def plot_training_feature_mae_contour_plot(module_foldername, amps, delay, dt, index1, index2, g_names, train_features, threshold=0, first_n_spikes=20, num_levels=100, results_filename=None):
+def plot_training_feature_mae_contour_plot(module_foldername, current_injections, delay, dt, index1, index2, g_names, train_features, threshold=0, first_n_spikes=20, num_levels=100, results_filename=None):
     dp = DataProcessor()
     metrics = Metrics()
+    
+    amps = [current_injection.amp for current_injection in current_injections]
     
     g_name1 = g_names[index1]
     g_name2 = g_names[index2]
@@ -361,9 +370,11 @@ def plot_training_feature_mae_contour_plot(module_foldername, amps, delay, dt, i
     # Show the plot
     plt.show()
     
-def plot_training_fi_mae_surface_spiker_cell(module_foldername, amps, inj_dur, delay, dt, index1, index2, g_names, results_filename):
+def plot_training_fi_mae_surface_spiker_cell(module_foldername, current_injections, inj_dur, delay, dt, index1, index2, g_names, results_filename):
     dp = DataProcessor()
     metrics = Metrics()
+    
+    amps = [current_injection.amp for current_injection in current_injections]
     
     g_name1 = g_names[index1]
     g_name2 = g_names[index2]
@@ -471,9 +482,11 @@ def plot_training_fi_mae_surface_spiker_cell(module_foldername, amps, inj_dur, d
     plt.show()
     
     
-def plot_training_fi_mae_contour_plot(module_foldername, amps, inj_dur, delay, dt, index1, index2, g_names, num_levels=100, results_filename=None):
+def plot_training_fi_mae_contour_plot(module_foldername, current_injections, inj_dur, delay, dt, index1, index2, g_names, num_levels=100, results_filename=None):
     dp = DataProcessor()
     metrics = Metrics()
+    
+    amps = [current_injection.amp for current_injection in current_injections]
     
     g_name1 = g_names[index1]
     g_name2 = g_names[index2]

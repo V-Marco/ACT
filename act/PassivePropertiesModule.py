@@ -37,7 +37,7 @@ class PassivePropertiesModule():
     def set_passive_properties(self):
         try:
             # Compile the modfiles and suppress output
-            os.system(f"nrnivmodl {self.train_cell.mod_folder} > /dev/null 2>&1")
+            os.system(f"nrnivmodl {self.train_cell.path_to_mod_files} > /dev/null 2>&1")
 
             time.sleep(2)
 
@@ -72,16 +72,16 @@ class PassivePropertiesModule():
                     path_to_hoc_file=self.train_cell.path_to_hoc_file,
                     path_to_mod_files=self.train_cell.path_to_mod_files,
                     cell_name=self.train_cell.cell_name,
-                    g_names=self.train_cell.active_channels
+                    active_channels=self.train_cell.active_channels
                 )
                 
-                I_tend = self.sim_params['CI_delay'] + self.sim_params['CI_dur']
+                I_tend = self.sim_params.CI[0].delay + self.sim_params.CI[0].dur
                 props = dp.calculate_passive_properties(V, 
                                                         train_cell_copy,
-                                                        self.sim_params['h_dt'],
+                                                        self.sim_params.h_dt,
                                                         I_tend,
-                                                        self.sim_params['CI_delay'],
-                                                        self.sim_params['CI_amps'][0],
+                                                        self.sim_params.CI[0].delay,
+                                                        self.sim_params.CI[0].amp,
                                                         self.leak_conductance_variable,
                                                         self.leak_reversal_variable)
                 

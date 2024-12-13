@@ -1,20 +1,20 @@
-"""
-These types should be used to define the user supplied simulation config/config.
 
-"""
+# These types should be used to define the user supplied simulation config/config.
 
-from typing import List
+from typing import List, Tuple
 from dataclasses import dataclass
+from act.optimizer import RandomForestOptimizer
 
 @dataclass
 class PassiveProperties:
-    cell_area: float = None
-    V_rest: float = None
-    R_in: float = None
-    tau: float = None
-    Cm: float = None
-    g_leak: str = None
-    g_bar_leak: float = None
+    V_rest: float
+    R_in: float
+    tau: float
+    Cm: float
+    g_bar_leak: float
+    cell_area: float
+    leak_conductance_variable: str  # eg: glbar_leak
+    leak_reversal_variable: str  # eg: el_leak
 
 
 @dataclass
@@ -24,11 +24,12 @@ class CurrentInjection:
     dur: float = 400 # (ms)
     delay: float = 50 # (ms)
     
+    
 @dataclass  
 class SimulationParameters:
     sim_name: str = ""
     sim_idx: int = 0
-    set_g_to: List[float] = None
+    set_g_to: List[Tuple[float,float]] = None
     h_v_init: float = -50 # (mV)
     h_tstop: int = 500  # (ms)
     h_dt: float = 0.1 # (ms)
@@ -36,36 +37,42 @@ class SimulationParameters:
     CI: List[CurrentInjection] = None
     _path: str = None
 
-# @dataclass
-# class ConductanceOptions:
-#     variable_name: str
-#     blocked: bool
-#     low: float
-#     high: float
-#     prediction: float
-#     bounds_variation: float
-#     n_slices: int
+
+@dataclass
+class ConductanceOptions:
+    variable_name: str = None
+    blocked: bool = False
+    low: float = None
+    high: float = None
+    prediction: float = None
+    bounds_variation: float = None
+    n_slices: int = 1
+    
+    
+@dataclass
+class FilterParameters:
+    filtered_out_features: List[str] = None
+    window_of_inspection: tuple = None
+    saturation_threshold: float = -50
 
 
-# @dataclass
-# class OptimizationParameters:
-#     conductance_options: List[ConductanceOptions] = None
-#     amps: List[float] = None
-#     random_state: int = None
-#     n_estimators: int = None
-#     max_depth: int = None
-#     eval_n_repeats: int = None
-#     sample_rate_decimate_factor: int = None
-#     train_features: List[str] = None
-#     spike_threshold: float = None
-#     filtered_out_features: List[str] = None
-#     window_of_inspection: tuple = None
-#     saturation_threshold: float = None
-#     first_n_spikes: int = None
-#     prediction_eval_method: str = None
-#     rf_model: RandomForestOptimizer = None
-#     previous_modules: List[str] = None
-#     save_file: str = None
+@dataclass
+class OptimizationParameters:
+    conductance_options: List[ConductanceOptions] = None
+    amps: List[float] = None
+    random_state: int = 42
+    n_estimators: int = 1000
+    max_depth: int = None
+    eval_n_repeats: int = 3
+    sample_rate_decimate_factor: int = None
+    train_features: List[str] = None
+    filter_parameters: FilterParameters = None
+    spike_threshold: float = 0
+    first_n_spikes: int = 20
+    prediction_eval_method: str = 'fi_curve'
+    rf_model: RandomForestOptimizer = None
+    previous_modules: List[str] = None
+    save_file: str = None
 
 
 # class ParametricDistribution(TypedDict):
