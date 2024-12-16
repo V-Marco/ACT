@@ -160,7 +160,6 @@ class ACTCellModel:
     ########## TODO -- potentially adjust to the new outline
 
     def set_g(self, g_names: list, g_values: list, sim_params: SimulationParameters) -> None:
-        print(f"Setting {g_names} to {g_values}")
         sim_params.set_g_to.append((g_names, g_values))
 
     def _set_g(self, g_names: list, g_values: list) -> None:

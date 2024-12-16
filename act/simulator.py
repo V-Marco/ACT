@@ -136,22 +136,22 @@ class ACTSimulator:
         cell._build_cell()
         
         # Set passive properties
-        # if not cell.passive_properties == None:
-        #     cell.set_passive_properties(cell.passive_properties)
+        if not cell.passive_properties == None:
+            cell.set_passive_properties(cell.passive_properties)
 
         # Set CI
         if parameters.CI[0].type == "constant":
             cell._add_constant_CI(parameters.CI[0].amp, parameters.CI[0].dur, parameters.CI[0].delay, parameters.h_tstop, parameters.h_dt)
-        # elif parameters.CI["type"] == "ramp":
-        #     cell._add_ramp_CI(parameters.CI["start_amp"], parameters.CI["amp_incr"],parameters.CI["num_steps"],parameters.CI["step_time"],parameters.CI["dur"], parameters.CI["delay"], parameters.h_tstop, parameters.h_dt)
-        #     pass
-        # else:
-        #     raise NotImplementedError
+        elif parameters.CI["type"] == "ramp":
+            cell._add_ramp_CI(parameters.CI["start_amp"], parameters.CI["amp_incr"],parameters.CI["num_steps"],parameters.CI["step_time"],parameters.CI["dur"], parameters.CI["delay"], parameters.h_tstop, parameters.h_dt)
+            pass
+        else:
+            raise NotImplementedError
         
-        # If this is a train cell, load gs to set
-        # if not parameters.set_g_to == None and not len(parameters.set_g_to) == 0:
-        #     #print(f"Setting G: {parameters.set_g_to[parameters.sim_idx][0]} to {parameters.set_g_to [parameters.sim_idx][1]}")
-        #     cell._set_g(parameters.set_g_to[parameters.sim_idx][0], parameters.set_g_to [parameters.sim_idx][1])   
+        #If this is a train cell, load gs to set
+        if not parameters.set_g_to == None and not len(parameters.set_g_to) == 0:
+            #print(f"Setting G: {parameters.set_g_to[parameters.sim_idx][0]} to {parameters.set_g_to [parameters.sim_idx][1]}")
+            cell._set_g(parameters.set_g_to[parameters.sim_idx][0], parameters.set_g_to [parameters.sim_idx][1])   
 
                 
         #print_mechanism_conductances(cell.soma[0])

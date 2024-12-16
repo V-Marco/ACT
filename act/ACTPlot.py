@@ -498,7 +498,7 @@ def plot_training_fi_mae_contour_plot(module_foldername, current_injections, inj
     target_V = target_dataset[:,:,0]
     
     # Get FI curve of target data
-    target_frequencies = dp.get_fi_curve(target_V, amps, inj_dur=inj_dur).flatten()
+    target_frequencies = dp.get_fi_curve(target_V, current_injections).flatten()
     
     # load training data
     train_dataset = np.load(f"{module_foldername}/train/combined_out.npy")
@@ -530,7 +530,7 @@ def plot_training_fi_mae_contour_plot(module_foldername, current_injections, inj
         # Get a set of ordered voltage traces with the matching conductances. Get FI curve from this
         V_subset = train_V[ordered_indices]
         
-        fi_curve = dp.get_fi_curve(V_subset, amps, inj_dur=inj_dur)
+        fi_curve = dp.get_fi_curve(V_subset, current_injections)
         
         fi_curves.append(fi_curve)
 
