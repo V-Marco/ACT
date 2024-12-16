@@ -1,6 +1,6 @@
 # Execute using `NOCUDA=1 python generate_arma_stats.py`
 
-from act import utils
+from legacy import utils
 from simulation_configs import selected_config
 import warnings
 

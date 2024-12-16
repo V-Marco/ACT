@@ -4,7 +4,7 @@ import torch
 from act.act_types import SimulationConfig
 
 
-from act import utils
+from legacy import utils
 from sklearn.ensemble import RandomForestRegressor
 from proj.ACT.act.DataProcessor_old import DataProcessor
 from act.ACTOptimizer import (

@@ -1,6 +1,11 @@
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 
+'''
+RandomForestOptimizer
+A minimal wrapper for sklearn RandomForestRegressor.
+Contains fit and predict methods.
+'''
 
 class RandomForestOptimizer():
 

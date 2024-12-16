@@ -2,7 +2,7 @@ import h5py
 import torch
 import os
 
-from act import utils
+from legacy import utils
 
 from simulation_configs import selected_config
 

@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 import os
 import sys
 import json
-from act import utils
+from legacy import utils
 import torch
 import numpy as np
 import math

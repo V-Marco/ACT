@@ -8,10 +8,10 @@ sys.path.append("../")
 from act import simulator
 
 from act.act_types import SimulationConfig
-from act.analysis import save_plot
+from legacy.analysis import save_plot
 from act.optim import ACTOptimizer
 from act.cell_model import CellModel
-from act import utils
+from legacy import utils
 
 DEFAULT_TARGET_V_FILE = "target_v.json"
 DEFAULT_TARGET_V_LTO_FILE = "target_v_lto.json"

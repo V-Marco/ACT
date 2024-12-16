@@ -9,7 +9,7 @@ import torch
 from act.act_types import SimulationConfig
 from legacy.legacy_from_act.metrics import correlation_score, mse_score, torch_correlation_score
 from act.optim import ACTOptimizer
-from act import utils
+from legacy import utils
 
 
 def save_plot(

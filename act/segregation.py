@@ -1,5 +1,10 @@
 import numpy as np
 
+'''
+ACTSegregator
+Responsible for taking a cell and ouptutting instructions for developing a segregated version.
+'''
+
 class ACTSegregator:
 
     def __init__(self):

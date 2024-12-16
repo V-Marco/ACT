@@ -21,7 +21,7 @@ from act.models import (
     SummaryNet,
     ConvolutionNet,
 )
-from act import utils
+from legacy import utils
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import cross_val_score

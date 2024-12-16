@@ -1,4 +1,3 @@
-
 import os
 import time
 import sys
@@ -10,6 +9,11 @@ import numpy as np
 from act.cell_model import TrainCell
 from act.act_types import SimulationParameters
 from act.DataProcessor import DataProcessor
+
+'''
+suppress_neuron_warnings
+Hides nrnivmodl compilation warnings
+'''
 
 @contextmanager
 def suppress_neuron_warnings():
@@ -24,6 +28,11 @@ def suppress_neuron_warnings():
             sys.stdout = temp_stdout
             sys.stderr = temp_stderr
 
+'''
+PassivePropertiesModule
+The first step to the Automatic Cell Tuner process where analytical solutions to passive properties
+are found.
+'''
 class PassivePropertiesModule():
     def __init__(self, train_cell: TrainCell, sim_params: SimulationParameters, trace_filepath, leak_conductance_variable, leak_reversal_variable):
         self.train_cell = train_cell
@@ -31,17 +40,19 @@ class PassivePropertiesModule():
         self.trace_filepath = trace_filepath
         self.leak_conductance_variable = leak_conductance_variable
         self.leak_reversal_variable = leak_reversal_variable
-        
-    # have user provide path to negative current trace.
+    
+    '''
+    set_passive_properties
+    The main method for calculating the passive properties of a cell given a negative current
+    injection
+    '''
         
     def set_passive_properties(self):
         try:
-            # Compile the modfiles and suppress output
             os.system(f"nrnivmodl {self.train_cell.path_to_mod_files} > /dev/null 2>&1")
 
             time.sleep(2)
 
-            # Attempt to load the compiled mechanisms
             max_attempts = 3
             for attempt in range(max_attempts):
                 try:
@@ -58,12 +69,10 @@ class PassivePropertiesModule():
                     else:
                         print(str(e))
                         raise 
-                    
-            # CALCULATE THE PASSIVE PROPERTIES        
+      
             dp = DataProcessor()
 
             if os.path.exists(self.trace_filepath):
-                # Load in the user provided negative current injection
                 dataset = np.loadtxt(self.trace_filepath, delimiter=',', skiprows=1)
                 
                 V = dataset[:,0]
@@ -72,7 +81,8 @@ class PassivePropertiesModule():
                     path_to_hoc_file=self.train_cell.path_to_hoc_file,
                     path_to_mod_files=self.train_cell.path_to_mod_files,
                     cell_name=self.train_cell.cell_name,
-                    active_channels=self.train_cell.active_channels
+                    active_channels=self.train_cell.active_channels,
+                    passive_properties=self.train_cell.passive_properties
                 )
                 
                 I_tend = self.sim_params.CI[0].delay + self.sim_params.CI[0].dur

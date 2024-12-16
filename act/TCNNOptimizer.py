@@ -8,7 +8,7 @@ from act.act_types import SimulationConfig
 from act.models import (
     ConvolutionEmbeddingNet,
 )
-from act import utils
+from legacy import utils
 from act.ACTOptimizer import (
     ACTOptimizer
 )

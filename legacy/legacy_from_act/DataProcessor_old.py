@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 from neuron import h
 from act.act_types import PassiveProperties, SimulationConfig
-from act import utils
+from legacy import utils
 from typing import Tuple
 
 import warnings

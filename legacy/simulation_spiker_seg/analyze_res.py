@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from simulation_configs import selected_config
 
-from act import analysis
+from legacy import analysis
 
 
 def main():

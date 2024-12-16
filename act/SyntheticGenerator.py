@@ -7,6 +7,8 @@ from act.module_parameters import ModuleParameters
 from act.simulator import ACTSimulator
 from act.DataProcessor import DataProcessor
 
+# A class to generate synthetic data from a cell to test the Automatic Cell Tuner
+
 class SyntheticGenerator:
 
     def __init__(self, params: ModuleParameters):
@@ -23,12 +25,22 @@ class SyntheticGenerator:
             
         self.job_name = "synthetic" + sim_folder
 
+    '''
+    generate_synthetic_target_data
+    The main method for simulating a cell and saving the data to CSV format
+    (simulating how a user would normally come at this pipeline with CSV data)
+    '''
         
     def generate_synthetic_target_data(self, filename):
 
         self.simulate_target_cell()
         
         self.save_voltage_current_to_csv(filename)
+    
+    '''
+    simulate_target_cell
+    Simulates a cell given a set of simulation parameters
+    '''
 
     def simulate_target_cell(self):
         simulator = ACTSimulator(self.output_folder_name)
@@ -53,13 +65,15 @@ class SyntheticGenerator:
                 )
             )
         
-
         simulator.run_jobs()
 
-        
         dp = DataProcessor()
         dp.combine_data(self.output_folder_name + self.job_name)
 
+    '''
+    save_voltage_current_to_csv
+    Takes the .npy file output from the ACTSimulator and converts the data to CSV.
+    '''
     def save_voltage_current_to_csv(self, filename):
 
         dataset = np.load(self.output_folder_name + self.job_name + "/combined_out.npy")

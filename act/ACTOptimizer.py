@@ -6,7 +6,7 @@ import os
 from act.act_types import PassiveProperties, SimulationConfig
 from act.cell_model import CellModel
 from act.logger import ACTDummyLogger
-from act import utils
+from legacy import utils
 from legacy.legacy_from_act.DataProcessor_old import DataProcessor
 from typing import Tuple
 
