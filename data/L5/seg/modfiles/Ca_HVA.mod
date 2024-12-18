@@ -70,10 +70,10 @@ PROCEDURE rates(){
 		hTau = 1/(hAlpha + hBeta)
 
 		:Segregation
-        	if (v < -58.44) {
-        	mInf = 0.001 * v + 0.036
+        	if (v < -42.324) {
+        	mInf = 0.048 * v + 2.126
         	}
-        	if (v < -60.44) {
+        	if (v < -44.324) {
         	mInf = 0
         	}
 	UNITSON

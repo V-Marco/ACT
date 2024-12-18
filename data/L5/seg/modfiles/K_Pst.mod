@@ -70,10 +70,10 @@ PROCEDURE rates(){
 		v = v - 10
 
 	:Segregation
-        if (v < -58.44) {
-        mInf = 0.004 * v + 0.247
+        if (v < -42.324) {
+        mInf = 0.015 * v + 0.677
         }
-        if (v < -60.44) {
+        if (v < -44.324) {
         mInf = 0
         }
 

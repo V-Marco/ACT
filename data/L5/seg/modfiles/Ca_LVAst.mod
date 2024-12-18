@@ -64,6 +64,7 @@ PROCEDURE rates(){
 		hInf = 1.0000/(1+ exp((v - -80.000)/6.4))
 		hTau = (20.0000 + 50.0000/(1+exp((v - -40.000)/7)))/qt
 		v = v - 10
+		
 		:Segregation
         	if (v < -58.44) {
         	mInf = 0.022 * v + 1.303

@@ -77,10 +77,10 @@ PROCEDURE rates(){
 		hInf = hAlpha/(hAlpha + hBeta)
 
 	:Segregation
-        if (v < -58.44) {
-        mInf = 0.009 * v + 0.518
+        if (v < -42.324) {
+        mInf = 0.102 * v + 4.514
         }
-        if (v < -60.44) {
+        if (v < -44.324) {
         mInf = 0
         }
 
