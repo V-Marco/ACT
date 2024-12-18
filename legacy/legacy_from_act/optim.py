@@ -11,7 +11,7 @@ import tqdm
 
 from act.act_types import PassiveProperties, SimulationConfig
 from act.cell_model import CellModel
-from act.logger import ACTDummyLogger
+from legacy.logger import ACTDummyLogger
 from act.models import (
     BranchingNet,
     EmbeddingNet,
@@ -21,7 +21,7 @@ from act.models import (
     SummaryNet,
     ConvolutionNet,
 )
-from legacy import utils
+from legacy.legacy_from_act import utils
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import cross_val_score

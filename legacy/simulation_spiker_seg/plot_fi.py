@@ -1,10 +1,10 @@
 import argparse
 import os
 
-from legacy import analysis
+from legacy.legacy_from_act import analysis
 from simulation_configs import selected_config
 
-from legacy import utils
+from legacy.legacy_from_act import utils
 
 
 def main(extra_trace, extra_trace_label, title=None):

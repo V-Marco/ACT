@@ -1,4 +1,4 @@
-from legacy import utils
+from legacy.legacy_from_act import utils
 from simulation_configs import selected_config
 import warnings
 import pandas as pd

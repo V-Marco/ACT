@@ -15,7 +15,7 @@ class ACTCellModel:
             cell_name: str = None,
             path_to_hoc_file: str = None, 
             path_to_mod_files: str = None, 
-            active_channels: list = [],
+            active_channels: dict = {},
             passive_properties: PassiveProperties = None
             ):
 
@@ -92,7 +92,7 @@ class ACTCellModel:
             return functools.reduce(_getattr, [obj] + attr.split('.'))
         
         g_values = []
-        for channel in self.active_channels:
+        for channel in self.active_channels.values():
             g_values.append(rgetattr(self.soma[0](0.5), channel))
 
         return self.V.as_numpy().flatten(), self.I.flatten(), np.array(g_values).flatten()

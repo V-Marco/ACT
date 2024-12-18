@@ -12,7 +12,7 @@ import time
 import signal
 import sys
 
-from legacy import utils
+from legacy.legacy_from_act import utils
 
 from simulation_configs import pospischilsPYr_passive
 
