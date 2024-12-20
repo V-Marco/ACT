@@ -6,7 +6,7 @@ from typing import List
 import pickle
 import json
 
-from act.act_types import SimulationParameters, OptimizationParameters, ConductanceOptions, CurrentInjection
+from act.act_types import SimulationParameters, OptimizationParameters, ConductanceOptions, ConstantCurrentInjection, RampCurrentInjection, GaussianCurrentInjection
 from act.cell_model import TrainCell
 from act.module_parameters import ModuleParameters
 from act.simulator import ACTSimulator
@@ -32,6 +32,8 @@ class ACTModule:
         
         self.blocked_channels = []
         self.rf_model = self.optim_params.rf_model
+        self.conductance_combos = None
+        self.current_inj_combos = None
     
     '''
     run
@@ -79,9 +81,9 @@ class ACTModule:
 
         conductance_option_names_list = [conductance_option.variable_name for conductance_option in self.optim_params.conductance_options]
         final_prediction = dict(zip(conductance_option_names_list, best_prediction))
-        self.train_cell.predicted_g = final_prediction
+        self.train_cell.active_channels = final_prediction
         
-        print(self.train_cell.predicted_g)
+        print(self.train_cell.active_channels)
         
         save_file = self.optim_params.save_file
         if not save_file == None:
@@ -191,7 +193,10 @@ class ACTModule:
 
         dp = DataProcessor()
         conductance_groups, current_settings = dp.generate_I_g_combinations(channel_ranges, slices, self.sim_params.CI)
-
+        
+        self.conductance_combos = conductance_groups
+        self.current_inj_combos = current_settings
+        
         return conductance_groups, current_settings
     
     '''
@@ -204,35 +209,61 @@ class ACTModule:
         simulator = ACTSimulator(self.output_folder_name)
             
         try:
-            conductance_groups, current_settings = self.get_I_g_combinations()
+            conductance_groups, current_groups = self.get_I_g_combinations()
         except Exception as e:
             print(e)
             return
     
         self.sim_params.set_g_to = []
         for i in range(len(conductance_groups)):
-                train_cell.set_g(train_cell.active_channels, conductance_groups[i], self.sim_params)
-                simulator.submit_job(
-                    train_cell, 
-                    SimulationParameters(
-                        sim_name = "train",
-                        sim_idx = i,
-                        h_v_init = self.sim_params.h_v_init,    # (mV)
-                        h_tstop = self.sim_params.h_tstop,      # (ms)
-                        h_dt = self.sim_params.h_dt,            # (ms)
-                        h_celsius = self.sim_params.h_celsius,  # (deg C)
-                        CI = [CurrentInjection(
-                            type=self.sim_params.CI[0].type,
-                            amp=current_settings[i],
-                            dur=self.sim_params.CI[0].dur,
-                            delay=self.sim_params.CI[0].delay
-                        )],
-                        set_g_to=self.sim_params.set_g_to
+            train_cell.set_g(train_cell.active_channels, conductance_groups[i], self.sim_params)
+            if isinstance(current_groups[i], ConstantCurrentInjection):
+                CI = [ConstantCurrentInjection
+                    (
+                        amp = current_groups[i].amp,
+                        dur = current_groups[i].dur,
+                        delay = current_groups[i].delay,
+                        lto_hto = current_groups[i].lto_hto
                     )
+                ]
+            elif isinstance(current_groups[i], RampCurrentInjection):
+                CI = [RampCurrentInjection
+                    (
+                        amp_start = current_groups[i].amp_incr,
+                        amp_incr = current_groups[i].amp_incr,
+                        num_steps = current_groups[i].num_steps,
+                        step_time = current_groups[i].step_time,
+                        dur = current_groups[i].dur,
+                        delay = current_groups[i].delay,
+                        lto_hto = current_groups[i].lto_hto
+                    ) 
+                ]
+            elif isinstance(current_groups[i], GaussianCurrentInjection):
+                CI = [GaussianCurrentInjection
+                    (
+                        amp_mean = current_groups[i].amp_mean,
+                        amp_std = current_groups[i].amp_std,
+                        dur = current_groups[i].dur,
+                        delay = current_groups[i].delay,
+                        lto_hto = current_groups[i].lto_hto
+                    ) 
+                ]
+            simulator.submit_job(
+                train_cell, 
+                SimulationParameters(
+                    sim_name = "train",
+                    sim_idx = i,
+                    h_v_init = self.sim_params.h_v_init,    # (mV)
+                    h_tstop = self.sim_params.h_tstop,      # (ms)
+                    h_dt = self.sim_params.h_dt,            # (ms)
+                    h_celsius = self.sim_params.h_celsius,  # (deg C)
+                    CI = CI,
+                    set_g_to=self.sim_params.set_g_to
                 )
+            )
         
         simulator.run_jobs()
-
+        
         dp = DataProcessor()
         dp.combine_data(self.output_folder_name + "train")
         
@@ -245,7 +276,11 @@ class ACTModule:
     def filter_data(self):
         dp = DataProcessor()
         
-        filtered_out_features = self.optim_params.filter_parameters.filtered_out_features
+        if self.optim_params.filter_parameters is None:
+            return
+        else:
+            filtered_out_features = self.optim_params.filter_parameters.filtered_out_features
+            
         if filtered_out_features is None:
             return
         else:
@@ -282,12 +317,14 @@ class ACTModule:
         dataset_target = np.load(self.output_folder_name + "target/combined_out.npy")
         V_target = dataset_target[:,:,0]
         I_target = dataset_target[:,:,1]
+        print(dataset_target.shape)
+        lto_hto = dataset_target[:,1,3]
         
         threshold = self.optim_params.spike_threshold
         first_n_spikes = self.optim_params.first_n_spikes
         dt = self.sim_params.h_dt
 
-        features_target, columns_target = dp.extract_features(train_features=self.optim_params.train_features, V=V_target,I=I_target,threshold=threshold,num_spikes=first_n_spikes,dt=dt)
+        features_target, columns_target = dp.extract_features(train_features=self.optim_params.train_features, V=V_target,I=I_target,threshold=threshold,num_spikes=first_n_spikes,dt=dt,lto_hto=lto_hto, current_inj_combos=self.current_inj_combos)
 
         if self.rf_model == None:
             print("TRAINING RANDOM FOREST REGRESSOR")
@@ -300,8 +337,9 @@ class ACTModule:
             g_train = dp.clean_g_bars(dataset_train)
             V_train = dataset_train[:,:,0]
             I_train = dataset_train[:,:,1]
-
-            features_train, columns_train = dp.extract_features(train_features=self.optim_params.train_features,V=V_train,I=I_train,threshold=threshold,num_spikes=first_n_spikes,dt=dt)
+            lto_hto = dataset_train[1,:,3]
+            
+            features_train, columns_train = dp.extract_features(train_features=self.optim_params.train_features,V=V_train,I=I_train,threshold=threshold,num_spikes=first_n_spikes,dt=dt,lto_hto=lto_hto, current_inj_combos=self.current_inj_combos)
             print(f"Extracting features: {columns_train}")
 
             X_train = features_train
@@ -309,7 +347,7 @@ class ACTModule:
 
             rf = RandomForestOptimizer(
                 n_estimators= self.optim_params.n_estimators,
-                random_state=self.optim_params.random_state,
+                random_state=self.sim_params.random_seed,
                 max_depth=self.optim_params.max_depth
                 )
             rf.fit(X_train, Y_train)
@@ -329,7 +367,7 @@ class ACTModule:
             metrics.evaluate_random_forest(rf.model, 
                                         X_train, 
                                         Y_train, 
-                                        random_state=self.optim_params.random_state, 
+                                        random_state=self.sim_params.random_seed, 
                                         n_repeats=self.optim_params.eval_n_repeats,
                                         n_splits=n_splits,
                                         save_file=save_file)
@@ -379,6 +417,37 @@ class ACTModule:
         for i in range(len(predictions)):
             for j in range(len(self.sim_params.CI)):
                 eval_cell.set_g(eval_cell.active_channels, predictions[i], self.sim_params)
+                if isinstance(self.sim_params.CI[j], ConstantCurrentInjection):
+                    CI = [ConstantCurrentInjection
+                        (
+                            amp = self.sim_params.CI[j].amp,
+                            dur = self.sim_params.CI[j].dur,
+                            delay = self.sim_params.CI[j].delay,
+                            lto_hto = self.sim_params.CI[j].lto_hto
+                        )
+                    ]
+                elif isinstance(self.sim_params.CI[j], RampCurrentInjection):
+                    CI = [RampCurrentInjection
+                        (
+                            amp_start = self.sim_params.CI[j].amp_incr,
+                            amp_incr = self.sim_params.CI[j].amp_incr,
+                            num_steps = self.sim_params.CI[j].num_steps,
+                            step_time = self.sim_params.CI[j].step_time,
+                            dur = self.sim_params.CI[j].dur,
+                            delay = self.sim_params.CI[j].delay,
+                            lto_hto = self.sim_params.CI[j].lto_hto
+                        ) 
+                    ]
+                elif isinstance(self.sim_params.CI[j], GaussianCurrentInjection):
+                    CI = [GaussianCurrentInjection
+                        (
+                            amp_mean = self.sim_params.CI[j].amp_mean,
+                            amp_std = self.sim_params.CI[j].amp_std,
+                            dur = self.sim_params.CI[j].dur,
+                            delay = self.sim_params.CI[j].delay,
+                            lto_hto = self.sim_params.CI[j].lto_hto
+                        ) 
+                    ]
                 simulator.submit_job(
                     eval_cell, 
                     SimulationParameters(
@@ -388,10 +457,7 @@ class ACTModule:
                         h_tstop = self.sim_params.h_tstop,     # (ms)
                         h_dt = self.sim_params.h_dt,           # (ms)
                         h_celsius = self.sim_params.h_celsius, # (deg C)
-                        CI = [CurrentInjection(type=self.sim_params.CI[0].type, 
-                                               amp=self.sim_params.CI[j].amp,
-                                               dur=self.sim_params.CI[0].dur,
-                                               delay=self.sim_params.CI[0].delay)],
+                        CI = CI,
                         set_g_to=self.sim_params.set_g_to
                     )
                 )
@@ -505,13 +571,15 @@ class ACTModule:
 
         V_target = dataset[:,:,0]
         I_target = dataset[:,:,1]
+        print(dataset)
+        lto_hto = dataset[1,:,3]
         
         train_features = self.optim_params.train_features
         threshold = self.optim_params.spike_threshold
         first_n_spikes = self.optim_params.first_n_spikes
         dt = self.sim_params.h_dt
         
-        target_V_features, _ = dp.extract_features(train_features=train_features, V=V_target,I=I_target, threshold=threshold, num_spikes=first_n_spikes, dt=dt)
+        target_V_features, _ = dp.extract_features(train_features=train_features, V=V_target,I=I_target, threshold=threshold, num_spikes=first_n_spikes, dt=dt,lto_hto=lto_hto, current_inj_combos=self.current_inj_combos)
 
         metrics = Metrics()
         mean_mae_list = []
@@ -519,7 +587,8 @@ class ACTModule:
             dataset = np.load(self.output_folder_name + "prediction_eval" + str(i) + "/combined_out.npy")
             V_test = dataset[:,:,0]
             I_test = dataset[:,:,1]
-            test_V_features, _ = dp.extract_features(train_features=train_features, V=V_test,I=I_test, threshold=threshold, num_spikes=first_n_spikes, dt=dt)
+            lto_hto = dataset[1,:,3]
+            test_V_features, _ = dp.extract_features(train_features=train_features, V=V_test,I=I_test, threshold=threshold, num_spikes=first_n_spikes, dt=dt,lto_hto=lto_hto, current_inj_combos=self.current_inj_combos)
             
             prediction_MAEs = []
             

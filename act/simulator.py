@@ -1,7 +1,7 @@
 import os
 import sys
 import shutil
-from act.act_types import SimulationParameters
+from act.act_types import SimulationParameters, ConstantCurrentInjection, RampCurrentInjection, GaussianCurrentInjection
 from act.cell_model import ACTCellModel
 from neuron import h
 import numpy as np
@@ -133,31 +133,36 @@ class ACTSimulator:
         h.steps_per_ms = 1 / h.dt
         h.v_init = parameters.h_v_init
 
-        cell._build_cell()
+        cell._build_cell(parameters.sim_idx)
 
         if not cell.passive_properties == None:
             cell.set_passive_properties(cell.passive_properties)
 
-        if parameters.CI[0].type == "constant":
-            cell._add_constant_CI(parameters.CI[0].amp, parameters.CI[0].dur, parameters.CI[0].delay, parameters.h_tstop, parameters.h_dt)
-        elif parameters.CI["type"] == "ramp":
-            cell._add_ramp_CI(parameters.CI["start_amp"], parameters.CI["amp_incr"],parameters.CI["num_steps"],parameters.CI["step_time"],parameters.CI["dur"], parameters.CI["delay"], parameters.h_tstop, parameters.h_dt)
-            pass
+        # parameters.CI should be an individualized setting (meaning we can always access CI[0])
+        if isinstance(parameters.CI[0], ConstantCurrentInjection):
+            cell._add_constant_CI(parameters.CI[0].amp, parameters.CI[0].dur, parameters.CI[0].delay, parameters.h_tstop, parameters.h_dt, parameters.CI[0].lto_hto)
+        elif isinstance(parameters.CI[0], RampCurrentInjection):
+            cell._add_ramp_CI(parameters.CI[0].amp_start, parameters.CI[0].amp_incr,parameters.CI[0].num_steps,parameters.CI[0].step_time,parameters.CI[0].dur, parameters.CI[0].delay, parameters.h_tstop, parameters.h_dt, parameters.CI[0].lto_hto)
+        elif isinstance(parameters.CI[0], GaussianCurrentInjection):
+            cell._add_gaussian_CI(parameters.CI[0].amp_mean,parameters.CI[0].amp_std,parameters.CI[0].dur,parameters.CI[0].delay, parameters.random_seed, parameters.CI[0].lto_hto)
         else:
             raise NotImplementedError
         
         if not parameters.set_g_to == None and not len(parameters.set_g_to) == 0:
-            cell._set_g(parameters.set_g_to[parameters.sim_idx][0], parameters.set_g_to [parameters.sim_idx][1])   
+            cell._set_g(parameters.set_g_to[parameters.sim_idx][0], parameters.set_g_to[parameters.sim_idx][1])   
 
         h.finitialize(h.v_init)
         h.run()
-        V, I, g = cell.get_output()
+        V, I, g, sim_index, lto_hto = cell.get_output()
 
-        out = np.zeros((int(parameters.h_tstop / parameters.h_dt), 3))
+        out = np.zeros((int(parameters.h_tstop / parameters.h_dt), 4))
         out[:, 0] = V[:int(parameters.h_tstop / parameters.h_dt)]
         out[:, 1] = I[:int(parameters.h_tstop / parameters.h_dt)]
         out[:len(g), 2] = g
         out[len(g):, 2] = np.nan
+        out[0,3] = sim_index
+        out[1,3] = lto_hto
+        out[2:,3] = np.nan
     
         np.save(os.path.join(parameters._path, f"out_{parameters.sim_idx}.npy"), out)
         

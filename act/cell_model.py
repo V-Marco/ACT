@@ -33,6 +33,8 @@ class ACTCellModel:
         self.t = None
         self.V = None
         self.I = None
+        self.lto_hto = False
+        self.sim_index = None
 
         self._custom_cell_builder = None
         
@@ -43,7 +45,7 @@ class ACTCellModel:
         
     def set_surface_area(self):
         section_list = list(self.all)
-        print(f"Found {len(section_list)} section(s) in this cell. Calculating the total surface area of the cell.")
+        
 
         cell_area = 0
 
@@ -52,13 +54,15 @@ class ACTCellModel:
                 segment_area = h.area(segment.x, sec=section)
                 cell_area += segment_area
         self.cell_area = cell_area * 1e-8 # cm^2
+        print(f"Found {len(section_list)} section(s) in this cell with surface area: {self.cell_area}")
         
     '''
     _build_cell
     Builds the NEURON cell and sets up recorders
     '''
 
-    def _build_cell(self) -> None:
+    def _build_cell(self, sim_index) -> None:
+        self.sim_index = sim_index
         if self._custom_cell_builder is not None:
             hoc_cell = self._custom_cell_builder()
         else:
@@ -92,17 +96,17 @@ class ACTCellModel:
             return functools.reduce(_getattr, [obj] + attr.split('.'))
         
         g_values = []
-        for channel in self.active_channels.values():
+        for channel in self.active_channels:
             g_values.append(rgetattr(self.soma[0](0.5), channel))
 
-        return self.V.as_numpy().flatten(), self.I.flatten(), np.array(g_values).flatten()
+        return self.V.as_numpy().flatten(), self.I.flatten(), np.array(g_values).flatten(), self.sim_index, self.lto_hto
     
     '''
     _add_constant_CI
     Creates a constant current injection
     '''
 
-    def _add_constant_CI(self, amp: float, dur: int, delay: int, sim_time: int, dt: float) -> None:
+    def _add_constant_CI(self, amp: float, dur: int, delay: int, sim_time: int, dt: float, lto_hto: int) -> None:
         inj = h.IClamp(self.soma[0](0.5))
         inj.amp = amp; inj.dur = dur; inj.delay = delay
         self.CI.append(inj)
@@ -112,13 +116,14 @@ class ACTCellModel:
         remainder_steps = int((sim_time - delay - dur) / dt)
 
         self.I = np.array([0.0] * delay_steps + [amp] * dur_steps + [0.0] * remainder_steps)
+        self.lto_hto = lto_hto
     
     '''
     _add_ram_CI
     Creates a ramp current injection
     '''
     
-    def _add_ramp_CI(self, start_amp: float, amp_incr: float, num_steps: int, step_time: float, dur: int, delay: int, sim_time: int, dt: float) -> None:
+    def _add_ramp_CI(self, start_amp: float, amp_incr: float, num_steps: int, step_time: float, dur: int, delay: int, sim_time: int, dt: float, lto_hto: int) -> None:
         total_delay = delay
         amp = start_amp
 
@@ -139,23 +144,25 @@ class ACTCellModel:
         I += [amp - amp_incr] * (remainder_no_injection / dt)
         
         self.I = np.array(I)
+        self.lto_hto = lto_hto
 
     '''
     _add_gaussian_CI
     Creates a random current injection input
     '''
 
-    def _add_gaussian_CI(self, amp_mean: float, amp_std: float, dur: int, delay: int, random_state: np.random.RandomState) -> None:
+    def _add_gaussian_CI(self, amp_mean: float, amp_std: float, dur: int, delay: int, random_state: np.random.RandomState, lto_hto: int) -> None:
         total_delay = delay
         I = [0] * total_delay
 
         for _ in range(dur):
             amp = float(random_state.normal(amp_mean, amp_std))
-            self.add_constant_CI(amp, 1, total_delay)
+            self._add_constant_CI(amp, 1, total_delay)
             I = I + [amp]
             total_delay += 1
         
         self.I = np.array(I)
+        self.lto_hto = lto_hto
     
     '''
     set_g
@@ -174,7 +181,8 @@ class ACTCellModel:
     def _set_g(self, g_names: list, g_values: list) -> None:
         for sec in self.all:
             for index, key in enumerate(g_names):
-                setattr(sec, key, g_values[index])
+                if g_values[index]:
+                    setattr(sec, key, g_values[index])
     
     '''
     block_channels

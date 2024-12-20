@@ -4,7 +4,7 @@ from io import StringIO
 import glob
 import warnings
 
-from typing import List
+from typing import List, Union
 import numpy as np
 import pandas as pd
 from scipy.signal import find_peaks
@@ -16,7 +16,7 @@ from tqdm import tqdm
 from statsmodels.tsa.arima.model import ARIMA
 from datetime import datetime, timedelta
 
-from act.act_types import PassiveProperties, CurrentInjection
+from act.act_types import PassiveProperties, ConstantCurrentInjection, RampCurrentInjection, GaussianCurrentInjection
 from act.cell_model import ACTCellModel
 
 
@@ -60,29 +60,29 @@ class DataProcessor:
     leak_conductance_var: the variable name used in the .hoc file for the leak conductance.
     leak_reversal_var: the variable name of the nernst potential for the leak channel.
     '''
-    def calculate_passive_properties(self, V, train_cell: ACTCellModel, dt, I_tend, I_tstart, I_intensity, leak_conductance_var: str, leak_reversal_var: str) -> PassiveProperties:
-        if train_cell.passive_properties.g_bar_h and train_cell.passive_properties.h_conductance_variable and train_cell.passive_properties.R_in and (train_cell.passive_properties.Cm or train_cell.passive_properties.tau):
-            g_bar_h = train_cell.passive_properties.g_bar_h
-            h_conductance_var = train_cell.passive_properties.h_conductance_variable
+    def calculate_passive_properties(self, V, train_cell: ACTCellModel, dt, I_tend, I_tstart, I_intensity, known_passive_props: PassiveProperties) -> PassiveProperties:
+        if known_passive_props.g_bar_h and known_passive_props.h_conductance_variable and known_passive_props.R_in and (known_passive_props.Cm or known_passive_props.tau):
+            g_bar_h = known_passive_props.g_bar_h
+            h_conductance_var = known_passive_props.h_conductance_variable
             
-            r_in = train_cell.passive_properties.R_in
+            r_in = known_passive_props.R_in
             g_leak = 1/r_in
             
             index_v_rest = int(I_tstart / dt)
             v_rest = V[index_v_rest]
             
-            train_cell._build_cell()
+            train_cell._build_cell(sim_index=0)
             train_cell.set_surface_area()                               # cm^2
             g_bar_leak = (g_leak / train_cell.cell_area) / 1e6          # g_leak in uS. Divide by 1e6 gives us S/cm^2
             
-            if train_cell.passive_properties.Cm:
-                Cm = train_cell.passive_properties.Cm
+            if known_passive_props.Cm:
+                Cm = known_passive_props.Cm
                 tau = (Cm * train_cell.cell_area * 1000)/g_leak
             
-            if train_cell.passive_properties.tau:
-                tau = train_cell.passive_properties.tau
+            if known_passive_props.tau:
+                tau = known_passive_props.tau
                 Cm = ((tau * g_leak)/1000) / train_cell.cell_area
-        elif train_cell.passive_properties.g_bar_h and train_cell.passive_properties.h_conductance_variable and (not train_cell.passive_properties.R_in or (not train_cell.passive_properties.Cm and not train_cell.passive_properties.tau)):
+        elif known_passive_props.g_bar_h and known_passive_props.h_conductance_variable and (not known_passive_props.R_in or (not known_passive_props.Cm and not known_passive_props.tau)):
             try:
                 raise ValueError("H Current is present, but need R_in AND one of the following: (Cm, tau)")
             except ValueError as e:
@@ -109,10 +109,7 @@ class DataProcessor:
             train_cell.set_surface_area()                               # cm^2
 
             tau = index_v_tau * dt                                      # ms
-            if train_cell.passive_properties.R_in == None:
-                r_in = (v_diff) / (0 - I_intensity)                     # MOhms
-            else:
-                r_in = train_cell.passive_properties.R_in
+            r_in = (v_diff) / (0 - I_intensity)                     # MOhms
             g_leak = 1 / r_in                                           # uS
             Cm = ((tau * g_leak)/1000) / train_cell.cell_area           # uF/cm^2
             g_bar_leak = (g_leak / train_cell.cell_area) / 1e6          # g_leak in uS. Divide by 1e6 gives us S/cm^2
@@ -127,8 +124,8 @@ class DataProcessor:
             g_bar_h=float(g_bar_h),                                 # S/cm^2
             cell_area=train_cell.cell_area,                         # cm^2
             h_conductance_variable=h_conductance_var,
-            leak_conductance_variable=leak_conductance_var,
-            leak_reversal_variable=leak_reversal_var
+            leak_conductance_variable=known_passive_props.leak_conductance_variable,
+            leak_reversal_variable=known_passive_props.leak_reversal_variable
         )
         
         return passive_props
@@ -143,7 +140,7 @@ class DataProcessor:
     Feature options: ["i_trace_stats", "number_of_spikes", "spike_times", "spike_height_stats", "trough_times", "trough_height_stats", "spike_intervals", "lto-hto_amplitude", "lto-hto_frequency","v_arima_coefs"]
     '''
     
-    def extract_features(self,train_features=None, V=None, I=None, arima_file=None, threshold=0, num_spikes=20, dt=1, n_steps = None, step_time=None, dur=None, delay=None):
+    def extract_features(self,train_features=None, V=None, I=None, arima_file=None, threshold=0, num_spikes=20, dt=1, lto_hto = None, current_inj_combos = None):
 
         if(train_features is None):
             train_features = ["i_trace_stats", "number_of_spikes", "spike_times", "spike_height_stats", "trough_times", "trough_height_stats", "spike_intervals", "lto-hto_amplitude", "lto-hto_frequency","v_arima_coefs"]
@@ -173,7 +170,7 @@ class DataProcessor:
             summary_features = concatenate_features(summary_features, features)
             
         if "lto-hto_amplitude" in train_features or "lto-hto_frequency" in train_features:
-            features, column_names = self.get_hto_lto_stats(V, train_features=train_features, n_steps=n_steps, step_time=step_time, dur=dur, delay=delay, dt=dt)
+            features, column_names = self.get_hto_lto_stats(V, lto_hto, train_features=train_features, dt=dt, CI_settings=current_inj_combos)
             columns += column_names
             summary_features = concatenate_features(summary_features, features)
             
@@ -527,19 +524,25 @@ class DataProcessor:
     Packages the info into features and column names.
     '''
         
-    def get_hto_lto_stats(self, V, train_features=None, dt=1, n_steps = None, step_time=None, dur=None, delay=None):
-        start_time = delay + (step_time * (n_steps-1))
-        end_time = delay + dur
-        
+    def get_hto_lto_stats(self, V, lto_hto, train_features=None, dt=1, CI_settings = None):
+                
         features = []
         column_names = []
         
-        if "hto_lto_frequency" in train_features:
-            features.append(self.calculate_hto_lto_frequency(V, start_time, end_time, dt))
-            column_names += ["hto_lto_frequency"]
-        elif "hto_lto_amplitude" in train_features:
-            features.append(self.calculate_hto_lto_amplitude(V, start_time, end_time, dt))
-            column_names += ["hto_lto_amplitude"]
+        print(train_features)
+        print("lto-hto_frequency" in train_features)
+        print("lto-hto_amplitude" in train_features)
+        
+        if "lto-hto_frequency" in train_features:
+            hto_lto_frequencies = self.calculate_hto_lto_frequency(V, CI_settings, dt, lto_hto)
+            print(hto_lto_frequencies)
+            features.append(hto_lto_frequencies)
+            column_names += ["lto-hto_frequency"]
+        elif "lto-hto_amplitude" in train_features:
+            hto_lto_amplitudes = self.calculate_hto_lto_amplitude(V, CI_settings, dt, lto_hto)
+            print(hto_lto_amplitudes)
+            features.append(hto_lto_amplitudes)
+            column_names += ["lto-hto_amplitude"]
         
         features_final = np.column_stack(features)
         
@@ -550,32 +553,44 @@ class DataProcessor:
     Directly calculates the frequency from LTO and HTO
     '''
         
-    def calculate_hto_lto_frequency(V, start_time, stop_time, dt):
+    def calculate_hto_lto_frequency(self, V, CI_settings, dt, lto_hto):
         frequencies = []
-        for v_trace in V:
-            start_idx = int(np.round(start_time / dt))
-            end_idx = int(np.round(stop_time / dt))
-            end_idx = min(end_idx, len(v_trace)) 
+        for i, v_trace in enumerate(V):
+            if lto_hto[i] == 1:
+                start_time = CI_settings[i].delay
+                stop_time = CI_settings[i].delay + CI_settings[i].dur
+                start_idx = int(np.round(start_time / dt))
+                end_idx = int(np.round(stop_time / dt))
+                end_idx = min(end_idx, len(v_trace))
 
-            window = v_trace[start_idx:end_idx]
+                window = v_trace[start_idx:end_idx]
+                print(f"window: {window}")
 
-            n = len(window)
+                n = len(window)
 
-            if n == 0:
-                raise ValueError("Delay larger than simulation duration.")
+                if n == 0:
+                    raise ValueError("Delay larger than simulation duration.")
 
-            fft_result = np.fft.rfft(window)
-            fft_magnitude = np.abs(fft_result)
+                fft_result = np.fft.rfft(window)
+                print(f"fft_result: {fft_result}")
+                fft_magnitude = np.abs(fft_result)
+                print(f"fft_magnitude: {fft_magnitude}")
 
-            freqs = np.fft.rfftfreq(n, d=dt)
+                freqs = np.fft.rfftfreq(n, d=dt)
+                print(f"freqs: {freqs}")
 
-            if freqs[0] == 0:
-                fft_magnitude[0] = 0
+                if freqs[0] == 0:
+                    fft_magnitude[0] = 0
 
-            max_index = np.argmax(fft_magnitude)
+                max_index = np.argmax(fft_magnitude)
 
-            principal_freq = freqs[max_index]
-            frequencies.append(principal_freq)
+                principal_freq = freqs[max_index]
+                print(f"principal_freq: {principal_freq}")
+                frequencies.append(principal_freq)
+            else:
+                frequencies.append(1e6)
+        
+        print(frequencies)
 
         return np.array(frequencies)
     
@@ -584,19 +599,27 @@ class DataProcessor:
     Directly calculates the amplitude from LTO and HTO
     '''
     
-    def calculate_hto_lto_amplitude(V, start_time, stop_time, dt):
+    def calculate_hto_lto_amplitude(self, V, CI_settings, dt, lto_hto):
         amplitudes = []
-        for v_trace in V:
-            start_idx = int(np.round(start_time / dt))
-            end_idx = int(np.round(stop_time / dt))
-            end_idx = min(end_idx, len(v_trace)) 
+        for i, v_trace in enumerate(V):
+            if lto_hto[i] == 1:
+                start_time = CI_settings[i].delay
+                stop_time = CI_settings[i].delay + CI_settings[i].dur
+                start_idx = int(np.round(start_time / dt))
+                end_idx = int(np.round(stop_time / dt))
+                end_idx = min(end_idx, len(v_trace)) 
 
-            window = v_trace[start_idx:end_idx]
-            
-            min_voltage = min(window)
-            max_voltage = max(window)
-            
-            amplitudes.append(max_voltage - min_voltage)
+                window = v_trace[start_idx:end_idx]
+                
+                min_voltage = min(window)
+                max_voltage = max(window)
+                
+                amplitude = max_voltage - min_voltage
+                
+                amplitudes.append(amplitude)
+            else:
+                amplitudes.append(1e6)
+        print(amplitudes)
         
         return np.array(amplitudes)
         
@@ -671,8 +694,14 @@ class DataProcessor:
         for file_name in file_list:
             data = np.load(file_name)
             data_list.append(data)
+            
+        print(f"data_list:{data_list}")
+            
+        sorted_data_list = sorted(data_list, key=lambda arr: arr[0][3])
+        print(sorted_data_list)
 
-        final_data = np.stack(data_list, axis=0)
+        final_data = np.stack(sorted_data_list, axis=0)
+        print(final_data.shape)
         np.save(os.path.join(output_path, f"combined_out.npy"), final_data)
     
     '''
@@ -694,7 +723,7 @@ class DataProcessor:
     selections.
     '''
     
-    def generate_I_g_combinations(self, channel_ranges: list, channel_slices: list, current_injections: List[CurrentInjection]):
+    def generate_I_g_combinations(self, channel_ranges: list, channel_slices: list, current_injections: List[Union[ConstantCurrentInjection, RampCurrentInjection, GaussianCurrentInjection]]):
         channel_values = [
             np.linspace(low, high, num=slices)
             for (low, high), slices in zip(channel_ranges, channel_slices)
@@ -702,13 +731,12 @@ class DataProcessor:
         
         conductance_combinations = list(product(*channel_values))
         
-        current_intensities = [current_injection.amp for current_injection in current_injections]
-        all_combinations = list(product(conductance_combinations, current_intensities))
+        all_combinations = list(product(conductance_combinations, current_injections))
         
         conductance_groups = [comb[0] for comb in all_combinations]
-        current_intensities = [comb[1] for comb in all_combinations]
+        current_groups = [comb[1] for comb in all_combinations]
         
-        return conductance_groups, current_intensities
+        return conductance_groups, current_groups
     
     '''
     get_fi_curve
@@ -716,7 +744,7 @@ class DataProcessor:
     a list of frequencies (FI curve)
     '''
 
-    def get_fi_curve(self, V_test, current_injections: List[CurrentInjection], ignore_negative=True):
+    def get_fi_curve(self, V_test, current_injections: List[Union[ConstantCurrentInjection, RampCurrentInjection, GaussianCurrentInjection]], ignore_negative=True):
         num_of_spikes_list,*_ = self.extract_v_traces_features(V_test)
         amps = [current_inj.amp for current_inj in current_injections]
         injection_durations = np.array([current_inj.dur for current_inj in current_injections])

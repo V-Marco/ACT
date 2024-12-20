@@ -7,7 +7,7 @@ from contextlib import contextmanager
 from neuron import h
 import numpy as np
 from act.cell_model import TrainCell
-from act.act_types import SimulationParameters
+from act.act_types import SimulationParameters, PassiveProperties
 from act.DataProcessor import DataProcessor
 
 '''
@@ -34,12 +34,11 @@ The first step to the Automatic Cell Tuner process where analytical solutions to
 are found.
 '''
 class PassivePropertiesModule():
-    def __init__(self, train_cell: TrainCell, sim_params: SimulationParameters, trace_filepath, leak_conductance_variable, leak_reversal_variable):
+    def __init__(self, train_cell: TrainCell, sim_params: SimulationParameters, trace_filepath, known_passive_props: PassiveProperties):
         self.train_cell = train_cell
         self.sim_params = sim_params
         self.trace_filepath = trace_filepath
-        self.leak_conductance_variable = leak_conductance_variable
-        self.leak_reversal_variable = leak_reversal_variable
+        self.known_passive_props = known_passive_props
     
     '''
     set_passive_properties
@@ -92,8 +91,7 @@ class PassivePropertiesModule():
                                                         I_tend,
                                                         self.sim_params.CI[0].delay,
                                                         self.sim_params.CI[0].amp,
-                                                        self.leak_conductance_variable,
-                                                        self.leak_reversal_variable)
+                                                        self.known_passive_props)
                 
                 self.train_cell.passive_properties = props
             

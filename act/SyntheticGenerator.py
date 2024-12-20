@@ -1,7 +1,7 @@
 import os
 import numpy as np
 
-from act.act_types import SimulationParameters, OptimizationParameters, CurrentInjection
+from act.act_types import SimulationParameters, OptimizationParameters, ConstantCurrentInjection, RampCurrentInjection, GaussianCurrentInjection
 from act.cell_model import TargetCell
 from act.module_parameters import ModuleParameters
 from act.simulator import ACTSimulator
@@ -44,7 +44,41 @@ class SyntheticGenerator:
 
     def simulate_target_cell(self):
         simulator = ACTSimulator(self.output_folder_name)
+
         for i, current_inj in enumerate(self.sim_params.CI):
+            self.target_cell.set_g(list(self.target_cell.active_channels.keys()), list(self.target_cell.active_channels.values()), self.sim_params)
+            if isinstance(current_inj, ConstantCurrentInjection):
+                CI = [ConstantCurrentInjection
+                      (
+                        amp = current_inj.amp,
+                        dur = current_inj.dur,
+                        delay = current_inj.delay,
+                        lto_hto = current_inj.lto_hto
+                      )
+                ]
+            elif isinstance(current_inj, RampCurrentInjection):
+                CI = [RampCurrentInjection
+                      (
+                          amp_start = current_inj.amp_incr,
+                          amp_incr = current_inj.amp_incr,
+                          num_steps = current_inj.num_steps,
+                          step_time = current_inj.step_time,
+                          dur = current_inj.dur,
+                          delay = current_inj.delay,
+                          lto_hto = current_inj.lto_hto
+                      ) 
+                ]
+            elif isinstance(current_inj, GaussianCurrentInjection):
+                CI = [GaussianCurrentInjection
+                      (
+                          amp_mean = current_inj.amp_mean,
+                          amp_std = current_inj.amp_std,
+                          dur = current_inj.dur,
+                          delay = current_inj.delay,
+                          lto_hto = current_inj.lto_hto
+                      ) 
+                ]
+                
             simulator.submit_job(
                 self.target_cell,
                 SimulationParameters(
@@ -54,13 +88,7 @@ class SyntheticGenerator:
                     h_tstop = self.sim_params.h_tstop,     # (ms)
                     h_dt = self.sim_params.h_dt,           # (ms)
                     h_celsius = self.sim_params.h_celsius, # (deg C)
-                    CI = [CurrentInjection
-                    (
-                        type = current_inj.type,    
-                        amp = current_inj.amp,
-                        dur = current_inj.dur,
-                        delay = current_inj.delay
-                    )],
+                    CI = CI,
                     set_g_to=self.sim_params.set_g_to
                 )
             )

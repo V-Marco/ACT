@@ -30,7 +30,7 @@ plot_v_comparison
 Plots the Target cell voltage trace vs the Predicted cell voltage trace. (Line Plot)
 '''
 
-def plot_v_comparison(predicted_g_data_file, module_foldername, current_injections, dt):
+def plot_v_comparison(module_foldername,predicted_g_data_file, current_injections, dt):
     results_folder = module_foldername + "/results/"
     os.makedirs(results_folder, exist_ok=True)
     
