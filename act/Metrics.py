@@ -137,22 +137,24 @@ class Metrics:
     Saves to .json
     '''
         
-    def save_feature_mae(self, module_foldername, prediction_data_filepath, train_features, dt, threshold=0, first_n_spikes=5, save_file=None):
+    def save_feature_mae(self, module_foldername, prediction_data_filepath, train_features, dt, threshold=0, first_n_spikes=5, CI_settings=None, save_file=None):
         dp = DataProcessor()
         
         target_dataset = np.load(f"{module_foldername}/target/combined_out.npy")
         
         target_V = target_dataset[:,:,0]
         target_I = target_dataset[:,:,1]
+        target_lto_hto = target_dataset[:,1,2]
         
         pred_dataset = np.load(prediction_data_filepath)
         
         pred_V = pred_dataset[:,:,0]
         pred_I = pred_dataset[:,:,1]
+        pred_lto_hto = pred_dataset[:,1,3]
         
-        target_V_features, _ = dp.extract_features(train_features=train_features, V=target_V,I=target_I, threshold=threshold, num_spikes=first_n_spikes, dt=dt)
+        target_V_features, _ = dp.extract_features(train_features=train_features, V=target_V,I=target_I, threshold=threshold, num_spikes=first_n_spikes, dt=dt, lto_hto=target_lto_hto, current_inj_combos=CI_settings)
         
-        pred_V_features, _ = dp.extract_features(train_features=train_features, V=pred_V,I=pred_I, threshold=threshold, num_spikes=first_n_spikes, dt=dt)
+        pred_V_features, _ = dp.extract_features(train_features=train_features, V=pred_V,I=pred_I, threshold=threshold, num_spikes=first_n_spikes, dt=dt, lto_hto=pred_lto_hto, current_inj_combos=CI_settings)
         
         feature_mae = self.mae_score(target_V_features, pred_V_features)
         print(f"MAE of summary features for final prediction: {feature_mae}")

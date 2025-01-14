@@ -277,13 +277,15 @@ def plot_training_feature_mae_contour_plot(module_foldername, current_injections
     
     target_V = target_dataset[:,:,0]
     target_I = target_dataset[:,:,1]
+    target_lto_hto = target_dataset[:,1,2]
     
-    target_V_features, _ = dp.extract_features(train_features=train_features, V=target_V,I=target_I, threshold=threshold, num_spikes=first_n_spikes, dt=dt)
-    
+    target_V_features, _ = dp.extract_features(train_features=train_features, V=target_V,I=target_I, threshold=threshold, num_spikes=first_n_spikes, dt=dt, lto_hto=target_lto_hto, current_inj_combos=current_injections)
+    print(f"vsample_features: {len(target_V_features)}: {target_V_features}")
     train_dataset = np.load(f"{module_foldername}/train/combined_out.npy")
     train_V = train_dataset[:,:,0]
     train_I = train_dataset[:,:,1]
     train_g = train_dataset[:,:length_g,2]
+    train_lto_hto = train_dataset[:,1,3]
 
     conductance_values = np.unique(train_g, axis=0)
     
@@ -302,10 +304,13 @@ def plot_training_feature_mae_contour_plot(module_foldername, current_injections
             
         V_subset = train_V[ordered_indices]
         I_subset = train_I[ordered_indices]
+        lto_hto_subset = train_lto_hto[ordered_indices]
         
-        V_subset_features, _ = dp.extract_features(train_features=train_features, V=V_subset, I=I_subset, threshold=threshold, num_spikes=first_n_spikes, dt=dt)
+        
+        V_subset_features, _ = dp.extract_features(train_features=train_features, V=V_subset, I=I_subset, threshold=threshold, num_spikes=first_n_spikes, dt=dt, lto_hto=lto_hto_subset, current_inj_combos=current_injections)
         
         v_sample_feature_sets.append(V_subset_features)
+    print(f"vsample_features: {len(v_sample_feature_sets)}: {v_sample_feature_sets}")
     maes = []
     
     for idx, g in enumerate(conductance_values):
@@ -503,6 +508,8 @@ def plot_training_fi_mae_contour_plot(module_foldername, current_injections, inj
     for idx, g in enumerate(conductance_values):
         maes.append((g[index1], g[index2], metrics.mae_score(target_frequencies, fi_curves[idx])))
     maes = np.array(maes)
+    
+    print(f"maes: {maes}")
     
     sorted_maes = maes[maes[:, 2].argsort()]
     print(f"Smallest FI MAE values ({g_name1}, {g_name2}, FI MAE): ")

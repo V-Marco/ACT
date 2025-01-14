@@ -16,7 +16,7 @@ from tqdm import tqdm
 from statsmodels.tsa.arima.model import ARIMA
 from datetime import datetime, timedelta
 
-from act.act_types import PassiveProperties, ConstantCurrentInjection, RampCurrentInjection, GaussianCurrentInjection
+from act.act_types import ConstantCurrentInjection, RampCurrentInjection, GaussianCurrentInjection
 from act.cell_model import ACTCellModel
 
 
@@ -45,90 +45,6 @@ class DataProcessor:
 
     def __init__(self):
         pass
-
-    #---------------------------------------------
-    #PASSIVE PROPERTIES
-    #---------------------------------------------
-    '''
-    calculate_passive_properties
-    Returns PassiveProperties type.
-    V: 1D numpy array holding the voltage trace data
-    dt: sample time (ms)
-    recording_duration: total duration of the recording (ms)
-    I_tstart: time when the current clamp starts (ms)
-    I_intensity: amps
-    leak_conductance_var: the variable name used in the .hoc file for the leak conductance.
-    leak_reversal_var: the variable name of the nernst potential for the leak channel.
-    '''
-    def calculate_passive_properties(self, V, train_cell: ACTCellModel, dt, I_tend, I_tstart, I_intensity, known_passive_props: PassiveProperties) -> PassiveProperties:
-        if known_passive_props.g_bar_h and known_passive_props.h_conductance_variable and known_passive_props.R_in and (known_passive_props.Cm or known_passive_props.tau):
-            g_bar_h = known_passive_props.g_bar_h
-            h_conductance_var = known_passive_props.h_conductance_variable
-            
-            r_in = known_passive_props.R_in
-            g_leak = 1/r_in
-            
-            index_v_rest = int(I_tstart / dt)
-            v_rest = V[index_v_rest]
-            
-            train_cell._build_cell(sim_index=0)
-            train_cell.set_surface_area()                               # cm^2
-            g_bar_leak = (g_leak / train_cell.cell_area) / 1e6          # g_leak in uS. Divide by 1e6 gives us S/cm^2
-            
-            if known_passive_props.Cm:
-                Cm = known_passive_props.Cm
-                tau = (Cm * train_cell.cell_area * 1000)/g_leak
-            
-            if known_passive_props.tau:
-                tau = known_passive_props.tau
-                Cm = ((tau * g_leak)/1000) / train_cell.cell_area
-        elif known_passive_props.g_bar_h and known_passive_props.h_conductance_variable and (not known_passive_props.R_in or (not known_passive_props.Cm and not known_passive_props.tau)):
-            try:
-                raise ValueError("H Current is present, but need R_in AND one of the following: (Cm, tau)")
-            except ValueError as e:
-                print(f"Exception: {e}")
-        else:
-            g_bar_h = None
-            h_conductance_var = None
-            
-            index_v_rest = int(I_tstart / dt)
-            index_v_final = int(I_tend / dt) - 1
-
-            v_rest = V[index_v_rest]
-            v_final = V[index_v_final]
-
-            v_diff = v_rest - v_final
-            v_t_const = v_rest - (v_diff * 0.632)
-
-            index_v_tau = next(
-                index for index, voltage_value in enumerate(list(V[index_v_rest:]))
-                if voltage_value < v_t_const
-            )
-            
-            train_cell._build_cell()
-            train_cell.set_surface_area()                               # cm^2
-
-            tau = index_v_tau * dt                                      # ms
-            r_in = (v_diff) / (0 - I_intensity)                     # MOhms
-            g_leak = 1 / r_in                                           # uS
-            Cm = ((tau * g_leak)/1000) / train_cell.cell_area           # uF/cm^2
-            g_bar_leak = (g_leak / train_cell.cell_area) / 1e6          # g_leak in uS. Divide by 1e6 gives us S/cm^2
-            
-            
-        passive_props: PassiveProperties = PassiveProperties(
-            V_rest=float(v_rest),                                   # mV
-            R_in=float(r_in),                                       # MOhm
-            tau=float(tau),                                         # ms
-            Cm=float(Cm),                                           # uF/cm^2
-            g_bar_leak=float(g_bar_leak),                           # S/cm^2
-            g_bar_h=float(g_bar_h),                                 # S/cm^2
-            cell_area=train_cell.cell_area,                         # cm^2
-            h_conductance_variable=h_conductance_var,
-            leak_conductance_variable=known_passive_props.leak_conductance_variable,
-            leak_reversal_variable=known_passive_props.leak_reversal_variable
-        )
-        
-        return passive_props
 
     #---------------------------------------------
     # Feature Extraction
@@ -564,7 +480,7 @@ class DataProcessor:
                 end_idx = min(end_idx, len(v_trace))
 
                 window = v_trace[start_idx:end_idx]
-                print(f"window: {window}")
+                #print(f"window: {window}")
 
                 n = len(window)
 
@@ -572,12 +488,9 @@ class DataProcessor:
                     raise ValueError("Delay larger than simulation duration.")
 
                 fft_result = np.fft.rfft(window)
-                print(f"fft_result: {fft_result}")
                 fft_magnitude = np.abs(fft_result)
-                print(f"fft_magnitude: {fft_magnitude}")
 
                 freqs = np.fft.rfftfreq(n, d=dt)
-                print(f"freqs: {freqs}")
 
                 if freqs[0] == 0:
                     fft_magnitude[0] = 0
@@ -585,12 +498,11 @@ class DataProcessor:
                 max_index = np.argmax(fft_magnitude)
 
                 principal_freq = freqs[max_index]
-                print(f"principal_freq: {principal_freq}")
                 frequencies.append(principal_freq)
             else:
                 frequencies.append(1e6)
         
-        print(frequencies)
+        #print(f"frequencies: {frequencies}")
 
         return np.array(frequencies)
     
@@ -695,13 +607,9 @@ class DataProcessor:
             data = np.load(file_name)
             data_list.append(data)
             
-        print(f"data_list:{data_list}")
-            
         sorted_data_list = sorted(data_list, key=lambda arr: arr[0][3])
-        print(sorted_data_list)
 
         final_data = np.stack(sorted_data_list, axis=0)
-        print(final_data.shape)
         np.save(os.path.join(output_path, f"combined_out.npy"), final_data)
     
     '''

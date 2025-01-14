@@ -1,4 +1,5 @@
-from typing import List, Tuple
+from typing import List, Union
+from dataclasses import dataclass, field
 from dataclasses import dataclass
 from act.optimizer import RandomForestOptimizer
 
@@ -19,23 +20,42 @@ class GettablePassiveProperties:
     sag_ratio: float = None
 
 @dataclass
-class CurrentInjection:
-    type: str = "constant"
+class ConstantCurrentInjection:
     amp: float = 0.1                          # (nA)
     dur: float = 400                          # (ms)
     delay: float = 50                         # (ms)
+    lto_hto: float = 0                        # "lto", "hto"
+
+@dataclass
+class RampCurrentInjection:
+    amp_start: float = 0                      # (nA)
+    amp_incr: float = 0.1                     # (nA)
+    num_steps: int = 10
+    step_time: float = 20                     # (ms)
+    dur: float = 400                          # (ms)
+    delay: float = 50                         # (ms)
+    lto_hto: float = 0                       # "lto", "hto"
+
+@dataclass
+class GaussianCurrentInjection:
+    amp_mean: float = 0.1                     # (nA)
+    amp_std: float = 0.02                     # (nA)
+    dur: float = 400                          # (ms)
+    delay: float = 50                         # (ms)
+    lto_hto: float = 0                       # "lto", "hto"
     
     
 @dataclass  
 class SimulationParameters:
     sim_name: str = ""
     sim_idx: int = 0
-    set_g_to: List[Tuple[float,float]] = None
+    set_g_to: List[float] = None
     h_v_init: float = -50                     # (mV)
     h_tstop: int = 500                        # (ms)
     h_dt: float = 0.1                         # (ms)
     h_celsius: float = 37                     # (deg C)
-    CI: List[CurrentInjection] = None
+    CI: List[Union[ConstantCurrentInjection, RampCurrentInjection, GaussianCurrentInjection]] = None
+    random_seed: int = 42
     _path: str = None
 
 

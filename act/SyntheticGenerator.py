@@ -46,7 +46,6 @@ class SyntheticGenerator:
         simulator = ACTSimulator(self.output_folder_name)
 
         for i, current_inj in enumerate(self.sim_params.CI):
-            self.target_cell.set_g(list(self.target_cell.active_channels.keys()), list(self.target_cell.active_channels.values()), self.sim_params)
             if isinstance(current_inj, ConstantCurrentInjection):
                 CI = [ConstantCurrentInjection
                       (
@@ -106,10 +105,14 @@ class SyntheticGenerator:
 
         dataset = np.load(self.output_folder_name + self.job_name + "/combined_out.npy")
         voltage_current = dataset[:, :, :2]
+        labels = dataset[:, :, 3]
         
-        num_samples, num_traces, _ = voltage_current.shape
-        flat_array = voltage_current.reshape(num_samples * num_traces, 2)
+        labels_expanded = labels[..., np.newaxis]  
+        csv_data = np.concatenate((voltage_current, labels_expanded), axis=2)
+        
+        num_samples, num_traces, _ = csv_data.shape
+        flat_array = csv_data.reshape(num_samples * num_traces, 3)
         
         os.makedirs(self.output_folder_name, exist_ok=True)
-        np.savetxt(self.output_folder_name + filename, flat_array, delimiter=',', header='Voltage,Current', comments='')
+        np.savetxt(self.output_folder_name + filename, flat_array, delimiter=',', header='Voltage,Current,Labels', comments='')
 

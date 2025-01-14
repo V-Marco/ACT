@@ -129,7 +129,7 @@ class ACTModule:
         csv_num_rows = data.shape[0]
         num_samples = csv_num_rows // num_traces
         
-        V_I_data = data.reshape(num_traces, num_samples, 2)
+        V_I_data = data.reshape(num_traces, num_samples, 3)
         os.makedirs(self.output_folder_name + 'target/', exist_ok=True)
         np.save(self.output_folder_name + 'target/combined_out.npy', V_I_data)
 
@@ -216,7 +216,8 @@ class ACTModule:
     
         self.sim_params.set_g_to = []
         for i in range(len(conductance_groups)):
-            train_cell.set_g(train_cell.active_channels, conductance_groups[i], self.sim_params)
+            for j in range(len(train_cell.active_channels)):
+                train_cell.set_g_bar(train_cell.active_channels[j], conductance_groups[i][j])
             if isinstance(current_groups[i], ConstantCurrentInjection):
                 CI = [ConstantCurrentInjection
                     (
@@ -318,7 +319,8 @@ class ACTModule:
         V_target = dataset_target[:,:,0]
         I_target = dataset_target[:,:,1]
         print(dataset_target.shape)
-        lto_hto = dataset_target[:,1,3]
+        
+        lto_hto = dataset_target[:,1,2]
         
         threshold = self.optim_params.spike_threshold
         first_n_spikes = self.optim_params.first_n_spikes
@@ -337,7 +339,7 @@ class ACTModule:
             g_train = dp.clean_g_bars(dataset_train)
             V_train = dataset_train[:,:,0]
             I_train = dataset_train[:,:,1]
-            lto_hto = dataset_train[1,:,3]
+            lto_hto = dataset_train[:,1,3]
             
             features_train, columns_train = dp.extract_features(train_features=self.optim_params.train_features,V=V_train,I=I_train,threshold=threshold,num_spikes=first_n_spikes,dt=dt,lto_hto=lto_hto, current_inj_combos=self.current_inj_combos)
             print(f"Extracting features: {columns_train}")
@@ -416,7 +418,8 @@ class ACTModule:
         sim_index = 0
         for i in range(len(predictions)):
             for j in range(len(self.sim_params.CI)):
-                eval_cell.set_g(eval_cell.active_channels, predictions[i], self.sim_params)
+                for k in range(len(eval_cell.active_channels)):
+                    eval_cell.set_g_bar(eval_cell.active_channels[k], predictions[i][k],)
                 if isinstance(self.sim_params.CI[j], ConstantCurrentInjection):
                     CI = [ConstantCurrentInjection
                         (
@@ -571,8 +574,7 @@ class ACTModule:
 
         V_target = dataset[:,:,0]
         I_target = dataset[:,:,1]
-        print(dataset)
-        lto_hto = dataset[1,:,3]
+        lto_hto = dataset[:,1,2]
         
         train_features = self.optim_params.train_features
         threshold = self.optim_params.spike_threshold
@@ -587,7 +589,7 @@ class ACTModule:
             dataset = np.load(self.output_folder_name + "prediction_eval" + str(i) + "/combined_out.npy")
             V_test = dataset[:,:,0]
             I_test = dataset[:,:,1]
-            lto_hto = dataset[1,:,3]
+            lto_hto = dataset[:,1,3]
             test_V_features, _ = dp.extract_features(train_features=train_features, V=V_test,I=I_test, threshold=threshold, num_spikes=first_n_spikes, dt=dt,lto_hto=lto_hto, current_inj_combos=self.current_inj_combos)
             
             prediction_MAEs = []

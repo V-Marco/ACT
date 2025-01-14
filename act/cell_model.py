@@ -51,6 +51,8 @@ class ACTCellModel:
         self.I = None
 
         self._custom_cell_builder = None
+        self.lto_hto = 0
+        self.sim_index = None
     
     # ----------
     # Channels
@@ -77,7 +79,8 @@ class ACTCellModel:
             soma_area += segment_area
         return soma_area * 1e-8 # (cm2)
 
-    def _build_cell(self) -> None:
+    def _build_cell(self, sim_index) -> None:
+        self.sim_index = sim_index
         if self._custom_cell_builder is not None:
             hoc_cell = self._custom_cell_builder()
         else:
@@ -88,7 +91,7 @@ class ACTCellModel:
         self.soma = hoc_cell.soma
 
         # Report soma area
-        print(f"Soma area (cm2): {self._get_soma_area()}")
+        #print(f"Soma area (cm2): {self._get_soma_area()}")
         
         # Update conductances if needed
         for channel, value in self._overridden_channels.items():
@@ -116,16 +119,17 @@ class ACTCellModel:
             return functools.reduce(_getattr, [obj] + attr.split('.'))
         
         g_values = []
-        for channel in self.active_channels.values():
+        for channel in self.active_channels:
             g_values.append(rgetattr(self.soma[0](0.5), channel))
 
-        return self.V.as_numpy().flatten(), self.I.flatten(), np.array(g_values).flatten()
+        return self.V.as_numpy().flatten(), self.I.flatten(), np.array(g_values).flatten(), self.sim_index, self.lto_hto
     
     # ----------
     # Current injection
     # ----------
 
-    def _add_constant_CI(self, amp: float, dur: int, delay: int, sim_time: int, dt: float) -> None:
+    def _add_constant_CI(self, amp: float, dur: int, delay: int, sim_time: int, dt: float, lto_hto) -> None:
+        self.lto_hto = lto_hto
         inj = h.IClamp(self.soma[0](0.5))
         inj.amp = amp; inj.dur = dur; inj.delay = delay
         self.CI.append(inj)
@@ -141,7 +145,8 @@ class ACTCellModel:
     Creates a ramp current injection
     '''
     
-    def _add_ramp_CI(self, start_amp: float, amp_incr: float, num_steps: int, step_time: float, dur: int, delay: int, sim_time: int, dt: float) -> None:
+    def _add_ramp_CI(self, start_amp: float, amp_incr: float, num_steps: int, step_time: float, dur: int, delay: int, sim_time: int, dt: float, lto_hto) -> None:
+        self.lto_hto = lto_hto
         total_delay = delay
         amp = start_amp
 
@@ -168,7 +173,8 @@ class ACTCellModel:
     Creates a random current injection input
     '''
 
-    def _add_gaussian_CI(self, amp_mean: float, amp_std: float, dur: int, delay: int, random_state: np.random.RandomState) -> None:
+    def _add_gaussian_CI(self, amp_mean: float, amp_std: float, dur: int, delay: int, random_state: np.random.RandomState, lto_hto) -> None:
+        self.lto_hto = lto_hto
         total_delay = delay
         I = [0] * total_delay
 
@@ -197,8 +203,8 @@ A class to differentiate the Target Cell and the Train Cell (though functionally
 
 class TargetCell(ACTCellModel):
 
-    def __init__(self, path_to_hoc_file: str, path_to_mod_files: str, cell_name: str, active_channels: list = [], passive_properties = None):
-        super().__init__(path_to_hoc_file=path_to_hoc_file, path_to_mod_files=path_to_mod_files, cell_name=cell_name, active_channels=active_channels, passive_properties=passive_properties)
+    def __init__(self, path_to_hoc_file: str, path_to_mod_files: str, cell_name: str, passive: list = [], active_channels: list = []):
+        super().__init__(path_to_hoc_file=path_to_hoc_file, path_to_mod_files=path_to_mod_files, cell_name=cell_name, passive=passive, active_channels=active_channels)
 
 '''
 TrainCell
@@ -207,5 +213,5 @@ A class to differentiate the Target Cell and the Train Cell (though functionally
 
 class TrainCell(ACTCellModel):
 
-    def __init__(self, path_to_hoc_file: str, path_to_mod_files: str, cell_name: str, active_channels: list = [], passive_properties = None):
-        super().__init__(path_to_hoc_file=path_to_hoc_file, path_to_mod_files=path_to_mod_files, cell_name=cell_name, active_channels=active_channels, passive_properties=passive_properties)
+    def __init__(self, path_to_hoc_file: str, path_to_mod_files: str, cell_name: str, passive: list = [], active_channels: list = []):
+        super().__init__(path_to_hoc_file=path_to_hoc_file, path_to_mod_files=path_to_mod_files, cell_name=cell_name, passive=passive, active_channels=active_channels)
