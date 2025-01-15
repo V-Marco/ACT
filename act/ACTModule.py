@@ -216,8 +216,7 @@ class ACTModule:
     
         self.sim_params.set_g_to = []
         for i in range(len(conductance_groups)):
-            for j in range(len(train_cell.active_channels)):
-                train_cell.set_g_bar(train_cell.active_channels[j], conductance_groups[i][j])
+            train_cell.set_g_bar(train_cell.active_channels, conductance_groups[i], sim_params=self.sim_params)
             if isinstance(current_groups[i], ConstantCurrentInjection):
                 CI = [ConstantCurrentInjection
                     (
@@ -418,8 +417,7 @@ class ACTModule:
         sim_index = 0
         for i in range(len(predictions)):
             for j in range(len(self.sim_params.CI)):
-                for k in range(len(eval_cell.active_channels)):
-                    eval_cell.set_g_bar(eval_cell.active_channels[k], predictions[i][k],)
+                eval_cell.set_g_bar(eval_cell.active_channels, predictions[i],self.sim_params)
                 if isinstance(self.sim_params.CI[j], ConstantCurrentInjection):
                     CI = [ConstantCurrentInjection
                         (

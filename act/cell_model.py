@@ -32,6 +32,7 @@ class ACTCellModel:
         self.path_to_hoc_file = path_to_hoc_file
         self.path_to_mod_files = path_to_mod_files
         self.cell_name = cell_name
+        self.all = None
 
         # Channels
         self.passive = passive.copy()
@@ -58,8 +59,14 @@ class ACTCellModel:
     # Channels
     # ----------
 
-    def set_g_bar(self, channel_name: str, value: float) -> None:
-        self._overridden_channels[channel_name] = value
+    def set_g_bar(self, g_names: list, g_values: list, sim_params: SimulationParameters) -> None:
+        sim_params.set_g_to.append((g_names, g_values))
+    
+    def _set_g_bar(self, g_names: list, g_values: list) -> None:
+        for sec in self.all:
+            for index, key in enumerate(g_names):
+                if g_values[index]:
+                    setattr(sec, key, g_values[index])
     
     def set_passive_properties(self, spp: SettablePassiveProperties):
         self.spp = spp
@@ -88,14 +95,11 @@ class ACTCellModel:
             hoc_cell = getattr(h, self.cell_name)()
 
         # Soma must exist in any cell
+        self.all = list(hoc_cell.all)
         self.soma = hoc_cell.soma
 
         # Report soma area
         #print(f"Soma area (cm2): {self._get_soma_area()}")
-        
-        # Update conductances if needed
-        for channel, value in self._overridden_channels.items():
-            setattr(self.soma[0], channel, value)
         
         # Update passive properties if needed
         if self.spp is not None:

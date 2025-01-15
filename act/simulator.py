@@ -149,6 +149,11 @@ class ACTSimulator:
             cell._add_gaussian_CI(parameters.CI[0].amp_mean,parameters.CI[0].amp_std,parameters.CI[0].dur,parameters.CI[0].delay, parameters.random_seed, parameters.CI[0].lto_hto)
         else:
             raise NotImplementedError
+        
+        
+        if not parameters.set_g_to == None and not len(parameters.set_g_to) == 0:
+            cell._set_g_bar(parameters.set_g_to[parameters.sim_idx][0], parameters.set_g_to[parameters.sim_idx][1])   
+
 
         h.finitialize(h.v_init)
         h.run()
