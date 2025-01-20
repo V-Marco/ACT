@@ -441,22 +441,16 @@ class DataProcessor:
     '''
         
     def get_hto_lto_stats(self, V, lto_hto, train_features=None, dt=1, CI_settings = None):
-                
+        
         features = []
         column_names = []
         
-        print(train_features)
-        print("lto-hto_frequency" in train_features)
-        print("lto-hto_amplitude" in train_features)
-        
         if "lto-hto_frequency" in train_features:
             hto_lto_frequencies = self.calculate_hto_lto_frequency(V, CI_settings, dt, lto_hto)
-            print(hto_lto_frequencies)
             features.append(hto_lto_frequencies)
             column_names += ["lto-hto_frequency"]
-        elif "lto-hto_amplitude" in train_features:
+        if "lto-hto_amplitude" in train_features:
             hto_lto_amplitudes = self.calculate_hto_lto_amplitude(V, CI_settings, dt, lto_hto)
-            print(hto_lto_amplitudes)
             features.append(hto_lto_amplitudes)
             column_names += ["lto-hto_amplitude"]
         
@@ -480,17 +474,12 @@ class DataProcessor:
                 end_idx = min(end_idx, len(v_trace))
 
                 window = v_trace[start_idx:end_idx]
-                #print(f"window: {window}")
 
-                n = len(window)
-
-                if n == 0:
-                    raise ValueError("Delay larger than simulation duration.")
+                samples = len(window)
 
                 fft_result = np.fft.rfft(window)
                 fft_magnitude = np.abs(fft_result)
-
-                freqs = np.fft.rfftfreq(n, d=dt)
+                freqs = np.fft.rfftfreq(samples, d=dt)
 
                 if freqs[0] == 0:
                     fft_magnitude[0] = 0
@@ -501,8 +490,6 @@ class DataProcessor:
                 frequencies.append(principal_freq)
             else:
                 frequencies.append(1e6)
-        
-        #print(f"frequencies: {frequencies}")
 
         return np.array(frequencies)
     
@@ -526,12 +513,17 @@ class DataProcessor:
                 min_voltage = min(window)
                 max_voltage = max(window)
                 
+                print(f"start, end: {start_idx}, {end_idx}")
+                
+                print(f"(Min, Max): ({min_voltage},{max_voltage})")
+                
                 amplitude = max_voltage - min_voltage
+                
+                print(f"amplitude: {amplitude}")
                 
                 amplitudes.append(amplitude)
             else:
                 amplitudes.append(1e6)
-        print(amplitudes)
         
         return np.array(amplitudes)
         

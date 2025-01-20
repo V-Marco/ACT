@@ -317,7 +317,6 @@ class ACTModule:
         dataset_target = np.load(self.output_folder_name + "target/combined_out.npy")
         V_target = dataset_target[:,:,0]
         I_target = dataset_target[:,:,1]
-        print(dataset_target.shape)
         
         lto_hto = dataset_target[:,1,2]
         
