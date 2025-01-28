@@ -280,18 +280,18 @@ def plot_training_feature_mae_contour_plot(module_foldername, current_injections
     target_lto_hto = target_dataset[:,1,2]
     
     target_V_features, _ = dp.extract_features(train_features=train_features, V=target_V,I=target_I, threshold=threshold, num_spikes=first_n_spikes, dt=dt, lto_hto=target_lto_hto, current_inj_combos=current_injections)
-    print(f"target_v_features: {len(target_V_features)}: {target_V_features}")
+    #print(f"target_v_features: {len(target_V_features)}: {target_V_features}")
     train_dataset = np.load(f"{module_foldername}/train/combined_out.npy")
     train_V = train_dataset[:,:,0]
     train_I = train_dataset[:,:,1]
     train_g = train_dataset[:,:length_g,2]
     train_lto_hto = train_dataset[:,1,3]
     
-    print(f"train_g: {len(train_g)} - {train_g}")
+    #print(f"train_g: {len(train_g)} - {train_g}")
 
     conductance_values = np.unique(train_g, axis=0)
     
-    print(f"conductance_values: {conductance_values}")
+    #print(f"conductance_values: {conductance_values}")
     
     v_sample_feature_sets = []
     for g in conductance_values:
@@ -516,7 +516,7 @@ def plot_training_fi_mae_contour_plot(module_foldername, current_injections, inj
         maes.append((g[index1], g[index2], metrics.mae_score(target_frequencies, fi_curves[idx])))
     maes = np.array(maes)
     
-    print(f"maes: {maes}")
+    #print(f"maes: {maes}")
     
     sorted_maes = maes[maes[:, 2].argsort()]
     print(f"Smallest FI MAE values ({g_name1}, {g_name2}, FI MAE): ")

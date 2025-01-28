@@ -3,15 +3,17 @@
 #SBATCH -n 1
 #SBATCH -W
 #SBATCH --qos=normal
-#SBATCH --job-name=act_Full_vhalf
+#SBATCH --job-name=act_LAA_Orig-notfilter
 #SBATCH --output=./bmtk_sim.out
-#SBATCH --time 0-12:00
+#SBATCH --time 0-24:00
 
 START=$(date)
+
 python Original.py
-#python Qualitative_passive_spike.py
+#python Original_passmod.py
+#python Qualitative_spike_burst.py
+#python Qualitative_burst_spike.py
 #python Full_vhalf_vcutoff.py
-#python Full_vhalf_vcutoff_blocked.py
 
 
 END=$(date)

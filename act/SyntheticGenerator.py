@@ -15,7 +15,7 @@ class SyntheticGenerator:
 
         self.output_folder_name: str = os.path.join(os.getcwd(), params.module_folder_name) + "/"
         self.target_cell: TargetCell = params.cell
-        print(params.cell)
+        #print(params.cell)
         self.sim_params: SimulationParameters = params.sim_params
         self.optim_params: OptimizationParameters = params.optim_params
         

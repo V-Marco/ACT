@@ -513,13 +513,7 @@ class DataProcessor:
                 min_voltage = min(window)
                 max_voltage = max(window)
                 
-                print(f"start, end: {start_idx}, {end_idx}")
-                
-                print(f"(Min, Max): ({min_voltage},{max_voltage})")
-                
                 amplitude = max_voltage - min_voltage
-                
-                print(f"amplitude: {amplitude}")
                 
                 amplitudes.append(amplitude)
             else:
