@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from matplotlib import pyplot as plt
-from act.DataProcessor import DataProcessor
+from act.data_processing import ACTDataProcessor as DataProcessor
 from act.Metrics import Metrics
 from matplotlib import cm
 import plotly.graph_objects as go
@@ -482,7 +482,7 @@ def plot_training_fi_mae_contour_plot(module_foldername, current_injections, inj
     
     target_V = target_dataset[:,:,0]
     
-    target_frequencies = dp.get_fi_curve(target_V, current_injections).flatten()
+    target_frequencies = dp.get_fi_curve(target_V, -40, current_injections).flatten()
     
     train_dataset = np.load(f"{module_foldername}/train/combined_out.npy")
     train_V = train_dataset[:,:,0]

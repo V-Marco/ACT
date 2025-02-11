@@ -14,10 +14,8 @@ import timeout_decorator
 import multiprocessing as mp
 from tqdm import tqdm
 from statsmodels.tsa.arima.model import ARIMA
-from datetime import datetime, timedelta
 
 from act.act_types import ConstantCurrentInjection, RampCurrentInjection, GaussianCurrentInjection
-from act.cell_model import ACTCellModel
 
 
 '''
@@ -41,7 +39,7 @@ Broken into main sections:
 '''
 
 
-class DataProcessor:
+class ACTDataProcessor:
 
     def __init__(self):
         pass
@@ -583,7 +581,8 @@ class DataProcessor:
     into a single .npy file for ease of processing.
     '''
 
-    def combine_data(self, output_path: str):
+    @staticmethod
+    def combine_data(output_path: str):
         print(output_path)
         file_list = sorted(glob.glob(os.path.join(output_path, "out_*.npy")))
 
@@ -616,8 +615,8 @@ class DataProcessor:
     based on the user input of conductance ranges/number of slices, and current injection intensity
     selections.
     '''
-    
-    def generate_I_g_combinations(self, channel_ranges: list, channel_slices: list, current_injections: List[Union[ConstantCurrentInjection, RampCurrentInjection, GaussianCurrentInjection]]):
+    @staticmethod
+    def generate_I_g_combinations(channel_ranges: list, channel_slices: list, current_injections: List[Union[ConstantCurrentInjection, RampCurrentInjection, GaussianCurrentInjection]]):
         channel_values = [
             np.linspace(low, high, num=slices)
             for (low, high), slices in zip(channel_ranges, channel_slices)
@@ -631,23 +630,38 @@ class DataProcessor:
         current_groups = [comb[1] for comb in all_combinations]
         
         return conductance_groups, current_groups
-    
+
+    @staticmethod
+    def count_spikes(V_matrix, spike_threshold):
+        # V_matrix: (N x Time)
+        return np.sum(V_matrix > spike_threshold, axis = 1)
+
     '''
     get_fi_curve
     Given current injection intensities and voltage traces, this method calculates
     a list of frequencies (FI curve)
     '''
+    @staticmethod
+    def get_fi_curve(
+        V_matrix: np.ndarray,
+        spike_threshold: float, 
+        CI_list: List[Union[ConstantCurrentInjection, RampCurrentInjection, GaussianCurrentInjection]], 
+        ignore_negative_CI = True):
+        # V_matrix: (N x Time)
 
-    def get_fi_curve(self, V_test, current_injections: List[Union[ConstantCurrentInjection, RampCurrentInjection, GaussianCurrentInjection]], ignore_negative=True):
-        num_of_spikes_list,*_ = self.extract_v_traces_features(V_test)
-        amps = [current_inj.amp for current_inj in current_injections]
-        injection_durations = np.array([current_inj.dur for current_inj in current_injections])
-        if ignore_negative:
-            non_neg_idx = [i for i, amp in enumerate(amps) if amp >= 0]
-            amps = [amp for i, amp in enumerate(amps) if amp >= 0]
-            num_of_spikes_list = num_of_spikes_list[non_neg_idx]
+        # Count spikes
+        counts = ACTDataProcessor.count_spikes(V_matrix, spike_threshold)
+        
+        # Find injection durations
+        amps = np.array([current_inj.amp for current_inj in CI_list])
+        injection_durations = np.array([current_inj.dur for current_inj in CI_list])
 
-        frequencies =  num_of_spikes_list / (injection_durations / 1000)  # Convert to Hz: spikes / time (sec)
+        if ignore_negative_CI:
+            non_neg_idx = np.where(amps >= 0)
+            counts = counts[non_neg_idx]
+            injection_durations = injection_durations[non_neg_idx]
+
+        frequencies =  counts / (injection_durations / 1000)  # Convert to Hz: spikes / time (sec)
 
         return frequencies
     

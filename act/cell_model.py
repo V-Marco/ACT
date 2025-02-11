@@ -3,6 +3,16 @@ import functools
 from neuron import h
 from act.act_types import SimulationParameters, SettablePassiveProperties
 
+# https://stackoverflow.com/questions/31174295/getattr-and-setattr-on-nested-subobjects-chained-properties
+def rgetattr(obj, attr, *args):
+    def _getattr(obj, attr):
+        return getattr(obj, attr, *args)
+    return functools.reduce(_getattr, [obj] + attr.split('.'))
+
+def rsetattr(obj, attr, val):
+    pre, _, post = attr.rpartition('.')
+    return setattr(rgetattr(obj, pre) if pre else obj, post, val)
+
 '''
 Defines ACTCellModel which is a parent class to TargetCell and TrainCell (also defined)
 These classes hold vital information about a cell and the current injections applied to them.
@@ -66,7 +76,7 @@ class ACTCellModel:
         for sec in self.all:
             for index, key in enumerate(g_names):
                 if g_values[index]:
-                    setattr(sec, key, g_values[index])
+                    rsetattr(sec(0.5), key, g_values[index])
     
     def set_passive_properties(self, spp: SettablePassiveProperties):
         self.spp = spp
@@ -116,11 +126,6 @@ class ACTCellModel:
         self._custom_cell_builder = cell_builder
 
     def get_output(self) -> tuple:
-        # https://stackoverflow.com/questions/31174295/getattr-and-setattr-on-nested-subobjects-chained-properties
-        def rgetattr(obj, attr, *args):
-            def _getattr(obj, attr):
-                return getattr(obj, attr, *args)
-            return functools.reduce(_getattr, [obj] + attr.split('.'))
         
         g_values = []
         for channel in self.active_channels:
@@ -197,25 +202,3 @@ class ACTCellModel:
 
     # def set_g(self, g_names: list, g_values: list, sim_params: SimulationParameters) -> None:
     #     sim_params.set_g_to.append((g_names, g_values))
-    
-                
-                
-'''
-TargetCell
-A class to differentiate the Target Cell and the Train Cell (though functionally identical)
-''' 
-
-class TargetCell(ACTCellModel):
-
-    def __init__(self, path_to_hoc_file: str, path_to_mod_files: str, cell_name: str, passive: list = [], active_channels: list = []):
-        super().__init__(path_to_hoc_file=path_to_hoc_file, path_to_mod_files=path_to_mod_files, cell_name=cell_name, passive=passive, active_channels=active_channels)
-
-'''
-TrainCell
-A class to differentiate the Target Cell and the Train Cell (though functionally identical)
-''' 
-
-class TrainCell(ACTCellModel):
-
-    def __init__(self, path_to_hoc_file: str, path_to_mod_files: str, cell_name: str, passive: list = [], active_channels: list = []):
-        super().__init__(path_to_hoc_file=path_to_hoc_file, path_to_mod_files=path_to_mod_files, cell_name=cell_name, passive=passive, active_channels=active_channels)

@@ -73,12 +73,34 @@ class ACTSimulator:
 
         cell._build_cell(parameters.sim_idx)
 
+        # Set current injection
         if isinstance(parameters.CI[0], ConstantCurrentInjection):
-            cell._add_constant_CI(parameters.CI[0].amp, parameters.CI[0].dur, parameters.CI[0].delay, parameters.h_tstop, parameters.h_dt, parameters.CI[0].lto_hto)
+            cell._add_constant_CI(
+                parameters.CI[0].amp, 
+                parameters.CI[0].dur, 
+                parameters.CI[0].delay, 
+                parameters.h_tstop, 
+                parameters.h_dt, 
+                parameters.CI[0].lto_hto)
         elif isinstance(parameters.CI[0], RampCurrentInjection):
-            cell._add_ramp_CI(parameters.CI[0].amp_start, parameters.CI[0].amp_incr,parameters.CI[0].num_steps,parameters.CI[0].step_time,parameters.CI[0].dur, parameters.CI[0].delay, parameters.h_tstop, parameters.h_dt, parameters.CI[0].lto_hto)
+            cell._add_ramp_CI(
+                parameters.CI[0].amp_start, 
+                parameters.CI[0].amp_incr, 
+                parameters.CI[0].num_steps, 
+                parameters.CI[0].step_time, 
+                parameters.CI[0].dur, 
+                parameters.CI[0].delay, 
+                parameters.h_tstop, 
+                parameters.h_dt, 
+                parameters.CI[0].lto_hto)
         elif isinstance(parameters.CI[0], GaussianCurrentInjection):
-            cell._add_gaussian_CI(parameters.CI[0].amp_mean,parameters.CI[0].amp_std,parameters.CI[0].dur,parameters.CI[0].delay, parameters.random_seed, parameters.CI[0].lto_hto)
+            cell._add_gaussian_CI(
+                parameters.CI[0].amp_mean, 
+                parameters.CI[0].amp_std, 
+                parameters.CI[0].dur, 
+                parameters.CI[0].delay, 
+                parameters.random_seed, 
+                parameters.CI[0].lto_hto)
         else:
             raise NotImplementedError
 
@@ -141,12 +163,34 @@ class ACTSimulator:
 
         cell._build_cell(parameters.sim_idx)
 
+        # Set current injection
         if isinstance(parameters.CI[0], ConstantCurrentInjection):
-            cell._add_constant_CI(parameters.CI[0].amp, parameters.CI[0].dur, parameters.CI[0].delay, parameters.h_tstop, parameters.h_dt, parameters.CI[0].lto_hto)
+            cell._add_constant_CI(
+                parameters.CI[0].amp, 
+                parameters.CI[0].dur, 
+                parameters.CI[0].delay, 
+                parameters.h_tstop, 
+                parameters.h_dt, 
+                parameters.CI[0].lto_hto)
         elif isinstance(parameters.CI[0], RampCurrentInjection):
-            cell._add_ramp_CI(parameters.CI[0].amp_start, parameters.CI[0].amp_incr,parameters.CI[0].num_steps,parameters.CI[0].step_time,parameters.CI[0].dur, parameters.CI[0].delay, parameters.h_tstop, parameters.h_dt, parameters.CI[0].lto_hto)
+            cell._add_ramp_CI(
+                parameters.CI[0].amp_start, 
+                parameters.CI[0].amp_incr, 
+                parameters.CI[0].num_steps, 
+                parameters.CI[0].step_time, 
+                parameters.CI[0].dur, 
+                parameters.CI[0].delay, 
+                parameters.h_tstop, 
+                parameters.h_dt, 
+                parameters.CI[0].lto_hto)
         elif isinstance(parameters.CI[0], GaussianCurrentInjection):
-            cell._add_gaussian_CI(parameters.CI[0].amp_mean,parameters.CI[0].amp_std,parameters.CI[0].dur,parameters.CI[0].delay, parameters.random_seed, parameters.CI[0].lto_hto)
+            cell._add_gaussian_CI(
+                parameters.CI[0].amp_mean, 
+                parameters.CI[0].amp_std, 
+                parameters.CI[0].dur, 
+                parameters.CI[0].delay, 
+                parameters.random_seed, 
+                parameters.CI[0].lto_hto)
         else:
             raise NotImplementedError
         
@@ -165,9 +209,9 @@ class ACTSimulator:
         out[:, 1] = I[:int(parameters.h_tstop / parameters.h_dt)]
         out[:len(g), 2] = g
         out[len(g):, 2] = np.nan
-        out[0,3] = sim_index
-        out[1,3] = lto_hto
-        out[2:,3] = np.nan
+        out[0, 3] = sim_index
+        out[1, 3] = lto_hto
+        out[2:, 3] = np.nan
 
         np.save(os.path.join(parameters._path, f"out_{parameters.sim_idx}.npy"), out)
         

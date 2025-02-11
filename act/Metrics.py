@@ -3,7 +3,7 @@ import numpy as np
 from datetime import datetime, timedelta
 from sklearn.model_selection import RepeatedKFold
 from sklearn.model_selection import cross_val_score
-from act.DataProcessor import DataProcessor
+from act.data_processing import ACTDataProcessor as DataProcessor
 
 '''
 A class that holds a collection of methods for calculating metrics to evaluate the quality of

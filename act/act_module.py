@@ -7,12 +7,21 @@ import pickle
 import json
 
 from act.act_types import SimulationParameters, OptimizationParameters, ConductanceOptions, ConstantCurrentInjection, RampCurrentInjection, GaussianCurrentInjection
-from act.cell_model import TrainCell
-from act.module_parameters import ModuleParameters
+from act.cell_model import ACTCellModel
 from act.simulator import ACTSimulator
-from act.DataProcessor import DataProcessor
 from act.optimizer import RandomForestOptimizer
 from act.Metrics import Metrics
+
+from act.data_processing import ACTDataProcessor as DataProcessor
+from dataclasses import dataclass
+
+@dataclass
+class ACTModuleParameters:
+    module_folder_name: str = None
+    target_traces_file: str = None
+    cell: ACTCellModel = None
+    sim_params: SimulationParameters = None
+    optim_params: OptimizationParameters = None
 
 '''
 ACTModule is the primary class in the Automatic Cell Tuner project with methods to generate
@@ -22,18 +31,16 @@ additional methods to evaluate predictions.
 
 class ACTModule:
 
-    def __init__(self, params: ModuleParameters):
+    def __init__(self, params: ACTModuleParameters):
 
         self.output_folder_name: str = os.path.join(os.getcwd(), params.module_folder_name) + "/"
         self.target_traces_file = params.target_traces_file
-        self.train_cell: TrainCell = params.cell
+        self.train_cell: ACTCellModel = params.cell
         self.sim_params: SimulationParameters = params.sim_params
         self.optim_params: OptimizationParameters = params.optim_params
         
         self.blocked_channels = []
         self.rf_model = self.optim_params.rf_model
-        self.conductance_combos = None
-        self.current_inj_combos = None
     
     '''
     run
@@ -44,7 +51,7 @@ class ACTModule:
         start_time = time.time()
         print("RUNNING THE MODULE")
         print("LOADING TARGET TRACES")
-        self.convert_csv_to_npy()
+        # self.convert_csv_to_npy()
 
         if self.rf_model == None:
             print("SIMULATING TRAINING DATA")
@@ -141,29 +148,32 @@ class ACTModule:
     and current injection intensities in a format that can be processed by NEURON
     '''
 
-    def get_I_g_combinations(self):
-        print("Getting Conductance Combinations From Preselected Ranges")
+    def get_I_g_combinations(self, verbose = False) -> None:
+        
+        if verbose:
+            print("Getting conductance combinations from preselected ranges")
+
         final_g_ranges_slices: List[ConductanceOptions] = []
-        for i, conductance_option in enumerate(self.optim_params.conductance_options):
+
+        for conductance_option in self.optim_params.conductance_options:
+            # If blocked, set the range to (0, 0)
             if conductance_option.blocked:
                 final_g_ranges_slices.append(
-                        ConductanceOptions(
-                            variable_name=conductance_option.variable_name,
-                            low=0.0,
-                            high=0.0,
-                            n_slices=1
-                        )
+                        ConductanceOptions(variable_name = conductance_option.variable_name, low = 0.0, high = 0.0, n_slices = 1)
                     )
-            elif conductance_option.prediction != None and conductance_option.bounds_variation != None:
+            # Else, if was optimized before, set bounds variation
+            elif (conductance_option.prediction != None) and (conductance_option.bounds_variation != None):
                 final_g_ranges_slices.append(
                     ConductanceOptions(
-                        variable_name=conductance_option.variable_name,
-                        low=conductance_option.prediction - (conductance_option.prediction * conductance_option.bounds_variation),
-                        high=conductance_option.prediction + (conductance_option.prediction * conductance_option.bounds_variation),
-                        n_slices=conductance_option.n_slices
+                        variable_name = conductance_option.variable_name,
+                        low = conductance_option.prediction - (conductance_option.prediction * conductance_option.bounds_variation),
+                        high = conductance_option.prediction + (conductance_option.prediction * conductance_option.bounds_variation),
+                        n_slices = conductance_option.n_slices
                     )
                 )
-            elif conductance_option.low != None and conductance_option.high !=None:
+            # Else, set the range for optimization
+            elif (conductance_option.low != None) and (conductance_option.high != None):
+                # If only one slice, choose the middle of the range
                 if conductance_option.n_slices == 1:
                   final_g_ranges_slices.append(
                         ConductanceOptions(
@@ -173,13 +183,14 @@ class ACTModule:
                             n_slices=conductance_option.n_slices
                         )
                     )
+                # If multiple slices, just copy the conductance option
                 else:
                     final_g_ranges_slices.append(
                         ConductanceOptions(
-                            variable_name=conductance_option.variable_name,
-                            low=conductance_option.low,
-                            high=conductance_option.high,
-                            n_slices=conductance_option.n_slices
+                            variable_name = conductance_option.variable_name,
+                            low = conductance_option.low,
+                            high = conductance_option.high,
+                            n_slices = conductance_option.n_slices
                         )
                     )
             else: 
@@ -191,13 +202,10 @@ class ACTModule:
             channel_ranges.append((conductance_option.low, conductance_option.high))
             slices.append(conductance_option.n_slices)
 
-        dp = DataProcessor()
-        conductance_groups, current_settings = dp.generate_I_g_combinations(channel_ranges, slices, self.sim_params.CI)
-        
+        conductance_groups, current_settings = DataProcessor.generate_I_g_combinations(channel_ranges, slices, self.sim_params.CI)
+
         self.conductance_combos = conductance_groups
         self.current_inj_combos = current_settings
-        
-        return conductance_groups, current_settings
     
     '''
     simulate_train_cells
@@ -205,54 +213,59 @@ class ACTModule:
     simulates these cell settings using ACTSimulator to generate training data for the Model.
     '''
 
-    def simulate_train_cells(self, train_cell: TrainCell):
+    def simulate_train_cells(self, train_cell):
+
         simulator = ACTSimulator(self.output_folder_name)
-            
-        try:
-            conductance_groups, current_groups = self.get_I_g_combinations()
-        except Exception as e:
-            print(e)
-            return
+
+        # Get parameter grids: [(low1, high1), (low2, high2) ...], [I1, I2, ...] of the same length
+        self.get_I_g_combinations()
     
         self.sim_params.set_g_to = []
-        for i in range(len(conductance_groups)):
-            train_cell.set_g_bar(train_cell.active_channels, conductance_groups[i], sim_params=self.sim_params)
-            if isinstance(current_groups[i], ConstantCurrentInjection):
+
+        for group_id in range(len(self.conductance_combos)):
+            
+            # Set conductances
+            train_cell.set_g_bar(train_cell.active_channels, self.conductance_combos[group_id], sim_params = self.sim_params)
+
+            # Set current injection
+            if isinstance(self.current_inj_combos[group_id], ConstantCurrentInjection):
                 CI = [ConstantCurrentInjection
                     (
-                        amp = current_groups[i].amp,
-                        dur = current_groups[i].dur,
-                        delay = current_groups[i].delay,
-                        lto_hto = current_groups[i].lto_hto
+                        amp = self.current_inj_combos[group_id].amp,
+                        dur = self.current_inj_combos[group_id].dur,
+                        delay = self.current_inj_combos[group_id].delay,
+                        lto_hto = self.current_inj_combos[group_id].lto_hto
                     )
                 ]
-            elif isinstance(current_groups[i], RampCurrentInjection):
+            elif isinstance(self.current_inj_combos[group_id], RampCurrentInjection):
                 CI = [RampCurrentInjection
                     (
-                        amp_start = current_groups[i].amp_incr,
-                        amp_incr = current_groups[i].amp_incr,
-                        num_steps = current_groups[i].num_steps,
-                        step_time = current_groups[i].step_time,
-                        dur = current_groups[i].dur,
-                        delay = current_groups[i].delay,
-                        lto_hto = current_groups[i].lto_hto
+                        amp_start = self.current_inj_combos[group_id].amp_incr,
+                        amp_incr = self.current_inj_combos[group_id].amp_incr,
+                        num_steps = self.current_inj_combos[group_id].num_steps,
+                        step_time = self.current_inj_combos[group_id].step_time,
+                        dur = self.current_inj_combos[group_id].dur,
+                        delay = self.current_inj_combos[group_id].delay,
+                        lto_hto = self.current_inj_combos[group_id].lto_hto
                     ) 
                 ]
-            elif isinstance(current_groups[i], GaussianCurrentInjection):
+            elif isinstance(self.current_inj_combos[group_id], GaussianCurrentInjection):
                 CI = [GaussianCurrentInjection
                     (
-                        amp_mean = current_groups[i].amp_mean,
-                        amp_std = current_groups[i].amp_std,
-                        dur = current_groups[i].dur,
-                        delay = current_groups[i].delay,
-                        lto_hto = current_groups[i].lto_hto
+                        amp_mean = self.current_inj_combos[group_id].amp_mean,
+                        amp_std = self.current_inj_combos[group_id].amp_std,
+                        dur = self.current_inj_combos[group_id].dur,
+                        delay = self.current_inj_combos[group_id].delay,
+                        lto_hto = self.current_inj_combos[group_id].lto_hto
                     ) 
                 ]
+
+            # Submit the job
             simulator.submit_job(
                 train_cell, 
                 SimulationParameters(
                     sim_name = "train",
-                    sim_idx = i,
+                    sim_idx = group_id,
                     h_v_init = self.sim_params.h_v_init,    # (mV)
                     h_tstop = self.sim_params.h_tstop,      # (ms)
                     h_dt = self.sim_params.h_dt,            # (ms)
@@ -261,11 +274,9 @@ class ACTModule:
                     set_g_to=self.sim_params.set_g_to
                 )
             )
-        
+
         simulator.run_jobs()
-        
-        dp = DataProcessor()
-        dp.combine_data(self.output_folder_name + "train")
+        DataProcessor.combine_data(self.output_folder_name + "train")
         
     '''
     filter_data
@@ -335,9 +346,9 @@ class ACTModule:
                 dataset_train = np.load(self.output_folder_name + "train/combined_out.npy")
 
             g_train = dp.clean_g_bars(dataset_train)
-            V_train = dataset_train[:,:,0]
-            I_train = dataset_train[:,:,1]
-            lto_hto = dataset_train[:,1,3]
+            V_train = dataset_train[:, :, 0]
+            I_train = dataset_train[:, :, 1]
+            lto_hto = dataset_train[:, 1, 3]
             
             features_train, columns_train = dp.extract_features(train_features=self.optim_params.train_features,V=V_train,I=I_train,threshold=threshold,num_spikes=first_n_spikes,dt=dt,lto_hto=lto_hto, current_inj_combos=self.current_inj_combos)
             print(f"Extracting features: {columns_train}")
@@ -409,7 +420,7 @@ class ACTModule:
     This method simulates the predicted conductances.
     '''
 
-    def simulate_eval_cells(self, eval_cell: TrainCell, predictions):
+    def simulate_eval_cells(self, eval_cell, predictions):
         self.sim_params.set_g_to = []
         
         simulator = ACTSimulator(self.output_folder_name)
@@ -465,9 +476,8 @@ class ACTModule:
                 
         simulator.run_jobs()
 
-        dp = DataProcessor()
         for i in range(len(predictions)):
-            dp.combine_data(self.output_folder_name + "prediction_eval" + str(i))
+            DataProcessor.combine_data(self.output_folder_name + "prediction_eval" + str(i))
     
     '''
     evaluate_fi_curves
@@ -481,14 +491,14 @@ class ACTModule:
 
         V_target = dataset[:,:,0]
 
-        target_frequencies = dp.get_fi_curve(V_target, self.sim_params.CI).flatten()
+        target_frequencies = DataProcessor.get_fi_curve(V_target, -40, self.sim_params.CI).flatten()
         
         FI_data = []
         for i in range(len(predictions)):
             dataset = np.load(self.output_folder_name + "prediction_eval" + str(i) + "/combined_out.npy")
             V_test = dataset[:,:,0]
 
-            frequencies = dp.get_fi_curve(V_test, self.sim_params.CI)
+            frequencies = DataProcessor.get_fi_curve(V_test, -40, self.sim_params.CI)
 
             FI_data.append(frequencies.flatten())
 
