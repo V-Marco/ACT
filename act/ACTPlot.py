@@ -219,6 +219,16 @@ def plot_training_v_mae_contour_plot(module_foldername, current_injections, dela
         maes.append((g[index1], g[index2], metrics.mae_score(target_V, v_sample_sets[idx])))
     maes = np.array(maes)
     
+    #x = np.linspace(0, 10000,10000)
+    #for idx, g in enumerate(conductance_values):
+        #for i in range(len(amps)):
+            #print(f"Conductance values: {g}")
+            #print(maes[idx][2])
+            #plt.plot(target_V[i], label='Target', c = 'blue')
+            #plt.plot(v_sample_sets[idx][i], label=f"Conductance: {g}", ls = '--', c = 'red')
+            #plt.fill_between(x, target_V[i], v_sample_sets[idx][i], color="blue", alpha=0.3)
+            #plt.show()
+    
     sorted_maes = maes[maes[:, 2].argsort()]
     print(f"Smallest MAE values ({g_name1}, {g_name2}, V MAE): ")
     print(sorted_maes[:6])
@@ -294,6 +304,7 @@ def plot_training_feature_mae_contour_plot(module_foldername, current_injections
     #print(f"conductance_values: {conductance_values}")
     
     v_sample_feature_sets = []
+    #ordered_V = []
     for g in conductance_values:
         conductance_idx = np.where((train_g == g).all(axis=1))[0]
         
@@ -303,13 +314,14 @@ def plot_training_feature_mae_contour_plot(module_foldername, current_injections
         for amp in amps:
             ordered_idx = np.where(train_I[conductance_idx,index_where_inj_occurs] == amp)[0]
             ordered_indices.append(conductance_idx[ordered_idx][0])
-            
+        
         ordered_indices = np.array(ordered_indices)
-            
+        
         V_subset = train_V[ordered_indices]
         I_subset = train_I[ordered_indices]
         lto_hto_subset = train_lto_hto[ordered_indices]
-        
+        #print(f"V_subset: {V_subset}")
+        #ordered_V.append(V_subset)
         
         V_subset_features, _ = dp.extract_features(train_features=train_features, V=V_subset, I=I_subset, threshold=threshold, num_spikes=first_n_spikes, dt=dt, lto_hto=lto_hto_subset, current_inj_combos=current_injections)
         
@@ -326,6 +338,16 @@ def plot_training_feature_mae_contour_plot(module_foldername, current_injections
 
         maes.append((g[index1], g[index2], np.mean(i_inj_mae)))
     maes = np.array(maes)
+    
+    #print(f"ordered_V: {ordered_V}")
+    # plot the points here
+    #for idx, g in enumerate(conductance_values):
+        #for i in range(len(amps)):
+            #print(f"Conductance values: {g}")
+            #print(maes[idx][2])
+            #plt.plot(target_V[i], label='Target', c = 'blue')
+            #plt.plot(ordered_V[idx][i], label=f"Conductance: {g}", ls = '--', c = 'red')
+            #plt.show()
 
     #print(f"maes: {maes}")
     
@@ -371,7 +393,7 @@ The 3D surface consists of the following:
  - Axis 3: the MAE of the FI curves of the Target cell and Predicted Cell 
 '''
     
-def plot_training_fi_mae_surface(module_foldername, current_injections, inj_dur, delay, dt, index1, index2, g_names, results_filename):
+def plot_training_fi_mae_surface(module_foldername, current_injections, delay, dt, index1, index2, g_names, results_filename, spike_threshold=0):
     dp = DataProcessor()
     metrics = Metrics()
     
@@ -385,7 +407,7 @@ def plot_training_fi_mae_surface(module_foldername, current_injections, inj_dur,
     
     target_V = target_dataset[:,:,0]
     
-    target_frequencies = dp.get_fi_curve(target_V, amps, inj_dur=inj_dur).flatten()
+    target_frequencies = dp.get_fi_curve(target_V, spike_threshold=spike_threshold, CI_list=amps).flatten()
     
     train_dataset = np.load(f"{module_foldername}/train/combined_out.npy")
     train_V = train_dataset[:,:,0]
@@ -409,7 +431,7 @@ def plot_training_fi_mae_surface(module_foldername, current_injections, inj_dur,
             
         V_subset = train_V[ordered_indices]
         
-        fi_curve = dp.get_fi_curve(V_subset, amps, inj_dur=inj_dur)
+        fi_curve = dp.get_fi_curve(V_subset, spike_threshold=spike_threshold, CI_list=amps)
         
         fi_curves.append(fi_curve)
 
@@ -468,7 +490,7 @@ Generates a 2D contour plot version of plot_training_fi_mae_surface (See directl
 '''
     
     
-def plot_training_fi_mae_contour_plot(module_foldername, current_injections, inj_dur, delay, dt, index1, index2, g_names, num_levels=100, results_filename=None):
+def plot_training_fi_mae_contour_plot(module_foldername, current_injections, delay, dt, index1, index2, g_names, spike_threshold=0, num_levels=100, results_filename=None):
     dp = DataProcessor()
     metrics = Metrics()
     
@@ -482,7 +504,7 @@ def plot_training_fi_mae_contour_plot(module_foldername, current_injections, inj
     
     target_V = target_dataset[:,:,0]
     
-    target_frequencies = dp.get_fi_curve(target_V, -40, current_injections).flatten()
+    target_frequencies = dp.get_fi_curve(target_V, spike_threshold=spike_threshold, CI_list=current_injections).flatten()
     
     train_dataset = np.load(f"{module_foldername}/train/combined_out.npy")
     train_V = train_dataset[:,:,0]
@@ -506,7 +528,7 @@ def plot_training_fi_mae_contour_plot(module_foldername, current_injections, inj
             
         V_subset = train_V[ordered_indices]
         
-        fi_curve = dp.get_fi_curve(V_subset, current_injections)
+        fi_curve = dp.get_fi_curve(V_subset, spike_threshold=spike_threshold, CI_list=current_injections)
         
         fi_curves.append(fi_curve)
 
@@ -517,6 +539,12 @@ def plot_training_fi_mae_contour_plot(module_foldername, current_injections, inj
     maes = np.array(maes)
     
     #print(f"maes: {maes}")
+    #for idx, g in enumerate(conductance_values):
+        #print(f"Conductance values: {g}")
+        #print(maes[idx][2])
+        #plt.plot(target_frequencies, label='Target', c = 'blue')
+        #plt.plot(fi_curves[idx], label=f"Conductance: {g}", ls = '--', c = 'red')
+        #plt.show()
     
     sorted_maes = maes[maes[:, 2].argsort()]
     print(f"Smallest FI MAE values ({g_name1}, {g_name2}, FI MAE): ")

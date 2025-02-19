@@ -160,6 +160,7 @@ special.nrn
 /experiments/LA_C/filtered/output/*
 
 /experiments/Spiker/not-filtered/output/*
+/experiments/Spiker/output/*
 /experiments/BursterCA3/not-filtered/output/*
 /experiments/BursterIzhikevich/not-filtered/output/*
 /experiments/BursterS3/not-filtered/output/*

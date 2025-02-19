@@ -526,7 +526,7 @@ class ACTDataProcessor:
     get_nonsaturated_traces
     Filters training data to only voltage traces that have not saturated.
     '''
-    def get_nonsaturated_traces(self,data, window_of_inspection, threshold=-50, dt=1):
+    def get_nonsaturated_traces(self, data, window_of_inspection, threshold=-50, dt=1):
         inspection_window_start = int(window_of_inspection[0] / dt)
         inspection_window_end = int(window_of_inspection[1] / dt)
         
