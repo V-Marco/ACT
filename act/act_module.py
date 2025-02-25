@@ -325,7 +325,7 @@ class ACTModule:
     def get_rf_prediction(self):
         dp = DataProcessor()
 
-        dataset_target = np.load(self.output_folder_name + "target/combined_out.npy")
+        dataset_target = np.load(self.target_traces_file)
         V_target = dataset_target[:,:,0]
         I_target = dataset_target[:,:,1]
         
@@ -487,7 +487,7 @@ class ACTModule:
     def evaluate_fi_curves(self, predictions):
         dp = DataProcessor()
 
-        dataset = np.load(self.output_folder_name + "target/combined_out.npy")
+        dataset = np.load(self.target_traces_file)
 
         V_target = dataset[:,:,0]
 
@@ -540,7 +540,7 @@ class ACTModule:
     def evaluate_v_traces(self, predictions):
         dp = DataProcessor()
 
-        dataset = np.load(self.output_folder_name + "target/combined_out.npy")
+        dataset = np.load(self.target_traces_file)
 
         V_target = dataset[:,:,0]
 
@@ -577,7 +577,7 @@ class ACTModule:
     def evaluate_features(self, predictions):
         dp = DataProcessor()
 
-        dataset = np.load(self.output_folder_name + "target/combined_out.npy")
+        dataset = np.load(self.target_traces_file)
 
         V_target = dataset[:,:,0]
         I_target = dataset[:,:,1]
