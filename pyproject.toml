@@ -20,4 +20,7 @@ dependencies = [
     "pandas",
     "timeout_decorator",
     "statsmodels",
+    "scikit-learn",
+    "tqdm",
+    "plotly"
 ]
