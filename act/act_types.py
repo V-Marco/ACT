@@ -91,6 +91,7 @@ class OptimizationParameters:
     spike_threshold: float = 0
     first_n_spikes: int = 20
     prediction_eval_method: str = 'fi_curve'
+    evaluate_random_forest: bool = False
     rf_model: RandomForestOptimizer = None
     previous_modules: List[str] = None
     save_file: str = None

@@ -375,13 +375,14 @@ class ACTModule:
 
             metrics = Metrics()
             save_file = self.optim_params.save_file
-            metrics.evaluate_random_forest(rf.model, 
-                                        X_train, 
-                                        Y_train, 
-                                        random_state=self.sim_params.random_seed, 
-                                        n_repeats=self.optim_params.eval_n_repeats,
-                                        n_splits=n_splits,
-                                        save_file=save_file)
+            if self.optim_params.evaluate_random_forest:
+                metrics.evaluate_random_forest(rf.model, 
+                                            X_train, 
+                                            Y_train, 
+                                            random_state=self.sim_params.random_seed, 
+                                            n_repeats=self.optim_params.eval_n_repeats,
+                                            n_splits=n_splits,
+                                            save_file=save_file)
         else:
             try:
                 with open(self.rf_model, 'rb') as file:
@@ -473,7 +474,7 @@ class ACTModule:
                     )
                 )
                 sim_index+=1
-                
+        
         simulator.run_jobs()
 
         for i in range(len(predictions)):

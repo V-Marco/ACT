@@ -15,6 +15,8 @@ import multiprocessing as mp
 from tqdm import tqdm
 from statsmodels.tsa.arima.model import ARIMA
 
+from multiprocessing import Pool
+
 from act.act_types import ConstantCurrentInjection, RampCurrentInjection, GaussianCurrentInjection
 
 
@@ -48,51 +50,72 @@ class ACTDataProcessor:
     # Feature Extraction
     #---------------------------------------------
 
-    '''
-    extract_features
-    The main method for extracting features (uses many helper functions) given a list of features.
-    Feature options: ["i_trace_stats", "number_of_spikes", "spike_times", "spike_height_stats", "trough_times", "trough_height_stats", "spike_intervals", "lto-hto_amplitude", "lto-hto_frequency","v_arima_coefs"]
-    '''
-    
-    def extract_features(self,train_features=None, V=None, I=None, arima_file=None, threshold=0, num_spikes=20, dt=1, lto_hto = None, current_inj_combos = None):
+    def extract_features(self, train_features=None, V=None, I=None, arima_file=None, 
+                         threshold=0, num_spikes=20, dt=1, lto_hto=None, current_inj_combos=None):
+        """
+        Method Developed by OpenAI's o3 mini high model
+        Extract features from voltage (V) and current (I) traces.
+        If V and I are provided as lists (multiple traces), this method uses multiprocessing
+        to process each trace in parallel. The method header remains unchanged.
+        """
+        if isinstance(V, list) and isinstance(I, list):
+            arg_list = [
+                (train_features, V_trace, I_trace, arima_file, threshold, num_spikes, dt, lto_hto, current_inj_combos)
+                for V_trace, I_trace in zip(V, I)
+            ]
+            with Pool() as pool:
+                results = pool.starmap(self._extract_features_single, arg_list)
+            features_list, columns_list = zip(*results)
+            return list(features_list), list(columns_list)
+        else:
+            return self._extract_features_single(train_features, V, I, arima_file, threshold, num_spikes, dt, lto_hto, current_inj_combos)
 
-        if(train_features is None):
-            train_features = ["i_trace_stats", "number_of_spikes", "spike_times", "spike_height_stats", "trough_times", "trough_height_stats", "spike_intervals", "lto-hto_amplitude", "lto-hto_frequency","v_arima_coefs"]
+    def _extract_features_single(self, train_features, V, I, arima_file, threshold, num_spikes, dt, lto_hto, current_inj_combos):
+        """
+        Method Developed by OpenAI's o3 mini high model
+        Core function to extract features from a single V and I trace.
+        This is the same code as your original method.
+        """
+        if train_features is None:
+            train_features = ["i_trace_stats", "number_of_spikes", "spike_times", "spike_height_stats", 
+                              "trough_times", "trough_height_stats", "spike_intervals", 
+                              "lto-hto_amplitude", "lto-hto_frequency", "v_arima_coefs"]
 
         columns = []
         summary_features = None
-        
+
         def concatenate_features(existing_features, new_features):
             if existing_features is None:
                 return new_features
             else:
                 return np.concatenate((existing_features, new_features), axis=1)
-       
+
         if "i_trace_stats" in train_features and I is not None:
             features, column_names = self.get_current_stats(I)
             columns += column_names
             summary_features = concatenate_features(summary_features, features)
 
-        if( "number_of_spikes" in train_features or 
+        if ("number_of_spikes" in train_features or 
             "spike_times" in train_features or 
             "spike_height_stats" in train_features or 
             "trough_times" in train_features or
             "trough_height_stats" in train_features or
             "spike_intervals" in train_features):
-            features, column_names = self.get_voltage_stats(V, train_features=train_features,threshold=threshold,num_spikes=num_spikes,dt=dt)
+            features, column_names = self.get_voltage_stats(V, train_features=train_features,
+                                                            threshold=threshold, num_spikes=num_spikes, dt=dt)
             columns += column_names
             summary_features = concatenate_features(summary_features, features)
-            
+
         if "lto-hto_amplitude" in train_features or "lto-hto_frequency" in train_features:
             features, column_names = self.get_hto_lto_stats(V, lto_hto, train_features=train_features, dt=dt, CI_settings=current_inj_combos)
             columns += column_names
             summary_features = concatenate_features(summary_features, features)
-            
+
         if "v_arima_coefs" in train_features and (arima_file or V is not None):
             features, column_names = self.get_arima_features(V=V, arima_file=arima_file)
             columns += column_names
             summary_features = concatenate_features(summary_features, features)
-    
+
         return summary_features, columns
     
     '''
