@@ -11,17 +11,9 @@ NEURON {
 }
 
 PARAMETER {
-	tone_period = 4000   
-	DA_period = 500
-	DA_start = 64000		    : D1R(Low Affinity) Dopamine Effect after 6 conditioning trials (14*4000) = 64000)
-	DA_stop = 96000
-	DA_ext1 = 196000
-	DA_ext2 = 212000
-	DA_t1 = -0.1 : -0.3 : -0.15            : Amount of DA effect- negative value decreases AP threshold / positive value increases threshold of AP
-
-	DA_period2 = 100
-	DA_start2 = 36000		   : shock Dopamine Effect during shock after 1 conditioning trial
-	DA_t2 = -1 : -1 : -0.1           : Amount(%) of DA effect- negative value decreases AP threshold / positive value increases threshold of AP	
+	DA_start = 100		             : D1R(Low Affinity) Dopamine Effect after 6 conditioning trials (15*4000) = 60000)
+	DA_stop = 600	
+	DA_t1 = -1 : -0.3 : -0.15            : Amount of DA effect- negative value decreases AP threshold / positive value increases threshold of AP
 	
 	gbar = 0.010   	(mho/cm2)	
 								
@@ -116,18 +108,13 @@ DERIVATIVE states {
 PROCEDURE trates(vm,a2) {  
         LOCAL  a, b, c, qt
         qt=q10^((celsius-24)/10)
-		tha1 = tha + DA1(t)	+ DA2(t)
+		tha1 = tha + DA1(t)
 	a = trap0(vm,tha1,Ra,qa)
 	b = trap0(-vm,-tha1,Rb,qa)
 	mtau = 1/(a+b)/qt
         if (mtau<mmin) {mtau=mmin}
-		
-	if (v < -57.5 ) {
-	minf = 0
-	} else{
 	minf = a/(a+b)
-	}
-	
+
 	a = trap0(vm,thi1,Rd,qd)
 	b = trap0(-vm,-thi2,Rg,qg)
 	htau =  1/(a+b)/qt
@@ -147,20 +134,6 @@ FUNCTION trap0(v,th,a,q) {
  	}
 }	
 FUNCTION DA1(t) {
-	    if (t >= DA_start && t <= DA_stop){ 									: During conditioning
-			if ((t/tone_period-floor(t/tone_period)) >= (1-DA_period/tone_period)) {DA1 = DA_t1}
-			else if ((t/tone_period-floor(t/tone_period)) == 0) {DA1 = DA_t1}
-			else {DA1 = 0}}
-		else if (t >= DA_ext1 && t <= DA_ext2){								: During 4trials of Extinction
-			if ((t/tone_period-floor(t/tone_period)) >= (1-DA_period/tone_period)) {DA1 = DA_t1}
-			else if ((t/tone_period-floor(t/tone_period)) == 0) {DA1 = DA_t1}
-			else {DA1 = 0}}		
+	    if (t >= DA_start && t <= DA_stop){DA1 = DA_t1} 									: During conditioning
 		else  {DA1 = 0}
-	}
-FUNCTION DA2(t) {
-	    if (t >= DA_start2 && t <= DA_stop){
-			if((t/tone_period-floor(t/tone_period)) >= (1-DA_period2/tone_period)) {DA2 = DA_t2}
-			else if ((t/tone_period-floor(t/tone_period)) == 0) {DA2 = DA_t2}
-			else  {DA2 = 0}}
-		else  {DA2 = 0}
 	}

@@ -15,21 +15,19 @@ UNITS {
 NEURON { 
 	SUFFIX nap
 	USEION na READ ena WRITE ina
-	RANGE i, minf, mtau, gnap, gbar :, vhalf, k
+	RANGE gbar, ina, minf, mtau, gna  :, vshift
 }
 
 PARAMETER { 
 	gbar = 1e-4 	(mho/cm2)
+	vshift = 0
 	v ena 		(mV)  
-	k = 5      (mV)
-	vhalf = -48 (mV)
 } 
 ASSIGNED { 
 	ina 		(mA/cm2) 
-	i   		(mA/cm2)
 	minf 		(1)
 	mtau 		(ms) 
-	gnap		(mho/cm2)
+	gna		(mho/cm2)
 } 
 STATE {
 	m
@@ -37,32 +35,33 @@ STATE {
 
 BREAKPOINT { 
 	SOLVE states METHOD cnexp
-	gnap = gbar * m
-	ina = gnap * ( v - ena ) 
-	i = ina
+	gna = gbar * m
+	ina = gna * ( v - ena ) 
 } 
 
 INITIAL { 
-	rate(v)
+	settables(v-vshift) 
 	m = minf
+	:m = 0
 } 
 
 DERIVATIVE states { 
-	rate(v)
+	settables(v-vshift) 
 	m' = ( minf - m ) / mtau 
 }
 UNITSOFF
  
-PROCEDURE rate(v (mV)) {
-	if (v < -67.5 ) {
-	minf = 0
-	} else{
-	minf  = 1 / ( 1 + exp( ( vhalf - v ) / k ) )
+PROCEDURE settables(v) { 
+	TABLE minf, mtau FROM -120 TO 40 WITH 641
+
+	: minf  = 1 / ( 1 + exp( ( - v - 48 ) / 10 ) )
+	minf  = 1 / ( 1 + exp( ( - v - 48 ) / 5 ) )
+	:Segregation
+	if (v < -67.88) {
+	minf = 0.009 * v + 0.624
 	}
-	if( v < -40.0 ) {
-		mtau = 100*(0.025 + 0.14 * exp( ( v + 40 ) / 10 ))
-	}else{
-		mtau = 100*(0.02 + 0.145 * exp( ( - v - 40 ) / 10 ))
+	if (v < -69.88) {
+	minf = 0
 	}
 }
 UNITSON

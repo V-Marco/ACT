@@ -4,7 +4,7 @@ NEURON {
 	SUFFIX sAHP
 	USEION k READ ek WRITE ik
 	USEION cas READ casi VALENCE 2 
-        RANGE gk, i , ctau, cinf, gsAHPbar : ,ik
+        RANGE ik, gk, gsAHPbar, i
 }
 
 UNITS {
@@ -73,11 +73,7 @@ PROCEDURE rate(v (mV), casi (mM)) {LOCAL  csum, ca, cb
 	ca=calf(v, casi) 
 	cb=cbet(v, casi)		
 	csum = ca+cb
-	if (v < -65 ) {              :::::::::::::::::::::::::::  67.5
-	cinf = 0
-	} else{
 	cinf = ca/csum
-	}
 	ctau = 48
 	UNITSON
 }	

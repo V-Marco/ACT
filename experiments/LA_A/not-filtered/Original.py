@@ -22,8 +22,8 @@ def run():
         target_folder = module_folder + "/target"
 
         target_cell = ACTCellModel(
-            path_to_hoc_file="/home/ubuntu/ACT/data/LAA/orig_modfiles/template.hoc",
-            path_to_mod_files="/home/ubuntu/ACT/data/LAA/orig_modfiles",
+            path_to_hoc_file="/home/ubuntu/ACT/data/LAA/orig/template.hoc",
+            path_to_mod_files="/home/ubuntu/ACT/data/LAA/orig/modfiles",
             cell_name="Cell_A",
             passive=[],
             active_channels=["gbar_nap",
@@ -72,7 +72,7 @@ def run():
                 h_celsius = 6.3,
                 h_dt = 0.1,
                 h_tstop = 1000,
-                CI = [ConstantCurrentInjection(amp = amp_value, dur = 700, delay = 100, lto_hto = 1)])
+                CI = [ConstantCurrentInjection(amp = amp_value, dur = 800, delay = 100, lto_hto = 1)])
 
             simulator.submit_job(target_cell, sim_params)
             
@@ -85,7 +85,7 @@ def run():
                 h_celsius = 6.3,
                 h_dt = 0.1,
                 h_tstop = 1000,
-                CI = [ConstantCurrentInjection(amp = amp_value, dur = 700, delay = 100, lto_hto = 0)])
+                CI = [ConstantCurrentInjection(amp = amp_value, dur = 800, delay = 100, lto_hto = 0)])
             
             simulator.submit_job(target_cell, sim_params)
 
@@ -98,7 +98,7 @@ def run():
                 h_celsius = 6.3,
                 h_dt = 0.1,
                 h_tstop = 1000,
-                CI = [ConstantCurrentInjection(amp = amp_value, dur = 700, delay = 100, lto_hto = 1)])
+                CI = [ConstantCurrentInjection(amp = amp_value, dur = 800, delay = 100, lto_hto = 1)])
 
             simulator.submit_job(target_cell, sim_params)
             
@@ -107,8 +107,8 @@ def run():
         dp.combine_data(target_folder)
         
         train_cell = ACTCellModel(
-            path_to_hoc_file="/home/ubuntu/ACT/data/LAA/orig_modfiles/template.hoc",
-            path_to_mod_files="/home/ubuntu/ACT/data/LAA/orig_modfiles",
+            path_to_hoc_file="/home/ubuntu/ACT/data/LAA/orig/template.hoc",
+            path_to_mod_files="/home/ubuntu/ACT/data/LAA/orig/modfiles",
             cell_name="Cell_A",
             passive=[],
             active_channels=["gbar_nap",
@@ -166,7 +166,7 @@ def run():
                     train_features=["i_trace_stats", "number_of_spikes", "spike_times", "spike_height_stats", "trough_times", "trough_height_stats", "lto-hto_amplitude", "lto-hto_frequency"],
                     prediction_eval_method='features',
                     save_file=f"{module_folder}/results/saved_metrics.json",
-                    spike_threshold=0
+                    spike_threshold=-50
                 )
             )
         )

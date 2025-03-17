@@ -33,8 +33,8 @@ PARAMETER {
 NEURON {
 	SUFFIX kap
 	USEION k READ ek WRITE ik
-        RANGE gka ,gkabar, i, ninf, linf
-        RANGE taul,taun : ,lmin
+        RANGE gkabar,gka, i, ninf, linf
+        GLOBAL taul,taun,lmin
 }
 
 STATE {
@@ -98,15 +98,19 @@ PROCEDURE rates(v (mV)) { :callable from hoc
         LOCAL a,qt
         qt=q10^((celsius-24)/10)
         a = alpn(v)
-		if (v < -52.5 ) {                         :::::::::::::::::: -30
-		ninf = 0
-		} else{
         ninf = 1/(1 + a)
-		}
+        :Segregation
+        if (v < -67.88) {
+        ninf = 0.0 * v + 0.019
+        }
+        if (v < -69.88) {
+        ninf = 0
+        }
         taun = betn(v)/(qt*a0n*(1+a))
 	if (taun<nmin) {taun=nmin}
         a = alpl(v)
-		linf = 1 / ( 1 + exp( ( - v - 56 ) / (-8.738) ) )
+        :linf = 1/(1+ a)
+	linf = 1 / ( 1 + exp( ( - v - 56 ) / (-8.738) ) )
 	taul = 0.26*(v+50)/qtl
 	if (taul<lmin/qtl) {taul=lmin/qtl}
 }

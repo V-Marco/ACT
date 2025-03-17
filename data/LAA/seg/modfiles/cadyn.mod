@@ -3,7 +3,7 @@
 NEURON {
         SUFFIX cadyn
 	USEION ca READ eca WRITE ica
-	RANGE gca, i, gcabar
+	RANGE gcabar, gca,i
 	RANGE uinf, zinf, utau, ztau 
 }
 
@@ -51,10 +51,13 @@ DERIVATIVE states {
 
 PROCEDURE rate(v(mV)) {
 	UNITSOFF
-	if (v < -57.5 ) {                       :::::::::::::::::  -57.5
+	uinf = 1/(exp(-(v+24.6)/11.3)+1)
+	:Segregation
+	if (v < -67.88) {
+	uinf = 0.01 * v + 0.732
+	}
+	if (v < -69.88) {
 	uinf = 0
-	} else{
-	uinf = 1/(exp(-(v+30)/11)+1)      :::::::::::::::::
 	}
 	utau = 1.25*2/(exp(-0.031*(v+37.1)) + exp(0.031*(v+37.1)))
 
