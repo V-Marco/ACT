@@ -27,6 +27,7 @@ class ACTCellModel:
             path_to_mod_files: str = None,
             passive: list = None,
             active_channels: list = None,
+            prediction: dict = None
             ):
         '''
         Parameters:
@@ -43,6 +44,7 @@ class ACTCellModel:
         self.path_to_mod_files = path_to_mod_files
         self.cell_name = cell_name
         self.all = None
+        self.prediction = None
 
         # Channels
         self.passive = passive.copy()

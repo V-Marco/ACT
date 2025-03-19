@@ -88,9 +88,9 @@ class ACTModule:
 
         conductance_option_names_list = [conductance_option.variable_name for conductance_option in self.optim_params.conductance_options]
         final_prediction = dict(zip(conductance_option_names_list, best_prediction))
-        self.train_cell.active_channels = final_prediction
+        self.train_cell.prediction = final_prediction
         
-        print(self.train_cell.active_channels)
+        print(self.train_cell.prediction)
         
         save_file = self.optim_params.save_file
         if not save_file == None:

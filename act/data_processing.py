@@ -759,3 +759,23 @@ class ACTDataProcessor:
             feature_mae_list,
             module_runtime_list
         )
+        
+    """
+    clear_directory is developed with the help of OpenAI: o3-mini-high
+    This method clears every file in a directory (to be used for deleting training data)
+    """
+    def clear_directory(directory):
+        print(f"Deleting Train Data: {directory}")
+        if not os.path.isdir(directory):
+            print(f"Error: {directory} is not a valid directory.")
+            return
+
+        # Iterate over all items in the directory
+        for item in os.listdir(directory):
+            item_path = os.path.join(directory, item)
+            try:
+                if os.path.isfile(item_path) or os.path.islink(item_path):
+                    os.unlink(item_path)
+
+            except Exception as e:
+                print(f"Failed to delete {item_path}. Reason: {e}")
