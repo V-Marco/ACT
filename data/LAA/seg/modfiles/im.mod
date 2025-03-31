@@ -3,8 +3,8 @@
 NEURON {
 	SUFFIX im
 	USEION k READ ek WRITE ik
-	RANGE gm, i,  gbar
-	RANGE ninf, taun
+	RANGE gmbar, gm, i
+	RANGE inf, tau
 }
 
 UNITS {
@@ -13,7 +13,7 @@ UNITS {
 }
 
 PARAMETER {
-	gbar = 0.0003 (siemens/cm2) <0,1e9>
+	gmbar = 0.0003 (siemens/cm2) <0,1e9>
 }
 
 ASSIGNED {
@@ -21,8 +21,8 @@ ASSIGNED {
 	ek (mV)
 	ik (mA/cm2)
 	i  (mA/cm2)
-	ninf
-	taun (ms)
+	inf
+	tau (ms)
 	gm (siemens/cm2)
 }
 
@@ -32,19 +32,19 @@ STATE {
 
 BREAKPOINT {
 	SOLVE states METHOD cnexp
-	gm = gbar*n*n
+	gm = gmbar*n*n
 	ik = gm*(v-ek)
 	i = ik
 }
 
 INITIAL {
 	rate(v)
-	n = ninf
+	n = inf
 }
 
 DERIVATIVE states {
 	rate(v)
-	n' = (ninf-n)/taun
+	n' = (inf-n)/tau
 }
 
 FUNCTION alf(v (mV)) (/ms) {
@@ -65,11 +65,16 @@ PROCEDURE rate(v (mV)) {
 	aa=alf(v) ab=bet(v) 
 	
 	sum = aa+ab
-	if (v < -67.5 ) {
-	ninf = 0
-	} else {
-	ninf = 1 / ( 1 + exp( ( - v - 52.7 ) / 10.34 ) )
+	:inf = aa/sum
+	inf = 1 / ( 1 + exp( ( - v - 52.7 ) / 10.34 ) )
+	:Segregation
+	if (v < -67.88) {
+	inf = 0.092 * v + 6.461
 	}
-	taun = 1/sum
+	if (v < -69.88) {
+	inf = 0
+	}
+	tau = 1/sum
+	: tau = 1.5/sum
 	UNITSON
 }

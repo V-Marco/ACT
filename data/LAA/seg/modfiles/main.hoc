@@ -1,5 +1,3 @@
-// Created by A. Alturki (2015)
-
 {load_file("nrngui.hoc")}
 {load_file("onecompartment_template_with_osc.hoc")}
 //{load_file("onecompartment_template_no_osc.hoc")}
@@ -7,18 +5,15 @@
 
 v_init = -70//-70//-69
 objref Cell
-Cell = new Cell_C()
+Cell = new Cell_A()
 
 objref stim
 Cell.soma stim = new IClamp(0.5) //creating current clamp in the middle of the soma
 stim.del = 200 // in ms
 stim.dur = 600 // in ms
-stim.amp = 0.4/4.6632 // in nA  // 4.6632 is the ratio between the large soma and small soma
+stim.amp = 0.4 // in nA
 
 tstop = 1000 // in ms
-
-
-
 
 SubVBoxNum = 3
 objref MainHBoxObj,SubVBoxObj[SubVBoxNum]
@@ -60,7 +55,7 @@ proc newPlotCurrent() {
 	graphItem.save_name("graphList[2].")
 	graphList[1].append(graphItem)
 	graphItem.addexpr("Cell.soma.i_im",1,2)
-	graphItem.addexpr("Cell.soma.i_nap",2,2)
+	graphItem.addexpr("Cell.soma.ina_nap",2,2)
 	graphItem.label(.08,.925,tstr1)
 }
 
@@ -69,13 +64,13 @@ proc newPlotCurrent2() {
 	graphItem.save_name("graphList[2].")
 	graphList[1].append(graphItem)
 	graphItem.addexpr("Cell.soma.i_im",1,2)
-	graphItem.addexpr("Cell.soma.i_nap",2,2)
+	graphItem.addexpr("Cell.soma.ina_nap",2,2)
 	graphItem.addexpr("Cell.soma.i_kap",3,2)
 	graphItem.addexpr("Cell.soma.i_kdr",4,2)
 	graphItem.addexpr("Cell.soma.i_sAHP",5,2)
 	graphItem.addexpr("Cell.soma.i_hd",6,2)
 	graphItem.addexpr("Cell.soma.i_na3",7,2)
-	graphItem.addexpr("Cell.soma.i_cadyn",4,2)
+	graphItem.addexpr("Cell.soma.i_cadyn",8,2)
 	graphItem.addexpr("Cell.soma.il_leak",9,2)
 	graphItem.label(.08,.925,tstr1)
 }

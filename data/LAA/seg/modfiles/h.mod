@@ -25,8 +25,8 @@ PARAMETER {
 NEURON {
 	SUFFIX hd
 	NONSPECIFIC_CURRENT i
-        RANGE ghd, i, ghdbar :, vhalfl
-        RANGE linf,taul
+        RANGE ghdbar, i :, vhalfl
+        GLOBAL linf,taul
 }
 
 STATE {
@@ -71,11 +71,14 @@ PROCEDURE rate(v (mV)) { :callable from hoc
         LOCAL a,qt
         qt=q10^((celsius-33)/10)
         a = alpt(v)
-		if (v > -62.5 ) {
-		linf = 0
-		} else{
         linf = 1/(1 + exp(-(v-vhalfl)/kl))
-		}
+        :Segregation
+        if (v > -71.189) {
+        linf = -0.112 * v + -7.727
+        }
+        if (v > -69.189) {
+        linf = 0
+        }
         taul = bett(v)/(qtl*qt*a0t*(1+a))
 }
 

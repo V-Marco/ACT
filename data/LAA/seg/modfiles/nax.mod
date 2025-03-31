@@ -1,20 +1,19 @@
-TITLE nat
-: Na current 
-: from Jeff M.
-:  ---------- modified -------M.Migliore may97
+TITLE na3
+: Na current for axon. No slow inact.
+: M.Migliore Jul. 1997
 
 NEURON {
-	SUFFIX nat
+	SUFFIX nax
 	USEION na READ ena WRITE ina
-	:RANGE  , i :, ar2
-	RANGE gbar, gna, i, minf, hinf, mtau, htau : , qinf, thinf
+	RANGE  gbar
+	GLOBAL minf, hinf, mtau, htau,thinf, qinf
 }
 
 PARAMETER {
 	
 	gbar = 0.010   	(mho/cm2)	
 								
-	tha  =  -30	(mV)		: v 1/2 for act	
+	tha  = -30	(mV)		: v 1/2 for act	
 	qa   = 7.2	(mV)		: act slope (4.5)		
 	Ra   = 0.4	(/ms)		: open (v)		
 	Rb   = 0.124 	(/ms)		: close (v)		
@@ -28,15 +27,11 @@ PARAMETER {
 	q10=2
 	Rg   = 0.01 	(/ms)		: inact recov (v) 	
 	Rd   = .03 	(/ms)		: inact (v)	
-	qq   = 10        (mV)
-	tq   = -55      (mV)
-
 	thinf  = -50 	(mV)		: inact inf slope	
 	qinf  = 4 	(mV)		: inact inf slope 
 
-    ar2=1		(1)		: 1=no inact., 0=max inact.
 	ena		(mV)            : must be explicitly def. in hoc
-	celsius
+	celsius		(degC)
 	v 		(mV)
 }
 
@@ -50,11 +45,10 @@ UNITS {
 
 ASSIGNED {
 	ina 		(mA/cm2)
-	i    		(mA/cm2)
-	gna		(mho/cm2)
+	thegna		(mho/cm2)
 	minf 		hinf 		
 	mtau (ms)	htau (ms) 	
-	tha1	
+	tha1
 }
  
 
@@ -62,44 +56,37 @@ STATE { m h}
 
 BREAKPOINT {
         SOLVE states METHOD cnexp
-        gna = gbar*m*m*m*h
-	ina = gna * (v - ena)
-	i = ina
+        thegna = gbar*m*m*m*h
+	ina = thegna * (v - ena)
 } 
 
 INITIAL {
-	trates(v,ar2)
+	trates(v)
 	m=minf  
 	h=hinf
 }
 
-
-LOCAL mexp, hexp
-
 DERIVATIVE states {   
-        trates(v,ar2)      
+        trates(v)      
         m' = (minf-m)/mtau
         h' = (hinf-h)/htau
 }
 
-PROCEDURE trates(vm,a2) {  
+PROCEDURE trates(vm) {  
         LOCAL  a, b, qt
-		qt = 1.6245
+        qt=q10^((celsius-24)/10)
 		tha1 = tha 
 	a = trap0(vm,tha1,Ra,qa)
 	b = trap0(-vm,-tha1,Rb,qa)
 	mtau = 1/(a+b)/qt
         if (mtau<mmin) {mtau=mmin}
-	if (v < -57.5 ) {
-	minf = 0
-	} else{
-	minf  = 1 / ( 1 + exp( ( - v - 38.43 ) / 7.2 ) )
-	}
+	minf = a/(a+b)
+
 	a = trap0(vm,thi1,Rd,qd)
 	b = trap0(-vm,-thi2,Rg,qg)
 	htau =  1/(a+b)/qt
         if (htau<hmin) {htau=hmin}
-	hinf  = 1 / ( 1 + exp( ( v + 50 ) / 4 ) )
+	hinf = 1/(1+exp((vm-thinf)/qinf))
 }
 
 FUNCTION trap0(v,th,a,q) {

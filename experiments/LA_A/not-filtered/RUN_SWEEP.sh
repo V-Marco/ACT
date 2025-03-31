@@ -5,7 +5,7 @@
 #SBATCH --qos=normal
 #SBATCH --job-name=act_LAA_Orig-notfilter
 #SBATCH --output=./bmtk_sim.out
-#SBATCH --time 0-24:00
+#SBATCH --time 5-00:00
 
 START=$(date)
 

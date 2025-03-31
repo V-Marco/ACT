@@ -103,7 +103,7 @@ PROCEDURE rates(v (mV)) { :callable from hoc
 	if (taun<nmin) {taun=nmin}
         a = alpl(v)
         :linf = 1/(1+ a)
-		linf = 1 / ( 1 + exp( ( - v - 56 ) / (-8.738) ) )
+	linf = 1 / ( 1 + exp( ( - v - 56 ) / (-8.738) ) )
 	taul = 0.26*(v+50)/qtl
 	if (taul<lmin/qtl) {taul=lmin/qtl}
 }

@@ -1,6 +1,6 @@
 
 def run():
-    num_seeds = 5
+    num_seeds = 1
     for seed in range(42,42+num_seeds): 
         # Set the path
         import sys
@@ -17,24 +17,24 @@ def run():
         
         random_seed = seed
         num_slices = 3
-        experiment_folder = f"output/LAA_original-{num_slices}/{random_seed}"
-        module_folder = experiment_folder + "/module_final"
-        target_folder = module_folder + "/target"
+        experiment_folder = f"output/LAA_segregated-{num_slices}/{random_seed}"
+        target_folder = experiment_folder + "/target"
+        module1_folder = experiment_folder + "/module_1"
+        module2_folder = experiment_folder + "/module_2"
+        module_final_folder = experiment_folder + "/module_final"
 
         target_cell = ACTCellModel(
-            path_to_hoc_file="/home/ubuntu/ACT/data/LAA/orig/template.hoc",
-            path_to_mod_files="/home/ubuntu/ACT/data/LAA/orig/modfiles",
-            cell_name="Cell_A",
+            path_to_hoc_file="/home/ubuntu/ACT/data/LAA/seg/template.hoc",
+            path_to_mod_files="/home/ubuntu/ACT/data/LAA/seg/modfiles",
+            cell_name="Cell_A_seg",
             passive=[],
             active_channels=["gbar_nap",
                             "gmbar_im", 
-                            "gbar_na3",
-                            "gkdrbar_kdr", 
                             "gcabar_cadyn", 
                             "gsAHPbar_sAHP", 
                             "gkabar_kap",
-                            "ghdbar_hd",
-                            "glbar_leak"]
+                            "gbar_na3",
+                            "gkdrbar_kdr"]
         )
 
         sim_par= SimulationParameters(
@@ -107,25 +107,21 @@ def run():
         dp.combine_data(target_folder)
         
         train_cell = ACTCellModel(
-            path_to_hoc_file="/home/ubuntu/ACT/data/LAA/orig/template.hoc",
-            path_to_mod_files="/home/ubuntu/ACT/data/LAA/orig/modfiles",
-            cell_name="Cell_A",
+            path_to_hoc_file="/home/ubuntu/ACT/data/LAA/seg/template.hoc",
+            path_to_mod_files="/home/ubuntu/ACT/data/LAA/seg/modfiles",
+            cell_name="Cell_A_seg",
             passive=[],
             active_channels=["gbar_nap",
                             "gmbar_im", 
-                            "gbar_na3",
-                            "gkdrbar_kdr", 
                             "gcabar_cadyn", 
                             "gsAHPbar_sAHP", 
                             "gkabar_kap",
-                            "ghdbar_hd",
-                            "glbar_leak"]
+                            "gbar_na3",
+                            "gkdrbar_kdr"]
             )
         
         random_state = np.random.RandomState(123)
 
-        glbar_leak = 5.5e-5
-        ghdbar_hd=2.3e-05
         gmbar_im = 0.002
         gbar_nap= 0.000142
         gbar_na3=0.03
@@ -134,9 +130,6 @@ def run():
         gsAHPbar_sAHP = 0.009
         gkabar_kap = 0.000843
         
-        
-        glbar_leak_range = (glbar_leak - random_state.uniform(0, glbar_leak / 2), glbar_leak + random_state.uniform(0, glbar_leak / 2))
-        ghdbar_hd_range = (ghdbar_hd - random_state.uniform(0, ghdbar_hd / 2), ghdbar_hd + random_state.uniform(0, ghdbar_hd / 2))
         gbar_nap_range = (gbar_nap - random_state.uniform(0, gbar_nap / 2), gbar_nap + random_state.uniform(0, gbar_nap / 2))
         gmbar_im_range = (gmbar_im - random_state.uniform(0, gmbar_im / 2), gmbar_im + random_state.uniform(0, gmbar_im / 2))
         gbar_na3_range = (gbar_na3 - random_state.uniform(0, gbar_na3 / 2), gbar_na3 + random_state.uniform(0, gbar_na3 / 2))
@@ -145,9 +138,10 @@ def run():
         gsAHPbar_sAHP_range = (gsAHPbar_sAHP - random_state.uniform(0, gsAHPbar_sAHP / 2), gsAHPbar_sAHP + random_state.uniform(0, gsAHPbar_sAHP / 2))
         gkabar_kap_range = (gkabar_kap - random_state.uniform(0, gkabar_kap / 2), gkabar_kap + random_state.uniform(0, gkabar_kap / 2))
 
-        mod = ACTModule(
+        # MODULE 1 (BURSTING)
+        mod1 = ACTModule(
             ACTModuleParameters(
-                module_folder_name=module_folder,
+                module_folder_name=module1_folder,
                 cell= train_cell,
                 target_traces_file = f"{target_folder}/combined_out.npy",
                 sim_params= sim_par,
@@ -155,37 +149,90 @@ def run():
                     conductance_options = [
                         ConductanceOptions(variable_name="gbar_nap", low=gbar_nap_range[0], high= gbar_nap_range[1], n_slices=num_slices),
                         ConductanceOptions(variable_name="gmbar_im", low=gmbar_im_range[0], high= gmbar_im_range[1],  n_slices=num_slices),
-                        ConductanceOptions(variable_name="gbar_na3", low=gbar_na3_range[0], high= gbar_na3_range[1], n_slices=num_slices),
-                        ConductanceOptions(variable_name="gbar_kdr", low=gkdrbar_kdr_range[0], high= gkdrbar_kdr_range[1], n_slices=num_slices),
                         ConductanceOptions(variable_name="gcabar_cadyn", low= gcabar_cadyn_range[0], high= gcabar_cadyn_range[1], n_slices=num_slices),
                         ConductanceOptions(variable_name="gsAHPbar_sAHP", low= gsAHPbar_sAHP_range[0], high= gsAHPbar_sAHP_range[1], n_slices=num_slices),
                         ConductanceOptions(variable_name="gkabar_kap", low= gkabar_kap_range[0], high= gkabar_kap_range[1], n_slices=num_slices),
-                        ConductanceOptions(variable_name="ghdbar_hd", low= ghdbar_hd_range[0], high= ghdbar_hd_range[1], n_slices=num_slices),
-                        ConductanceOptions(variable_name="glbar_leak", low= glbar_leak_range[0], high= glbar_leak_range[1], n_slices=num_slices)
+                        ConductanceOptions(variable_name="gbar_na3", low=gbar_na3_range[0], high= gbar_na3_range[1], n_slices=1),
+                        ConductanceOptions(variable_name="gbar_kdr", low=gkdrbar_kdr_range[0], high= gkdrbar_kdr_range[1], n_slices=1)
                     ],
                     train_features=["i_trace_stats", "number_of_spikes", "spike_times", "spike_height_stats", "trough_times", "trough_height_stats", "lto-hto_amplitude", "lto-hto_frequency"],
                     prediction_eval_method='features',
-                    save_file=f"{module_folder}/results/saved_metrics.json",
+                    save_file=f"{module1_folder}/results/saved_metrics.json",
                     spike_threshold=-50
                 )
             )
         )
         
-        predicted_g_data_file = mod.run()
+        mod1.run()
         
-        mod.pickle_rf(mod.rf_model,f"{module_folder}/trained_rf.pkl")
-        print(train_cell.active_channels)
+        bounds_variation = 0.15
+        
+        # MODULE 2 (SPIKING)
+        mod2 = ACTModule(
+            ACTModuleParameters(
+                module_folder_name=module2_folder,
+                cell= train_cell,
+                target_traces_file = f"{target_folder}/combined_out.npy",
+                sim_params= sim_par,
+                optim_params= OptimizationParameters(
+                    conductance_options = [
+                        ConductanceOptions(variable_name="gbar_nap", prediction=train_cell.prediction["gbar_nap"], bounds_variation=train_cell.prediction["gbar_nap"]*bounds_variation, num_slices=num_slices),
+                        ConductanceOptions(variable_name="gmbar_im", prediction=train_cell.prediction["gmbar_im"], bounds_variation=train_cell.prediction["gmbar_im"]*bounds_variation, num_slices=num_slices),
+                        ConductanceOptions(variable_name="gcabar_cadyn", prediction=train_cell.prediction["gcabar_cadyn"], bounds_variation=train_cell.prediction["gcabar_cadyn"]*bounds_variation, num_slices=num_slices),
+                        ConductanceOptions(variable_name="gsAHPbar_sAHP", prediction=train_cell.prediction["gsAHPbar_sAHP"], bounds_variation=train_cell.prediction["gsAHPbar_sAHP"]*bounds_variation, num_slices=num_slices),
+                        ConductanceOptions(variable_name="gkabar_kap", prediction=train_cell.prediction["gkabar_kap"], bounds_variation=train_cell.prediction["gkabar_kap"]*bounds_variation, num_slices=num_slices),
+                        ConductanceOptions(variable_name="gbar_na3", low=gbar_na3_range[0], high= gbar_na3_range[1], n_slices=num_slices),
+                        ConductanceOptions(variable_name="gbar_kdr", low=gkdrbar_kdr_range[0], high= gkdrbar_kdr_range[1], n_slices=num_slices)
+                    ],
+                    train_features=["i_trace_stats", "number_of_spikes", "spike_times", "spike_height_stats", "trough_times", "trough_height_stats", "lto-hto_amplitude", "lto-hto_frequency"],
+                    prediction_eval_method='features',
+                    save_file=f"{module2_folder}/results/saved_metrics.json",
+                    spike_threshold=-50
+                )
+            )
+        )
+        
+        mod2.run()
+        
+        # FINAL MODULE (Fine Tuning)
+        bounds_variation = 0.15
+        mod_fin = ACTModule(
+            ACTModuleParameters(
+                module_folder_name=module_final_folder,
+                cell= train_cell,
+                target_traces_file = f"{target_folder}/combined_out.npy",
+                sim_params= sim_par,
+                optim_params= OptimizationParameters(
+                    conductance_options = [
+                        ConductanceOptions(variable_name="gbar_nap", prediction=train_cell.prediction["gbar_nap"], bounds_variation=train_cell.prediction["gbar_nap"]*bounds_variation, num_slices=num_slices),
+                        ConductanceOptions(variable_name="gmbar_im", prediction=train_cell.prediction["gmbar_im"], bounds_variation=train_cell.prediction["gmbar_im"]*bounds_variation, num_slices=num_slices),
+                        ConductanceOptions(variable_name="gcabar_cadyn", prediction=train_cell.prediction["gcabar_cadyn"], bounds_variation=train_cell.prediction["gcabar_cadyn"]*bounds_variation, num_slices=num_slices),
+                        ConductanceOptions(variable_name="gsAHPbar_sAHP", prediction=train_cell.prediction["gsAHPbar_sAHP"], bounds_variation=train_cell.prediction["gsAHPbar_sAHP"]*bounds_variation, num_slices=num_slices),
+                        ConductanceOptions(variable_name="gkabar_kap", prediction=train_cell.prediction["gkabar_kap"], bounds_variation=train_cell.prediction["gkabar_kap"]*bounds_variation, num_slices=num_slices),
+                        ConductanceOptions(variable_name="gbar_na3", prediction=train_cell.prediction["gbar_na3"], bounds_variation=train_cell.prediction["gbar_na3"]*bounds_variation, num_slices=num_slices),
+                        ConductanceOptions(variable_name="gbar_kdr", prediction=train_cell.prediction["gbar_kdr"], bounds_variation=train_cell.prediction["gbar_kdr"]*bounds_variation, num_slices=num_slices)
+                    ],
+                    train_features=["i_trace_stats", "number_of_spikes", "spike_times", "spike_height_stats", "trough_times", "trough_height_stats", "lto-hto_amplitude", "lto-hto_frequency"],
+                    prediction_eval_method='features',
+                    save_file=f"{module_final_folder}/results/saved_metrics.json",
+                    spike_threshold=-50
+                )
+            )
+        )
+        
+        predicted_g_data_file = mod_fin.run()
+        
         
         from act import ACTPlot
         ACTPlot.plot_v_comparison(
-            module_folder,
+            module_final_folder,
             predicted_g_data_file, 
             sim_par.CI,
             sim_par.h_dt
             )
 
         ACTPlot.plot_fi_comparison(
-            module_folder, 
+            module_final_folder, 
             sim_par.CI
             )
         
@@ -194,12 +241,12 @@ def run():
         metrics = Metrics()
 
         mean, stdev = metrics.save_interspike_interval_comparison(
-            module_folder,
+            module_final_folder,
             predicted_g_data_file,
             sim_par.CI, 
             sim_par.h_dt,
             first_n_spikes=5,
-            save_file=f"{module_folder}/results/saved_metrics.json"
+            save_file=f"{module_final_folder}/results/saved_metrics.json"
         )
 
         '''
@@ -214,22 +261,22 @@ def run():
         glbar_leak = 5.5e-5
         '''
 
-        actual_g={"gbar_nap": 0.000142, "gmbar_im": 0.002, "gbar_na3":0.03,"gkdrbar_kdr":0.0015, "gcabar_cadyn": 6e-5, "gsAHPbar_sAHP": 0.009, "gkabar_kap": 0.000843, "ghdbar_hd": 2.3e-05, "glbar_leak": 5.5e-5}
+        actual_g={"gbar_nap": 0.000142, "gmbar_im": 0.002, "gcabar_cadyn": 6e-5, "gsAHPbar_sAHP": 0.009, "gkabar_kap": 0.000843, "gbar_na3":0.03, "gkdrbar_kdr":0.0015}
 
             
         metrics.save_prediction_g_mae(
             actual_g=actual_g,
-            save_file=f"{module_folder}/results/saved_metrics.json"
+            save_file=f"{module_final_folder}/results/saved_metrics.json"
         )
 
         metrics.save_feature_mae(
-            module_folder,
+            module_final_folder,
             predicted_g_data_file,
             ["i_trace_stats", "number_of_spikes", "spike_times", "spike_height_stats", "trough_times", "trough_height_stats", "lto-hto_amplitude", "lto-hto_frequency"],
             sim_par.h_dt,
             first_n_spikes=5,
             CI_settings=sim_par.CI,
-            save_file=f"{module_folder}/results/saved_metrics.json"
+            save_file=f"{module_final_folder}/results/saved_metrics.json"
         )
 
 
@@ -237,17 +284,15 @@ def run():
 
         g_names = ["gbar_nap",
                     "gmbar_im", 
-                    "gbar_na3",
-                    "gkdrbar_kdr", 
                     "gcabar_cadyn", 
                     "gsAHPbar_sAHP", 
                     "gkabar_kap",
-                    "ghdbar_hd",
-                    "glbar_leak"]
+                    "gbar_na3",
+                    "gkdrbar_kdr"]
 
         for i in range(len(g_names)-1):
             actplt.plot_training_feature_mae_contour_plot(
-                module_folder,
+                module_final_folder,
                 sim_par.CI,
                 sim_par.CI[0].delay,
                 sim_par.h_dt,
@@ -258,24 +303,22 @@ def run():
                 threshold=0,
                 first_n_spikes=20,
                 num_levels=100,
-                results_filename=f"{module_folder}/results/Feature_MAE_Contour_Plot_{g_names[0]}_{g_names[i+1]}.png"
+                results_filename=f"{module_final_folder}/results/Feature_MAE_Contour_Plot_{g_names[0]}_{g_names[i+1]}.png"
             )
             
         from act import ACTPlot as actplt
 
         g_names = ["gbar_nap",
                     "gmbar_im", 
-                    "gbar_na3",
-                    "gkdrbar_kdr", 
                     "gcabar_cadyn", 
                     "gsAHPbar_sAHP", 
                     "gkabar_kap",
-                    "ghdbar_hd",
-                    "glbar_leak"]
+                    "gbar_na3",
+                    "gkdrbar_kdr"]
 
         for i in range(len(g_names)-1):
             actplt.plot_training_fi_mae_contour_plot(
-                module_folder,
+                module_final_folder,
                 sim_par.CI, 
                 sim_par.CI[0].delay,
                 sim_par.h_dt,
@@ -283,26 +326,30 @@ def run():
                 index2=i+1,
                 g_names=g_names,
                 spike_threshold=0,
-                results_filename=f"{module_folder}/results/FI_MAE_Contour_Plot_{g_names[0]}_{g_names[i+1]}.png"
+                results_filename=f"{module_final_folder}/results/FI_MAE_Contour_Plot_{g_names[0]}_{g_names[i+1]}.png"
             )
             
         from act import ACTPlot as actplt
 
-        g_names = ["gbar_na3", "gkdrbar_kdr","gbar_nap","gmbar_im"]
+        g_names = ["gbar_nap",
+                    "gmbar_im", 
+                    "gcabar_cadyn", 
+                    "gsAHPbar_sAHP", 
+                    "gkabar_kap",
+                    "gbar_na3",
+                    "gkdrbar_kdr"]
 
         for i in range(len(g_names)-1):
             actplt.plot_training_v_mae_contour_plot(
-                module_folder,
+                module_final_folder,
                 sim_par.CI, 
                 sim_par.CI[0].delay,
                 sim_par.h_dt,
                 index1=0,
                 index2=i+1,
                 g_names=g_names,
-                results_filename=f"{module_folder}/results/Voltage_MAE_Contour_Plot_{g_names[0]}_{g_names[i+1]}.png"
+                results_filename=f"{module_final_folder}/results/Voltage_MAE_Contour_Plot_{g_names[0]}_{g_names[i+1]}.png"
             )
-        
-        dp.clear_directory(module_folder + "/train/")
     
     
 if __name__ == "__main__":
