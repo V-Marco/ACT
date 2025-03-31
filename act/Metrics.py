@@ -4,6 +4,30 @@ from datetime import datetime, timedelta
 from sklearn.model_selection import RepeatedKFold
 from sklearn.model_selection import cross_val_score
 from act.data_processing import ACTDataProcessor as DataProcessor
+from dataclasses import fields
+from act.act_types import GettablePasssiveProperties
+
+def pp_error(pp_target: GettablePasssiveProperties, pp_pred: GettablePasssiveProperties) -> list:
+    '''
+    Compute absolute error between target and predicted passive properties.
+
+    Parameters:
+    ----------
+    pp_target: GettablePasssiveProperties
+        Target passive properties.
+
+    pp_pred: GettablePasssiveProperties
+        Predicted passive properties.
+
+    Returns:
+    ----------
+    error: list[(property, abs_error)]
+        Absolute error for each property.
+    '''
+    error = []
+    for field in fields(pp_target):
+        error.append((field.name, np.abs(getattr(pp_target, field.name) - getattr(pp_pred, field.name))))
+    return error
 
 '''
 A class that holds a collection of methods for calculating metrics to evaluate the quality of

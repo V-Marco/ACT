@@ -44,7 +44,7 @@ class ACTSimulator:
         self.path = output_folder_name
         self.pool = []
         print("""
-        ACTSimulator (2024)
+        ACTSimulator (2025)
         ----------
         When submitting multiple jobs, note that the cells must share modfiles.
         """)
@@ -74,35 +74,40 @@ class ACTSimulator:
         cell._build_cell(parameters.sim_idx)
 
         # Set current injection
-        if isinstance(parameters.CI[0], ConstantCurrentInjection):
-            cell._add_constant_CI(
-                parameters.CI[0].amp, 
-                parameters.CI[0].dur, 
-                parameters.CI[0].delay, 
-                parameters.h_tstop, 
-                parameters.h_dt, 
-                parameters.CI[0].lto_hto)
-        elif isinstance(parameters.CI[0], RampCurrentInjection):
-            cell._add_ramp_CI(
-                parameters.CI[0].amp_start, 
-                parameters.CI[0].amp_incr, 
-                parameters.CI[0].num_steps, 
-                parameters.CI[0].step_time, 
-                parameters.CI[0].dur, 
-                parameters.CI[0].delay, 
-                parameters.h_tstop, 
-                parameters.h_dt, 
-                parameters.CI[0].lto_hto)
-        elif isinstance(parameters.CI[0], GaussianCurrentInjection):
-            cell._add_gaussian_CI(
-                parameters.CI[0].amp_mean, 
-                parameters.CI[0].amp_std, 
-                parameters.CI[0].dur, 
-                parameters.CI[0].delay, 
-                parameters.random_seed, 
-                parameters.CI[0].lto_hto)
-        else:
-            raise NotImplementedError
+        if len(parameters.CI) > 0:
+            if isinstance(parameters.CI[0], ConstantCurrentInjection):
+                cell._add_constant_CI(
+                    parameters.CI[0].amp, 
+                    parameters.CI[0].dur, 
+                    parameters.CI[0].delay, 
+                    parameters.h_tstop, 
+                    parameters.h_dt, 
+                    parameters.CI[0].lto_hto)
+            elif isinstance(parameters.CI[0], RampCurrentInjection):
+                cell._add_ramp_CI(
+                    parameters.CI[0].amp_start, 
+                    parameters.CI[0].amp_incr, 
+                    parameters.CI[0].num_steps, 
+                    parameters.CI[0].step_time, 
+                    parameters.CI[0].dur, 
+                    parameters.CI[0].delay, 
+                    parameters.h_tstop, 
+                    parameters.h_dt, 
+                    parameters.CI[0].lto_hto)
+            elif isinstance(parameters.CI[0], GaussianCurrentInjection):
+                cell._add_gaussian_CI(
+                    parameters.CI[0].amp_mean, 
+                    parameters.CI[0].amp_std, 
+                    parameters.CI[0].dur, 
+                    parameters.CI[0].delay, 
+                    parameters.random_seed, 
+                    parameters.CI[0].lto_hto)
+            else:
+                raise NotImplementedError
+
+        print(f"Soma area: {cell.soma[0](0.5).area()}")
+        print(f"Soma diam: {cell.soma[0].diam}")
+        print(f"Soma L: {cell.soma[0].L}")
 
         h.finitialize(h.v_init)
         h.run()
@@ -196,7 +201,7 @@ class ACTSimulator:
         
         
         if not parameters.set_g_to == None and not len(parameters.set_g_to) == 0:
-            cell._set_g_bar(parameters.set_g_to[parameters.sim_idx][0], parameters.set_g_to[parameters.sim_idx][1])   
+            cell._set_g_bar(parameters.set_g_to[0][0], parameters.set_g_to[0][1])   
 
 
         h.finitialize(h.v_init)

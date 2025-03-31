@@ -33,6 +33,14 @@ proc init() {
 	soma[0] {
         insert hh_spiker
         Ra = 123.0
+
+		// As if set by an external source
+		cm = 0.89
+		gl_hh_spiker = 0.00025
+		el_hh_spiker = -57.4
+		gnabar_hh_spiker = 0.132
+		gkbar_hh_spiker = 0.037
+
 	}
 }
 

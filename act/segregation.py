@@ -34,20 +34,10 @@ class ACTSegregator:
         """
         return message
 
-    def segregate(self, v: np.ndarray, activation_curves: list, p_cutoff: float = 0.16, extrapolate_dv: float = 2, on_the_right = True):
+    def segregate(self, v: np.ndarray, activation_curves: list, v_rest: float, dv_from_rest: float, extrapolate_dv: float = 2):
 
-        if on_the_right == True:
-            # Find the voltage cutoff value as min(v_cutoffs)
-            cutoff_vs = []
-            for curve in activation_curves:
-                cutoff_vs.append(np.max(v[curve <= p_cutoff]))
-            cutoff_v = np.min(cutoff_vs)
-        else:
-            # Find the voltage cutoff value as min(v_cutoffs)
-            cutoff_vs = []
-            for curve in activation_curves:
-                cutoff_vs.append(np.min(v[curve <= p_cutoff]))
-            cutoff_v = np.max(cutoff_vs)
+        # Find the voltage cutoff value
+        cutoff_v = v_rest + dv_from_rest
 
         # Segregate each a.c.
         segregated_activation_curves = []
@@ -58,7 +48,7 @@ class ACTSegregator:
             print("----------")
             print(f"Activation curve {curve_id}:")
 
-            if on_the_right == True:
+            if dv_from_rest > 0:
                 # Find value to extrapolate to (guideline: +2-3 mV)
                 right_v = cutoff_v + extrapolate_dv # (mV)
                 right_p = np.max(curve[v <= right_v])

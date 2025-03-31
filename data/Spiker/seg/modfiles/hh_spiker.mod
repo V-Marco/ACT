@@ -123,18 +123,18 @@ UNITSOFF
         ninf = alpha/sum
 
 	:Segregation
-        if (v < -75.017) {
-        minf = 0.008 * v + 0.58
+        if (v < -61) {
+        minf = 0.041 * v + 2.602
         }
-        if (v < -77.017) {
+        if (v < -63) {
         minf = 0
         }
 
 	:Segregation
-        if (v < -75.017) {
-        ninf = 0.089 * v + 6.892
+        if (v < -61) {
+        ninf = 0.189 * v + 11.915
         }
-        if (v < -77.017) {
+        if (v < -63) {
         ninf = 0
         }
 }

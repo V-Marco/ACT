@@ -653,11 +653,20 @@ class ACTDataProcessor:
         current_groups = [comb[1] for comb in all_combinations]
         
         return conductance_groups, current_groups
-
+    
     @staticmethod
-    def count_spikes(V_matrix, spike_threshold):
-        # V_matrix: (N x Time)
-        return np.sum(V_matrix > spike_threshold, axis = 1)
+    def count_spikes(v, spike_threshold = -20):
+        # Find the indices where the voltage is above the threshold
+        above_threshold_indices = np.where(v[:-1] > spike_threshold)[0]
+
+        # Find the indices where the slope changes from positive to negative
+        slope = np.diff(v)
+        positive_to_negative_indices = np.where((slope[:-1] > 0) & (slope[1:] < 0))[0]
+
+        # Find the intersection of the two sets of indices
+        event_indices = np.intersect1d(above_threshold_indices, positive_to_negative_indices)
+
+        return len(event_indices)
 
     '''
     get_fi_curve
@@ -673,7 +682,7 @@ class ACTDataProcessor:
         # V_matrix: (N x Time)
 
         # Count spikes
-        counts = ACTDataProcessor.count_spikes(V_matrix, spike_threshold)
+        counts = np.apply_along_axis(ACTDataProcessor.count_spikes, axis = 1, arr = V_matrix, spike_threshold = spike_threshold)
         
         # Find injection durations
         amps = np.array([current_inj.amp for current_inj in CI_list])

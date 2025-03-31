@@ -108,6 +108,7 @@ class ACTPassiveModule:
             R_in = R_in,
             tau1 = tau1,
             tau2 = tau2,
-            sag_ratio = sag
+            sag_ratio = sag,
+            V_rest = V_rest
         )
         return gpp

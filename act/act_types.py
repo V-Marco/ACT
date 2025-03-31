@@ -18,6 +18,7 @@ class GettablePassiveProperties:
     tau1: float = None
     tau2: float = None
     sag_ratio: float = None
+    V_rest: float = None
 
 @dataclass
 class ConstantCurrentInjection:
