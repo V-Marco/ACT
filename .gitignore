@@ -166,6 +166,8 @@ special.nrn
 /experiments/BursterS3/not-filtered/output/*
 /experiments/L5/not-filtered/output/*
 /experiments/LA_A/not-filtered/output/*
+/experiments/LA_A/segregation_procedure/original_*
+/experiments/LA_A/segregation_procedure/seg_*
 /experiments/LA_C/not-filtered/output/*
 /experiments/Spiker/not-filtered/output
 

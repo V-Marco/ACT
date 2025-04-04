@@ -10,6 +10,7 @@ def rgetattr(obj, attr, *args):
     return functools.reduce(_getattr, [obj] + attr.split('.'))
 
 def rsetattr(obj, attr, val):
+    print((attr, val))
     pre, _, post = attr.rpartition('.')
     return setattr(rgetattr(obj, pre) if pre else obj, post, val)
 
@@ -45,10 +46,12 @@ class ACTCellModel:
         self.cell_name = cell_name
         self.all = None
         self.prediction = None
+        
 
         # Channels
         self.passive = passive.copy()
         self.active_channels = active_channels.copy()
+        self.active_channels_g_bars = []
         self._overridden_channels = {}
         self.spp = None
 

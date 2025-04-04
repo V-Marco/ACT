@@ -10,7 +10,7 @@ from act.act_types import SimulationParameters, OptimizationParameters, Conducta
 from act.cell_model import ACTCellModel
 from act.simulator import ACTSimulator
 from act.optimizer import RandomForestOptimizer
-from act.metrics import Metrics
+from act.Metrics import Metrics
 
 from act.data_processing import ACTDataProcessor as DataProcessor
 from dataclasses import dataclass

@@ -1,6 +1,6 @@
 
 def run():
-    num_seeds = 5
+    num_seeds = 1
     for seed in range(42,42+num_seeds): 
         # Set the path
         import sys
@@ -15,9 +15,9 @@ def run():
         import numpy as np
         import matplotlib.pyplot as plt
         
-        random_seed = seed
+        random_seed = 46
         num_slices = 3
-        experiment_folder = f"output/LAA_original-{num_slices}/{random_seed}"
+        experiment_folder = f"output/LAA_original_-50mV-{num_slices}/{random_seed}"
         module_folder = experiment_folder + "/module_final"
         target_folder = module_folder + "/target"
 
