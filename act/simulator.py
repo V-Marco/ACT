@@ -253,7 +253,6 @@ class ACTSimulator:
         
         
         if not cell.set_g_to == None and not len(cell.set_g_to) == 0:
-            print(cell.set_g_to)
             cell._set_g_bar(cell.active_channels, cell.set_g_to[1])   
 
         h.finitialize(h.v_init)

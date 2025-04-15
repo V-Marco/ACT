@@ -235,7 +235,6 @@ class ACTModule:
                                                prediction=train_cell.prediction)
             
             # Set conductances
-            print(f"conductance combo {group_id}: {list(self.conductance_combos[group_id])}")
             specific_train_cell.set_g_bar(specific_train_cell.active_channels, list(self.conductance_combos[group_id]))
 
             # Set current injection
@@ -457,7 +456,6 @@ class ACTModule:
                                                active_channels=eval_cell.active_channels,
                                                prediction=eval_cell.prediction)
                 
-                print(f"prediction {i}: {predictions[i]}")
                 specific_eval_cell.set_g_bar(specific_eval_cell.active_channels, predictions[i])
                 
                 if isinstance(self.sim_params.CI[j], ConstantCurrentInjection):
