@@ -208,20 +208,20 @@ def run():
         final_mod.pickle_rf(final_mod.rf_model,f"{module_final_folder}/trained_rf.pkl")
         print(train_cell.predicted_g)
 
-        from act import ACTPlot
-        ACTPlot.plot_v_comparison(
+        from act import act_plot
+        act_plot.plot_v_comparison(
             final_predicted_g_data_file, 
             module_final_folder, 
             sim_par["CI_amps"],
             sim_par["h_dt"]
             )
 
-        ACTPlot.plot_fi_comparison(
+        act_plot.plot_fi_comparison(
             module_final_folder, 
             sim_par["CI_amps"]
             )
 
-        from act.Metrics import Metrics
+        from act.metrics import Metrics
 
         metrics = Metrics()
 
@@ -246,7 +246,7 @@ def run():
         )
 
 
-        from act import ACTPlot as actplt
+        from act import act_plot as actplt
 
         g_names = ["gbar_na3", "gkdrbar_kdr","gbar_nap","gmbar_im"]
 
@@ -266,7 +266,7 @@ def run():
                 results_filename=f"{module_final_folder}/results/Feature_MAE_Contour_Plot_{g_names[0]}_{g_names[i+1]}.png"
             )
             
-        from act import ACTPlot as actplt
+        from act import act_plot as actplt
 
         g_names = ["gbar_na3", "gkdrbar_kdr","gbar_nap","gmbar_im"]
 
@@ -283,7 +283,7 @@ def run():
                 results_filename=f"{module_final_folder}/results/FI_MAE_Contour_Plot_{g_names[0]}_{g_names[i+1]}.png"
             )
             
-        from act import ACTPlot as actplt
+        from act import act_plot as actplt
 
         g_names = ["gbar_na3", "gkdrbar_kdr","gbar_nap","gmbar_im"]
 

@@ -10,7 +10,7 @@ def rgetattr(obj, attr, *args):
     return functools.reduce(_getattr, [obj] + attr.split('.'))
 
 def rsetattr(obj, attr, val):
-    print((attr, val))
+    print(f"attr: {attr}, val: {val}")
     pre, _, post = attr.rpartition('.')
     return setattr(rgetattr(obj, pre) if pre else obj, post, val)
 
@@ -33,11 +33,27 @@ class ACTCellModel:
         '''
         Parameters:
         ----------
+        cell_name: str
+            Cell name
+        
+        path_to_hoc_file: str
+            Path to hoc template
+        
+        path_to_mod_files: str
+            Path to mod files directory
+            
         passive: list
             Names of the (1) leak channel g_bar, (2) leak channel reversal potential and (3) h channel g_bar (in THIS order) as stated in the hoc file.
 
         active_channels: list
             Names of the active channel variables (in ANY order) as stated in the hoc file.
+        
+        prediction: dict
+            A dictionary of the channel conductance name (used in mod files) and respective predicted values
+        
+        Returns:
+        ----------
+        None
         '''
 
         # Build cell info
@@ -45,13 +61,13 @@ class ACTCellModel:
         self.path_to_mod_files = path_to_mod_files
         self.cell_name = cell_name
         self.all = None
-        self.prediction = None
+        self.prediction = prediction
         
 
         # Channels
         self.passive = passive.copy()
         self.active_channels = active_channels.copy()
-        self.active_channels_g_bars = []
+        self.set_g_to = ()
         self._overridden_channels = {}
         self.spp = None
 
@@ -74,19 +90,76 @@ class ACTCellModel:
     # Channels
     # ----------
 
-    def set_g_bar(self, g_names: list, g_values: list, sim_params: SimulationParameters) -> None:
-        sim_params.set_g_to.append((g_names, g_values))
+    def set_g_bar(self, g_names: list, g_values: list) -> None:
+        """
+        Stores conductance values to a list in this cell's instance
+        Parameters:
+        -----------
+        self
+        
+        g_names: list
+            Conductance variable name (found in mod files)
+        
+        g_values: list
+            Conductance values
+        
+        Returns:
+        ----------
+        None
+        """
+        #print(f"gnames: {g_names}, gvalues: {g_values}")
+        self.set_g_to = (g_names, g_values)
     
     def _set_g_bar(self, g_names: list, g_values: list) -> None:
+        """
+        A function that actually sets the g_bar values to the NEURON cell during sim runtime.
+        Parameters:
+        -----------
+        self
+        
+        g_names: list
+            Conductance variable name (found in mod files)
+        
+        g_values: list
+            Conductance values
+        
+        Returns:
+        ----------
+        None
+        """
         for sec in self.all:
             for index, key in enumerate(g_names):
                 if g_values[index]:
                     rsetattr(sec(0.5), key, g_values[index])
     
-    def set_passive_properties(self, spp: SettablePassiveProperties):
+    def set_passive_properties(self, spp: SettablePassiveProperties) -> None:
+        """
+        Setter method for passive properties on this cell
+        Parameters:
+        -----------
+        self
+        
+        spp: SettablePassiveProperties
+        
+        Returns:
+        ----------
+        None
+        """
         self.spp = spp
 
     def block_channels(self, channels: list) -> None:
+        """
+        Setter method for passive properties on this cell
+        Parameters:
+        -----------
+        self
+        
+        spp: SettablePassiveProperties
+        
+        Returns:
+        ----------
+        None
+        """
         for channel in channels:
             self._overridden_channels[channel] = 0.0
 
@@ -95,13 +168,36 @@ class ACTCellModel:
     # ----------
 
     def _get_soma_area(self) -> float:
+        """
+        Getter method for the surface area of the soma
+        Parameters:
+        -----------
+        self
+        
+        Returns:
+        ----------
+        soma_area: float
+        """
         soma_area = 0
         for segment in self.soma[0]:
             segment_area = h.area(segment.x, sec = self.soma[0])
             soma_area += segment_area
         return soma_area * 1e-8 # (cm2)
 
-    def _build_cell(self, sim_index) -> None:
+    def _build_cell(self, sim_index: int) -> None:
+        """
+        Builds the NEURON cell 
+        Parameters:
+        -----------
+        self
+        
+        sim_index: int
+            Simulation index
+        
+        Returns:
+        ----------
+        None
+        """
         self.sim_index = sim_index
         if self._custom_cell_builder is not None:
             hoc_cell = self._custom_cell_builder()
@@ -128,10 +224,44 @@ class ACTCellModel:
         self.V = h.Vector().record(self.soma[0](0.5)._ref_v)
 
     def set_custom_cell_builder(self, cell_builder: callable) -> None:
+        """
+        Sets a custom cell builder 
+        Parameters:
+        -----------
+        self
+        
+        cell_builder: callable
+        
+        Returns:
+        ----------
+        None
+        """
         self._custom_cell_builder = cell_builder
 
     def get_output(self) -> tuple:
+        """
+        Gets the output of the simulator
+        Parameters:
+        -----------
+        self
         
+        Returns:
+        ----------
+        V: np.ndarray
+            Voltage trace
+        
+        I: np.ndarray
+            Current injection trace
+        
+        g_values: np.ndarray
+            Conductance values (Nan padded)
+        
+        sim_index: int
+            Simulation indext
+        
+        lto_hto: int
+            0 for not low/high threshold oscillation, 1 for either low or high threshold oscillations
+        """
         g_values = []
         for channel in self.active_channels:
             g_values.append(rgetattr(self.soma[0](0.5), channel))
@@ -142,7 +272,35 @@ class ACTCellModel:
     # Current injection
     # ----------
 
-    def _add_constant_CI(self, amp: float, dur: int, delay: int, sim_time: int, dt: float, lto_hto) -> None:
+    def _add_constant_CI(self, amp: float, dur: int, delay: int, sim_time: int, dt: float, lto_hto: int) -> None:
+        """
+        Sets the cell's constant current injection
+        Parameters:
+        -----------
+        self
+        
+        amp: float
+            Amps (nA)
+        
+        dur: int
+            Duration of current injection (ms)
+        
+        delay: int
+            Delay (ms)
+        
+        sim_time: int
+            Total simulation time (ms)
+        
+        dt: float
+            Timestep (ms)
+        
+        lto_hto: int
+            0 for not low/high threshold oscillation, 1 for either low or high threshold oscillations
+        
+        Returns:
+        ----------
+        None
+        """
         self.lto_hto = lto_hto
         inj = h.IClamp(self.soma[0](0.5))
         inj.amp = amp; inj.dur = dur; inj.delay = delay
@@ -153,13 +311,47 @@ class ACTCellModel:
         remainder_steps = int((sim_time - delay - dur) / dt)
 
         self.I = np.array([0.0] * delay_steps + [amp] * dur_steps + [0.0] * remainder_steps)
-    
-    '''
-    _add_ram_CI
-    Creates a ramp current injection
-    '''
+        
     
     def _add_ramp_CI(self, start_amp: float, amp_incr: float, num_steps: int, step_time: float, dur: int, delay: int, sim_time: int, dt: float, lto_hto) -> None:
+        """
+        Sets the cell's ramp current injection
+        Parameters:
+        -----------
+        self
+        
+        start_amp: float
+            Starting Amps (nA)
+            
+        amp_incr: float
+            How much the current injection increases each step
+        
+        num_steps: int
+            Number of step increases in current injection trace
+        
+        step_time: float
+            Amount of time for each current injection step (ms)
+        
+        dur: int
+            Duration of current injection (ms)
+        
+        delay: int
+            Delay (ms)
+        
+        sim_time: int
+            Total simulation time (ms)
+        
+        dt: float
+            Timestep (ms)
+        
+        lto_hto: int
+            0 for not low/high threshold oscillation, 1 for either low or high threshold oscillations
+        
+        Returns:
+        ----------
+        None
+        """
+        
         self.lto_hto = lto_hto
         total_delay = delay
         amp = start_amp
@@ -182,12 +374,42 @@ class ACTCellModel:
         
         self.I = np.array(I)
 
-    '''
-    _add_gaussian_CI
-    Creates a random current injection input
-    '''
 
-    def _add_gaussian_CI(self, amp_mean: float, amp_std: float, dur: int, delay: int, random_state: np.random.RandomState, lto_hto) -> None:
+    def _add_gaussian_CI(self, amp_mean: float, amp_std: float, dur: int, delay: int, sim_time: int, dt: float, random_state: np.random.RandomState, lto_hto) -> None:
+        """
+        Sets the cell's ramp current injection
+        Parameters:
+        -----------
+        self
+        
+        amp_mean: float
+            Mean Amps (nA)
+            
+        amp_std: float
+            Mean Amps (nA)
+        
+        dur: int
+            Duration of current injection (ms)
+        
+        delay: int
+            Delay (ms)
+        
+        sim_time: int
+            Total simulation time (ms)
+            
+        dt: float
+            Timestep (ms)
+            
+        random_state: np.random.RandomState
+            Random seed
+        
+        lto_hto: int
+            0 for not low/high threshold oscillation, 1 for either low or high threshold oscillations
+        
+        Returns:
+        ----------
+        None
+        """
         self.lto_hto = lto_hto
         total_delay = delay
         I = [0] * total_delay
@@ -197,13 +419,8 @@ class ACTCellModel:
             self.add_constant_CI(amp, 1, total_delay)
             I = I + [amp]
             total_delay += 1
+            
+        remainder_no_injection = sim_time - dur - delay
+        I += [0.0] * (remainder_no_injection / dt)
         
         self.I = np.array(I)
-    
-    '''
-    set_g
-    Records a list of maximal conductance densities for ion channels (to be referenced later)
-    '''
-
-    # def set_g(self, g_names: list, g_values: list, sim_params: SimulationParameters) -> None:
-    #     sim_params.set_g_to.append((g_names, g_values))

@@ -10,13 +10,20 @@ from contextlib import contextmanager
 
 # This file defines ACTSimulator (The primary class for interfacing with NEURON) with helper functions
 
-'''
-suppress_neuron_warnings
-Turns of nrnivmodl compile warnings
-'''
+
 
 @contextmanager
 def suppress_neuron_warnings():
+    '''
+    Turns of nrnivmodl compile warnings.
+    Parameters:
+    -----------
+    None
+    
+    Returns:
+    -----------
+    None
+    '''
     with open(os.devnull, 'w') as dev_null:
         temp_stdout = sys.stdout
         temp_stderr = sys.stderr
@@ -28,13 +35,19 @@ def suppress_neuron_warnings():
             sys.stdout = temp_stdout
             sys.stderr = temp_stderr
             
-'''
-unwrap_self_run_job
-A function for implementing multiprocessing for NEURON
-https://stackoverflow.com/questions/31729008/python-multiprocessing-seems-near-impossible-to-do-within-classes-using-any-clas
-'''
 
-def unwrap_self_run_job(args):
+def unwrap_self_run_job(args) -> None:
+    '''
+    A function for implementing multiprocessing for NEURON
+    https://stackoverflow.com/questions/31729008/python-multiprocessing-seems-near-impossible-to-do-within-classes-using-any-class
+    Parameters:
+    -----------
+    args: list[list]
+    
+    Returns:
+    -----------
+    None
+    '''
     return ACTSimulator._run_job(args[0], args[1][0], args[1][1])
 
 
@@ -49,12 +62,22 @@ class ACTSimulator:
         When submitting multiple jobs, note that the cells must share modfiles.
         """)
         
-    '''
-    run
-    Used for single job NEURON simulations
-    '''
 
     def run(self, cell: ACTCellModel, parameters: SimulationParameters) -> None:
+        '''
+        Used for single job NEURON simulations
+        Parameters:
+        -----------
+        self
+        
+        cell: ACTCellModel
+        
+        parameters: SimulationParameters
+        
+        Returns:
+        -----------
+        None
+        '''
         os.system(f"nrnivmodl {cell.path_to_mod_files} > /dev/null 2>&1")
 
         h.load_file('stdrun.hoc')
@@ -114,21 +137,40 @@ class ACTSimulator:
 
         return cell
     
-    '''
-    submit_job
-    Used for setting variable simulation parameters in multi-job uses of NEURON simulations
-    '''
 
     def submit_job(self, cell: ACTCellModel, parameters: SimulationParameters) -> None:
+        '''
+        Used for setting variable simulation parameters in multi-job uses of NEURON simulations
+        Parameters:
+        -----------
+        self
+        
+        cell: ACTCellModel
+        
+        parameters: SimulationParameters
+        
+        Returns:
+        -----------
+        None
+        '''
         parameters._path = os.path.join(self.path, parameters.sim_name)
         self.pool.append((cell, parameters))
         
-    '''
-    run_jobs
-    Multiprocessing implementation of multi-job NEURON simulations. Sets up multiprocessing
-    '''
 
     def run_jobs(self, n_cpu: int = None) -> None:
+        '''
+        Multiprocessing implementation of multi-job NEURON simulations. Sets up multiprocessing
+        Parameters:
+        -----------
+        self
+        
+        n_cpu: int, default = None
+            Number of cores to be used for multiprocessing
+                 
+        Returns:
+        -----------
+        None
+        '''
         os.makedirs(self.path, exist_ok = True)
         
         if n_cpu is None:
@@ -144,12 +186,22 @@ class ACTSimulator:
         self.pool = []
         shutil.rmtree("x86_64")
     
-    '''
-    _run_job
-    Instructions for a single NEURON simulation that is thread safe and used in run_jobs().
-    '''
 
     def _run_job(self, cell: ACTCellModel, parameters: SimulationParameters) -> None:
+        '''
+        Instructions for a single NEURON simulation that is thread safe and used in run_jobs().
+        Parameters:
+        -----------
+        self
+        
+        cell: ACTCellModel
+        
+        parameters: SimulationParameters
+                 
+        Returns:
+        -----------
+        None
+        '''
         os.makedirs(parameters._path, exist_ok = True)
 
         h.load_file('stdrun.hoc')
@@ -200,9 +252,9 @@ class ACTSimulator:
             raise NotImplementedError
         
         
-        if not parameters.set_g_to == None and not len(parameters.set_g_to) == 0:
-            cell._set_g_bar(parameters.set_g_to[0][0], parameters.set_g_to[0][1])   
-
+        if not cell.set_g_to == None and not len(cell.set_g_to) == 0:
+            print(cell.set_g_to)
+            cell._set_g_bar(cell.active_channels, cell.set_g_to[1])   
 
         h.finitialize(h.v_init)
         h.run()

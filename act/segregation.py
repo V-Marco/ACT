@@ -10,7 +10,30 @@ class ACTSegregator:
     def __init__(self):
         pass
 
-    def _get_segregation_message_right(self, right_v: float, cutoff_v: float, slope: float, intercept: float):
+    def _get_segregation_message_right(self, right_v: float, cutoff_v: float, slope: float, intercept: float) -> str:
+        '''
+        Generates instructions for modifying the .mod files with positive slope sigmoid activation functions.
+        Parameters:
+        -----------
+        self
+        
+        right_v: float
+            Right-most voltage involved in the linear segment cutoff for the activation function
+            
+        cutoff_v: float
+            Voltage at which the activation function is forced to 0 mV.
+        
+        slope: float
+            Slope of the linear segment connecting the voltage cutoff and the rest of the activation function
+        
+        intercept: float
+            Intercept of the linear segment
+                 
+        Returns:
+        -----------
+        message: str
+            Instructions for .mod file changes
+        '''
         message = f"""
         :Segregation
         if (v < {np.round(right_v, 3)}) {{
@@ -23,6 +46,29 @@ class ACTSegregator:
         return message
 
     def _get_segregation_message_left(self, left_v: float, cutoff_v: float, slope: float, intercept: float):
+        '''
+        Generates instructions for modifying the .mod files with negative slope sigmoid activation functions.
+        Parameters:
+        -----------
+        self
+        
+        left_v: float
+            Left-most voltage involved in the linear segment cutoff for the activation function
+            
+        cutoff_v: float
+            Voltage at which the activation function is forced to 0 mV.
+        
+        slope: float
+            Slope of the linear segment connecting the voltage cutoff and the rest of the activation function
+        
+        intercept: float
+            Intercept of the linear segment
+                 
+        Returns:
+        -----------
+        message: str
+            Instructions for .mod file changes
+        '''
         message = f"""
         :Segregation
         if (v > {np.round(left_v, 3)}) {{
@@ -34,8 +80,33 @@ class ACTSegregator:
         """
         return message
 
-    def segregate(self, v: np.ndarray, activation_curves: list, v_rest: float, dv_from_rest: float, extrapolate_dv: float = 2):
-
+    def segregate(self, v: np.ndarray, activation_curves: list, v_rest: float, dv_from_rest: float, extrapolate_dv: float = 2) -> list:
+        '''
+        Returns segregated activation functions in order of the input activation functions. Prints instructions on modifying .modfiles.
+        Parameters:
+        -----------
+        self
+        
+        v: np.ndarray
+            Voltage array (x values mV)
+        
+        activation_curves: list
+            List of arrays where each array is the probability of activation for each activation curve.
+            
+        v_rest: float
+            Resting membrane potential
+        
+        dv_from_rest: float
+            Set deviation from V_rest for passive module offset
+        
+        extrapolate_dv: float
+            Linear segment offset from cutoff to left or rightmost connector to the rest of the curve.
+                 
+        Returns:
+        -----------
+        segregated_activation_curves: list
+            Segregated activation curves.
+        '''
         # Find the voltage cutoff value
         cutoff_v = v_rest + dv_from_rest
 
@@ -86,7 +157,8 @@ class ACTSegregator:
         
         return segregated_activation_curves
     
-    # Methods for Cutoff Value Shifting
+    # Methods for Cutoff Value Shifting 
+    # DEPRECATED
     def _get_segregation_message_right_values(self, right_v: float, cutoff_v: float, slope: float, intercept: float):
         linear_right_start_v = np.round(right_v, 3)
         linear_right_slope = np.round(slope, 3)
@@ -94,6 +166,7 @@ class ACTSegregator:
         v_cutoff = np.round(cutoff_v, 3)
         return v_cutoff, linear_right_start_v, linear_right_slope, linear_right_intercept
 
+    # DEPRECATED
     def _get_segregation_message_left_values(self, left_v: float, cutoff_v: float, slope: float, intercept: float):
         linear_left_start_v = np.round(left_v, 3)
         linear_left_slope = np.round(slope, 3)
@@ -102,6 +175,7 @@ class ACTSegregator:
         
         return v_cutoff, linear_left_start_v, linear_left_slope, linear_left_intercept
     
+    # DEPRECATED
     def segregate_with_cutoff_shift(self, v: np.ndarray, activation_curves: list, p_cutoff: float = 0.16, extrapolate_dv: float = 2, on_the_right = True, v_cutoff_shift: float = 0):
 
         if on_the_right == True:

@@ -2,18 +2,16 @@ import os
 import time
 from datetime import timedelta
 import numpy as np
-from typing import List
-import pickle
 import json
+from dataclasses import dataclass
 
 from act.act_types import SimulationParameters, OptimizationParameters, ConductanceOptions, ConstantCurrentInjection, RampCurrentInjection, GaussianCurrentInjection
 from act.cell_model import ACTCellModel
 from act.simulator import ACTSimulator
 from act.optimizer import RandomForestOptimizer
-from act.Metrics import Metrics
+from act.metrics import *
+from act.data_processing import *
 
-from act.data_processing import ACTDataProcessor as DataProcessor
-from dataclasses import dataclass
 
 @dataclass
 class ACTModuleParameters:
@@ -42,16 +40,22 @@ class ACTModule:
         self.blocked_channels = []
         self.rf_model = self.optim_params.rf_model
     
-    '''
-    run
-    The Main method to run the automatic cell tuning process given user settings
-    '''
 
-    def run(self):
+    def run(self) -> str:
+        '''
+        The Main method to run the automatic cell tuning process given user settings
+        Parameters:
+        -----------
+        self
+        
+        Returns:
+        -----------
+        predicted_g_data_file: str
+            Filepath to predicted conductances
+        '''
         start_time = time.time()
         print("RUNNING THE MODULE")
         print("LOADING TARGET TRACES")
-        # self.convert_csv_to_npy()
 
         if self.rf_model == None:
             print("SIMULATING TRAINING DATA")
@@ -65,11 +69,10 @@ class ACTModule:
         self.simulate_eval_cells(self.train_cell, prediction)
 
         print("SELECTING BEST PREDICTION")
-        dp = DataProcessor()
         prediction_eval_method = self.optim_params.prediction_eval_method
         save_file = self.optim_params.save_file
         if not save_file == None:
-            dp.save_to_json(prediction_eval_method, "prediction_evaluation_method", save_file)
+            save_to_json(prediction_eval_method, "prediction_evaluation_method", save_file)
             
         if prediction_eval_method == 'fi_curve':
             predicted_g_data_file, best_prediction = self.evaluate_fi_curves(prediction)
@@ -94,7 +97,7 @@ class ACTModule:
         
         save_file = self.optim_params.save_file
         if not save_file == None:
-            dp.save_to_json(final_prediction, "final_g_prediction", save_file)
+            save_to_json(final_prediction, "final_g_prediction", save_file)
             
         end_time = time.time()
         run_time = end_time - start_time
@@ -118,42 +121,35 @@ class ACTModule:
                 total_runtime += module_time
         
         if not save_file == None:
-            dp.save_to_json(total_runtime, "module_runtime", save_file)
-            dp.save_to_json(predicted_g_data_file, "predicted_g_data_file", save_file)
+            save_to_json(total_runtime, "module_runtime", save_file)
+            save_to_json(predicted_g_data_file, "predicted_g_data_file", save_file)
         
         return predicted_g_data_file
     
-    '''
-    convert_csv_to_npy
-    Helper function for users with voltage trace data in CSV format
-    '''
 
-    def convert_csv_to_npy(self):
-        num_traces = len(self.sim_params.CI)
+    def set_I_g_combinations(self, verbose: bool = False) -> None:
+        '''
+        Takes conductance ranges set by the user along with the number of slices between this range.
+        Also takes current injection intensities also set by the user.
+        Generates cartesian product of these settings to get combination lists for conductances
+        and current injection intensities in a format that can be processed by NEURON
+        Parameters:
+        -----------
+        self
         
-        data = np.loadtxt(self.target_traces_file, delimiter=',', skiprows=1)
+        verbose: bool, default = False
+            If true, adds extra prints
         
-        csv_num_rows = data.shape[0]
-        num_samples = csv_num_rows // num_traces
-        
-        V_I_data = data.reshape(num_traces, num_samples, 3)
-        os.makedirs(self.output_folder_name + 'target/', exist_ok=True)
-        np.save(self.output_folder_name + 'target/combined_out.npy', V_I_data)
+        Returns:
+        -----------
+        None (sets class fields)
 
-    '''
-    get_I_g_combinations
-    Takes conductance ranges set by the user along with the number of slices between this range.
-    Also takes current injection intensities also set by the user.
-    Generates cartesian product of these settings to get combination lists for conductances
-    and current injection intensities in a format that can be processed by NEURON
-    '''
-
-    def get_I_g_combinations(self, verbose = False) -> None:
+        '''
         
         if verbose:
             print("Getting conductance combinations from preselected ranges")
 
-        final_g_ranges_slices: List[ConductanceOptions] = []
+        final_g_ranges_slices = []
 
         for conductance_option in self.optim_params.conductance_options:
             # If blocked, set the range to (0, 0)
@@ -202,30 +198,45 @@ class ACTModule:
             channel_ranges.append((conductance_option.low, conductance_option.high))
             slices.append(conductance_option.n_slices)
 
-        conductance_groups, current_settings = DataProcessor.generate_I_g_combinations(channel_ranges, slices, self.sim_params.CI)
+        conductance_groups, current_settings = generate_I_g_combinations(channel_ranges, slices, self.sim_params.CI)
 
         self.conductance_combos = conductance_groups
         self.current_inj_combos = current_settings
     
-    '''
-    simulate_train_cells
-    Takes user settings, gets conductance and current injection intensity combinations, and
-    simulates these cell settings using ACTSimulator to generate training data for the Model.
-    '''
 
-    def simulate_train_cells(self, train_cell):
-
+    def simulate_train_cells(self, train_cell: ACTCellModel) -> None:
+        '''
+        Takes user settings, gets conductance and current injection intensity combinations, and
+        simulates these cell settings using ACTSimulator to generate training data for the Model.
+        Parameters:
+        -----------
+        self
+        
+        train_cell: ACTCellModel
+            Train Cell
+            
+        Returns:
+        -----------
+        None
+        '''
         simulator = ACTSimulator(self.output_folder_name)
 
-        # Get parameter grids: [(low1, high1), (low2, high2) ...], [I1, I2, ...] of the same length
-        self.get_I_g_combinations()
-    
-        self.sim_params.set_g_to = []
+        # Set self.conductance_combos and self.current_inj_combos
+        self.set_I_g_combinations()
 
         for group_id in range(len(self.conductance_combos)):
             
+            # Creating an instance of the train cell to distinguish g_bar settings
+            specific_train_cell = ACTCellModel(cell_name=train_cell.cell_name,
+                                               path_to_hoc_file=train_cell.path_to_hoc_file,
+                                               path_to_mod_files=train_cell.path_to_mod_files,
+                                               passive=train_cell.passive,
+                                               active_channels=train_cell.active_channels,
+                                               prediction=train_cell.prediction)
+            
             # Set conductances
-            train_cell.set_g_bar(train_cell.active_channels, self.conductance_combos[group_id], sim_params = self.sim_params)
+            print(f"conductance combo {group_id}: {list(self.conductance_combos[group_id])}")
+            specific_train_cell.set_g_bar(specific_train_cell.active_channels, list(self.conductance_combos[group_id]))
 
             # Set current injection
             if isinstance(self.current_inj_combos[group_id], ConstantCurrentInjection):
@@ -262,7 +273,7 @@ class ACTModule:
 
             # Submit the job
             simulator.submit_job(
-                train_cell, 
+                specific_train_cell, 
                 SimulationParameters(
                     sim_name = "train",
                     sim_idx = group_id,
@@ -270,23 +281,27 @@ class ACTModule:
                     h_tstop = self.sim_params.h_tstop,      # (ms)
                     h_dt = self.sim_params.h_dt,            # (ms)
                     h_celsius = self.sim_params.h_celsius,  # (deg C)
-                    CI = CI,
-                    set_g_to=self.sim_params.set_g_to
+                    CI = CI
                 )
             )
 
         simulator.run_jobs()
-        DataProcessor.combine_data(self.output_folder_name + "train")
+        combine_data(self.output_folder_name + "train")
         
-    '''
-    filter_data
-    An optional process to filter training data by features such as saturated voltage trace
-    or no spiking.
-    '''
         
-    def filter_data(self):
-        dp = DataProcessor()
+    def filter_data(self) -> None:
+        '''
+        An optional process to filter training data by features such as saturated voltage trace
+        or no spiking.
+        Parameters:
+        -----------
+        self
         
+        Returns:
+        -----------
+        None
+        
+        '''
         if self.optim_params.filter_parameters is None:
             return
         else:
@@ -305,26 +320,31 @@ class ACTModule:
                     window_of_inspection = (inspection_start, inspection_end)
                 saturation_threshold = self.optim_params.filter_parameters.saturation_threshold
                 dt = self.sim_params.h_dt
-                data = dp.get_nonsaturated_traces(data,window_of_inspection, threshold=saturation_threshold,dt=dt)
+                data = get_nonsaturated_traces(data,window_of_inspection, threshold=saturation_threshold,dt=dt)
             
             if "no_spikes" in filtered_out_features:
                 spike_threshold = self.optim_params.spike_threshold
-                data = dp.get_traces_with_spikes(data,spike_threshold=spike_threshold,dt=dt)
+                data = get_traces_with_spikes(data,spike_threshold=spike_threshold,dt=dt)
             
             output_path = self.output_folder_name + "train"    
             print(f"Dataset size after filtering: {len(data)}. Saving to {os.path.join(output_path, 'filtered_out.npy')}")
             np.save(os.path.join(output_path, f"filtered_out.npy"), data)
     
-    '''
-    get_rf_prediction
-    Trains a Random Forest Regressor model on the features of the generated simulation data.
-    Then gets a prediction for conductance sets that yeild features found in the target data.
-    Then calculates an evaluation of the RF model and saves the metric.
-    '''
 
-    def get_rf_prediction(self):
-        dp = DataProcessor()
-
+    def get_rf_prediction(self) -> np.ndarray:
+        '''
+        Trains a Random Forest Regressor model on the features of the generated simulation data.
+        Then gets a prediction for conductance sets that yeild features found in the target data.
+        Then calculates an evaluation of the RF model and saves the metric.
+        Parameters:
+        -----------
+        self
+        
+        Returns:
+        -----------
+        predictions: np.ndarray
+            Conductance Predictions
+        '''
         dataset_target = np.load(self.target_traces_file)
         V_target = dataset_target[:,:,0]
         I_target = dataset_target[:,:,1]
@@ -335,7 +355,7 @@ class ACTModule:
         first_n_spikes = self.optim_params.first_n_spikes
         dt = self.sim_params.h_dt
 
-        features_target, columns_target = dp.extract_features(train_features=self.optim_params.train_features, V=V_target,I=I_target,threshold=threshold,num_spikes=first_n_spikes,dt=dt,lto_hto=lto_hto, current_inj_combos=self.current_inj_combos)
+        features_target, _ = extract_features(train_features=self.optim_params.train_features, V=V_target,I=I_target,threshold=threshold,num_spikes=first_n_spikes,dt=dt,lto_hto=lto_hto, current_inj_combos=self.current_inj_combos)
 
         if self.rf_model == None:
             print("TRAINING RANDOM FOREST REGRESSOR")
@@ -345,12 +365,12 @@ class ACTModule:
             else:
                 dataset_train = np.load(self.output_folder_name + "train/combined_out.npy")
 
-            g_train = dp.clean_g_bars(dataset_train)
+            g_train = clean_g_bars(dataset_train)
             V_train = dataset_train[:, :, 0]
             I_train = dataset_train[:, :, 1]
             lto_hto = dataset_train[:, 1, 3]
             
-            features_train, columns_train = dp.extract_features(train_features=self.optim_params.train_features,V=V_train,I=I_train,threshold=threshold,num_spikes=first_n_spikes,dt=dt,lto_hto=lto_hto, current_inj_combos=self.current_inj_combos)
+            features_train, columns_train = extract_features(train_features=self.optim_params.train_features,V=V_train,I=I_train,threshold=threshold,num_spikes=first_n_spikes,dt=dt,lto_hto=lto_hto, current_inj_combos=self.current_inj_combos)
             print(f"Extracting features: {columns_train}")
 
             X_train = features_train
@@ -373,10 +393,9 @@ class ACTModule:
             if n_sim_combos < 10:
                 n_splits = n_sim_combos
 
-            metrics = Metrics()
             save_file = self.optim_params.save_file
             if self.optim_params.evaluate_random_forest:
-                metrics.evaluate_random_forest(rf.model, 
+                evaluate_random_forest(rf.model, 
                                             X_train, 
                                             Y_train, 
                                             random_state=self.sim_params.random_seed, 
@@ -406,29 +425,41 @@ class ACTModule:
 
         return predictions
     
-    '''
-    pickle_rf
-    Saves the trained RF model
-    '''
-    
-    def pickle_rf(self, rf_model, filename):
-        with open(filename, 'wb') as file:
-            pickle.dump(rf_model, file)
 
-    '''
-    simulate_eval_cells
-    The RF model outputs n predictions where n is the number of current injection intensities.
-    This method simulates the predicted conductances.
-    '''
-
-    def simulate_eval_cells(self, eval_cell, predictions):
+    def simulate_eval_cells(self, eval_cell: ACTCellModel, predictions: list) -> None:
+        '''
+        The RF model outputs n predictions where n is the number of current injection intensities.
+        This method simulates the predicted conductances.
+        Parameters:
+        -----------
+        self
+        
+        eval_cell: ACTCellModel
+            Cell that is a part of round 1 predictions of the RF
+            
+        predictions: list[float]
+            Predicted conductances
+        
+        Returns:
+        -----------
+        None
+        '''
         self.sim_params.set_g_to = []
         
         simulator = ACTSimulator(self.output_folder_name)
         sim_index = 0
         for i in range(len(predictions)):
             for j in range(len(self.sim_params.CI)):
-                eval_cell.set_g_bar(eval_cell.active_channels, predictions[i],self.sim_params)
+                specific_eval_cell = ACTCellModel(cell_name=eval_cell.cell_name,
+                                               path_to_hoc_file=eval_cell.path_to_hoc_file,
+                                               path_to_mod_files=eval_cell.path_to_mod_files,
+                                               passive=eval_cell.passive,
+                                               active_channels=eval_cell.active_channels,
+                                               prediction=eval_cell.prediction)
+                
+                print(f"prediction {i}: {predictions[i]}")
+                specific_eval_cell.set_g_bar(specific_eval_cell.active_channels, predictions[i])
+                
                 if isinstance(self.sim_params.CI[j], ConstantCurrentInjection):
                     CI = [ConstantCurrentInjection
                         (
@@ -461,7 +492,7 @@ class ACTModule:
                         ) 
                     ]
                 simulator.submit_job(
-                    eval_cell, 
+                    specific_eval_cell, 
                     SimulationParameters(
                         sim_name = "prediction_eval"+str(i),
                         sim_idx = sim_index,
@@ -469,8 +500,7 @@ class ACTModule:
                         h_tstop = self.sim_params.h_tstop,     # (ms)
                         h_dt = self.sim_params.h_dt,           # (ms)
                         h_celsius = self.sim_params.h_celsius, # (deg C)
-                        CI = CI,
-                        set_g_to=self.sim_params.set_g_to
+                        CI = CI
                     )
                 )
                 sim_index+=1
@@ -478,38 +508,48 @@ class ACTModule:
         simulator.run_jobs()
 
         for i in range(len(predictions)):
-            DataProcessor.combine_data(self.output_folder_name + "prediction_eval" + str(i))
+            combine_data(self.output_folder_name + "prediction_eval" + str(i))
     
-    '''
-    evaluate_fi_curves
-    Grades the predicted cells on min FI curve MAE.
-    '''
 
-    def evaluate_fi_curves(self, predictions):
-        dp = DataProcessor()
+    def evaluate_fi_curves(self, predictions: list) -> tuple:
+        '''
+        Grades the predicted cells on min FI curve MAE.
+        Parameters:
+        -----------
+        self
+        
+        predictions: list
+            Conductance predictions
+            
+        Returns:
+        ----------
+        best_prediction_data_file: str
+            Filepath to best (smallest MAE) prediction sim data
+        
+        predictions: list[float]
+            Best (smallest MAE) set of predicted conductances
+        '''
 
         dataset = np.load(self.target_traces_file)
 
         V_target = dataset[:,:,0]
 
-        target_frequencies = DataProcessor.get_fi_curve(V_target, -40, self.sim_params.CI).flatten()
+        target_frequencies = get_fi_curve(V_target, -40, self.sim_params.CI).flatten()
         
         FI_data = []
         for i in range(len(predictions)):
             dataset = np.load(self.output_folder_name + "prediction_eval" + str(i) + "/combined_out.npy")
             V_test = dataset[:,:,0]
 
-            frequencies = DataProcessor.get_fi_curve(V_test, -40, self.sim_params.CI)
+            frequencies = get_fi_curve(V_test, -40, self.sim_params.CI)
 
             FI_data.append(frequencies.flatten())
 
         list_of_freq = np.array(FI_data)
 
-        metrics = Metrics()
-
         fi_mae = []
         for fi in list_of_freq:
-            fi_mae.append(metrics.mae_score(target_frequencies, fi))
+            fi_mae.append(mae_score(target_frequencies, fi))
         
         print(f"FI curve MAE for each prediction: {fi_mae}")
 
@@ -526,26 +566,35 @@ class ACTModule:
         
         best_prediction_data_file = self.output_folder_name + "prediction_eval" + str(g_best_idx) + "/combined_out.npy"
         
-        dp = DataProcessor()
         save_file = self.optim_params.save_file
         if not save_file == None:
-            dp.save_to_json(min(fi_mae), "final_prediction_fi_mae", save_file)
+            save_to_json(min(fi_mae), "final_prediction_fi_mae", save_file)
         
         return best_prediction_data_file, predictions[g_best_idx]
     
-    '''
-    evaluate_v_traces
-    Grades the predicted cells on min voltage trace MAE.
-    '''
     
-    def evaluate_v_traces(self, predictions):
-        dp = DataProcessor()
-
+    def evaluate_v_traces(self, predictions: list) -> tuple:
+        '''
+        Grades the predicted cells on min voltage trace MAE.
+        Parameters:
+        -----------
+        self
+        
+        predictions: list
+            Conductance predictions
+            
+        Returns:
+        ----------
+        best_prediction_data_file: str
+            Filepath to best (smallest MAE) prediction sim data
+        
+        predictions: list[float]
+            Best (smallest MAE) set of predicted conductances
+        '''
         dataset = np.load(self.target_traces_file)
 
         V_target = dataset[:,:,0]
 
-        metrics = Metrics()
         mean_mae_list = []
         for i in range(len(predictions)):
             dataset = np.load(self.output_folder_name + "prediction_eval" + str(i) + "/combined_out.npy")
@@ -553,7 +602,7 @@ class ACTModule:
             prediction_MAEs = []
             
             for j in range(len(V_test)):
-                v_mae = metrics.mae_score(V_test[j],V_target[j])
+                v_mae = mae_score(V_test[j],V_target[j])
                 prediction_MAEs.append(v_mae)
 
             mean_mae_list.append(np.mean(prediction_MAEs))
@@ -566,18 +615,29 @@ class ACTModule:
         
         save_file = self.optim_params.save_file
         if not save_file == None:
-            dp.save_to_json(min(mean_mae_list), "final_prediction_voltage_mae", save_file)
+            save_to_json(min(mean_mae_list), "final_prediction_voltage_mae", save_file)
 
         return best_prediction_data_file, predictions[g_best_idx]
     
-    '''
-    evaluate_features
-    Grades the predicted cells on min feature MAE.
-    '''
     
-    def evaluate_features(self, predictions):
-        dp = DataProcessor()
-
+    def evaluate_features(self, predictions: list) -> tuple:
+        '''
+        Grades the predicted cells on min feature MAE.
+        Parameters:
+        -----------
+        self
+        
+        predictions: list
+            Conductance predictions
+            
+        Returns:
+        ----------
+        best_prediction_data_file: str
+            Filepath to best (smallest MAE) prediction sim data
+        
+        predictions: list[float]
+            Best (smallest MAE) set of predicted conductances
+        '''
         dataset = np.load(self.target_traces_file)
 
         V_target = dataset[:,:,0]
@@ -589,21 +649,20 @@ class ACTModule:
         first_n_spikes = self.optim_params.first_n_spikes
         dt = self.sim_params.h_dt
         
-        target_V_features, _ = dp.extract_features(train_features=train_features, V=V_target,I=I_target, threshold=threshold, num_spikes=first_n_spikes, dt=dt,lto_hto=lto_hto, current_inj_combos=self.current_inj_combos)
+        target_V_features, _ = extract_features(train_features=train_features, V=V_target,I=I_target, threshold=threshold, num_spikes=first_n_spikes, dt=dt,lto_hto=lto_hto, current_inj_combos=self.current_inj_combos)
 
-        metrics = Metrics()
         mean_mae_list = []
         for i in range(len(predictions)):
             dataset = np.load(self.output_folder_name + "prediction_eval" + str(i) + "/combined_out.npy")
             V_test = dataset[:,:,0]
             I_test = dataset[:,:,1]
             lto_hto = dataset[:,1,3]
-            test_V_features, _ = dp.extract_features(train_features=train_features, V=V_test,I=I_test, threshold=threshold, num_spikes=first_n_spikes, dt=dt,lto_hto=lto_hto, current_inj_combos=self.current_inj_combos)
+            test_V_features, _ = extract_features(train_features=train_features, V=V_test,I=I_test, threshold=threshold, num_spikes=first_n_spikes, dt=dt,lto_hto=lto_hto, current_inj_combos=self.current_inj_combos)
             
             prediction_MAEs = []
             
             for j in range(len(V_test)):
-                v_mae = metrics.mae_score(test_V_features[j],target_V_features[j])
+                v_mae = mae_score(test_V_features[j],target_V_features[j])
                 prediction_MAEs.append(v_mae)
 
             mean_mae_list.append(np.mean(prediction_MAEs))
@@ -615,6 +674,6 @@ class ACTModule:
         
         save_file = self.optim_params.save_file
         if not save_file == None:
-            dp.save_to_json(min(mean_mae_list), "summary_stats_mae_final_prediction", save_file)
+            save_to_json(min(mean_mae_list), "summary_stats_mae_final_prediction", save_file)
 
         return best_prediction_data_file, predictions[g_best_idx]

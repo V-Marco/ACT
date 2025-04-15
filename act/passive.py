@@ -18,13 +18,19 @@ class ACTPassiveModule:
             (s)
 
         V_rest: float
-            (mV)    
+            (mV)
+        
+        Returns:
+        ----------
+        spp: SettablePassiveProperties
+            Class with filled settable passive properties
         '''
         spp = SettablePassiveProperties()
         spp.e_rev_leak = V_rest
         spp.g_bar_leak = ACTPassiveModule.compute_g_bar_leak(R_in, soma_area)
         spp.Cm = ACTPassiveModule.compute_Cm(spp.g_bar_leak, tau)
         return spp
+
 
     @staticmethod
     def compute_g_bar_leak(R_in: float, soma_area: float) -> float:
@@ -43,6 +49,7 @@ class ACTPassiveModule:
             (S / cm2)
         '''
         return (1 / R_in) / soma_area
+
 
     @staticmethod
     def compute_Cm(g_bar_leak: float, tau: float) -> float:
@@ -63,12 +70,30 @@ class ACTPassiveModule:
         '''
         return tau * g_bar_leak * 1e6
     
-    def compute_gpp(passive_V: np.ndarray, dt: float, I_t_start: int, I_t_end: int, I_amp: float) -> GettablePassiveProperties:
+    
+    def compute_gpp(passive_V: np.ndarray, dt: float, I_t_start: float, I_t_end: float, I_amp: float) -> GettablePassiveProperties:
         '''
         Parameters:
         ----------
+        passive_V: np.ndarray
+            Voltage trace under negative current injection
+            
+        dt: float
+            Timestep (ms)
+            
         I_t_start: float
             Current injection start time (ms).
+        
+        I_t_end: float
+            Current injection end time (ms)
+            
+        I_amp: float
+            Current injection amplitude (mV)
+            
+        Returns:
+        ----------
+        gpp: GettablePassiveProperties
+            Class containing gettable passive properties
         '''
 
         index_V_rest = int(I_t_start / dt) - 1

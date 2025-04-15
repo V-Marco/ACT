@@ -2,7 +2,6 @@
 def run():
     num_seeds = 5
     for seed in range(42,42+num_seeds): 
-        from act.SyntheticGenerator import SyntheticGenerator
         from act.act_types import SimParams, OptimizationParameters
         from act.cell_model import TargetCell, ModuleParameters
 
@@ -38,18 +37,6 @@ def run():
                     set_g_to=[]
                 )
 
-        sg = SyntheticGenerator(
-            ModuleParameters(
-                module_folder_name=target_folder,
-                cell= target_cell,
-                sim_params= sim_par,
-                optim_params = OptimizationParameters(
-                    blocked_channels= []
-                )
-            )
-        )
-
-        sg.generate_synthetic_target_data("target_data.csv")
 
         passive_sim_par = SimParams(
                     h_v_init = -67,
@@ -76,7 +63,6 @@ def run():
 
         sg_passive.generate_synthetic_target_data("passive_data.csv")
 
-        from act.PassivePropertiesModule import PassivePropertiesModule
         from act.act_types import SimParams
         from act.cell_model import TrainCell
 
@@ -85,14 +71,6 @@ def run():
             mod_folder="/home/mwsrgf/proj/ACT/data/Burster_Izhikevich/seg",
             cell_name="Burster_Izh",
             g_names = ["gbar_na3", "gkdrbar_kdr","gbar_nap","gmbar_im", "glbar_leak"]
-        )
-
-        passive_mod = PassivePropertiesModule(
-            train_cell=train_cell,
-            sim_params=passive_sim_par,
-            trace_filepath=f"{target_folder}/passive_data.csv",
-            leak_conductance_variable="glbar_leak",
-            leak_reversal_variable="el_leak"
         )
 
         passive_mod.set_passive_properties()
@@ -208,20 +186,20 @@ def run():
         final_mod.pickle_rf(final_mod.rf_model,f"{module_final_folder}/trained_rf.pkl")
         print(train_cell.predicted_g)
 
-        from act import ACTPlot
-        ACTPlot.plot_v_comparison(
+        from act import act_plot
+        act_plot.plot_v_comparison(
             final_predicted_g_data_file, 
             module_final_folder, 
             sim_par["CI_amps"],
             sim_par["h_dt"]
             )
 
-        ACTPlot.plot_fi_comparison(
+        act_plot.plot_fi_comparison(
             module_final_folder, 
             sim_par["CI_amps"]
             )
 
-        from act.Metrics import Metrics
+        from act.metrics import Metrics
 
         metrics = Metrics()
 
@@ -246,7 +224,7 @@ def run():
         )
 
 
-        from act import ACTPlot as actplt
+        from act import act_plot as actplt
 
         g_names = ["gbar_na3", "gkdrbar_kdr","gbar_nap","gmbar_im"]
 
@@ -266,7 +244,7 @@ def run():
                 results_filename=f"{module_final_folder}/results/Feature_MAE_Contour_Plot_{g_names[0]}_{g_names[i+1]}.png"
             )
             
-        from act import ACTPlot as actplt
+        from act import act_plot as actplt
 
         g_names = ["gbar_na3", "gkdrbar_kdr","gbar_nap","gmbar_im"]
 
@@ -283,7 +261,7 @@ def run():
                 results_filename=f"{module_final_folder}/results/FI_MAE_Contour_Plot_{g_names[0]}_{g_names[i+1]}.png"
             )
             
-        from act import ACTPlot as actplt
+        from act import act_plot as actplt
 
         g_names = ["gbar_na3", "gkdrbar_kdr","gbar_nap","gmbar_im"]
 

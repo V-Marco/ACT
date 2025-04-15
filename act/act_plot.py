@@ -1,20 +1,38 @@
 import os
 import numpy as np
-from matplotlib import pyplot as plt
-from act.data_processing import ACTDataProcessor as DataProcessor
-from act.Metrics import Metrics
-from matplotlib import cm
+from matplotlib import pyplot as plt, cm
 import plotly.graph_objects as go
+
+from act.data_processing import *
+from act.metrics import *
 
 # A collection of plotting functions that can be used to assess the quality of automatic tuning.
 
-'''
-create_overlapped_v_plot
-A helper function for plot_v_comparison to plot the Target cell voltage trace vs the Predicted 
-cell voltage trace.
-'''
-
-def create_overlapped_v_plot(x, y1, y2, module_foldername, title, filename):
+def create_overlapped_v_plot(x: np.ndarray, y1: np.ndarray, y2: np.ndarray, module_foldername: str, title: str, filename:str) -> None:
+    '''
+    A helper function for plot_v_comparison to plot the Target cell voltage trace vs the Predicted 
+    cell voltage trace.
+    Parameters:
+    -----------
+    x: np.ndarray
+        (ms)
+    
+    y1: np.ndarray
+        (mV)
+    
+    y2: np.ndarray
+        (mV)
+        
+    module_foldername: str
+    
+    tile: str
+    
+    filename: str
+    
+    Returns:
+    -----------
+    None
+    '''
     plt.figure(figsize=(8, 6))
     plt.plot(x, y1, label='Target', c = 'blue')
     plt.plot(x, y2, label='Prediction', ls = '--', c = 'red')
@@ -25,12 +43,27 @@ def create_overlapped_v_plot(x, y1, y2, module_foldername, title, filename):
     plt.savefig(module_foldername + "/results/" + filename)
     plt.close()
     
-'''
-plot_v_comparison
-Plots the Target cell voltage trace vs the Predicted cell voltage trace. (Line Plot)
-'''
 
-def plot_v_comparison(module_foldername,predicted_g_data_file, current_injections, dt):
+def plot_v_comparison(module_foldername: str,predicted_g_data_file: str, current_injections: list, dt: float) -> None:
+    '''
+    Plots the Target cell voltage trace vs the Predicted cell voltage trace. (Line Plot)
+    Parameters:
+    -----------
+    module_foldername: str
+    
+    predicted_g_data_file: str
+        Path to prediction data
+    
+    current_injections: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection]
+        List of Current Injection classes
+        
+    dt: float
+        Timestep
+        
+    Returns:
+    ----------
+    None
+    '''
     results_folder = module_foldername + "/results/"
     os.makedirs(results_folder, exist_ok=True)
     
@@ -47,13 +80,22 @@ def plot_v_comparison(module_foldername,predicted_g_data_file, current_injection
     for i in range(len(selected_v)):
         create_overlapped_v_plot(time, target_v[i], selected_v[i], module_foldername, f"V Trace Comparison: {amps} nA", f"V_trace_{amps[i]}nA.png")
 
-'''
-plot_fi_comparison
-Plots the spike frequencies at the preselected current injection intensities
-for both the Target cell and the Predicted cell (Dot Plot)
-'''
 
-def plot_fi_comparison(module_foldername, current_injections):
+def plot_fi_comparison(module_foldername: str, current_injections: list) -> None:
+    '''
+    Plots the spike frequencies at the preselected current injection intensities
+    for both the Target cell and the Predicted cell (Dot Plot)
+    Parameters:
+    -----------
+    module_foldername: str
+    
+    current_injections: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection]
+        List of Current Injection classes
+    
+    Returns:
+    -----------
+    None
+    '''
     results_folder = f"{module_foldername}/results/"
     
     os.makedirs(results_folder, exist_ok=True)
@@ -73,20 +115,44 @@ def plot_fi_comparison(module_foldername, current_injections):
     plt.savefig(results_folder + "FI_Curve_Comparison.png")
     plt.close()
     
-'''
-plot_training_v_mae_surface
-Generates an interactive HTML file of a 3D surface plot.
-The 3D surface consists of the following:
- - Axis 1: the conductance values used in one of channels [selected by "index1"]
- - Axis 2: the conductance values used in another channel [selected by "index2"]
- - Axis 3: the MAE of the raw voltage traces of the Target cell and Predicted Cell 
-    (averaging varying current injection intensities)
-'''
     
-def plot_training_v_mae_surface(module_foldername, current_injections, inj_dur, delay, dt, index1, index2, g_names, results_filename):
-    dp = DataProcessor()
-    metrics = Metrics()
+def plot_training_v_mae_surface(module_foldername: str, current_injections: list, delay: float, dt: float, index1: int, index2: int, g_names: list, results_filename: str) -> None:
+    '''
+    Generates an interactive HTML file of a 3D surface plot.
+    The 3D surface consists of the following:
+    - Axis 1: the conductance values used in one of channels [selected by "index1"]
+    - Axis 2: the conductance values used in another channel [selected by "index2"]
+    - Axis 3: the MAE of the raw voltage traces of the Target cell and Predicted Cell 
+        (averaging varying current injection intensities)
+    Parameters:
+    -----------
+    module_foldername: str
     
+    current_injections: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection]
+        List of Current Injection classes
+        
+    delay: float
+        Current injection delay from start of simulation
+    
+    dt: float
+        Timestep
+    
+    index1: int
+        X-axis selection for MAE comparison (options are the list of channels)
+        
+    index2: int
+        Y-axis selection for MAE comparison (options are the list of channels)
+        
+    g_names: list[str]
+        Conductance names
+    
+    results_filename: str
+        Filename for the output graph
+    
+    Returns:
+    -----------
+    None
+    '''
     g_name1 = g_names[index1]
     g_name2 = g_names[index2]
     length_g = len(g_names)
@@ -124,7 +190,7 @@ def plot_training_v_mae_surface(module_foldername, current_injections, inj_dur, 
     maes = []
     
     for idx, g in enumerate(conductance_values):
-        maes.append((g[index1], g[index2], metrics.mae_score(target_V, v_sample_sets[idx])))
+        maes.append((g[index1], g[index2], mae_score(target_V, v_sample_sets[idx])))
     maes = np.array(maes)
     
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
@@ -170,15 +236,42 @@ def plot_training_v_mae_surface(module_foldername, current_injections, inj_dur, 
     fig2.write_html(results_filename)
     plt.show()
 
-'''
-plot_training_v_mae_surface
-Generates a 2D contour plot version of plot_training_v_mae_surface (See directly above)
-'''
 
-def plot_training_v_mae_contour_plot(module_foldername, current_injections, delay, dt, index1, index2, g_names, num_levels=100, results_filename=None):
-    dp = DataProcessor()
-    metrics = Metrics()
+def plot_training_v_mae_contour_plot(module_foldername: str, current_injections: list, delay: float, dt: float, index1: int, index2: int, g_names: list, num_levels: int = 100, results_filename: str = None) -> None:
+    '''
+    Generates a 2D contour plot version of plot_training_v_mae_surface (See directly above)
+    Parameters:
+    -----------
+    module_foldername: str
     
+    current_injections: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection]
+        List of Current Injection classes
+        
+    delay: float
+        Current injection delay from start of simulation
+    
+    dt: float
+        Timestep
+    
+    index1: int
+        X-axis selection for MAE comparison (options are the list of channels)
+        
+    index2: int
+        Y-axis selection for MAE comparison (options are the list of channels)
+        
+    g_names: list[str]
+        Conductance names
+        
+    num_levels: int, default = 100
+        Max Resolution for the contour plot (100 is sufficiently higher than # of slices)
+    
+    results_filename: str, default = None
+        Filename for the output graph
+    
+    Returns:
+    -----------
+    None
+    '''
     amps = [current_injection.amp for current_injection in current_injections]
     
     g_name1 = g_names[index1]
@@ -216,7 +309,7 @@ def plot_training_v_mae_contour_plot(module_foldername, current_injections, dela
     maes = []
     
     for idx, g in enumerate(conductance_values):
-        maes.append((g[index1], g[index2], metrics.mae_score(target_V, v_sample_sets[idx])))
+        maes.append((g[index1], g[index2], mae_score(target_V, v_sample_sets[idx])))
     maes = np.array(maes)
     
     #x = np.linspace(0, 10000,10000)
@@ -262,21 +355,56 @@ def plot_training_v_mae_contour_plot(module_foldername, current_injections, dela
     
     plt.show()
     
-'''
-plot_training_feature_mae_contour_plot
-Generates a 2D contour plot
-The contour consists of the following:
- - Axis 1: the conductance values used in one of channels [selected by "index1"]
- - Axis 2: the conductance values used in another channel [selected by "index2"]
- - Axis 3: the MAE of the pre-selected features of the Target cell and Predicted Cell 
-    (averaging varying current injection intensities)
-NOTE: No 3D interactive plot implemented yet.
-'''
     
-def plot_training_feature_mae_contour_plot(module_foldername, current_injections, delay, dt, index1, index2, g_names, train_features, threshold=0, first_n_spikes=20, num_levels=100, results_filename=None):
-    dp = DataProcessor()
-    metrics = Metrics()
+def plot_training_feature_mae_contour_plot(module_foldername: str, current_injections: list, delay: float, dt: float, index1: int, index2: int, g_names: list, train_features: list, threshold: float = 0, first_n_spikes: int = 20, num_levels: int = 100, results_filename: str = None) -> None:
+    '''
+    Generates a 2D contour plot
+    The contour consists of the following:
+    - Axis 1: the conductance values used in one of channels [selected by "index1"]
+    - Axis 2: the conductance values used in another channel [selected by "index2"]
+    - Axis 3: the MAE of the pre-selected features of the Target cell and Predicted Cell 
+        (averaging varying current injection intensities)
+    Parameters:
+    -----------
+    module_foldername: str
     
+    current_injections: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection]
+        List of Current Injection classes
+        
+    delay: float
+        Current injection delay from start of simulation
+    
+    dt: float
+        Timestep
+    
+    index1: int
+        X-axis selection for MAE comparison (options are the list of channels)
+        
+    index2: int
+        Y-axis selection for MAE comparison (options are the list of channels)
+        
+    g_names: list[str]
+        Conductance names
+        
+    train_features: list[str]
+        List of feature names that are extracted from the simulation data
+        
+    threshold: float, default = 0
+        Spiking threshold
+        
+    first_n_spikes: int, default = 20
+        First number of spikes considered for calculations
+        
+    num_levels: int, default = 100
+        Max Resolution for the contour plot (100 is sufficiently higher than # of slices)
+    
+    results_filename: str, default = None
+        Filename for the output graph
+    
+    Returns:
+    -----------
+    None
+    '''
     amps = [current_injection.amp for current_injection in current_injections]
     
     g_name1 = g_names[index1]
@@ -289,7 +417,7 @@ def plot_training_feature_mae_contour_plot(module_foldername, current_injections
     target_I = target_dataset[:,:,1]
     target_lto_hto = target_dataset[:,1,2]
     
-    target_V_features, _ = dp.extract_features(train_features=train_features, V=target_V,I=target_I, threshold=threshold, num_spikes=first_n_spikes, dt=dt, lto_hto=target_lto_hto, current_inj_combos=current_injections)
+    target_V_features, _ = extract_features(train_features=train_features, V=target_V,I=target_I, threshold=threshold, num_spikes=first_n_spikes, dt=dt, lto_hto=target_lto_hto, current_inj_combos=current_injections)
     #print(f"target_v_features: {len(target_V_features)}: {target_V_features}")
     train_dataset = np.load(f"{module_foldername}/train/combined_out.npy")
     train_V = train_dataset[:,:,0]
@@ -323,7 +451,7 @@ def plot_training_feature_mae_contour_plot(module_foldername, current_injections
         #print(f"V_subset: {V_subset}")
         #ordered_V.append(V_subset)
         
-        V_subset_features, _ = dp.extract_features(train_features=train_features, V=V_subset, I=I_subset, threshold=threshold, num_spikes=first_n_spikes, dt=dt, lto_hto=lto_hto_subset, current_inj_combos=current_injections)
+        V_subset_features, _ = extract_features(train_features=train_features, V=V_subset, I=I_subset, threshold=threshold, num_spikes=first_n_spikes, dt=dt, lto_hto=lto_hto_subset, current_inj_combos=current_injections)
         
         v_sample_feature_sets.append(V_subset_features)
     #print(f"vsample_features: {len(v_sample_feature_sets)}: {v_sample_feature_sets}")
@@ -333,7 +461,7 @@ def plot_training_feature_mae_contour_plot(module_foldername, current_injections
         i_inj_mae = []
         for i in range(len(target_V_features)):
             #print(f"v_samplefeature_set: {v_sample_feature_sets[idx][i]}")
-            mae = metrics.mae_score(target_V_features[i], v_sample_feature_sets[idx][i])
+            mae = mae_score(target_V_features[i], v_sample_feature_sets[idx][i])
             i_inj_mae.append(mae)
 
         maes.append((g[index1], g[index2], np.mean(i_inj_mae)))
@@ -384,19 +512,46 @@ def plot_training_feature_mae_contour_plot(module_foldername, current_injections
     
     plt.show()
     
-'''
-plot_training_fi_mae_surface
-Generates an interactive HTML file of a 3D surface plot.
-The 3D surface consists of the following:
- - Axis 1: the conductance values used in one of channels [selected by "index1"]
- - Axis 2: the conductance values used in another channel [selected by "index2"]
- - Axis 3: the MAE of the FI curves of the Target cell and Predicted Cell 
-'''
     
-def plot_training_fi_mae_surface(module_foldername, current_injections, delay, dt, index1, index2, g_names, results_filename, spike_threshold=0):
-    dp = DataProcessor()
-    metrics = Metrics()
+def plot_training_fi_mae_surface(module_foldername: str, current_injections: list, delay: float, dt: float, index1: int, index2: int, g_names: list, results_filename: str, spike_threshold: float = 0) -> None:
+    '''
+    Generates an interactive HTML file of a 3D surface plot.
+    The 3D surface consists of the following:
+    - Axis 1: the conductance values used in one of channels [selected by "index1"]
+    - Axis 2: the conductance values used in another channel [selected by "index2"]
+    - Axis 3: the MAE of the FI curves of the Target cell and Predicted Cell 
+    Parameters:
+    -----------
+    module_foldername: str
     
+    current_injections: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection]
+        List of Current Injection classes
+        
+    delay: float
+        Current injection delay from start of simulation
+    
+    dt: float
+        Timestep
+    
+    index1: int
+        X-axis selection for MAE comparison (options are the list of channels)
+        
+    index2: int
+        Y-axis selection for MAE comparison (options are the list of channels)
+        
+    g_names: list[str]
+        Conductance names
+    
+    results_filename: str, default = None
+        Filename for the output graph
+        
+    spike_threshold: float, default = 0
+        Spiking threshold
+    
+    Returns:
+    -----------
+    None
+    '''
     amps = [current_injection.amp for current_injection in current_injections]
     
     g_name1 = g_names[index1]
@@ -407,7 +562,7 @@ def plot_training_fi_mae_surface(module_foldername, current_injections, delay, d
     
     target_V = target_dataset[:,:,0]
     
-    target_frequencies = dp.get_fi_curve(target_V, spike_threshold=spike_threshold, CI_list=amps).flatten()
+    target_frequencies = get_fi_curve(target_V, spike_threshold=spike_threshold, CI_list=amps).flatten()
     
     train_dataset = np.load(f"{module_foldername}/train/combined_out.npy")
     train_V = train_dataset[:,:,0]
@@ -431,14 +586,14 @@ def plot_training_fi_mae_surface(module_foldername, current_injections, delay, d
             
         V_subset = train_V[ordered_indices]
         
-        fi_curve = dp.get_fi_curve(V_subset, spike_threshold=spike_threshold, CI_list=amps)
+        fi_curve = get_fi_curve(V_subset, spike_threshold=spike_threshold, CI_list=amps)
         
         fi_curves.append(fi_curve)
 
     maes = []
     
     for idx, g in enumerate(conductance_values):
-        maes.append((g[index1], g[index2], metrics.mae_score(target_frequencies, fi_curves[idx])))
+        maes.append((g[index1], g[index2], mae_score(target_frequencies, fi_curves[idx])))
     maes = np.array(maes)
     
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
@@ -484,16 +639,46 @@ def plot_training_fi_mae_surface(module_foldername, current_injections, delay, d
     fig2.write_html(results_filename)
     plt.show()
     
-'''
-plot_training_fi_mae_contour_plot
-Generates a 2D contour plot version of plot_training_fi_mae_surface (See directly above)
-'''
+    
+def plot_training_fi_mae_contour_plot(module_foldername: str, current_injections: list, delay: float, dt: float, index1: int, index2: int, g_names: list, spike_threshold: float = 0, num_levels: int = 100, results_filename: str = None) -> None:
+    '''
+    Generates a 2D contour plot version of plot_training_fi_mae_surface (See directly above)
+    Parameters:
+    -----------
+    module_foldername: str
+    
+    current_injections: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection]
+        List of Current Injection classes
+        
+    delay: float
+        Current injection delay from start of simulation
+    
+    dt: float
+        Timestep
+    
+    index1: int
+        X-axis selection for MAE comparison (options are the list of channels)
+        
+    index2: int
+        Y-axis selection for MAE comparison (options are the list of channels)
+        
+    g_names: list[str]
+        Conductance names
+        
+    spike_threshold: float, default = 0
+        Spiking threshold
+    
+    num_levels: int, default = 100
+        Max Resolution for the contour plot (100 is sufficiently higher than # of slices)
+    
+    results_filename: str, default = None
+        Filename for the output graph
     
     
-def plot_training_fi_mae_contour_plot(module_foldername, current_injections, delay, dt, index1, index2, g_names, spike_threshold=0, num_levels=100, results_filename=None):
-    dp = DataProcessor()
-    metrics = Metrics()
-    
+    Returns:
+    -----------
+    None
+    '''
     amps = [current_injection.amp for current_injection in current_injections]
     
     g_name1 = g_names[index1]
@@ -504,7 +689,7 @@ def plot_training_fi_mae_contour_plot(module_foldername, current_injections, del
     
     target_V = target_dataset[:,:,0]
     
-    target_frequencies = dp.get_fi_curve(target_V, spike_threshold=spike_threshold, CI_list=current_injections).flatten()
+    target_frequencies = get_fi_curve(target_V, spike_threshold=spike_threshold, CI_list=current_injections).flatten()
     
     train_dataset = np.load(f"{module_foldername}/train/combined_out.npy")
     train_V = train_dataset[:,:,0]
@@ -528,14 +713,14 @@ def plot_training_fi_mae_contour_plot(module_foldername, current_injections, del
             
         V_subset = train_V[ordered_indices]
         
-        fi_curve = dp.get_fi_curve(V_subset, spike_threshold=spike_threshold, CI_list=current_injections)
+        fi_curve = get_fi_curve(V_subset, spike_threshold=spike_threshold, CI_list=current_injections)
         
         fi_curves.append(fi_curve)
 
     maes = []
     
     for idx, g in enumerate(conductance_values):
-        maes.append((g[index1], g[index2], metrics.mae_score(target_frequencies, fi_curves[idx])))
+        maes.append((g[index1], g[index2], mae_score(target_frequencies, fi_curves[idx])))
     maes = np.array(maes)
     
     #print(f"maes: {maes}")

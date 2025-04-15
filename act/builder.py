@@ -65,34 +65,83 @@ class CellGenerator:
         self.mods = {}
         self.set_geometry()
 
-    def set_geometry(self, L=25, diam=25, nseg=1):
+
+    def set_geometry(self, L: float = 25, diam: float = 25, nseg: int = 1) -> None:
         """
         Set geometric properties for the cell
+        Parameters:
+        -----------
+        self
+        
+        L: float, default = 25
+            Length
+        
+        diam: float, default = 25
+            Diameter
+        
+        nseg: int, default = 1
+            Number of segments
+        
+        Returns:
+        -----------
+        None
         """
         self.L = L
         self.diam = diam
         self.nseg = nseg
 
-    def set_global_params(self, *args, **kwargs):
+
+    def set_global_params(self, *args, **kwargs) -> None:
         """
         Set global properties like Ra and Cm for the cell
+        Parameters:
+        -----------
+        self
+        
+        *args
+        
+        **kwargs
+        
+        Returns:
+        -----------
+        None
         """
         for key, value in kwargs.items():
             self.global_params[key] = value
 
-    def insert_mech(self, mechanism, **params):
+
+    def insert_mech(self, mechanism: str, **params) -> None:
         """
         Insert a new mechanism and properties, can update
+        Parameters:
+        -----------
+        self
+        
+        mechanism: str
+        
+        **params
+    
+        Returns:
+        -----------
+        None
+            
         """
         self.mods[mechanism] = params
 
-    def write_hoc(self, file_path, append=False):
+
+    def write_hoc(self, file_path: str, append: bool = False) -> None:
         """
         Take the cell that has been built and write to a file_path
-
-        params:
-        file_path: where the files is written to
-        append: if you have multiple templates that you're writting to the same file, set to True
+        Parameters:
+        -----------
+        file_path: str
+            Where the files is written to
+        append: bool, default = False
+            If you have multiple templates that you're writting to the same file, set to True
+            
+        Returns:
+        -----------
+        None
         """
 
         mechanism_section = ""

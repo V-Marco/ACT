@@ -89,20 +89,20 @@ def run():
         predicted_g_data_file = mod.run()
         mod.pickle_rf(mod.rf_model,f"{final_folder}/trained_rf.pkl")
 
-        from act import ACTPlot
-        ACTPlot.plot_v_comparison(
+        from act import act_plot
+        act_plot.plot_v_comparison(
             predicted_g_data_file, 
             final_folder, 
             sim_par["CI_amps"],
             sim_par["h_dt"]
             )
 
-        ACTPlot.plot_fi_comparison(
+        act_plot.plot_fi_comparison(
             final_folder, 
             sim_par["CI_amps"]
             )
 
-        from act.Metrics import Metrics
+        from act.metrics import Metrics
 
         metrics = Metrics()
 
@@ -130,7 +130,7 @@ def run():
             save_file=f"{final_folder}/results/saved_metrics.json"
         )
 
-        from act import ACTPlot as actplt
+        from act import act_plot as actplt
 
         g_names = ["gkbar_hh_orig", "gl_hh_orig"]
 
@@ -147,7 +147,7 @@ def run():
         results_filename=f"{final_folder}/results/Fi_MAE_Contour_Plot.png"
         )
 
-        from act import ACTPlot as actplt
+        from act import act_plot as actplt
 
         g_names = ["gkbar_hh_orig", "gl_hh_orig"]
 
@@ -163,7 +163,7 @@ def run():
         results_filename=f"{final_folder}/results/V_Trace_Contour_Plot.png"
         )
 
-        from act import ACTPlot as actplt
+        from act import act_plot as actplt
 
         g_names = ["gkbar_hh_orig", "gl_hh_orig"]
 
