@@ -6,7 +6,7 @@ TITLE na3
 NEURON {
 	SUFFIX na3
 	USEION na READ ena WRITE ina
-	RANGE  gbar, i, ar2, lincutoff, vcutoff, slope, intercept
+	RANGE  gbar, i, lincutoff, vcutoff, slope, intercept
 	GLOBAL minf, hinf, mtau, htau, qinf, thinf
 }
 
@@ -38,11 +38,10 @@ PARAMETER {
 	ena		(mV)            : must be explicitly def. in hoc
 	celsius
 	v 		(mV)
-
-	lincutoff = 0
-    vcutoff = 0
-    slope = 0
-    intercept = 0
+	lincutoff
+	vcutoff
+	slope
+	intercept
 }
 
 
@@ -104,7 +103,6 @@ PROCEDURE trates(vm,a2) {
 	if (v < vcutoff) {
 	minf = 0
 	}
-
 	a = trap0(vm,thi1,Rd,qd)
 	b = trap0(-vm,-thi2,Rg,qg)
 	htau =  1/(a+b)/qt

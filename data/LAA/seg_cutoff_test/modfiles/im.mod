@@ -14,6 +14,10 @@ UNITS {
 
 PARAMETER {
 	gmbar = 0.0003 (siemens/cm2) <0,1e9>
+	lincutoff
+	vcutoff
+	slope
+	intercept
 }
 
 ASSIGNED {
@@ -24,10 +28,6 @@ ASSIGNED {
 	inf
 	tau (ms)
 	gm (siemens/cm2)
-	lincutoff
-    vcutoff
-    slope
-    intercept
 }
 
 STATE {

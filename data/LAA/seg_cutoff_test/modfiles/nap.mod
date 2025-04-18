@@ -15,17 +15,17 @@ UNITS {
 NEURON { 
 	SUFFIX nap
 	USEION na READ ena WRITE ina
-	RANGE gbar, ina, minf, mtau, gna, vshift, lincutoff, vcutoff, slope, intercept
+	RANGE gbar, ina, minf, mtau, gna, lincutoff, vcutoff, slope, intercept
 }
 
 PARAMETER { 
 	gbar = 1e-4 	(mho/cm2)
 	vshift = 0
 	v ena 		(mV)  
-	lincutoff = 0 
-    vcutoff = 0
-    slope = 0
-    intercept = 0
+	lincutoff
+	vcutoff
+	slope
+	intercept
 } 
 ASSIGNED { 
 	ina 		(mA/cm2) 
@@ -66,6 +66,11 @@ PROCEDURE settables(v) {
 	}
 	if (v < vcutoff) {
 	minf = 0
+	}
+	if( v < -40.0 ) {
+		mtau = 100*(0.025 + 0.14 * exp( ( v + 40 ) / 10 ))
+	}else{
+		mtau = 100*(0.02 + 0.145 * exp( ( - v - 40 ) / 10 ))
 	}
 }
 UNITSON

@@ -29,7 +29,7 @@ PARAMETER {
 NEURON {
 	SUFFIX hd
 	NONSPECIFIC_CURRENT i
-        RANGE ghdbar, i, vhalfl, lincutoff, vcutoff, slope, intercept
+        RANGE ghdbar, i, lincutoff, vcutoff, slope, intercept
         GLOBAL linf,taul
 }
 
@@ -83,6 +83,7 @@ PROCEDURE rate(v (mV)) { :callable from hoc
         if (v > vcutoff) {
         linf = 0
         }
+
         taul = bett(v)/(qtl*qt*a0t*(1+a))
 }
 

@@ -19,14 +19,14 @@ PARAMETER {
         zetal=3    (1)
         gmn=0.55   (1)
         gml=1   (1)
-	lmin=2  (mS)
-	nmin=0.1  (mS)
-	pw=-1    (1)
-	tq=-40
-	qq=5
-	q10=5
-	qtl=1
-	ek
+        lmin=2  (mS)
+        nmin=0.1  (mS)
+        pw=-1    (1)
+        tq=-40
+        qq=5
+        q10=5
+        qtl=1
+        ek
         lincutoff
         vcutoff
         slope

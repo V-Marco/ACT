@@ -215,6 +215,7 @@ class ACTSegregator:
                 curve[v <= cutoff_v] = 0
 
                 v_cutoff, linear_start_v, linear_slope, linear_intercept = self._get_segregation_message_right_values(right_v, cutoff_v, slope, intercept)
+                print(self._get_segregation_message_right(right_v, cutoff_v, slope, intercept))
 
             else:
                 # Find value to extrapolate to (guideline: -2-3 mV)
@@ -232,6 +233,7 @@ class ACTSegregator:
                 curve[v >= cutoff_v] = 0
 
                 v_cutoff, linear_start_v, linear_slope, linear_intercept = self._get_segregation_message_left_values(left_v, cutoff_v, slope, intercept)
+                print(self._get_segregation_message_left(left_v, cutoff_v, slope, intercept))
 
             segregated_ac_cutoff_values.append([curve, v_cutoff, linear_start_v, linear_slope, linear_intercept])
         

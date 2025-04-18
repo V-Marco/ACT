@@ -219,7 +219,7 @@ class ACTSimulator:
         h.v_init = parameters.h_v_init
 
         cell._build_cell(parameters.sim_idx)
-
+        
         # Set current injection
         if isinstance(parameters.CI[0], ConstantCurrentInjection):
             cell._add_constant_CI(
@@ -253,7 +253,8 @@ class ACTSimulator:
         
         
         if not cell.set_g_to == None and not len(cell.set_g_to) == 0:
-            cell._set_g_bar(cell.active_channels, cell.set_g_to[1])   
+            #print(f"cell.set_g_to: {cell.set_g_to}")
+            cell._set_g_bar(cell.set_g_to[0], cell.set_g_to[1])   
 
         h.finitialize(h.v_init)
         h.run()

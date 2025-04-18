@@ -15,9 +15,9 @@ UNITS {
 PARAMETER {
 	gcabar = 0.0001 (mho/cm2) <0,1e9>
 	lincutoff
-    vcutoff
-    slope
-    intercept
+	vcutoff
+	slope
+	intercept
 }
 
 STATE { u z }
