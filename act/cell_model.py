@@ -1,23 +1,19 @@
 import numpy as np
 import functools
 from neuron import h
-from act.act_types import SimulationParameters, SettablePassiveProperties
+from act.act_types import SettablePassiveProperties
 
+# Utility functions to get and set conductances with suffix.names
 # https://stackoverflow.com/questions/31174295/getattr-and-setattr-on-nested-subobjects-chained-properties
-def rgetattr(obj, attr, *args):
+def _rgetattr(obj, attr, *args):
     def _getattr(obj, attr):
         return getattr(obj, attr, *args)
     return functools.reduce(_getattr, [obj] + attr.split('.'))
 
-def rsetattr(obj, attr, val):
+def _rsetattr(obj, attr, val):
     print(f"attr: {attr}, val: {val}")
     pre, _, post = attr.rpartition('.')
-    return setattr(rgetattr(obj, pre) if pre else obj, post, val)
-
-'''
-Defines ACTCellModel which is a parent class to TargetCell and TrainCell (also defined)
-These classes hold vital information about a cell and the current injections applied to them.
-'''
+    return setattr(_rgetattr(obj, pre) if pre else obj, post, val)
 
 class ACTCellModel:
 
@@ -31,47 +27,44 @@ class ACTCellModel:
             prediction: dict = None
             ):
         '''
+        #TODO: add description.
+
         Parameters:
         ----------
-        cell_name: str
-            Cell name
+        cell_name: str, default = None
+            Cell name.
         
-        path_to_hoc_file: str
-            Path to hoc template
+        path_to_hoc_file: str, default = None
+            Path to the hoc template.
         
-        path_to_mod_files: str
-            Path to mod files directory
+        path_to_mod_files: str, default = None
+            Path to the mod files directory.
             
-        passive: list
+        passive: list, default = None
             Names of the (1) leak channel g_bar, (2) leak channel reversal potential and (3) h channel g_bar (in THIS order) as stated in the hoc file.
 
-        active_channels: list
+        active_channels: list, default = None
             Names of the active channel variables (in ANY order) as stated in the hoc file.
         
-        prediction: dict
-            A dictionary of the channel conductance name (used in mod files) and respective predicted values
-        
-        Returns:
-        ----------
-        None
+        prediction: dict #TODO: check if needed here
+            A dictionary of the channel conductance name (used in mod files) and respective predicted values.
         '''
 
         # Build cell info
         self.path_to_hoc_file = path_to_hoc_file
         self.path_to_mod_files = path_to_mod_files
         self.cell_name = cell_name
-        self.all = None
         self.prediction = prediction
-        
 
         # Channels
         self.passive = passive.copy()
         self.active_channels = active_channels.copy()
-        self.set_g_to = ()
-        self._overridden_channels = {}
+
+        self.set_g_to = {}
         self.spp = None
 
         # Minimal morphology
+        self.all = None
         self.soma = None
 
         # Current injections
@@ -83,7 +76,7 @@ class ACTCellModel:
         self.I = None
 
         self._custom_cell_builder = None
-        self.lto_hto = 0
+        self.lto_hto = 0 #TODO: do we need it?
         self.sim_index = None
     
     # ----------
@@ -92,76 +85,54 @@ class ACTCellModel:
 
     def set_g_bar(self, g_names: list, g_values: list) -> None:
         """
-        Stores conductance values to a list in this cell's instance
+        Set each conductance in g_names to a corresponding value in g_values at simulation time.
+
         Parameters:
         -----------
-        self
-        
         g_names: list
-            Conductance variable name (found in mod files)
+            Conductance variable name as found in the modfiles.
         
         g_values: list
-            Conductance values
+            Conductance values to set.
         
         Returns:
         ----------
         None
         """
-        #print(f"gnames: {g_names}, gvalues: {g_values}")
-        self.set_g_to = (g_names, g_values)
+        for g_name, g_value in zip(g_names, g_values):
+            self.set_g_to[g_name] = g_value
     
-    def _set_g_bar(self, g_names: list, g_values: list) -> None:
+    def _set_g_bar(self) -> None:
         """
-        A function that actually sets the g_bar values to the NEURON cell during sim runtime.
+        Actually set conductances during NEURON runtime.
+
         Parameters:
         -----------
-        self
-        
         g_names: list
-            Conductance variable name (found in mod files)
+            Conductance variable name as found in the modfiles.
         
         g_values: list
-            Conductance values
+            Conductance values to set.
         
         Returns:
         ----------
         None
         """
         for sec in self.all:
-            for index, key in enumerate(g_names):
-                if g_values[index]:
-                    rsetattr(sec(0.5), key, g_values[index])
+            for g_name, g_value in self.set_g_to.items():
+                _rsetattr(sec(0.5), g_name, g_value)
+                    
     
     def set_passive_properties(self, spp: SettablePassiveProperties) -> None:
         """
-        Setter method for passive properties on this cell
+        Set passive properties at simulation time.
+
         Parameters:
         -----------
-        self
-        
         spp: SettablePassiveProperties
-        
-        Returns:
-        ----------
-        None
+            Passive properties to set.
         """
         self.spp = spp
-
-    def block_channels(self, channels: list) -> None:
-        """
-        Setter method for passive properties on this cell
-        Parameters:
-        -----------
-        self
-        
-        spp: SettablePassiveProperties
-        
-        Returns:
-        ----------
-        None
-        """
-        for channel in channels:
-            self._overridden_channels[channel] = 0.0
 
     # ----------
     # Build cell
@@ -169,14 +140,12 @@ class ACTCellModel:
 
     def _get_soma_area(self) -> float:
         """
-        Getter method for the surface area of the soma
-        Parameters:
-        -----------
-        self
+        Compute the area of the soma in cm2.
         
         Returns:
         ----------
         soma_area: float
+            Computed area in cm2.
         """
         soma_area = 0
         for segment in self.soma[0]:
@@ -184,33 +153,34 @@ class ACTCellModel:
             soma_area += segment_area
         return soma_area * 1e-8 # (cm2)
 
-    def _build_cell(self, sim_index: int) -> None:
+    def _build_cell(self, sim_index: int, print_soma_area = True) -> None:
         """
-        Builds the NEURON cell 
+        Build the NEURON cell.
+
         Parameters:
         -----------
-        self
-        
         sim_index: int
             Simulation index
-        
-        Returns:
-        ----------
-        None
+
+        report_soma_area: bool, default = True
+            Whether to print out the soma area.
         """
         self.sim_index = sim_index
+
+        # Get the cell hoc object
         if self._custom_cell_builder is not None:
             hoc_cell = self._custom_cell_builder()
         else:
             h.load_file(self.path_to_hoc_file)
             hoc_cell = getattr(h, self.cell_name)()
 
-        # Soma must exist in any cell
+        # Soma and all must exist in any cell
         self.all = list(hoc_cell.all)
         self.soma = hoc_cell.soma
 
         # Report soma area
-        #print(f"Soma area (cm2): {self._get_soma_area()}")
+        if print_soma_area:
+            print(f"Soma area (cm2): {self._get_soma_area()}")
         
         # Update passive properties if needed
         if self.spp is not None:
@@ -225,48 +195,14 @@ class ACTCellModel:
 
     def set_custom_cell_builder(self, cell_builder: callable) -> None:
         """
-        Sets a custom cell builder 
+        Set a custom cell builder at simulaiton time.
+
         Parameters:
         -----------
-        self
-        
         cell_builder: callable
-        
-        Returns:
-        ----------
-        None
+            Callable that returns a hoc cell object.
         """
         self._custom_cell_builder = cell_builder
-
-    def get_output(self) -> tuple:
-        """
-        Gets the output of the simulator
-        Parameters:
-        -----------
-        self
-        
-        Returns:
-        ----------
-        V: np.ndarray
-            Voltage trace
-        
-        I: np.ndarray
-            Current injection trace
-        
-        g_values: np.ndarray
-            Conductance values (Nan padded)
-        
-        sim_index: int
-            Simulation indext
-        
-        lto_hto: int
-            0 for not low/high threshold oscillation, 1 for either low or high threshold oscillations
-        """
-        g_values = []
-        for channel in self.active_channels:
-            g_values.append(rgetattr(self.soma[0](0.5), channel))
-
-        return self.V.as_numpy().flatten(), self.I.flatten(), np.array(g_values).flatten(), self.sim_index, self.lto_hto
     
     # ----------
     # Current injection
@@ -424,3 +360,37 @@ class ACTCellModel:
         I += [0.0] * (remainder_no_injection / dt)
         
         self.I = np.array(I)
+
+    # ----------
+    # Outputs
+    # ----------
+
+    def get_output(self) -> tuple:
+        """
+        Gets the output of the simulator
+        Parameters:
+        -----------
+        self
+        
+        Returns:
+        ----------
+        V: np.ndarray
+            Voltage trace
+        
+        I: np.ndarray
+            Current injection trace
+        
+        g_values: np.ndarray
+            Conductance values (Nan padded)
+        
+        sim_index: int
+            Simulation indext
+        
+        lto_hto: int
+            0 for not low/high threshold oscillation, 1 for either low or high threshold oscillations
+        """
+        g_values = []
+        for channel in self.active_channels:
+            g_values.append(_rgetattr(self.soma[0](0.5), channel))
+
+        return self.V.as_numpy().flatten(), self.I.flatten(), np.array(g_values).flatten(), self.sim_index, self.lto_hto
