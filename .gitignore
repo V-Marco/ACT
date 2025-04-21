@@ -5,6 +5,7 @@ __pycache__/
 
 # Outputs
 .png
+output/
 
 # Mac
 .DS_Store
