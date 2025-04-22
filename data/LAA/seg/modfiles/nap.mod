@@ -63,5 +63,10 @@ PROCEDURE settables(v) {
 	if (v < -69.88) {
 	minf = 0
 	}
+	if( v < -40.0 ) {
+		mtau = 100*(0.025 + 0.14 * exp( ( v + 40 ) / 10 ))
+	}else{
+		mtau = 100*(0.02 + 0.145 * exp( ( - v - 40 ) / 10 ))
+	}
 }
 UNITSON

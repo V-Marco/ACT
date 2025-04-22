@@ -53,17 +53,19 @@ proc init() {
 soma[0] {nseg = 1 L = 117.77 diam = 24.5} // L = 55.2
 	
 	soma[0] {
-		insert cadyn gcabar_cadyn =  0.00055  eca = 120 //0.00055  eca = 120 // 0.00055 is error in paper, should be 0.0008
-		insert leak el_leak= -72 glbar_leak = 5.5e-5  Ra=RaAll cm=2.5 
-		insert hd ghdbar_hd=1.5e-5  78.72884325 
-		insert na3 sh_na3=nash ar_na3=1	gbar_na3 = 0.027
-		insert nap gbar_nap= 0.000142
-		insert kdr gbar_kdr=0.0015
-		insert capool taucas = 1000  fcas_capool = 0.05 
-		insert sAHP gsAHPbar_sAHP = 0.0003
-		insert im gbar_im = 0.0006
-		insert kap gkabar_kap =0.002 //  0.02
-				
+		insert cadyn gcabar_cadyn = 6e-5  eca = 120
+		insert leak el_leak=Vpas glbar_leak = 3.5e-5 /*2e-5*/ Ra=RaAll cm=2.5 //different values in the thress compartment model
+		insert hd ghdbar_hd=2.3e-05 78.72884325  //ghd //only in dend and p_dend
+		insert na3 sh_na3=nash ar_na3=1	gbar_na3=0.03//gna //soma and p_dend are different
+		// insert na gnabar_na=0.03
+		insert nap gbar_nap= 0.0003//0.00113//8e-4 //4.5e-4
+		insert kdr gkdrbar_kdr=gkdr //same value in the three compartment model
+		insert capool taucas = 1000  fcas_capool = 0.05 //only in dend and p_dend
+		insert sAHP gsAHPbar_sAHP = 0.009//0.005 //0.008968224 //0.00015 //2.3181e-05 //different values in dend and p_dend
+		insert im gmbar_im = 0.002//GmC //same value in the three compartment model
+		insert kap gkabar_kap = 0.000843 //only in soma
+
+		
 		ena = 45
 		ek = -80
 		if (ismembrane("kdr") || ismembrane("kap") ) {ek=-80} //???

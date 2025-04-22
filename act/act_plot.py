@@ -44,11 +44,13 @@ def create_overlapped_v_plot(x: np.ndarray, y1: np.ndarray, y2: np.ndarray, modu
     plt.close()
     
 
-def plot_v_comparison(module_foldername: str,predicted_g_data_file: str, current_injections: list, dt: float) -> None:
+def plot_v_comparison(target_foldername: str, module_foldername: str, predicted_g_data_file: str, current_injections: list, dt: float) -> None:
     '''
     Plots the Target cell voltage trace vs the Predicted cell voltage trace. (Line Plot)
     Parameters:
     -----------
+    target_foldername: str
+    
     module_foldername: str
     
     predicted_g_data_file: str
@@ -69,7 +71,7 @@ def plot_v_comparison(module_foldername: str,predicted_g_data_file: str, current
     
     amps = [current_injection.amp for current_injection in current_injections]
 
-    target_traces = np.load(module_foldername + "/target/combined_out.npy")
+    target_traces = np.load(target_foldername + "/combined_out.npy")
     target_v = target_traces[:,:,0]
 
     selected_traces = np.load(predicted_g_data_file)
@@ -116,7 +118,7 @@ def plot_fi_comparison(module_foldername: str, current_injections: list) -> None
     plt.close()
     
     
-def plot_training_v_mae_surface(module_foldername: str, current_injections: list, delay: float, dt: float, index1: int, index2: int, g_names: list, results_filename: str) -> None:
+def plot_training_v_mae_surface(target_foldername: str, module_foldername: str, current_injections: list, delay: float, dt: float, index1: int, index2: int, g_names: list, results_filename: str) -> None:
     '''
     Generates an interactive HTML file of a 3D surface plot.
     The 3D surface consists of the following:
@@ -126,6 +128,8 @@ def plot_training_v_mae_surface(module_foldername: str, current_injections: list
         (averaging varying current injection intensities)
     Parameters:
     -----------
+    target_foldername: str
+    
     module_foldername: str
     
     current_injections: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection]
@@ -157,7 +161,7 @@ def plot_training_v_mae_surface(module_foldername: str, current_injections: list
     g_name2 = g_names[index2]
     length_g = len(g_names)
     
-    target_dataset = np.load(f"{module_foldername}/target/combined_out.npy")
+    target_dataset = np.load(f"{target_foldername}/combined_out.npy")
     
     target_V = target_dataset[:,:,0]
     
@@ -237,11 +241,13 @@ def plot_training_v_mae_surface(module_foldername: str, current_injections: list
     plt.show()
 
 
-def plot_training_v_mae_contour_plot(module_foldername: str, current_injections: list, delay: float, dt: float, index1: int, index2: int, g_names: list, num_levels: int = 100, results_filename: str = None) -> None:
+def plot_training_v_mae_contour_plot(target_foldername: str, module_foldername: str, current_injections: list, delay: float, dt: float, index1: int, index2: int, g_names: list, num_levels: int = 100, results_filename: str = None) -> None:
     '''
     Generates a 2D contour plot version of plot_training_v_mae_surface (See directly above)
     Parameters:
     -----------
+    target_foldername: str
+    
     module_foldername: str
     
     current_injections: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection]
@@ -278,7 +284,7 @@ def plot_training_v_mae_contour_plot(module_foldername: str, current_injections:
     g_name2 = g_names[index2]
     length_g = len(g_names)
     
-    target_dataset = np.load(f"{module_foldername}/target/combined_out.npy")
+    target_dataset = np.load(f"{target_foldername}/combined_out.npy")
     
     target_V = target_dataset[:,:,0]
     
@@ -356,7 +362,7 @@ def plot_training_v_mae_contour_plot(module_foldername: str, current_injections:
     plt.show()
     
     
-def plot_training_feature_mae_contour_plot(module_foldername: str, current_injections: list, delay: float, dt: float, index1: int, index2: int, g_names: list, train_features: list, threshold: float = 0, first_n_spikes: int = 20, num_levels: int = 100, results_filename: str = None) -> None:
+def plot_training_feature_mae_contour_plot(target_foldername: str, module_foldername: str, current_injections: list, delay: float, dt: float, index1: int, index2: int, g_names: list, train_features: list, threshold: float = 0, first_n_spikes: int = 20, num_levels: int = 100, results_filename: str = None) -> None:
     '''
     Generates a 2D contour plot
     The contour consists of the following:
@@ -366,6 +372,8 @@ def plot_training_feature_mae_contour_plot(module_foldername: str, current_injec
         (averaging varying current injection intensities)
     Parameters:
     -----------
+    target_foldername: str
+    
     module_foldername: str
     
     current_injections: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection]
@@ -411,7 +419,7 @@ def plot_training_feature_mae_contour_plot(module_foldername: str, current_injec
     g_name2 = g_names[index2]
     length_g = len(g_names)
     
-    target_dataset = np.load(f"{module_foldername}/target/combined_out.npy")
+    target_dataset = np.load(f"{target_foldername}/combined_out.npy")
     
     target_V = target_dataset[:,:,0]
     target_I = target_dataset[:,:,1]
@@ -513,7 +521,7 @@ def plot_training_feature_mae_contour_plot(module_foldername: str, current_injec
     plt.show()
     
     
-def plot_training_fi_mae_surface(module_foldername: str, current_injections: list, delay: float, dt: float, index1: int, index2: int, g_names: list, results_filename: str, spike_threshold: float = 0) -> None:
+def plot_training_fi_mae_surface(target_foldername: str, module_foldername: str, current_injections: list, delay: float, dt: float, index1: int, index2: int, g_names: list, results_filename: str, spike_threshold: float = 0) -> None:
     '''
     Generates an interactive HTML file of a 3D surface plot.
     The 3D surface consists of the following:
@@ -522,6 +530,8 @@ def plot_training_fi_mae_surface(module_foldername: str, current_injections: lis
     - Axis 3: the MAE of the FI curves of the Target cell and Predicted Cell 
     Parameters:
     -----------
+    target_foldername: str
+    
     module_foldername: str
     
     current_injections: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection]
@@ -558,7 +568,7 @@ def plot_training_fi_mae_surface(module_foldername: str, current_injections: lis
     g_name2 = g_names[index2]
     length_g = len(g_names)
     
-    target_dataset = np.load(f"{module_foldername}/target/combined_out.npy")
+    target_dataset = np.load(f"{target_foldername}/combined_out.npy")
     
     target_V = target_dataset[:,:,0]
     
@@ -640,11 +650,13 @@ def plot_training_fi_mae_surface(module_foldername: str, current_injections: lis
     plt.show()
     
     
-def plot_training_fi_mae_contour_plot(module_foldername: str, current_injections: list, delay: float, dt: float, index1: int, index2: int, g_names: list, spike_threshold: float = 0, num_levels: int = 100, results_filename: str = None) -> None:
+def plot_training_fi_mae_contour_plot(target_foldername: str, module_foldername: str, current_injections: list, delay: float, dt: float, index1: int, index2: int, g_names: list, spike_threshold: float = 0, num_levels: int = 100, results_filename: str = None) -> None:
     '''
     Generates a 2D contour plot version of plot_training_fi_mae_surface (See directly above)
     Parameters:
     -----------
+    target_foldername: str
+    
     module_foldername: str
     
     current_injections: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection]
@@ -685,7 +697,7 @@ def plot_training_fi_mae_contour_plot(module_foldername: str, current_injections
     g_name2 = g_names[index2]
     length_g = len(g_names)
 
-    target_dataset = np.load(f"{module_foldername}/target/combined_out.npy")
+    target_dataset = np.load(f"{target_foldername}/combined_out.npy")
     
     target_V = target_dataset[:,:,0]
     

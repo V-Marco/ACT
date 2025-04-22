@@ -10,7 +10,6 @@ def rgetattr(obj, attr, *args):
     return functools.reduce(_getattr, [obj] + attr.split('.'))
 
 def rsetattr(obj, attr, val):
-    print(f"attr: {attr}, val: {val}")
     pre, _, post = attr.rpartition('.')
     return setattr(rgetattr(obj, pre) if pre else obj, post, val)
 
