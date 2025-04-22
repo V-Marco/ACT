@@ -32,7 +32,7 @@ def pp_error(pp_target: GettablePassiveProperties, pp_pred: GettablePassivePrope
     return error
 
 
-def np_correlation_score(target_data, simulated_data) -> float:
+def correlation_score(target_data, simulated_data) -> float:
     '''
     Uses np.corrcoef to calculate a correlation coefficient between target and simulated data
     
@@ -54,49 +54,6 @@ def np_correlation_score(target_data, simulated_data) -> float:
     corr_coef = float(corr_mat[0,1])
 
     return corr_coef
-
-
-def mse_score(target_data, simulated_data) -> float:
-    '''
-    Calculates Mean Squared Error between Target and Predicted
-    
-    Parameters:
-    ----------
-    target_data: list[float]
-        Generic target data
-    
-    simulated_data: list[float]
-        Generic simulation data
-
-    Returns:
-    ----------
-    mse_score: float
-        Mean Squared Error
-    '''
-    return float(
-        np.mean(np.square(target_data - simulated_data))
-    )
-
-
-def mae_score(target_data, simulated_data) -> float:
-    '''
-    Calculates Mean Absolute Error between Target and Predicted
-    Parameters:
-    ----------
-    target_data: list[float]
-        Generic target data
-    
-    simulated_data: list[float]
-        Generic simulation data
-
-    Returns:
-    ----------
-    mae_score: float
-        Mean Absolute Error
-    '''
-    return float(
-        np.mean(np.abs(target_data - simulated_data))
-    )
 
 
 def evaluate_random_forest(estimator, X_train, Y_train, random_state=42, n_repeats=3, n_splits=10, save_file=None) -> tuple:

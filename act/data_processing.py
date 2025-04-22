@@ -1,721 +1,115 @@
 import os
 import json
-from io import StringIO
 import glob
-import warnings
-
 import numpy as np
 import pandas as pd
-from scipy.signal import find_peaks
 from itertools import product
-
-import timeout_decorator
-import multiprocessing as mp
-from tqdm import tqdm
-from statsmodels.tsa.arima.model import ARIMA
 import pickle
-
-from multiprocessing import Pool
-
-'''
-Data Processor: A collection of helper methods for the Automatic Cell Tuner
-Broken into main sections:
-
-1. TRACE FEATURE EXTRACTION:
-  : methods for extracting features from Voltage and Current traces
-    and shaping the data into a final output numpy array
-      a. ARIMA STATS  : methods for generating ARIMA stats from a numpy array of voltage traces
-      b. VOLT  STATS  : spike height, trough height, frequency, etc.
-      c. CURRENT STATS: average intensity, etc.
-2. FILTERING
-  : methods for slimming training data according to varying parameters
-3. UTILS
-  : general helper functions (MISC)
-'''
-
 
 #---------------------------------------------
 # Feature Extraction
 #---------------------------------------------
-
-def extract_features(train_features: list = None, V: np.ndarray = None, I: np.ndarray = None, arima_file: str = None, threshold: float = 0, 
-                     num_spikes: int = 20, dt: float = 1, lto_hto: list = None, current_inj_combos: list = None) -> tuple:
+def find_events(v: np.ndarray, spike_threshold: float = -20) -> list:
     """
-    Extract features from voltage (V) and current (I) traces.
-    If V and I are provided as lists (multiple traces), this method uses multiprocessing
-    to process each trace in parallel. The method header remains unchanged.
-    Method Developed by OpenAI's o3 mini high model
-    
+    Counts the number of spikes in a voltage trace. Returns a list of event indices
     Parameters:
     -----------
-    train_features: list[str], default = None
-        List of train feature categories
+    v: np.ndarray of shape = (T,)
+        A single voltage trace.
     
-    V: np.ndarray of shape = (<number of trials>, <number of timesteps in sim>), default = None
-        List of voltage traces
-    
-    I: np.ndarray of shape = (<number of trials>, <number of timesteps in sim>), default = None
-        List of current injection traces
-    
-    arima_file: str, default = None
-        Filepath for file containing ARIMA Coefficients
+    spike_threshold: float, default = -20
+        Threshold for spike detection (mV).
         
-    threshold: float, default = 0
-        Spike threshold
-        
-    num_spikes: int, default = 20
-        Number of spikes
-    
-    dt: float, default 1
-        Timestep
-    
-    lto_hto: list[float], default = None
-        List of labels 0 or 1 for if the trace is lto/hto or not
-        
-    current_inj_combos: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection], default = None
-        A list of Current injection settings
-
-    
     Returns:
     -----------
-    features_list: list[float]
-        A list of the actual features extracted from voltage traces
-    
-    columns_list: list[str]]
-        A list of column names labeling the features
-
+    event_indices: list[float]
+        List of voltage trace indices where spikes occur.
     """
-    if isinstance(V, list) and isinstance(I, list):
-        arg_list = [
-            (train_features, V_trace, I_trace, arima_file, threshold, num_spikes, dt, lto_hto, current_inj_combos)
-            for V_trace, I_trace in zip(V, I)
-        ]
-        with Pool() as pool:
-            results = pool.starmap(_extract_features_single, arg_list)
-        features_list, columns_list = zip(*results)
-        return list(features_list), list(columns_list)
-    else:
-        return _extract_features_single(train_features, V, I, arima_file, threshold, num_spikes, dt, lto_hto, current_inj_combos)
+    # Find the indices where the voltage is above the threshold
+    above_threshold_indices = np.where(v[:-1] > spike_threshold)[0]
 
+    # Find the indices where the slope changes from positive to negative
+    slope = np.diff(v)
+    positive_to_negative_indices = np.where((slope[:-1] > 0) & (slope[1:] < 0))[0]
 
-def _extract_features_single(train_features: list, V: np.ndarray, I: np.ndarray, arima_file: str, threshold: float, 
-                             num_spikes: int, dt: float, lto_hto: list, current_inj_combos: list) -> tuple:
-    """
-    Core function to extract features from a single V and I trace.
-    This is the same code as your original method.
-    Method Developed by OpenAI's o3 mini high model
-    
+    # Find the intersection of the two sets of indices
+    event_indices = np.intersect1d(above_threshold_indices, positive_to_negative_indices)
+
+    return event_indices
+
+def VI_summary_features(V: np.ndarray, I: np.ndarray = None, spike_threshold: int = -20, max_n_spikes: int = 20) -> pd.DataFrame:
+    '''
+    Compute voltage and current summary features.
+
     Parameters:
-    -----------
-    train_features: list[str]
-        List of train feature categories
+    ----------
+    V: np.ndarray of shape (n_trials, T)
+        Voltage traces.
     
-    V: np.ndarray of shape = (<number of trials>, <number of timesteps in sim>)
-        List of voltage traces
+    I: np.ndarray of shape (n_trials, T), default = None
+        Current traces.
     
-    I: np.ndarray of shape = (<number of trials>, <number of timesteps in sim>)
-        List of current injection traces
+    spike_threshold: int, default = -20
+        Threshold for spike detection (mV).
     
-    arima_file: str
-        Filepath for file containing ARIMA Coefficients
-        
-    threshold: float
-        Spike threshold
-        
-    num_spikes: int
-        Number of spikes
-    
-    dt: float
-        Timestep
-    
-    lto_hto: list[float]
-        List of labels 0 or 1 for if the trace is lto/hto or not
-        
-    current_inj_combos: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection]
-        A list of Current injection settings
-    
+    max_n_spikes: int, default = 20
+        Maximum number of spike times to save.
+
     Returns:
-    -----------
-    summary_features: list[float]
-        A list of the actual features extracted from voltage traces
-    
-    columns: list[str]]
-        A list of column names labeling the features
-    """
-    if train_features is None:
-        train_features = ["i_trace_stats", "number_of_spikes", "spike_times", "spike_height_stats", 
-                            "trough_times", "trough_height_stats", "spike_intervals", 
-                            "lto-hto_amplitude", "lto-hto_frequency", "v_arima_coefs"]
-
-    columns = []
-    summary_features = None
-
-    def concatenate_features(existing_features, new_features):
-        if existing_features is None:
-            return new_features
-        else:
-            return np.concatenate((existing_features, new_features), axis=1)
-
-    if "i_trace_stats" in train_features and I is not None:
-        features, column_names = get_current_stats(I)
-        columns += column_names
-        summary_features = concatenate_features(summary_features, features)
-
-    if ("number_of_spikes" in train_features or 
-        "spike_times" in train_features or 
-        "spike_height_stats" in train_features or 
-        "trough_times" in train_features or
-        "trough_height_stats" in train_features or
-        "spike_intervals" in train_features):
-        features, column_names = get_voltage_stats(V, train_features=train_features,
-                                                        threshold=threshold, num_spikes=num_spikes, dt=dt)
-        columns += column_names
-        summary_features = concatenate_features(summary_features, features)
-
-    if "lto-hto_amplitude" in train_features or "lto-hto_frequency" in train_features:
-        features, column_names = get_hto_lto_stats(V, lto_hto, train_features=train_features, dt=dt, CI_settings=current_inj_combos)
-        columns += column_names
-        summary_features = concatenate_features(summary_features, features)
-
-    if "v_arima_coefs" in train_features and (arima_file or V is not None):
-        features, column_names = get_arima_features(V=V, arima_file=arima_file)
-        columns += column_names
-        summary_features = concatenate_features(summary_features, features)
-
-    return summary_features, columns
-
-
-#Deprecated
-def get_arima_features(V: np.ndarray = None, arima_file: str = None) -> tuple:
+    ----------
+    stat_df: pd.DataFrame
+        Dataframe with extracted summary features.
     '''
-    Gets the arima coefficients either by loading in pre-calculated values, or via calculation.
-    
-    --------------
-    .. Deprecated
-    --------------
-    
-    Parameters:
-    -----------
-    V: np.ndarray of shape = (<number of trials>, <number of timesteps in sim>), default = None
-        List of voltage traces
-        
-    arima_file: str, default = None
-        Filepath to file containing ARIMA coefficients
-    
-    Returns:
-    -----------
-    features: list[float]
-        Features 
-    
-    column_names: list[str]
-        Column labels
-    '''
-    if arima_file and os.path.exists(arima_file):
-        features = load_arima_coefs(arima_file)
-        column_names =  [f"arima{i}" for i in range(features.shape[0])]
-        return features, column_names
-    elif isinstance(V, np.ndarray):
-        generate_arima_coefficients(V)
+    stat_df = []
+    for trial_idx in range(len(V)):
+        row = pd.DataFrame(index = [0])
 
-        features = load_arima_coefs("./arima_output/arima_stats.json")
-        column_names =  [f"arima{i}" for i in range(len(features[0]))]
-        return features, column_names
-    else:
-        print("Arima file not found and voltage data not provided.")
-        return None
+        # Extract voltage features
+        v_trial = V[trial_idx]
 
+        # Save overall voltage stats
+        row["mean_v"] = np.nanmean(v_trial)
+        row("std_v") = np.nanstd(v_trial)
 
-#Deprecated
-def load_arima_coefs(input_file: str) -> list:
-    '''
-    Loads the ARIMA coefficients if they have been saved before.
-    --------------
-    .. Deprecated
-    --------------
-        
-    Parameters:
-    -----------
-    input_file: str
-        Filepath to json file containing ARIMA coefficients
-    
-    Returns:
-    -----------
-    arima_coefs: list
-        Array of ARIMA coefficients
-    '''
-    with open(input_file) as json_file:
-        arima_dict = json.load(json_file)
-    return arima_dict["arima_coefs"]
+        # Extract # of spikes and # of troughs and save the number
+        spike_idxs = find_events(v_trial, spike_threshold)
+        trough_idxs = find_events(-v_trial, -spike_threshold) #TODO: valid trough check -- do we need it?
 
+        for events, event_type_name in zip([spike_idxs, trough_idxs], ["spike", "trough"]):
+            # Save the number of events
+            row[f"n_{event_type_name}s"] = len(events)
+        
+            # Save first max_n_spikes event times; pad if less events than max_n_spikes
+            event_idxs_corrected = np.ones(max_n_spikes) * np.nan
+            event_idxs_corrected[:len(events)] = events
+            for event_idx in range(len(max_n_spikes)):
+                row[f"spike_time_{event_idx}"] = event_idxs_corrected[event_idx]
 
-#Deprecated
-def generate_arima_coefficients(V: np.ndarray, arima_order: tuple = (4,0,4), output_folder: str = "./arima_output/", num_procs: int = 64) -> list:
-    '''
-    Calculates the ARIMA coefficients given the voltage traces and ARIMA order.
-    Multiprocessing wrapper.
-    
-    --------------
-    .. Deprecated
-    --------------
+             # Save event stats
+            row[f'min_{event_type_name}_amp'] = np.min(v_trial[events])
+            row[f'max_{event_type_name}_amp'] = np.max(v_trial[events])
+            row[f'mean_{event_type_name}_amp'] = np.mean(v_trial[events])
+            row[f'std_{event_type_name}_amp'] = np.std(v_trial[events])
         
-    Parameters:
-    -----------
-    V: np.ndarray of shape = (<number of trials>, <number of timesteps in sim>), default = None
-        List of voltage traces
-    
-    arima_order: tuple(int,int,int), default = (4,0,4)
-        ARIMA order for AR, I, and MA
-    
-    output_folder: str, default = "./arima_output/"
-        Filepath for save file
-    
-    num_procs: int, default = 64
-        Number of processors in pool
-    
-    Returns:
-    -----------
-    coefs_list: list[dict]
-        A list of ARIMA coefficients
-    '''
-    
-    print("-------------------------------------------------")
-    print("GENERATING ARIMA STATS")
-    print("-------------------------------------------------")
-    output_file = output_folder + "arima_stats.json"
+        # Save ISIs for spikes only
+        isi = np.diff(spike_idxs)
+        isi_corrected = np.ones(max_n_spikes - 1) * np.nan
+        isi_corrected[:len(isi)] = isi
+        for isi_idx in range(len(max_n_spikes - 1)):
+            row[f"isi_{isi_idx}"] = isi_corrected[isi_idx]
 
-    print(f"ARIMA order set to {arima_order}")
+        # Get I stats if needed
+        if I is not None:
+            i_trial = I[trial_idx]
+            row["mean_i"] = np.nanmean(i_trial)
+            row["std_i"] = np.std(i_trial)
 
-    warnings.filterwarnings("ignore", message="Non-stationary starting autoregressive parameters")
-    warnings.filterwarnings("ignore", message="Maximum Likelihood optimization failed to converge. Check mle_retvals")
+        stat_df.append(row)
+    
+    stat_df = pd.concat(stat_df, axis = 0).reset_index(drop = True)
+    return stat_df
 
-    trace_list = []
-    traces = V.tolist()
-    num_traces = len(traces)
-    num_arima_vals = 2 + arima_order[0] + arima_order[2]
-    for i, trace in enumerate(traces):
-        trace_list.append(
-            {
-                "cell_id": i,
-                "trace": trace,
-                "num_traces": num_traces,
-                "arima_order": arima_order,
-                "num_coeffs" : num_arima_vals
-            }
-        )
-    with mp.Pool(num_procs) as pool:
-        pool_output = list(tqdm(pool.imap(arima_processor, trace_list), total=len(trace_list)))
-        
-    pool_dict = {}
-    for out in pool_output:
-        pool_dict[out["cell_id"]] = out["coefs"]
-    coefs_list = []
-    
-    for i in range(num_traces):
-        if pool_dict.get(i):
-            coefs_list.append(pool_dict[i])
-        else:  
-            coefs_list.append([0 for _ in range(num_arima_vals)])
-
-    output_dict = {}
-    output_dict["arima_coefs"] = coefs_list
-
-    os.makedirs(output_folder, exist_ok=True)
-
-    with open(output_file, "w") as fp:
-        json.dump(output_dict, fp, indent=4)
-
-    return coefs_list
-
-
-#Deprecated
-def arima_processor(trace_dict: dict) -> dict:
-    '''
-    Called by generate_arima_coefficients
-    Handles warnings and exceptions for individual processes.
-    Calls get_arima_coefs
-    
-    --------------
-    .. Deprecated
-    --------------
-    
-    Parameters:
-    -----------
-    trace_dict: dict
-        A dictionary containing the trace, the ARIMA order, and the number of coefficients
-    
-    Returns:
-    -----------
-    trace_dict: dict
-        Fills the coefs key with a list of coefficients
-    '''
-    trace = trace_dict["trace"]
-    arima_order = trace_dict["arima_order"]
-    num_coeffs = trace_dict["num_coeffs"]
-
-    warnings.filterwarnings("ignore", message="Non-invertible starting MA parameters found.")
-    warnings.filterwarnings("ignore", message="Non-stationary starting autoregressive parameters")
-    warnings.filterwarnings("ignore", message="Maximum Likelihood optimization failed to converge. Check mle_retvals")
-    
-    try:
-        coefs = get_arima_coefs(trace, arima_order)
-    except Exception as e:
-        coefs = [0.0 for _ in range(num_coeffs)]
-
-    trace_dict["coefs"] = coefs
-    return trace_dict
-
-
-#Deprecated
-@timeout_decorator.timeout(180, use_signals=True, timeout_exception=Exception)
-def get_arima_coefs(trace: np.array, order: tuple = (10, 0, 10)) -> list:
-    '''
-    Directly calls the ARIMA processes from statsmodels and gets the ARIMA coefficients.
-    
-    --------------
-    .. Deprecated
-    --------------
-    
-    Parameters:
-    -----------
-    trace: np.array
-        A single voltage trace
-        
-    order: tuple(AR,I,MA), default = (10,0,10)
-        ARIMA settings
-    Returns:
-    -----------
-    coefs: list[float]
-        A list of ARIMA coefficients
-    '''
-    
-    warnings.filterwarnings("ignore", message="Non-invertible starting MA parameters found.")
-    warnings.filterwarnings("ignore", message="Non-stationary starting autoregressive parameters")
-    warnings.filterwarnings("ignore", message="Maximum Likelihood optimization failed to converge. Check mle_retvals")
-    
-    model = ARIMA(endog=trace, order=order).fit()
-    stats_df = pd.read_csv(
-        StringIO(model.summary().tables[1].as_csv()),
-        index_col=0,
-        skiprows=1,
-        names=["coef", "std_err", "z", "significance", "0.025", "0.975"],
-    )
-    stats_df.loc[stats_df["significance"].astype(float) > 0.05, "coef"] = 0
-    coefs = stats_df.coef.tolist()
-    return coefs
-
-
-def get_current_stats(I: np.ndarray, decimate_factor: float = None) -> tuple:
-    '''
-    Gets the mean and stdev of the current injection trace and packages the info into features and
-    column names
-    Parameters:
-    -----------
-    I: np.ndarray of shape = (<number of trials>, <number of timesteps in sim>)
-        List of current injection traces
-    
-    decimate_factor: float
-        Decimate factor
-    
-    Returns:
-    -----------
-    features: list[float]
-        List of features
-    
-    column_names: list[str]
-        List of column names
-    '''
-    I = apply_decimate_factor(I, decimate_factor)
-    
-    features = extract_i_traces_stats(I)
-    column_names = ["I_mean", "I_stdev"]
-    
-    return features, column_names
-
-
-def extract_i_traces_stats(I: np.ndarray) -> list:
-    '''
-    Directly calculates the mean and standard deviation of the current injection trace.
-    Parameters:
-    -----------
-    I: np.ndarray of shape = (<number of trials>, <number of timesteps in sim>)
-        List of current injection traces
-    
-    Returns:
-    -----------
-    I_features: list[float]
-        List of features
-    
-    '''
-    I_features = []
-    for i_trace in I:
-        sample_features = np.array([np.mean(i_trace), np.std(i_trace)])
-        I_features.append(sample_features)
-    return np.stack(I_features)
-
-
-def get_voltage_stats(V: np.ndarray, train_features: list = None, decimate_factor: float = None, threshold: float = 0, num_spikes: int = 20, dt: float = 1) -> tuple:
-    '''
-    Main method for extracting features from the voltage trace along a variety of features.
-    Packages the information into features and column names.
-    Parameters:
-    -----------
-    V: np.ndarray of shape = (<number of trials>, <number of timesteps in sim>), default = None
-        List of voltage traces
-    
-    train_features: list[str], default = None
-        A list of features that are extracted
-        
-    decimate_factor: float, default = None
-        A factor for downsampling the data
-        
-    threshold: float, default = 0
-        Spike threshold
-    
-    num_spikes: int, default = 20
-        Number of spikes in analysis
-    
-    dt: float, default = 1
-        Timestep
-    
-    Returns:
-    -----------
-    features_final: list[float]
-        List of features
-    
-    column_names: list[str]
-        List of column names
-    
-    '''
-    
-    V = apply_decimate_factor(V, decimate_factor)
-
-    (
-    num_of_spikes_list, 
-    spike_times_list, 
-    interspike_intervals_list, 
-    min_spike_height_list, 
-    max_spike_height_list,
-    avg_spike_height_list,
-    std_spike_height_list,
-    num_of_troughs_list,
-    trough_times_list,
-    min_trough_height_list,
-    max_trough_height_list,
-    avg_trough_height_list,
-    std_trough_height_list,
-    mean_voltage_list,
-    std_voltage_list
-    ) = extract_v_traces_features(V, spike_threshold=threshold, num_spikes=num_spikes, dt=dt)
-    
-    features = []
-    column_names = []
-    
-    if "number_of_spikes" in train_features:
-        features.append(num_of_spikes_list)
-        column_names += ["Num Spikes"]
-    if "spike_times" in train_features:
-        features.append(spike_times_list)
-        num_times = spike_times_list.shape[1]
-        column_names += [f"Spike Time {i+1}" for i in range(num_times)]
-    if "spike_height_stats" in train_features:
-        features.append(min_spike_height_list)
-        features.append(max_spike_height_list)
-        features.append(avg_spike_height_list)
-        features.append(std_spike_height_list)
-        column_names += ["Min Spike Height", 
-                        "Max Spike Height", 
-                        "Avg Spike Height", 
-                        "Std Spike Height"]
-    if "number_of_troughs" in train_features:
-        features.append(num_of_troughs_list)
-        column_names += ["Num Troughs"]
-    if "trough_times" in train_features:
-        features.append(trough_times_list)
-        num_times = trough_times_list.shape[1]
-        column_names += [f"Trough Time {i+1}" for i in range(num_times)]
-    if "trough_height_stats" in train_features:
-        features.append(min_trough_height_list)
-        features.append(max_trough_height_list)
-        features.append(avg_trough_height_list)
-        features.append(std_trough_height_list)
-        column_names += ["Min Trough Height", 
-                        "Max Trough Height", 
-                        "Avg Trough Height",
-                        "Std Trough Height"]
-    if "spike_intervals" in train_features:
-        features.append(interspike_intervals_list)
-        num_intervals = interspike_intervals_list.shape[1]
-        column_names += [f"Interspike Interval {i+1}" for i in range(num_intervals)]
-        
-    features_final = np.column_stack(features)
-
-    return features_final, column_names
-
-
-def extract_v_traces_features(traces: np.ndarray, spike_threshold: float = 0, num_spikes: int = 20, dt: float = 1) -> tuple:
-    '''
-    Directly calculates many of the voltage trace features
-    Parameters:
-    -----------
-    traces: np.ndarray of shape = (<number of trials>, <number of timesteps in sim>), default = None
-        List of voltage traces
-        
-    spike_threshold: float, default = 0
-        Spike threshold
-        
-    num_spikes: int, default = 20
-        Number of spikes in analysis
-    
-    dt: float, default = 1
-        Timestep
-    
-    Returns:
-    -----------
-    num_of_spikes_list: list[int]
-        A list of the number of spikes in each voltage trace
-        
-    spike_times_list: list[list[float]]
-        A list of the first n spike times in each voltage trace
-        
-    interspike_intervals_list: list[list[float]]
-        A list of the first n interspike intervals in each voltage trace
-        
-    min_spike_height_list: list[float]
-        A list of the minimum spike height in each voltage trace
-        
-    max_spike_height_list: list[float]
-        A list of the maximum spike height in each voltage trace
-        
-    avg_spike_height_list: list[float]
-        A list of the average spike height in each voltage trace
-        
-    std_spike_height_list: list[float]
-        A list of the stdev of spike height in each voltage trace
-        
-    num_of_troughs_list: list[int]
-        A list of the number of troughs in each voltage trace
-        
-    trough_times_list: list[list[float]]
-        A list of the first n trough times in each voltage trace
-        
-    min_trough_height_list: list[float]
-        A list of the minimum trought height in each voltage trace
-        
-    max_trough_height_list: list[float]
-        A list of the maximum trough height in each voltage trace
-        
-    avg_trough_height_list: list[float]
-        A list of the average trough height in each voltage trace
-        
-    std_trough_height_list: list[float]
-        A list of the stdev trough height in each voltage trace
-        
-    mean_voltage_list: list[float]
-        A list of the mean voltage in each voltage trace
-        
-    std_voltage_list: list[flaot]
-        A list of the stdev voltage in each voltage trace
-        
-    '''
-    num_of_spikes_list = []
-    spike_times_list = []
-    interspike_intervals_list = []
-    min_spike_height_list = []
-    max_spike_height_list = []
-    avg_spike_height_list = []
-    std_spike_height_list = []
-    num_of_troughs_list = []
-    trough_times_list = []
-    min_trough_height_list = []
-    max_trough_height_list = []
-    avg_trough_height_list = []
-    std_trough_height_list = []
-    mean_voltage_list = []
-    std_voltage_list = []
-    
-    pad_value=1e6
-    
-    for trace in traces:
-        peak_idxs, _ = find_peaks(trace, threshold=spike_threshold, height=spike_threshold)
-        
-        num_of_spikes = len(peak_idxs)
-        num_of_spikes_list.append(num_of_spikes)
-        
-        spike_times = peak_idxs[:num_spikes] * dt
-        spike_times_padded = np.pad(spike_times, (0, num_spikes - len(spike_times)), 'constant', constant_values=pad_value)
-        spike_times_list.append(spike_times_padded)
-        
-        interspike_intervals = np.diff(spike_times)
-        interspike_intervals_padded = np.pad(interspike_intervals, (0,num_spikes - 1 - len(interspike_intervals)), 'constant', constant_values=pad_value)
-        interspike_intervals_list.append(interspike_intervals_padded)
-        
-        spike_heights = trace[peak_idxs]
-        min_spike_height = np.min(spike_heights) if len(spike_heights) > 0 else 1e6
-        max_spike_height = np.max(spike_heights) if len(spike_heights) > 0 else 1e6
-        avg_spike_height = np.mean(spike_heights) if len(spike_heights) > 0 else 1e6
-        std_spike_height = np.std(spike_heights) if len(spike_heights) > 0 else 1e6
-        
-        min_spike_height_list.append(min_spike_height)
-        max_spike_height_list.append(max_spike_height)
-        avg_spike_height_list.append(avg_spike_height)
-        std_spike_height_list.append(std_spike_height)
-        
-        mean_voltage = np.mean(trace)
-        std_voltage = np.std(trace)
-        
-        mean_voltage_list.append(mean_voltage)
-        std_voltage_list.append(std_voltage)
-        
-        inverted_trace = -trace  
-        trough_idxs, _ = find_peaks(inverted_trace, threshold=-spike_threshold) 
-        
-        valid_trough_idx = []
-        for idx in trough_idxs:
-            before_spike = peak_idxs[peak_idxs < idx]
-            after_spike = peak_idxs[peak_idxs > idx]
-            
-            if len(before_spike) > 0 and len(after_spike) > 0:
-                valid_trough_idx.append(idx)
-
-        valid_trough_idx = np.array(valid_trough_idx, dtype=int)
-        
-        num_of_troughs = len(valid_trough_idx)
-        num_of_troughs_list.append(num_of_troughs)
-        
-        trough_times = valid_trough_idx[:num_spikes] * dt
-        trough_times_padded = np.pad(trough_times, (0, num_spikes - len(trough_times)), 'constant', constant_values=pad_value)
-        trough_times_list.append(trough_times_padded)
-        
-        trough_heights = trace[valid_trough_idx]
-        min_trough_height = np.min(trough_heights) if len(trough_heights) > 0 else 1e6
-        max_trough_height = np.max(trough_heights) if len(trough_heights) > 0 else 1e6
-        avg_trough_height = np.mean(trough_heights) if len(trough_heights) > 0 else 1e6
-        std_trough_height = np.std(trough_heights) if len(trough_heights) > 0 else 1e6
-        
-        min_trough_height_list.append(min_trough_height)
-        max_trough_height_list.append(max_trough_height)
-        avg_trough_height_list.append(avg_trough_height)
-        std_trough_height_list.append(std_trough_height)
-        
-    return (
-        np.array(num_of_spikes_list), 
-        np.array(spike_times_list), 
-        np.array(interspike_intervals_list), 
-        np.array(min_spike_height_list), 
-        np.array(max_spike_height_list),
-        np.array(avg_spike_height_list),
-        np.array(std_spike_height_list),
-        np.array(num_of_troughs_list),
-        np.array(trough_times_list),
-        np.array(min_trough_height_list),
-        np.array(max_trough_height_list),
-        np.array(avg_trough_height_list),
-        np.array(std_trough_height_list),
-        np.array(mean_voltage_list),
-        np.array(std_voltage_list)
-    )
-
-    
+#TODO: redo in the same format as VI_summary_features()
 def get_hto_lto_stats(V: np.ndarray, lto_hto: list, train_features: list = None, dt: float = 1, CI_settings: list = None) -> tuple:
     '''
     Gets the LTO and HTO amplitude and frequency from the voltage traces.
@@ -761,7 +155,7 @@ def get_hto_lto_stats(V: np.ndarray, lto_hto: list, train_features: list = None,
     
     return features_final, column_names
 
-    
+#TODO: redo in the same format as VI_summary_features()
 def calculate_hto_lto_frequency(V: np.ndarray, CI_settings: list, dt: float, lto_hto: list) -> list:
     '''
     Directly calculates the frequency from LTO and HTO
@@ -814,7 +208,7 @@ def calculate_hto_lto_frequency(V: np.ndarray, CI_settings: list, dt: float, lto
 
     return np.array(frequencies)
 
-
+#TODO: redo in the same format as VI_summary_features()
 def calculate_hto_lto_amplitude(V: np.ndarray, CI_settings: list, dt: float, lto_hto: list) -> list:
     '''
     Directly calculates the amplitude from LTO and HTO
@@ -862,74 +256,66 @@ def calculate_hto_lto_amplitude(V: np.ndarray, CI_settings: list, dt: float, lto
 #---------------------------------------------
 # FILTERING
 #---------------------------------------------
-def get_nonsaturated_traces(data: np.ndarray, window_of_inspection: tuple, threshold: float = -50, dt: float = 1) -> np.ndarray:
+def remove_saturated_traces(data: np.ndarray, window_of_inspection: tuple, saturation_threshold: float = -50) -> np.ndarray:
     '''
     Filters training data to only voltage traces that have not saturated.
+
     Parameters:
     -----------
-    data: np.ndarray of shape = (<number of trials>, <number of timesteps in sim>, 4)
-        Voltage traces, current traces, conductance settings, and lto_hto/sim_idx information
+    data: np.ndarray of shape (n_trials, T, 4)
+        Array (V, I, g, lto/hto/sim_idx).
         
-    window_of_inspection: tuple(<window_start>,<window_end>)
-        Boundaries for the window of inspection
+    window_of_inspection: tuple(win_start, win_end)
+        Boundaries for the window of inspection.
     
-    threshold: float, default = -50
-        A voltage threshold above which is potentially saturation
-    
-    dt: float, default = 1
-        Timestep
+    saturation_threshold: float, default = -50
+        A voltage threshold above which the trace is potentially saturated (mV).
         
     Returns:
     -----------
-    filtered_data: np.ndarray of size = (<number of trials>, <number of timesteps>, 4)
-        Filtered data to nonsaturated traces only
+    filtered_data: np.ndarray of shape (n_trials, T, 4)
+        Filtered data containing nonsaturated traces only.
     '''
-    inspection_window_start = int(window_of_inspection[0] / dt)
-    inspection_window_end = int(window_of_inspection[1] / dt)
-    
-    V_traces = data[:, :, 0]  
-    V_traces_inspection_window = V_traces[:, inspection_window_start:inspection_window_end]
-
-    nonsaturated_ind = ~np.all(V_traces_inspection_window > threshold, axis=1)
-    
-    filtered_data = data[nonsaturated_ind, :, :]
-    
-    print(f"Dropping {len(data) - len(filtered_data)} traces where: All values in the window ({inspection_window_start}:{inspection_window_end}) are saturated (above {threshold} mV).")
-    
+    V = data[:, window_of_inspection[0] : window_of_inspection[1], 0]  
+    nonsaturated_idxs = ~np.all(V > saturation_threshold, axis = 1)
+    filtered_data = data[nonsaturated_idxs, :, :]
+    print(f"Saturation filter: dropped {len(data) - len(filtered_data)} traces.")
     return filtered_data
 
 
-def get_traces_with_spikes(data: np.ndarray, spike_threshold: float = 0, dt: float = 1) -> np.ndarray:
+def get_traces_with_spikes(data: np.ndarray, spike_threshold: float = -20) -> np.ndarray:
     '''
-    Filters training data to only voltage traces that have spikes
+    Filters training data to only voltage traces that have spikes.
+
     Parameters:
     -----------
-    data: np.ndarray of shape = (<number of trials>, <number of timesteps in sim>, 4)
-        Voltage traces, current traces, conductance settings, and lto_hto/sim_idx information
+    data: np.ndarray of shape (n_trials, T, 4)
+        Array (V, I, g, lto/hto/sim_idx).
     
-    spike_threshold: float, default = -50
-        A voltage threshold above which is potentially saturation
-    
-    dt: float, default = 1
-        Timestep
+    spike_threshold: int, default = -20
+        Threshold for spike detection (mV).
         
     Returns:
     -----------
-    traces_with_spikes: np.ndarray of size = (<number of trials>, <number of timesteps>, 4)
-        Filtered data to spiking traces only
+    traces_with_spikes: np.ndarray of shape (n_trials, T, 4)
+        Filtered data containing only traces with spikes.
     '''
-    V_traces = data[:, :, 0]  
-    num_of_spikes_list, *_ = extract_v_traces_features(V_traces, spike_threshold=spike_threshold, dt=dt)
-    traces_with_spikes = data[num_of_spikes_list > 0]
-    
-    print(f"Dropping {len(data) - len(traces_with_spikes)} traces where: No spikes are in the voltage trace.")
+    V = data[:, :, 0]
 
+    idx_with_spikes = []
+    for trial_idx in range(len(V)):
+        if len(find_events(V[trial_idx], spike_threshold)) > 0:
+            idx_with_spikes.append(trial_idx)
+
+    traces_with_spikes = data[idx_with_spikes]
+    print(f"Spike filter: dropped {len(data) - len(traces_with_spikes)} traces.")
     return traces_with_spikes
 
 
 #---------------------------------------------
 # UTILS 
 #---------------------------------------------
+#TODO: check if we need everything here
 def apply_decimate_factor(traces: np.ndarray, decimate_factor: float = None) -> np.ndarray:
     '''
     A method for downsampling data traces (voltage, current) from training data
@@ -1044,36 +430,6 @@ def generate_I_g_combinations(channel_ranges: list, channel_slices: list, curren
     return conductance_groups, current_groups
 
 
-def count_spikes(v: np.ndarray, spike_threshold: float = -20) -> list:
-    """
-    Counts the number of spikes in a voltage trace. Returns a list of event indices
-    Parameters:
-    -----------
-    v: np.ndarray of shape = (<number of timesteps in sim>)
-        A single voltage trace
-    
-    spike_threshold: float, default = -20
-        Spike threshold
-        
-    Returns:
-    -----------
-    event_indices: list[float]
-        List of voltage trace indices where spikes occur
-    
-    """
-    # Find the indices where the voltage is above the threshold
-    above_threshold_indices = np.where(v[:-1] > spike_threshold)[0]
-
-    # Find the indices where the slope changes from positive to negative
-    slope = np.diff(v)
-    positive_to_negative_indices = np.where((slope[:-1] > 0) & (slope[1:] < 0))[0]
-
-    # Find the intersection of the two sets of indices
-    event_indices = np.intersect1d(above_threshold_indices, positive_to_negative_indices)
-
-    return len(event_indices)
-
-
 def get_fi_curve(V_matrix: np.ndarray, spike_threshold: float, CI_list: list, ignore_negative_CI = True) -> list:
     '''
     Given current injection intensities and voltage traces, this method calculates
@@ -1098,9 +454,9 @@ def get_fi_curve(V_matrix: np.ndarray, spike_threshold: float, CI_list: list, ig
         List of frequencies
     
     '''
-
     # Count spikes
-    counts = np.apply_along_axis(count_spikes, axis = 1, arr = V_matrix, spike_threshold = spike_threshold)
+    raise RuntimeError
+    counts = np.apply_along_axis(len(find_events(V_matrix)), axis = 1, arr = V_matrix, spike_threshold = spike_threshold)
     
     # Find injection durations
     amps = np.array([current_inj.amp for current_inj in CI_list])
