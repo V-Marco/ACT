@@ -5,6 +5,7 @@ from dataclasses import fields
 
 from sklearn.model_selection import RepeatedKFold
 from sklearn.model_selection import cross_val_score
+from sklearn.metrics import mean_absolute_error
 
 from act.data_processing import *
 from act.act_types import GettablePassiveProperties
@@ -159,7 +160,7 @@ def save_interspike_interval_comparison(module_foldername, prediction_data_filep
     print(f"Interspike times (Prediction): {isi_prediction}")
         
     for i in range(len(amps)):
-        isi_maes.append(mae_score(isi_target[i], isi_prediction[i]))
+        isi_maes.append(mean_absolute_error(isi_target[i], isi_prediction[i]))
         
     print(f"MAE for each I injection: {isi_maes}")
         
@@ -202,7 +203,7 @@ def save_prediction_g_mae(actual_g, save_file) -> float:
     
     actual_g = list(actual_g.values())
     
-    mae = mae_score(np.array(actual_g),np.array(predicted_g))
+    mae = mean_absolute_error(np.array(actual_g),np.array(predicted_g))
     
     print(f"MAE of final g prediction: {mae}")
     save_to_json(mae, "mae_final_predicted_g", save_file)
@@ -261,7 +262,7 @@ def save_feature_mae(module_foldername, prediction_data_filepath, train_features
     
     pred_V_features, _ = extract_features(train_features=train_features, V=pred_V,I=pred_I, threshold=threshold, num_spikes=first_n_spikes, dt=dt, lto_hto=pred_lto_hto, current_inj_combos=CI_settings)
     
-    feature_mae = mae_score(target_V_features, pred_V_features)
+    feature_mae = np.mae_score(target_V_features, pred_V_features)
     print(f"MAE of summary features for final prediction: {feature_mae}")
     
     save_to_json(feature_mae, "summary_stats_mae_final_prediction", save_file)
