@@ -37,7 +37,39 @@ def find_events(v: np.ndarray, spike_threshold: float = -20) -> list:
 
     return event_indices
 
-def VI_summary_features(V: np.ndarray, I: np.ndarray = None, spike_threshold: int = -20, max_n_spikes: int = 20) -> pd.DataFrame:
+def select_features(df: pd.DataFrame, feature_keys: list) -> pd.DataFrame:
+    """
+    Returns a subset of the features dataframe based on a list of user selected feature keys.
+    Useful for keyword shortcuts like "spike_times" and "isi" to get all columns related.
+    Parameters:
+    -----------
+    df: pd.DataFrame
+        The original full feature dataframe
+    
+    feature_keys: list[str]
+        A list of strings describing the features that the user wants to extract
+        
+    Returns:
+    -----------
+    df_sub: pd.DataFrame
+        A smaller pandas dataframe constrained to only select columns
+    """
+    cols = []
+    for key in feature_keys:
+        if key == "spike_times":
+            cols += [c for c in df.columns if c.startswith("spike_time_")]
+        elif key == "interspike_intervals":
+            cols += [c for c in df.columns if c.startswith("isi_")]
+        else:
+            # fall back to substring‐match
+            cols += [c for c in df.columns if key in c]
+    # drop duplicates & preserve original order
+    seen = set()
+    cols = [c for c in cols if not (c in seen or seen.add(c))]
+    return df[cols]
+
+
+def get_summary_features(V: np.ndarray, I: np.ndarray = None, lto_hto = None, current_inj_combos: list = None, spike_threshold: int = -20, max_n_spikes: int = 20,  dt = 1) -> pd.DataFrame:
     '''
     Compute voltage and current summary features.
 
@@ -48,12 +80,24 @@ def VI_summary_features(V: np.ndarray, I: np.ndarray = None, spike_threshold: in
     
     I: np.ndarray of shape (n_trials, T), default = None
         Current traces.
+        
+    train_features: list[str], default = None
+        List containing features that users want to extract from the simulation data
+    
+    lto_hto: list[float], default = None
+        A list of labels for lto/hto
+        
+    current_inj_combos: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection], default = None
+        A list of Current injection settings for all trials
     
     spike_threshold: int, default = -20
         Threshold for spike detection (mV).
     
     max_n_spikes: int, default = 20
         Maximum number of spike times to save.
+        
+    dt: float, default = 1
+        Timestep
 
     Returns:
     ----------
@@ -61,23 +105,34 @@ def VI_summary_features(V: np.ndarray, I: np.ndarray = None, spike_threshold: in
         Dataframe with extracted summary features.
     '''
     stat_df = []
-    for trial_idx in range(len(V)):
+    for trial_idx, v_trial in enumerate(V):
         row = pd.DataFrame(index = [0])
+        
+        # Crop data to only extract features within the current injection time
+        start_time = current_inj_combos[trial_idx].delay
+        stop_time = current_inj_combos[trial_idx].delay + current_inj_combos[trial_idx].dur
+        start_idx = int(np.round(start_time / dt))
+        end_idx = int(np.round(stop_time / dt))
+        end_idx = min(end_idx, len(v_trial))
 
-        # Extract voltage features
-        v_trial = V[trial_idx]
-
+        window = v_trial[start_idx:end_idx]
+        
         # Save overall voltage stats
-        row["mean_v"] = np.nanmean(v_trial)
-        row("std_v") = np.nanstd(v_trial)
+        row["mean_v"] = np.nanmean(window)
+        row["std_v"] = np.nanstd(window)
 
         # Extract # of spikes and # of troughs and save the number
-        spike_idxs = find_events(v_trial, spike_threshold)
-        trough_idxs = find_events(-v_trial, -spike_threshold) #TODO: valid trough check -- do we need it?
+        spike_idxs = find_events(window, spike_threshold)
+        trough_idxs = find_events(-window, -spike_threshold) #TODO: valid trough check -- do we need it?
 
         for events, event_type_name in zip([spike_idxs, trough_idxs], ["spike", "trough"]):
             # Save the number of events
             row[f"n_{event_type_name}s"] = len(events)
+            
+            # Save spike frequency
+            if event_type_name == "spike":
+                duration = len(window) * dt  #ms
+                row[f"spike_frequency"] = len(events) / duration 
         
             # Save first max_n_spikes event times; pad if less events than max_n_spikes
             event_idxs_corrected = np.ones(max_n_spikes) * np.nan
@@ -85,11 +140,11 @@ def VI_summary_features(V: np.ndarray, I: np.ndarray = None, spike_threshold: in
             for event_idx in range(len(max_n_spikes)):
                 row[f"spike_time_{event_idx}"] = event_idxs_corrected[event_idx]
 
-             # Save event stats
-            row[f'min_{event_type_name}_amp'] = np.min(v_trial[events])
-            row[f'max_{event_type_name}_amp'] = np.max(v_trial[events])
-            row[f'mean_{event_type_name}_amp'] = np.mean(v_trial[events])
-            row[f'std_{event_type_name}_amp'] = np.std(v_trial[events])
+            # Save event stats
+            row[f'min_{event_type_name}_volt'] = np.min(window[events])
+            row[f'max_{event_type_name}_volt'] = np.max(window[events])
+            row[f'mean_{event_type_name}_volt'] = np.mean(window[events])
+            row[f'std_{event_type_name}_volt'] = np.std(window[events])
         
         # Save ISIs for spikes only
         isi = np.diff(spike_idxs)
@@ -97,8 +152,32 @@ def VI_summary_features(V: np.ndarray, I: np.ndarray = None, spike_threshold: in
         isi_corrected[:len(isi)] = isi
         for isi_idx in range(len(max_n_spikes - 1)):
             row[f"isi_{isi_idx}"] = isi_corrected[isi_idx]
+            
+        # Save pricipal frequency and amplitude
+        if lto_hto is not None:
+            if lto_hto[trial_idx] == 1:
+                # Get FFT Magnitudes
+                samples = len(window)
+                fft_result = np.fft.rfft(window)
+                fft_magnitude = np.abs(fft_result)
+                
+                # Get FFT Frequencies
+                freqs = np.fft.rfftfreq(samples, d=dt)
+                
+                # Ingnore DC component
+                if freqs[0] == 0:
+                    fft_magnitude[0] = 0
 
-        # Get I stats if needed
+                max_magnitude_index = np.argmax(fft_magnitude)
+
+                principal_freq = freqs[max_magnitude_index]
+                row["principal_frequency"] = principal_freq
+                row["amplitude"] = max(window) - min(window)
+            else:
+                row["principal_frequency"] = 1e6
+                row["amplitude"] = 1e6
+
+        # Save I stats
         if I is not None:
             i_trial = I[trial_idx]
             row["mean_i"] = np.nanmean(i_trial)
@@ -109,149 +188,6 @@ def VI_summary_features(V: np.ndarray, I: np.ndarray = None, spike_threshold: in
     stat_df = pd.concat(stat_df, axis = 0).reset_index(drop = True)
     return stat_df
 
-#TODO: redo in the same format as VI_summary_features()
-def get_hto_lto_stats(V: np.ndarray, lto_hto: list, train_features: list = None, dt: float = 1, CI_settings: list = None) -> tuple:
-    '''
-    Gets the LTO and HTO amplitude and frequency from the voltage traces.
-    Packages the info into features and column names.
-    Parameters:
-    -----------
-    V: np.ndarray of shape = (<number of trials>, <number of timesteps in sim>), default = None
-        List of voltage traces
-    
-    lto_hto: list[float]
-        A list of labels for lto/hto
-        
-    train_features: list[str], default = None
-        A list of features that are extracted
-    
-    dt: float, default = 1
-        Timestep
-        
-    CI_settings: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection], default = None
-        A list of Current injection settings
-    
-    Returns:
-    -----------
-    features_final: list[float]
-        List of features
-    
-    column_names: list[str]
-        List of column names
-    '''
-    features = []
-    column_names = []
-    
-    if "lto-hto_frequency" in train_features:
-        hto_lto_frequencies = calculate_hto_lto_frequency(V, CI_settings, dt, lto_hto)
-        features.append(hto_lto_frequencies)
-        column_names += ["lto-hto_frequency"]
-    if "lto-hto_amplitude" in train_features:
-        hto_lto_amplitudes = calculate_hto_lto_amplitude(V, CI_settings, dt, lto_hto)
-        features.append(hto_lto_amplitudes)
-        column_names += ["lto-hto_amplitude"]
-    
-    features_final = np.column_stack(features)
-    
-    return features_final, column_names
-
-#TODO: redo in the same format as VI_summary_features()
-def calculate_hto_lto_frequency(V: np.ndarray, CI_settings: list, dt: float, lto_hto: list) -> list:
-    '''
-    Directly calculates the frequency from LTO and HTO
-    Parameters:
-    -----------
-    V: np.ndarray of shape = (<number of trials>, <number of timesteps in sim>), default = None
-        List of voltage traces
-        
-    CI_settings: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection], default = None
-        A list of Current injection settings
-    
-    dt: float, default = 1
-        Timestep
-    
-    lto_hto: list[float]
-        A list of labels for lto/hto
-        
-    Returns:
-    -----------
-    frequencies: list[float]
-        List of frequencies for each trace
-    
-    '''
-    frequencies = []
-    for i, v_trace in enumerate(V):
-        if lto_hto[i] == 1:
-            start_time = CI_settings[i].delay
-            stop_time = CI_settings[i].delay + CI_settings[i].dur
-            start_idx = int(np.round(start_time / dt))
-            end_idx = int(np.round(stop_time / dt))
-            end_idx = min(end_idx, len(v_trace))
-
-            window = v_trace[start_idx:end_idx]
-
-            samples = len(window)
-
-            fft_result = np.fft.rfft(window)
-            fft_magnitude = np.abs(fft_result)
-            freqs = np.fft.rfftfreq(samples, d=dt)
-
-            if freqs[0] == 0:
-                fft_magnitude[0] = 0
-
-            max_index = np.argmax(fft_magnitude)
-
-            principal_freq = freqs[max_index]
-            frequencies.append(principal_freq)
-        else:
-            frequencies.append(1e6)
-
-    return np.array(frequencies)
-
-#TODO: redo in the same format as VI_summary_features()
-def calculate_hto_lto_amplitude(V: np.ndarray, CI_settings: list, dt: float, lto_hto: list) -> list:
-    '''
-    Directly calculates the amplitude from LTO and HTO
-    Parameters:
-    -----------
-    V: np.ndarray of shape = (<number of trials>, <number of timesteps in sim>), default = None
-        List of voltage traces
-        
-    CI_settings: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection], default = None
-        A list of Current injection settings
-    
-    dt: float, default = 1
-        Timestep
-    
-    lto_hto: list[float]
-        A list of labels for lto/hto
-        
-    Returns:
-    -----------
-    amplitudes: list[float]
-        List of amplitudes for each trace
-    '''
-    amplitudes = []
-    for i, v_trace in enumerate(V):
-        if lto_hto[i] == 1:
-            start_time = CI_settings[i].delay
-            stop_time = CI_settings[i].delay + CI_settings[i].dur
-            start_idx = int(np.round(start_time / dt))
-            end_idx = int(np.round(stop_time / dt))
-            end_idx = min(end_idx, len(v_trace)) 
-
-            window = v_trace[start_idx:end_idx]
-            
-            min_voltage = min(window)
-            max_voltage = max(window)
-            
-            amplitude = max_voltage - min_voltage
-            
-            amplitudes.append(amplitude)
-        else:
-            amplitudes.append(1e6)
-    
-    return np.array(amplitudes)
     
 #---------------------------------------------
 # FILTERING
@@ -373,7 +309,7 @@ def combine_data(output_path: str) -> None:
 
 def clean_g_bars(dataset: np.ndarray) -> np.ndarray:
     '''
-    ACTSimulator pads the 3rd column (i.e. conductance set) with NANs. This method removes the pad.
+    ACTSimulator pads the 3rd column (i.e. conductance set) with NANs. This method removes the pad for use in the model.
     Parameters:
     -----------
     dataset: np.ndarray of shape = (<number of trials>, <number of timesteps in sim>, 4)

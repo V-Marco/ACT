@@ -4,6 +4,7 @@ from datetime import timedelta
 import numpy as np
 import json
 from dataclasses import dataclass
+from sklearn.metrics import mean_absolute_error
 
 from act.act_types import SimulationParameters, OptimizationParameters, ConductanceOptions, ConstantCurrentInjection, RampCurrentInjection, GaussianCurrentInjection
 from act.cell_model import ACTCellModel
@@ -319,7 +320,7 @@ class ACTModule:
                     window_of_inspection = (inspection_start, inspection_end)
                 saturation_threshold = self.optim_params.filter_parameters.saturation_threshold
                 dt = self.sim_params.h_dt
-                data = get_nonsaturated_traces(data,window_of_inspection, threshold=saturation_threshold,dt=dt)
+                data = remove_saturated_traces(data,window_of_inspection, threshold=saturation_threshold,dt=dt)
             
             if "no_spikes" in filtered_out_features:
                 spike_threshold = self.optim_params.spike_threshold
@@ -354,8 +355,9 @@ class ACTModule:
         first_n_spikes = self.optim_params.first_n_spikes
         dt = self.sim_params.h_dt
 
-        features_target, _ = extract_features(train_features=self.optim_params.train_features, V=V_target,I=I_target,threshold=threshold,num_spikes=first_n_spikes,dt=dt,lto_hto=lto_hto, current_inj_combos=self.current_inj_combos)
-
+        target_df = get_summary_features(V=V_target, I=I_target, lto_hto=lto_hto, current_inj_combos=self.sim_params.CI, spike_threshold=threshold, max_n_spikes=first_n_spikes, dt=dt)
+        sub_target_df = select_features(target_df, self.optim_params.train_features)
+        
         if self.rf_model == None:
             print("TRAINING RANDOM FOREST REGRESSOR")
             if os.path.isfile(self.output_folder_name + "train/filtered_out.npy"):
@@ -369,10 +371,10 @@ class ACTModule:
             I_train = dataset_train[:, :, 1]
             lto_hto = dataset_train[:, 1, 3]
             
-            features_train, columns_train = extract_features(train_features=self.optim_params.train_features,V=V_train,I=I_train,threshold=threshold,num_spikes=first_n_spikes,dt=dt,lto_hto=lto_hto, current_inj_combos=self.current_inj_combos)
-            print(f"Extracting features: {columns_train}")
+            train_df = get_summary_features(V=V_train, I=I_train, lto_hto=lto_hto, current_inj_combos=self.current_inj_combos, spike_threshold=threshold, max_n_spikes=first_n_spikes, dt=dt)
+            sub_train_df = select_features(train_df, self.optim_params.train_features)
 
-            X_train = features_train
+            X_train = sub_train_df.to_numpy()
             Y_train = g_train
 
             rf = RandomForestOptimizer(
@@ -416,7 +418,7 @@ class ACTModule:
                 print(f"An unexpected error occurred while loading the model: {str(e)}")
                 raise
 
-        X_test = features_target
+        X_test = sub_target_df.to_numpy()
         predictions = rf.predict(X_test)
                 
         print("Predicted Conductances for each current injection intensity: ")
@@ -547,7 +549,7 @@ class ACTModule:
 
         fi_mae = []
         for fi in list_of_freq:
-            fi_mae.append(mae_score(target_frequencies, fi))
+            fi_mae.append(mean_absolute_error(target_frequencies, fi))
         
         print(f"FI curve MAE for each prediction: {fi_mae}")
 
@@ -600,7 +602,7 @@ class ACTModule:
             prediction_MAEs = []
             
             for j in range(len(V_test)):
-                v_mae = mae_score(V_test[j],V_target[j])
+                v_mae = mean_absolute_error(V_test[j],V_target[j])
                 prediction_MAEs.append(v_mae)
 
             mean_mae_list.append(np.mean(prediction_MAEs))
@@ -647,7 +649,8 @@ class ACTModule:
         first_n_spikes = self.optim_params.first_n_spikes
         dt = self.sim_params.h_dt
         
-        target_V_features, _ = extract_features(train_features=train_features, V=V_target,I=I_target, threshold=threshold, num_spikes=first_n_spikes, dt=dt,lto_hto=lto_hto, current_inj_combos=self.current_inj_combos)
+        target_df = get_summary_features(V=V_target,I=I_target, lto_hto=lto_hto, current_inj_combos=self.sim_params.CI, spike_threshold=threshold, max_n_spikes=first_n_spikes, dt=dt)
+        sub_target_df = select_features(target_df, train_features)
 
         mean_mae_list = []
         for i in range(len(predictions)):
@@ -655,12 +658,13 @@ class ACTModule:
             V_test = dataset[:,:,0]
             I_test = dataset[:,:,1]
             lto_hto = dataset[:,1,3]
-            test_V_features, _ = extract_features(train_features=train_features, V=V_test,I=I_test, threshold=threshold, num_spikes=first_n_spikes, dt=dt,lto_hto=lto_hto, current_inj_combos=self.current_inj_combos)
+            test_df = get_summary_features(V=V_test,I=I_test, lto_hto=lto_hto, current_inj_combos=self.sim_params.CI, spike_threshold=threshold, max_n_spikes=first_n_spikes, dt=dt)
+            sub_test_df = select_features(test_df, train_features)
             
             prediction_MAEs = []
             
             for j in range(len(V_test)):
-                v_mae = mae_score(test_V_features[j],target_V_features[j])
+                v_mae = mean_absolute_error(sub_target_df.loc[j], sub_test_df.loc[j])
                 prediction_MAEs.append(v_mae)
 
             mean_mae_list.append(np.mean(prediction_MAEs))

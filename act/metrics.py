@@ -113,7 +113,7 @@ def evaluate_random_forest(estimator, X_train, Y_train, random_state=42, n_repea
     return np.mean(n_scores), np.std(n_scores)
 
 
-def save_interspike_interval_comparison(module_foldername, prediction_data_filepath, amps, dt, first_n_spikes=5,save_file=None) -> tuple:
+def save_interspike_interval_comparison(module_foldername: str, prediction_data_filepath: str, CI_settings: list, current_inj_combos: list, dt, threshold = -20, first_n_spikes=5,save_file=None) -> tuple:
     '''
     Gets the MAE of the interspike interval (list of 20 spikes - padded with large number)
     between the Target and Prediction. Saves this to the metrics .json file
@@ -125,8 +125,11 @@ def save_interspike_interval_comparison(module_foldername, prediction_data_filep
     prediction_data_filepath: str
         prediction data (combined_out.npy) filepath
         
-    amps: list[float]
-        Max Current injection values for simulations
+    current_inj_combos: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection], default = None
+        A list of Current injection settings in simulation parameters (original settings)
+        
+    current_inj_combos: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection], default = None
+        A list of Current injection settings for all trials
     
     dt: float
         Timestep
@@ -148,18 +151,27 @@ def save_interspike_interval_comparison(module_foldername, prediction_data_filep
     '''
     target_dataset = np.load(f"{module_foldername}/target/combined_out.npy")
     target_V = target_dataset[:,:,0]
+    target_I = target_dataset[:,:,1]
+    target_lto_hto = pred_dataset[:,1,3]
     
     pred_dataset = np.load(prediction_data_filepath)
     pred_V = pred_dataset[:,:,0]
+    pred_I = pred_dataset[:,:,1]
+    pred_lto_hto = pred_dataset[:,1,3]
     
     isi_maes = []
-    _,_,isi_target,*_ = extract_v_traces_features(target_V, num_spikes=first_n_spikes, dt=dt)
-    _,_,isi_prediction,*_ = extract_v_traces_features(pred_V, num_spikes=first_n_spikes, dt=dt)
+
+    target_df = get_summary_features(V=target_V,I=target_I, lto_hto=target_lto_hto, current_inj_combos=current_inj_combos, spike_threshold=threshold, max_n_spikes=first_n_spikes, dt=dt)
+    pred_df = get_summary_features(V=pred_V,I=pred_I, lto_hto=pred_lto_hto, current_inj_combos=current_inj_combos, spike_threshold=threshold, max_n_spikes=first_n_spikes, dt=dt)
+    
+    # Getting interspike interval data from extracted features
+    isi_target = target_df["isi"]
+    isi_prediction = pred_df["isi"]
     
     print(f"Interspike times (Target): {isi_target}")
     print(f"Interspike times (Prediction): {isi_prediction}")
         
-    for i in range(len(amps)):
+    for i in range(len(CI_settings)):
         isi_maes.append(mean_absolute_error(isi_target[i], isi_prediction[i]))
         
     print(f"MAE for each I injection: {isi_maes}")
@@ -257,12 +269,14 @@ def save_feature_mae(module_foldername, prediction_data_filepath, train_features
     pred_V = pred_dataset[:,:,0]
     pred_I = pred_dataset[:,:,1]
     pred_lto_hto = pred_dataset[:,1,3]
+        
+    target_features = get_summary_features(V=target_V, I=target_I, lto_hto=target_lto_hto, current_inj_combos=CI_settings, spike_threshold=threshold, max_n_spikes=first_n_spikes, dt=dt)
+    sub_target_features = select_features(target_features, train_features)
     
-    target_V_features, _ = extract_features(train_features=train_features, V=target_V,I=target_I, threshold=threshold, num_spikes=first_n_spikes, dt=dt, lto_hto=target_lto_hto, current_inj_combos=CI_settings)
+    pred_features = get_summary_features(V=pred_V,I=pred_I, lto_hto=pred_lto_hto, current_inj_combos=CI_settings, spike_threshold=threshold, max_n_spikes=first_n_spikes, dt=dt)
+    sub_pred_features = select_features(pred_features, train_features)
     
-    pred_V_features, _ = extract_features(train_features=train_features, V=pred_V,I=pred_I, threshold=threshold, num_spikes=first_n_spikes, dt=dt, lto_hto=pred_lto_hto, current_inj_combos=CI_settings)
-    
-    feature_mae = np.mae_score(target_V_features, pred_V_features)
+    feature_mae = mean_absolute_error(sub_target_features.to_numpy(), sub_pred_features.to_numpy)
     print(f"MAE of summary features for final prediction: {feature_mae}")
     
     save_to_json(feature_mae, "summary_stats_mae_final_prediction", save_file)

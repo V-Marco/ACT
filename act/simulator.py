@@ -128,9 +128,9 @@ class ACTSimulator:
             else:
                 raise NotImplementedError
 
-        print(f"Soma area: {cell.soma[0](0.5).area()}")
-        print(f"Soma diam: {cell.soma[0].diam}")
-        print(f"Soma L: {cell.soma[0].L}")
+        #print(f"Soma area: {cell.soma[0](0.5).area()}")
+        #print(f"Soma diam: {cell.soma[0].diam}")
+        #print(f"Soma L: {cell.soma[0].L}")
 
         h.finitialize(h.v_init)
         h.run()
@@ -254,7 +254,7 @@ class ACTSimulator:
         
         if not cell.set_g_to == None and not len(cell.set_g_to) == 0:
             #print(f"cell.set_g_to: {cell.set_g_to}")
-            cell._set_g_bar(cell.set_g_to[0], cell.set_g_to[1])   
+            cell._set_g_bar()   
 
         h.finitialize(h.v_init)
         h.run()

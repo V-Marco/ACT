@@ -10,7 +10,7 @@ def _rgetattr(obj, attr, *args):
         return getattr(obj, attr, *args)
     return functools.reduce(_getattr, [obj] + attr.split('.'))
 
-def rsetattr(obj, attr, val):
+def _rsetattr(obj, attr, val):
     pre, _, post = attr.rpartition('.')
     return setattr(_rgetattr(obj, pre) if pre else obj, post, val)
 
@@ -152,7 +152,7 @@ class ACTCellModel:
             soma_area += segment_area
         return soma_area * 1e-8 # (cm2)
 
-    def _build_cell(self, sim_index: int, print_soma_area = True) -> None:
+    def _build_cell(self, sim_index: int, print_soma_area = False) -> None:
         """
         Build the NEURON cell.
 
@@ -161,7 +161,7 @@ class ACTCellModel:
         sim_index: int
             Simulation index
 
-        report_soma_area: bool, default = True
+        report_soma_area: bool, default = False
             Whether to print out the soma area.
         """
         self.sim_index = sim_index

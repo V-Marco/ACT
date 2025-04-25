@@ -2,6 +2,7 @@ import os
 import numpy as np
 from matplotlib import pyplot as plt, cm
 import plotly.graph_objects as go
+from sklearn.metrics import mean_absolute_error
 
 from act.data_processing import *
 from act.metrics import *
@@ -194,7 +195,7 @@ def plot_training_v_mae_surface(target_foldername: str, module_foldername: str, 
     maes = []
     
     for idx, g in enumerate(conductance_values):
-        maes.append((g[index1], g[index2], mae_score(target_V, v_sample_sets[idx])))
+        maes.append((g[index1], g[index2], mean_absolute_error(target_V, v_sample_sets[idx])))
     maes = np.array(maes)
     
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
@@ -315,7 +316,7 @@ def plot_training_v_mae_contour_plot(target_foldername: str, module_foldername: 
     maes = []
     
     for idx, g in enumerate(conductance_values):
-        maes.append((g[index1], g[index2], mae_score(target_V, v_sample_sets[idx])))
+        maes.append((g[index1], g[index2], mean_absolute_error(target_V, v_sample_sets[idx])))
     maes = np.array(maes)
     
     #x = np.linspace(0, 10000,10000)
@@ -362,7 +363,7 @@ def plot_training_v_mae_contour_plot(target_foldername: str, module_foldername: 
     plt.show()
     
     
-def plot_training_feature_mae_contour_plot(target_foldername: str, module_foldername: str, current_injections: list, delay: float, dt: float, index1: int, index2: int, g_names: list, train_features: list, threshold: float = 0, first_n_spikes: int = 20, num_levels: int = 100, results_filename: str = None) -> None:
+def plot_training_feature_mae_contour_plot(target_foldername: str, module_foldername: str, CI_settings: list, current_inj_combos: list, delay: float, dt: float, index1: int, index2: int, g_names: list, train_features: list, threshold: float = 0, first_n_spikes: int = 20, num_levels: int = 100, results_filename: str = None) -> None:
     '''
     Generates a 2D contour plot
     The contour consists of the following:
@@ -413,7 +414,7 @@ def plot_training_feature_mae_contour_plot(target_foldername: str, module_folder
     -----------
     None
     '''
-    amps = [current_injection.amp for current_injection in current_injections]
+    amps = [current_injection.amp for current_injection in CI_settings]
     
     g_name1 = g_names[index1]
     g_name2 = g_names[index2]
@@ -425,7 +426,9 @@ def plot_training_feature_mae_contour_plot(target_foldername: str, module_folder
     target_I = target_dataset[:,:,1]
     target_lto_hto = target_dataset[:,1,2]
     
-    target_V_features, _ = extract_features(train_features=train_features, V=target_V,I=target_I, threshold=threshold, num_spikes=first_n_spikes, dt=dt, lto_hto=target_lto_hto, current_inj_combos=current_injections)
+    target_features = get_summary_features(V=target_V,I=target_I, lto_hto=target_lto_hto, current_inj_combos=current_inj_combos, spike_threshold=threshold, max_n_spikes=first_n_spikes, dt=dt)
+    sub_target_features = select_features(target_features, train_features)
+    
     #print(f"target_v_features: {len(target_V_features)}: {target_V_features}")
     train_dataset = np.load(f"{module_foldername}/train/combined_out.npy")
     train_V = train_dataset[:,:,0]
@@ -459,7 +462,8 @@ def plot_training_feature_mae_contour_plot(target_foldername: str, module_folder
         #print(f"V_subset: {V_subset}")
         #ordered_V.append(V_subset)
         
-        V_subset_features, _ = extract_features(train_features=train_features, V=V_subset, I=I_subset, threshold=threshold, num_spikes=first_n_spikes, dt=dt, lto_hto=lto_hto_subset, current_inj_combos=current_injections)
+        V_subset_features = get_summary_features(V=V_subset,I=I_subset, lto_hto=lto_hto_subset, current_inj_combos=CI_settings, spike_threshold=threshold, max_n_spikes=first_n_spikes, dt=dt)
+        select_V_subset_features = select_features(V_subset_features, train_features)
         
         v_sample_feature_sets.append(V_subset_features)
     #print(f"vsample_features: {len(v_sample_feature_sets)}: {v_sample_feature_sets}")
@@ -467,9 +471,9 @@ def plot_training_feature_mae_contour_plot(target_foldername: str, module_folder
     
     for idx, g in enumerate(conductance_values):
         i_inj_mae = []
-        for i in range(len(target_V_features)):
+        for i in range(len(sub_target_features)):
             #print(f"v_samplefeature_set: {v_sample_feature_sets[idx][i]}")
-            mae = mae_score(target_V_features[i], v_sample_feature_sets[idx][i])
+            mae = mean_absolute_error(sub_target_features.loc[i], select_V_subset_features.loc[idx][i])
             i_inj_mae.append(mae)
 
         maes.append((g[index1], g[index2], np.mean(i_inj_mae)))
@@ -603,7 +607,7 @@ def plot_training_fi_mae_surface(target_foldername: str, module_foldername: str,
     maes = []
     
     for idx, g in enumerate(conductance_values):
-        maes.append((g[index1], g[index2], mae_score(target_frequencies, fi_curves[idx])))
+        maes.append((g[index1], g[index2], mean_absolute_error(target_frequencies, fi_curves[idx])))
     maes = np.array(maes)
     
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
@@ -732,7 +736,7 @@ def plot_training_fi_mae_contour_plot(target_foldername: str, module_foldername:
     maes = []
     
     for idx, g in enumerate(conductance_values):
-        maes.append((g[index1], g[index2], mae_score(target_frequencies, fi_curves[idx])))
+        maes.append((g[index1], g[index2], mean_absolute_error(target_frequencies, fi_curves[idx])))
     maes = np.array(maes)
     
     #print(f"maes: {maes}")
