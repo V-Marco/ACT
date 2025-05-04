@@ -1,7 +1,4 @@
 from dataclasses import dataclass
-from act.optimizer import RandomForestOptimizer
-
-# A collection of dataclass types that should be used to define the user supplied configuration.
 
 @dataclass
 class SettablePassiveProperties:
@@ -90,6 +87,5 @@ class OptimizationParameters:
     first_n_spikes: int = 20
     prediction_eval_method: str = 'fi_curve'
     evaluate_random_forest: bool = False
-    rf_model: RandomForestOptimizer = None
     previous_modules: list = None
     save_file: str = None

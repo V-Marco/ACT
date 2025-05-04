@@ -8,7 +8,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.metrics import mean_absolute_error
 
 from act.data_processing import *
-from act.act_types import GettablePassiveProperties
+from act.types import GettablePassiveProperties
 
 def pp_error(pp_target: GettablePassiveProperties, pp_pred: GettablePassiveProperties) -> list:
     '''
@@ -55,62 +55,6 @@ def pp_error(pp_target: GettablePassiveProperties, pp_pred: GettablePassivePrope
 #     corr_coef = float(corr_mat[0,1])
 
 #     return corr_coef
-
-
-def evaluate_random_forest(estimator, X_train, Y_train, random_state=42, n_repeats=3, n_splits=10, save_file=None) -> tuple:
-    '''
-    Uses RepeatedKFold to calculate the absolute value of the cross_validation_score over the RF model.
-    
-    Parameters:
-    ----------
-    estimator: BaseEstimator
-        Estimator
-
-    X_train: list[float]
-        Generic target data
-    
-    Y_train: list[float]
-        Generic simulation data
-    
-    random_state: int, default = 42
-        Random seed
-        
-    n_repeats: int, default = 3
-        Number of repeats
-    
-    n_splits: int, default = 10
-        Number of splits
-    
-    save_file: str, default = None
-        Save File Path
-
-    Returns:
-    ----------
-    mean_score: float
-        Mean model train MAE
-    
-    std_score: flost
-        Standard Deviation model train MAE
-    '''
-    print("Evaluating random forest")
-    cv = RepeatedKFold(n_splits=n_splits, n_repeats=n_repeats, random_state=random_state)
-    n_scores = abs(cross_val_score(
-        estimator,
-        X_train,
-        Y_train,
-        scoring="neg_mean_absolute_error",
-        cv=cv,
-        n_jobs=-1,
-        error_score="raise",
-    ))
-    print("Model Training MAE: %.6f (%.6f)" % (np.mean(n_scores), np.std(n_scores)))
-    
-    if not save_file == None:
-        print(f"Saving training mean/stdev scores to {save_file}")
-        save_to_json(np.mean(n_scores), "model_train_mean_mae", save_file)
-        save_to_json(np.std(n_scores), "model_train_stdev_mae", save_file)
-    
-    return np.mean(n_scores), np.std(n_scores)
 
 
 # def save_interspike_interval_comparison(module_foldername: str, prediction_data_filepath: str, CI_settings: list, current_inj_combos: list, dt, threshold = -20, first_n_spikes=5,save_file=None) -> tuple:

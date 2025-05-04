@@ -1,7 +1,7 @@
 import os
 import sys
 import shutil
-from act.act_types import SimulationParameters, ConstantCurrentInjection, RampCurrentInjection, GaussianCurrentInjection
+from act.types import SimulationParameters, ConstantCurrentInjection, RampCurrentInjection, GaussianCurrentInjection
 from act.cell_model import ACTCellModel
 from neuron import h
 import numpy as np

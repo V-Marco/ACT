@@ -3,7 +3,6 @@ import json
 import glob
 import numpy as np
 import pandas as pd
-from itertools import product
 import pickle
 
 #---------------------------------------------
@@ -303,47 +302,8 @@ def clean_g_bars(dataset: np.ndarray) -> np.ndarray:
     def remove_nan_from_sample(sample):
         return sample[~np.isnan(sample)]
         
-    cleaned_g_bars = np.array([remove_nan_from_sample(sample) for sample in dataset[:,:,2]])
+    cleaned_g_bars = np.array([remove_nan_from_sample(sample) for sample in dataset[:, :, 2]])
     return cleaned_g_bars
-
-
-def generate_I_g_combinations(channel_ranges: list, channel_slices: list, current_injections: list) -> tuple:
-    '''
-    This method directly calculates the combinations of conductances and current injection intensities
-    based on the user input of conductance ranges/number of slices, and current injection intensity
-    selections.
-    Parameters:
-    -----------
-    channel_ranges: list[list[float]]
-        A list of 2 element lists for low and high conductance values for each channel
-    
-    channel_slices: list[float]
-        A list of the number of slices involved in each channel
-    
-    current_injections: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection], default = None
-        A list of Current injection settings
-    
-    Returns:
-    ----------
-    conductance_groups: list[list[float]]
-        A list of conductance groups for each channel
-    
-    current_groups: list[list[float]]
-        A list of current injection groups
-    '''
-    channel_values = [
-        np.linspace(low, high, num=slices)
-        for (low, high), slices in zip(channel_ranges, channel_slices)
-    ]
-    
-    conductance_combinations = list(product(*channel_values))
-    
-    all_combinations = list(product(conductance_combinations, current_injections))
-    
-    conductance_groups = [comb[0] for comb in all_combinations]
-    current_groups = [comb[1] for comb in all_combinations]
-    
-    return conductance_groups, current_groups
 
 
 def get_fi_curve(V_matrix: np.ndarray, spike_threshold: float, CI_list: list, ignore_negative_CI = True) -> list:

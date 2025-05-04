@@ -1,7 +1,7 @@
 import numpy as np
 import functools
 from neuron import h
-from act.act_types import SettablePassiveProperties
+from act.types import SettablePassiveProperties
 
 # Utility functions to get and set conductances with suffix.names
 # https://stackoverflow.com/questions/31174295/getattr-and-setattr-on-nested-subobjects-chained-properties
