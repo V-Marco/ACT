@@ -25,6 +25,10 @@ class ConstantCurrentInjection:
     delay: float = 50                         # (ms)
     lto_hto: float = 0                        # "lto", "hto"
 
+    # For compatibility
+    amp_mean = amp
+    amp_std = 0
+
 @dataclass
 class RampCurrentInjection:
     amp_start: float = 0                      # (nA)
@@ -41,7 +45,7 @@ class GaussianCurrentInjection:
     amp_std: float = 0.02                     # (nA)
     dur: float = 400                          # (ms)
     delay: float = 50                         # (ms)
-    lto_hto: float = 0                       # "lto", "hto"
+    lto_hto: float = 0                        # "lto", "hto"
     
 @dataclass  
 class SimulationParameters:

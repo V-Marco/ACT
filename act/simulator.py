@@ -252,8 +252,7 @@ class ACTSimulator:
             raise NotImplementedError
         
         
-        if not cell.set_g_to == None and not len(cell.set_g_to) == 0:
-            #print(f"cell.set_g_to: {cell.set_g_to}")
+        if not cell._set_g_to == None and not len(cell._set_g_to) == 0:
             cell._set_g_bar()   
 
         h.finitialize(h.v_init)

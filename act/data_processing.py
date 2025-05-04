@@ -69,50 +69,50 @@ def select_features(df: pd.DataFrame, feature_keys: list) -> pd.DataFrame:
     return df[cols]
 
 
-def get_summary_features(V: np.ndarray, I: np.ndarray = None, lto_hto = None, current_inj_combos: list = None, spike_threshold: int = -20, max_n_spikes: int = 20,  dt = 1) -> pd.DataFrame:
+def get_summary_features(
+        V: np.ndarray,
+        CI: list = None,
+        lto_hto = None,
+        spike_threshold: int = -20, 
+        max_n_spikes: int = 20
+        ) -> pd.DataFrame:
     '''
     Compute voltage and current summary features.
 
     Parameters:
     ----------
     V: np.ndarray of shape (n_trials, T)
-        Voltage traces.
-    
-    I: np.ndarray of shape (n_trials, T), default = None
-        Current traces.
-        
-    train_features: list[str], default = None
-        List containing features that users want to extract from the simulation data
+        Voltage traces (mV over ms).
+
+    CI: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection], default = None
+        A list of Current injection settings for all trials.
     
     lto_hto: list[float], default = None
-        A list of labels for lto/hto
-        
-    current_inj_combos: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection], default = None
-        A list of Current injection settings for all trials
+        A list of labels for lto/hto.
     
     spike_threshold: int, default = -20
         Threshold for spike detection (mV).
     
     max_n_spikes: int, default = 20
         Maximum number of spike times to save.
-        
-    dt: float, default = 1
-        Timestep
 
     Returns:
     ----------
     stat_df: pd.DataFrame
         Dataframe with extracted summary features.
     '''
+    if len(V.shape) != 2:
+        raise ValueError
+
     stat_df = []
     for trial_idx, v_trial in enumerate(V):
         row = pd.DataFrame(index = [0])
         
         # Crop data to only extract features within the current injection time
-        start_time = current_inj_combos[trial_idx].delay
-        stop_time = current_inj_combos[trial_idx].delay + current_inj_combos[trial_idx].dur
-        start_idx = int(np.round(start_time / dt))
-        end_idx = int(np.round(stop_time / dt))
+        start_time = CI[trial_idx].delay
+        stop_time = CI[trial_idx].delay + CI[trial_idx].dur
+        start_idx = int(np.round(start_time))
+        end_idx = int(np.round(stop_time))
         end_idx = min(end_idx, len(v_trial))
 
         window = v_trial[start_idx:end_idx]
@@ -123,35 +123,39 @@ def get_summary_features(V: np.ndarray, I: np.ndarray = None, lto_hto = None, cu
 
         # Extract # of spikes and # of troughs and save the number
         spike_idxs = find_events(window, spike_threshold)
-        trough_idxs = find_events(-window, -spike_threshold) #TODO: valid trough check -- do we need it?
+        trough_idxs = find_events(-window, -spike_threshold)
 
         for events, event_type_name in zip([spike_idxs, trough_idxs], ["spike", "trough"]):
+
             # Save the number of events
             row[f"n_{event_type_name}s"] = len(events)
             
             # Save spike frequency
             if event_type_name == "spike":
-                duration = len(window) * dt  #ms
-                row[f"spike_frequency"] = len(events) / duration 
+                row[f"spike_frequency"] = len(events) * 1000 / len(window) 
         
-            # Save first max_n_spikes event times; pad if less events than max_n_spikes
+            # Save first max_n_spikes event times
             event_idxs_corrected = np.ones(max_n_spikes) * np.nan
-            event_idxs_corrected[:len(events)] = events
-            for event_idx in range(len(max_n_spikes)):
-                row[f"spike_time_{event_idx}"] = event_idxs_corrected[event_idx]
+            events_length = np.min([len(events), max_n_spikes])
+            event_idxs_corrected[:events_length] = events[:events_length]
+
+            for event_idx in range(max_n_spikes):
+                row[f"{event_type_name}_{event_idx}"] = event_idxs_corrected[event_idx] + start_idx
 
             # Save event stats
-            row[f'min_{event_type_name}_volt'] = np.min(window[events])
-            row[f'max_{event_type_name}_volt'] = np.max(window[events])
-            row[f'mean_{event_type_name}_volt'] = np.mean(window[events])
-            row[f'std_{event_type_name}_volt'] = np.std(window[events])
+            for opertaion, operation_name in zip([np.min, np.max, np.mean, np.std], ["min", "max", "mean", "std"]):
+                if len(events) > 0:
+                    row[f'{operation_name}_{event_type_name}_volt'] = opertaion(window[events])
+                else:
+                    row[f'{operation_name}_{event_type_name}_volt'] = np.nan
         
         # Save ISIs for spikes only
         isi = np.diff(spike_idxs)
         isi_corrected = np.ones(max_n_spikes - 1) * np.nan
-        isi_corrected[:len(isi)] = isi
-        for isi_idx in range(len(max_n_spikes - 1)):
-            row[f"isi_{isi_idx}"] = isi_corrected[isi_idx]
+        isi_length = np.min([len(isi), max_n_spikes - 1])
+        isi_corrected[:isi_length] = isi[:isi_length]
+        for isi_idx in range(max_n_spikes - 1):
+            row[f"isi_{isi_idx}"] = isi_corrected[isi_idx] + start_idx
             
         # Save pricipal frequency and amplitude
         if lto_hto is not None:
@@ -162,7 +166,7 @@ def get_summary_features(V: np.ndarray, I: np.ndarray = None, lto_hto = None, cu
                 fft_magnitude = np.abs(fft_result)
                 
                 # Get FFT Frequencies
-                freqs = np.fft.rfftfreq(samples, d=dt)
+                freqs = np.fft.rfftfreq(samples, d=dt) #TODO
                 
                 # Ingnore DC component
                 if freqs[0] == 0:
@@ -178,10 +182,8 @@ def get_summary_features(V: np.ndarray, I: np.ndarray = None, lto_hto = None, cu
                 row["amplitude"] = 1e6
 
         # Save I stats
-        if I is not None:
-            i_trial = I[trial_idx]
-            row["mean_i"] = np.nanmean(i_trial)
-            row["std_i"] = np.std(i_trial)
+        row["mean_i"] = CI[trial_idx].amp_mean
+        row["std_i"] = CI[trial_idx].amp_std
 
         stat_df.append(row)
     
@@ -251,34 +253,6 @@ def get_traces_with_spikes(data: np.ndarray, spike_threshold: float = -20) -> np
 #---------------------------------------------
 # UTILS 
 #---------------------------------------------
-#TODO: check if we need everything here
-def apply_decimate_factor(traces: np.ndarray, decimate_factor: float = None) -> np.ndarray:
-    '''
-    A method for downsampling data traces (voltage, current) from training data
-    Parameters:
-    -----------
-    traces: np.ndarray of shape = (<number of trials>, <number of timesteps in sim>)
-        List of timeseries data
-    
-    decimate_factor: float, default = None
-        Downsampling factor
-        
-    Returns:
-    -----------
-    traces: np.ndarray of shape = (<number of trials>, <number of timesteps in sim>)
-        List of timeseries data
-    '''
-    if decimate_factor:
-
-        print(f"Reducing dataset by {decimate_factor}x")
-        from scipy import signal
-
-        traces = signal.decimate(
-            traces, decimate_factor
-        ).copy()  
-    return traces
-
-
 def combine_data(output_path: str) -> None:
     '''
     ACTSimulator outputs .npy files for each simulation run. This method combines this data
@@ -286,13 +260,16 @@ def combine_data(output_path: str) -> None:
     Parameters:
     -----------
     output_path: str
-        Output path
+        Output path.
         
     Returns:
     -----------
     None
     '''
-    print(output_path)
+    save_path = os.path.join(output_path, f"combined_out.npy")
+    if os.path.exists(save_path):
+        raise RuntimeError(save_path + " already exists.")
+
     file_list = sorted(glob.glob(os.path.join(output_path, "out_*.npy")))
 
     data_list = []
@@ -303,8 +280,11 @@ def combine_data(output_path: str) -> None:
         
     sorted_data_list = sorted(data_list, key=lambda arr: arr[0][3])
 
-    final_data = np.stack(sorted_data_list, axis=0)
-    np.save(os.path.join(output_path, f"combined_out.npy"), final_data)
+    final_data = np.stack(sorted_data_list, axis = 0)
+
+    
+    print(save_path)
+    np.save(save_path, final_data)
 
 
 def clean_g_bars(dataset: np.ndarray) -> np.ndarray:
@@ -443,170 +423,142 @@ def save_to_json(value, key: str, filename: str) -> None:
         json.dump(existing_data, file, indent=4)
 
         
-def load_metric_data(filenames:list) -> tuple:
-    """
-    Loads in all values from a saved metrics file.
-    Parameters:
-    -----------
-    filenames: list[str]
-        List of filepaths to metric files (json)
+# def load_metric_data(filenames:list) -> tuple:
+#     """
+#     Loads in all values from a saved metrics file.
+#     Parameters:
+#     -----------
+#     filenames: list[str]
+#         List of filepaths to metric files (json)
     
-    Returns:
-    -----------
-    num_spikes_in_isi_calc_list: list[int]
-        List of the number of spikes used for interspike interval calculations
+#     Returns:
+#     -----------
+#     num_spikes_in_isi_calc_list: list[int]
+#         List of the number of spikes used for interspike interval calculations
         
-    mean_interspike_interval_mae_list: list[float]
-        List of mean interspike interval MAEs
+#     mean_interspike_interval_mae_list: list[float]
+#         List of mean interspike interval MAEs
         
-    stdev_interspike_interval_mae_list: list[float]
-        List of stdev interspike interval MAEs
+#     stdev_interspike_interval_mae_list: list[float]
+#         List of stdev interspike interval MAEs
         
-    final_g_prediction_list: list[list[float]]
-        List of final g predictions
+#     final_g_prediction_list: list[list[float]]
+#         List of final g predictions
         
-    model_train_mean_mae_list: list[float]
-        List of mean model training MAEs
+#     model_train_mean_mae_list: list[float]
+#         List of mean model training MAEs
         
-    model_train_stdev_mae_list: list[float]
-        List of stdev model training MAEs
+#     model_train_stdev_mae_list: list[float]
+#         List of stdev model training MAEs
         
-    mae_final_predicted_g_list: list[float]
-        List of conductance MAEs for final predictions
+#     mae_final_predicted_g_list: list[float]
+#         List of conductance MAEs for final predictions
         
-    prediction_evaluation_method_list: list[str]
-        List of prediction evaluation methods
+#     prediction_evaluation_method_list: list[str]
+#         List of prediction evaluation methods
         
-    final_prediction_fi_mae_list: list[float]
-        List of FI curve MAEs for final predictions
+#     final_prediction_fi_mae_list: list[float]
+#         List of FI curve MAEs for final predictions
         
-    final_prediction_voltage_mae_list: list[float]
-        List of voltage MAEs for final predictions
+#     final_prediction_voltage_mae_list: list[float]
+#         List of voltage MAEs for final predictions
         
-    feature_mae_list: list[float]
-        List of feature MAEs for final predictions
+#     feature_mae_list: list[float]
+#         List of feature MAEs for final predictions
         
-    module_runtime_list: list[float]
-        List of runtimes
+#     module_runtime_list: list[float]
+#         List of runtimes
         
-    """
-    num_spikes_in_isi_calc_list = []
-    mean_interspike_interval_mae_list = []
-    stdev_interspike_interval_mae_list = []
-    final_g_prediction_list = []
-    model_train_mean_mae_list = []
-    model_train_stdev_mae_list = []
-    mae_final_predicted_g_list = []
-    prediction_evaluation_method_list = []
-    final_prediction_fi_mae_list = []
-    final_prediction_voltage_mae_list = []
-    feature_mae_list = []
-    module_runtime_list = []
+#     """
+#     num_spikes_in_isi_calc_list = []
+#     mean_interspike_interval_mae_list = []
+#     stdev_interspike_interval_mae_list = []
+#     final_g_prediction_list = []
+#     model_train_mean_mae_list = []
+#     model_train_stdev_mae_list = []
+#     mae_final_predicted_g_list = []
+#     prediction_evaluation_method_list = []
+#     final_prediction_fi_mae_list = []
+#     final_prediction_voltage_mae_list = []
+#     feature_mae_list = []
+#     module_runtime_list = []
     
-    for filename in filenames:
-        with open(filename, 'r') as file:
-            data = json.load(file)
+#     for filename in filenames:
+#         with open(filename, 'r') as file:
+#             data = json.load(file)
         
-        num_spikes_in_isi_calc_list.append(data.get("num_spikes_in_isi_calc"))
-        mean_interspike_interval_mae_list.append(data.get("mean_interspike_interval_mae"))
-        stdev_interspike_interval_mae_list.append(data.get("stdev_interspike_interval_mae"))
-        final_g_prediction_list.append(data.get("final_g_prediction"))
-        model_train_mean_mae_list.append(data.get("model_train_mean_mae"))
-        model_train_stdev_mae_list.append(data.get("model_train_stdev_mae"))
-        mae_final_predicted_g_list.append(data.get("mae_final_predicted_g"))
-        prediction_evaluation_method_list.append(data.get("prediction_evaluation_method"))
-        final_prediction_fi_mae_list.append(data.get("final_prediction_fi_mae"))
-        final_prediction_voltage_mae_list.append(data.get("final_prediction_voltage_mae"))
-        feature_mae_list.append(data.get("summary_stats_mae_final_prediction"))
-        module_runtime_list.append(data.get("module_runtime"))
+#         num_spikes_in_isi_calc_list.append(data.get("num_spikes_in_isi_calc"))
+#         mean_interspike_interval_mae_list.append(data.get("mean_interspike_interval_mae"))
+#         stdev_interspike_interval_mae_list.append(data.get("stdev_interspike_interval_mae"))
+#         final_g_prediction_list.append(data.get("final_g_prediction"))
+#         model_train_mean_mae_list.append(data.get("model_train_mean_mae"))
+#         model_train_stdev_mae_list.append(data.get("model_train_stdev_mae"))
+#         mae_final_predicted_g_list.append(data.get("mae_final_predicted_g"))
+#         prediction_evaluation_method_list.append(data.get("prediction_evaluation_method"))
+#         final_prediction_fi_mae_list.append(data.get("final_prediction_fi_mae"))
+#         final_prediction_voltage_mae_list.append(data.get("final_prediction_voltage_mae"))
+#         feature_mae_list.append(data.get("summary_stats_mae_final_prediction"))
+#         module_runtime_list.append(data.get("module_runtime"))
 
-    return (
-        num_spikes_in_isi_calc_list, 
-        mean_interspike_interval_mae_list, 
-        stdev_interspike_interval_mae_list, 
-        final_g_prediction_list, 
-        model_train_mean_mae_list,
-        model_train_stdev_mae_list,
-        mae_final_predicted_g_list,
-        prediction_evaluation_method_list, 
-        final_prediction_fi_mae_list, 
-        final_prediction_voltage_mae_list, 
-        feature_mae_list,
-        module_runtime_list
-    )
+#     return (
+#         num_spikes_in_isi_calc_list, 
+#         mean_interspike_interval_mae_list, 
+#         stdev_interspike_interval_mae_list, 
+#         final_g_prediction_list, 
+#         model_train_mean_mae_list,
+#         model_train_stdev_mae_list,
+#         mae_final_predicted_g_list,
+#         prediction_evaluation_method_list, 
+#         final_prediction_fi_mae_list, 
+#         final_prediction_voltage_mae_list, 
+#         feature_mae_list,
+#         module_runtime_list
+#     )
     
 
-def clear_directory(directory: str) -> None:
-    """
-    This method clears every file in a directory (to be used for deleting training data)
-    clear_directory is developed with the help of OpenAI: o3-mini-high
-    Parameters:
-    -----------
-    directory: str
-        Directory to be cleared
+# def clear_directory(directory: str) -> None:
+#     """
+#     This method clears every file in a directory (to be used for deleting training data)
+#     clear_directory is developed with the help of OpenAI: o3-mini-high
+#     Parameters:
+#     -----------
+#     directory: str
+#         Directory to be cleared
     
-    Returns:
-    ---------
-    None
-    """
-    print(f"Deleting Train Data: {directory}")
-    if not os.path.isdir(directory):
-        print(f"Error: {directory} is not a valid directory.")
-        return
+#     Returns:
+#     ---------
+#     None
+#     """
+#     print(f"Deleting Train Data: {directory}")
+#     if not os.path.isdir(directory):
+#         print(f"Error: {directory} is not a valid directory.")
+#         return
 
-    # Iterate over all items in the directory
-    for item in os.listdir(directory):
-        item_path = os.path.join(directory, item)
-        try:
-            if os.path.isfile(item_path) or os.path.islink(item_path):
-                os.unlink(item_path)
+#     # Iterate over all items in the directory
+#     for item in os.listdir(directory):
+#         item_path = os.path.join(directory, item)
+#         try:
+#             if os.path.isfile(item_path) or os.path.islink(item_path):
+#                 os.unlink(item_path)
 
-        except Exception as e:
-            print(f"Failed to delete {item_path}. Reason: {e}")
-
-
-def convert_target_csv_to_npy(num_traces: int, target_traces_filepath: str, output_folder_name: str) -> None:
-    '''
-    Helper function for users with voltage trace data in CSV format
-    Parameters:
-    -----------
-    num_traces: int
-        Number of traces in CSV
-    
-    target_traces_filepath: str
-        Target traces filepath
-    
-    output_folder_name: str
-        Output folder name (path)
-    
-    Returns:
-    ----------
-    None
-    '''
-    data = np.loadtxt(target_traces_filepath, delimiter=',', skiprows=1)
-    
-    csv_num_rows = data.shape[0]
-    num_samples = csv_num_rows // num_traces
-    
-    V_I_data = data.reshape(num_traces, num_samples, 3)
-    os.makedirs(output_folder_name + 'target/', exist_ok=True)
-    np.save(output_folder_name + 'target/combined_out.npy', V_I_data)
+#         except Exception as e:
+#             print(f"Failed to delete {item_path}. Reason: {e}")
     
     
-def pickle_rf(rf_model, filename: str) -> None:
-    '''
-    Saves the trained RF model
-    Parameters:
-    -----------
-    rf_model: Any
-        Random Forest model
+# def pickle_rf(rf_model, filename: str) -> None:
+#     '''
+#     Saves the trained RF model
+#     Parameters:
+#     -----------
+#     rf_model: Any
+#         Random Forest model
     
-    filename: str
-        Filename
+#     filename: str
+#         Filename
     
-    Returns:
-    -----------
-    None
-    '''
-    with open(filename, 'wb') as file:
-        pickle.dump(rf_model, file)
+#     Returns:
+#     -----------
+#     None
+#     '''
+#     with open(filename, 'wb') as file:
+#         pickle.dump(rf_model, file)

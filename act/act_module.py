@@ -9,9 +9,6 @@ from sklearn.metrics import mean_absolute_error
 from act.act_types import SimulationParameters, OptimizationParameters, ConductanceOptions, ConstantCurrentInjection, RampCurrentInjection, GaussianCurrentInjection
 from act.cell_model import ACTCellModel
 from act.simulator import ACTSimulator
-from act.optimizer import RandomForestOptimizer
-from act.metrics import *
-from act.data_processing import *
 
 
 @dataclass
@@ -21,12 +18,7 @@ class ACTModuleParameters:
     cell: ACTCellModel = None
     sim_params: SimulationParameters = None
     optim_params: OptimizationParameters = None
-
-'''
-ACTModule is the primary class in the Automatic Cell Tuner project with methods to generate
-training data, run a random forest regressor to learn conductance sets to match features, and
-additional methods to evaluate predictions.
-'''
+    name: str = None
 
 class ACTModule:
 
@@ -34,9 +26,10 @@ class ACTModule:
 
         self.output_folder_name: str = os.path.join(os.getcwd(), params.module_folder_name) + "/"
         self.target_traces_file = params.target_traces_file
-        self.train_cell: ACTCellModel = params.cell
-        self.sim_params: SimulationParameters = params.sim_params
-        self.optim_params: OptimizationParameters = params.optim_params
+        self.train_cell = params.cell
+        self.sim_params = params.sim_params
+        self.optim_params = params.optim_params
+        self.name = params.name
         
         self.blocked_channels = []
         self.rf_model = self.optim_params.rf_model
@@ -55,21 +48,19 @@ class ACTModule:
             Filepath to predicted conductances
         '''
         start_time = time.time()
-        print("RUNNING THE MODULE")
-        print("LOADING TARGET TRACES")
+        print(f"Running Module {self.name}...")
+        print("----------")
 
         if self.rf_model == None:
-            print("SIMULATING TRAINING DATA")
+            print("Simulating train traces...")
             self.simulate_train_cells(self.train_cell)
             self.filter_data()
 
-
+        print("Predicting and evaluating...")
         prediction = self.get_rf_prediction()
-
-        print("SIMULATING PREDICTIONS")
         self.simulate_eval_cells(self.train_cell, prediction)
 
-        print("SELECTING BEST PREDICTION")
+        print("Selecting the best prediction...")
         prediction_eval_method = self.optim_params.prediction_eval_method
         save_file = self.optim_params.save_file
         if not save_file == None:
@@ -102,11 +93,9 @@ class ACTModule:
             
         end_time = time.time()
         run_time = end_time - start_time
-        runtime_timedelta = timedelta(seconds=run_time)
-
+        runtime_timedelta = timedelta(seconds = run_time)
         formatted_runtime = str(runtime_timedelta)
-        
-        print(f"Module runtime: {formatted_runtime}")
+        print(f"Done. Finished in {formatted_runtime} sec.\n")
         
         previous_modules = self.optim_params.previous_modules
         total_runtime = run_time
@@ -376,6 +365,9 @@ class ACTModule:
 
             X_train = sub_train_df.to_numpy()
             Y_train = g_train
+
+            # g_train = [g for g in g_train if str(g) != 'nan']
+            # self.model.fit(summary_features_train, g_train)
 
             rf = RandomForestOptimizer(
                 n_estimators= self.optim_params.n_estimators,

@@ -59,7 +59,7 @@ class ACTCellModel:
         self.passive = passive.copy()
         self.active_channels = active_channels.copy()
 
-        self.set_g_to = {}
+        self._set_g_to = {}
         self.spp = None
 
         # Minimal morphology
@@ -99,7 +99,7 @@ class ACTCellModel:
         None
         """
         for g_name, g_value in zip(g_names, g_values):
-            self.set_g_to[g_name] = g_value
+            self._set_g_to[g_name] = g_value
     
     def _set_g_bar(self) -> None:
         """
@@ -118,7 +118,7 @@ class ACTCellModel:
         None
         """
         for sec in self.all:
-            for g_name, g_value in self.set_g_to.items():
+            for g_name, g_value in self._set_g_to.items():
                 _rsetattr(sec(0.5), g_name, g_value)
                     
     
