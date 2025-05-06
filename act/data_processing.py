@@ -3,12 +3,12 @@ import json
 import glob
 import numpy as np
 import pandas as pd
-import pickle
+from scipy import signal
 
 #---------------------------------------------
 # Feature Extraction
 #---------------------------------------------
-def find_events(v: np.ndarray, spike_threshold: float = -20) -> list:
+def find_events(v: np.ndarray, spike_threshold: float = -20) -> np.ndarray:
     """
     Counts the number of spikes in a voltage trace. Returns a list of event indices
     Parameters:
@@ -24,17 +24,8 @@ def find_events(v: np.ndarray, spike_threshold: float = -20) -> list:
     event_indices: list[float]
         List of voltage trace indices where spikes occur.
     """
-    # Find the indices where the voltage is above the threshold
-    above_threshold_indices = np.where(v[:-1] > spike_threshold)[0]
-
-    # Find the indices where the slope changes from positive to negative
-    slope = np.diff(v)
-    positive_to_negative_indices = np.where((slope[:-1] > 0) & (slope[1:] < 0))[0]
-
-    # Find the intersection of the two sets of indices
-    event_indices = np.intersect1d(above_threshold_indices, positive_to_negative_indices)
-
-    return event_indices
+    potential_spikes = signal.argrelextrema(v, np.greater, order = 5)[0]
+    return np.array([spike_time for spike_time in potential_spikes if v[spike_time] > spike_threshold])
 
 def select_features(df: pd.DataFrame, feature_keys: list) -> pd.DataFrame:
     """
@@ -70,7 +61,8 @@ def select_features(df: pd.DataFrame, feature_keys: list) -> pd.DataFrame:
 
 def get_summary_features(
         V: np.ndarray,
-        CI: list = None,
+        I: np.ndarray,
+        window: np.ndarray = None,
         lto_hto = None,
         spike_threshold: int = -20, 
         max_n_spikes: int = 20
@@ -83,8 +75,8 @@ def get_summary_features(
     V: np.ndarray of shape (n_trials, T)
         Voltage traces (mV over ms).
 
-    CI: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection], default = None
-        A list of Current injection settings for all trials.
+    I: ...
+        ...
     
     lto_hto: list[float], default = None
         A list of labels for lto/hto.
@@ -106,23 +98,20 @@ def get_summary_features(
     stat_df = []
     for trial_idx, v_trial in enumerate(V):
         row = pd.DataFrame(index = [0])
-        
-        # Crop data to only extract features within the current injection time
-        start_time = CI[trial_idx].delay
-        stop_time = CI[trial_idx].delay + CI[trial_idx].dur
-        start_idx = int(np.round(start_time))
-        end_idx = int(np.round(stop_time))
-        end_idx = min(end_idx, len(v_trial))
 
-        window = v_trial[start_idx:end_idx]
+        # Remove edge effects
+        if window is not None:
+            v_trial = v_trial[window[0] : window[1]]
+        else:
+            window = [0, len(v_trial) + 1]
         
         # Save overall voltage stats
-        row["mean_v"] = np.nanmean(window)
-        row["std_v"] = np.nanstd(window)
+        row["mean_v"] = np.nanmean(v_trial)
+        row["std_v"] = np.nanstd(v_trial)
 
         # Extract # of spikes and # of troughs and save the number
-        spike_idxs = find_events(window, spike_threshold)
-        trough_idxs = find_events(-window, -spike_threshold)
+        spike_idxs = find_events(v_trial, spike_threshold)
+        trough_idxs = find_events(-v_trial, -spike_threshold)
 
         for events, event_type_name in zip([spike_idxs, trough_idxs], ["spike", "trough"]):
 
@@ -131,7 +120,7 @@ def get_summary_features(
             
             # Save spike frequency
             if event_type_name == "spike":
-                row[f"spike_frequency"] = len(events) * 1000 / len(window) 
+                row[f"spike_frequency"] = len(events) * 1000 / len(v_trial) 
         
             # Save first max_n_spikes event times
             event_idxs_corrected = np.ones(max_n_spikes) * np.nan
@@ -139,12 +128,12 @@ def get_summary_features(
             event_idxs_corrected[:events_length] = events[:events_length]
 
             for event_idx in range(max_n_spikes):
-                row[f"{event_type_name}_{event_idx}"] = event_idxs_corrected[event_idx] + start_idx
+                row[f"{event_type_name}_{event_idx}"] = event_idxs_corrected[event_idx] + window[0]
 
             # Save event stats
             for opertaion, operation_name in zip([np.min, np.max, np.mean, np.std], ["min", "max", "mean", "std"]):
                 if len(events) > 0:
-                    row[f'{operation_name}_{event_type_name}_volt'] = opertaion(window[events])
+                    row[f'{operation_name}_{event_type_name}_volt'] = opertaion(v_trial[events])
                 else:
                     row[f'{operation_name}_{event_type_name}_volt'] = np.nan
         
@@ -154,35 +143,35 @@ def get_summary_features(
         isi_length = np.min([len(isi), max_n_spikes - 1])
         isi_corrected[:isi_length] = isi[:isi_length]
         for isi_idx in range(max_n_spikes - 1):
-            row[f"isi_{isi_idx}"] = isi_corrected[isi_idx] + start_idx
+            row[f"isi_{isi_idx}"] = isi_corrected[isi_idx]
             
-        # Save pricipal frequency and amplitude
-        if lto_hto is not None:
-            if lto_hto[trial_idx] == 1:
-                # Get FFT Magnitudes
-                samples = len(window)
-                fft_result = np.fft.rfft(window)
-                fft_magnitude = np.abs(fft_result)
+        # # Save pricipal frequency and amplitude
+        # if lto_hto is not None:
+        #     if lto_hto[trial_idx] == 1:
+        #         # Get FFT Magnitudes
+        #         samples = len(window)
+        #         fft_result = np.fft.rfft(window)
+        #         fft_magnitude = np.abs(fft_result)
                 
-                # Get FFT Frequencies
-                freqs = np.fft.rfftfreq(samples, d=dt) #TODO
+        #         # Get FFT Frequencies
+        #         freqs = np.fft.rfftfreq(samples, d=dt) #TODO
                 
-                # Ingnore DC component
-                if freqs[0] == 0:
-                    fft_magnitude[0] = 0
+        #         # Ingnore DC component
+        #         if freqs[0] == 0:
+        #             fft_magnitude[0] = 0
 
-                max_magnitude_index = np.argmax(fft_magnitude)
+        #         max_magnitude_index = np.argmax(fft_magnitude)
 
-                principal_freq = freqs[max_magnitude_index]
-                row["principal_frequency"] = principal_freq
-                row["amplitude"] = max(window) - min(window)
-            else:
-                row["principal_frequency"] = 1e6
-                row["amplitude"] = 1e6
+        #         principal_freq = freqs[max_magnitude_index]
+        #         row["principal_frequency"] = principal_freq
+        #         row["amplitude"] = max(window) - min(window)
+        #     else:
+        #         row["principal_frequency"] = 1e6
+        #         row["amplitude"] = 1e6
 
         # Save I stats
-        row["mean_i"] = CI[trial_idx].amp_mean
-        row["std_i"] = CI[trial_idx].amp_std
+        row["mean_i"] = np.nanmean(I[trial_idx])
+        row["std_i"] = np.nanstd(I[trial_idx])
 
         stat_df.append(row)
     

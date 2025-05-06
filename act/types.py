@@ -22,10 +22,6 @@ class ConstantCurrentInjection:
     delay: float = 50                         # (ms)
     lto_hto: float = 0                        # "lto", "hto"
 
-    # For compatibility
-    amp_mean = amp
-    amp_std = 0
-
 @dataclass
 class RampCurrentInjection:
     amp_start: float = 0                      # (nA)
@@ -74,18 +70,20 @@ class FilterParameters:
 
 @dataclass
 class OptimizationParameters:
+    # Set the search space
     conductance_options: list = None
-    amps: list = None
+    CI_options: list = None
+
+    # Set the RF model
     random_state: int = 42
     n_estimators: int = 1000
     max_depth: int = None
-    eval_n_repeats: int = 3
-    sample_rate_decimate_factor: int = None
+
+    # Set the features
     train_features: list = None
     filter_parameters: FilterParameters = None
     spike_threshold: float = 0
-    first_n_spikes: int = 20
-    prediction_eval_method: str = 'fi_curve'
-    evaluate_random_forest: bool = False
+    max_n_spikes: int = 20
+
+    # Set segregation #TODO
     previous_modules: list = None
-    save_file: str = None
