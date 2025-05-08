@@ -1,19 +1,16 @@
 import os
 import time
-from datetime import timedelta
 import numpy as np
-import json
+import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error
 from itertools import product
 
-from act.types import SimulationParameters, OptimizationParameters, ConductanceOptions, ConstantCurrentInjection, RampCurrentInjection, GaussianCurrentInjection
+from act.types import SimulationParameters, OptimizationParameters
 from act.cell_model import ACTCellModel
 from act.simulator import ACTSimulator
 from act.data_processing import combine_data, remove_saturated_traces, get_traces_with_spikes, get_summary_features, select_features, clean_g_bars
 from act.metrics import summary_features_error
-
-#TODO: maybe put target data reading + sum.f. extraction + feature filtering into a _function, since we call it so much
 
 class ACTModule:
 
@@ -36,13 +33,31 @@ class ACTModule:
 
         # Model (assigned after fitting)
         self.model = None
-        
-        #TODO: check if needed
-        self.blocked_channels = []
 
-    def run(self) -> None:
+    def _read_process_target_data(self) -> pd.DataFrame:
+        print("Predicting on target data...")
+        dataset_target = np.load(self.target_file)
+        V_target = dataset_target[:, :, 0]
+        I_target = dataset_target[:, :, 1]
+
+        # Compute target SF
+        target_df = get_summary_features(
+            V = V_target, 
+            I = I_target,
+            spike_threshold = self.optimization_parameters.spike_threshold,
+            max_n_spikes = self.optimization_parameters.max_n_spikes
+            )
+
+        # If train_features is None, use all features
+        if self.optimization_parameters.train_features is not None:
+            target_df = select_features(target_df, self.optimization_parameters.train_features)
+        
+        return target_df
+
+    def run(self) -> pd.DataFrame:
         '''
-        The Main method to run the automatic cell tuning process given user settings
+        Run the train-predict sequence.
+
         Parameters:
         -----------
         self
@@ -53,7 +68,7 @@ class ACTModule:
             Filepath to predicted conductances
         '''
         start_time = time.time()
-        print(f"Running Module {self.name}...")
+        print(f"Running Module '{self.name}'...")
         print("----------")
 
         print("Simulating train traces...")
@@ -67,65 +82,34 @@ class ACTModule:
             print("Filtering skipped.")
 
         print("Training RandomForest...")
-        self.train_random_forest()
+        train_mae = self.train_random_forest()
 
         # Make and evaluate predictions
-        print("Predicting on target data...")
-        dataset_target = np.load(self.target_file)
-        V_target = dataset_target[:, :, 0]
-        I_target = dataset_target[:, :, 1]
-
-        # Compute target SF
-        target_df = get_summary_features(
-            V = V_target, 
-            I = I_target,
-            lto_hto = 0, #TODO: fix
-            spike_threshold = self.optimization_parameters.spike_threshold,
-            max_n_spikes = self.optimization_parameters.max_n_spikes
-            )
-
-        # If train_features is None, use all features
-        if self.optimization_parameters.train_features is not None:
-            target_df = select_features(target_df, self.optimization_parameters.train_features)
-
+        target_df = self._read_process_target_data()
         prediction = self.model.predict(target_df)
         self.simulate_cells(self.cell, prediction)
 
         print("Evaluating predictions...")
-        sf_error, g_pred = self.evaluate_predictions()
+        sf_error, fi_error, g_pred = self.evaluate_predictions()
 
         conductance_option_names_list = [conductance_option.variable_name for conductance_option in self.optimization_parameters.conductance_options]
         final_prediction = dict(zip(conductance_option_names_list, g_pred[np.argmin(sf_error)]))
         self.cell.prediction = final_prediction #TODO: do we need this?
         
-        #TODO: handle post-processing
         print(self.cell.prediction)
-            
-        end_time = time.time()
-        run_time = end_time - start_time
-        runtime_timedelta = timedelta(seconds = run_time)
-        formatted_runtime = str(runtime_timedelta)
-        print(f"Done. Finished in {formatted_runtime} sec.\n")
+        runtime = round(time.time() - start_time, 3)
+
+        metric_names = ["Train MAE (g)"] + [f"Test SFE (g{g_id})" for g_id in range(len(g_pred))] + ["Test MAE (FI)", "Runtime (s)"]
+        metrics = [train_mae] + sf_error.flatten().tolist() + [fi_error, runtime]
+        metrics = pd.DataFrame({"metric" : metric_names, "value": metrics})
+
+        print(f"Done.")
+
+        return metrics
     
     def evaluate_predictions(self):
         # Load target data
-        dataset_target = np.load(self.target_file)
-        V_target = dataset_target[:, :, 0]
-        I_target = dataset_target[:, :, 1]
-        lto_hto = dataset_target[:, 1, 2]
-
-        # Compute target SF
-        target_df = get_summary_features(
-            V = V_target, 
-            I = I_target,
-            lto_hto = 0, #TODO: fix
-            spike_threshold = self.optimization_parameters.spike_threshold,
-            max_n_spikes = self.optimization_parameters.max_n_spikes
-            )
-
-        # If train_features is None, use all features
-        if self.optimization_parameters.train_features is not None:
-            target_df = select_features(target_df, self.optimization_parameters.train_features)
+        target_df = self._read_process_target_data()
 
         # Load predicted data
         dataset_pred = np.load(os.path.join(self.output_folder_path, "eval", "combined_out.npy"))
@@ -134,12 +118,10 @@ class ACTModule:
         g_pred = clean_g_bars(dataset_pred)
         V_pred = dataset_pred[:, :, 0]
         I_pred = dataset_pred[:, :, 1]
-        lto_hto = dataset_pred[:, 1, 3]
         
         pred_df = get_summary_features(
             V = V_pred, 
             I = I_pred,
-            lto_hto = lto_hto, #TODO: check
             spike_threshold = self.optimization_parameters.spike_threshold,
             max_n_spikes = self.optimization_parameters.max_n_spikes
             )
@@ -147,9 +129,11 @@ class ACTModule:
         if self.optimization_parameters.train_features is not None:
             pred_df = select_features(pred_df, self.optim_params.train_features)
         
+        # Compute errors
         sf_error = summary_features_error(target_df.to_numpy(), pred_df.to_numpy())
+        fi_error = mean_absolute_error(target_df['spike_frequency'].to_numpy(), pred_df['spike_frequency'].to_numpy())
         
-        return sf_error, g_pred
+        return sf_error, fi_error, g_pred
 
     def generate_g_combinations(self) -> None:
 
@@ -162,10 +146,11 @@ class ACTModule:
                 n_slices.append(1)
 
             # Or, if was optimized before, set bounds variation
-            elif (conductance_option.prediction != None) and (conductance_option.bounds_variation != None):
+            elif (self.cell.prediction[conductance_option.variable_name] != None) and (conductance_option.bounds_variation != None):
+                past_prediction = self.cell.prediction[conductance_option.variable_name]
                 g.append((
-                    conductance_option.prediction - conductance_option.prediction * conductance_option.bounds_variation,
-                    conductance_option.prediction + conductance_option.prediction * conductance_option.bounds_variation
+                    past_prediction - past_prediction * conductance_option.bounds_variation,
+                    past_prediction + past_prediction * conductance_option.bounds_variation
                     ))
                 n_slices.append(conductance_option.n_slices)
 
@@ -206,8 +191,11 @@ class ACTModule:
         # Set self.conductance_combos and self.current_inj_combos
         if mode == "train":
             g_comb = self.generate_g_combinations()
-        # else, g_comb is given as RF predictions
+        elif mode == "eval": # else, g_comb is given as RF predictions
+            if len(g_comb) != len(self.optimization_parameters.CI_options):
+                raise ValueError("The number of CI options must match the number of target traces.")
 
+        sim_counter = 0
         for group_id in range(len(g_comb)):
             
             # Init a cell for every combo
@@ -216,19 +204,23 @@ class ACTModule:
                 path_to_hoc_file = cell.path_to_hoc_file,
                 path_to_mod_files = cell.path_to_mod_files,
                 passive = cell.passive,
-                active_channels = cell.active_channels,
-                prediction = cell.prediction)
+                active_channels = cell.active_channels)
             
             # Set conductances
             specific_cell.set_g_bar(specific_cell.active_channels, list(g_comb[group_id]))
 
             # Submit the job
-            for curr_inj in self.optimization_parameters.CI_options:
+            for ci_id, curr_inj in enumerate(self.optimization_parameters.CI_options):
+                # During prediction, simulate only one I for each g
+                if (mode == "eval") and (ci_id != group_id):
+                    continue
+                
+                # During training, simulate all possible I-g combinations
                 simulator.submit_job(
                     specific_cell, 
                     SimulationParameters(
                         sim_name = mode,
-                        sim_idx = group_id,
+                        sim_idx = sim_counter,
                         h_v_init = self.simulation_parameters.h_v_init,    # (mV)
                         h_tstop = self.simulation_parameters.h_tstop,      # (ms)
                         h_dt = self.simulation_parameters.h_dt,            # (ms)
@@ -236,6 +228,7 @@ class ACTModule:
                         CI = [curr_inj]
                     )
                 )
+                sim_counter += 1
 
         simulator.run_jobs()
         combine_data(os.path.join(self.output_folder_path, mode))
@@ -262,7 +255,7 @@ class ACTModule:
         np.save(os.path.join(path, f"filtered_out.npy"), data)
     
 
-    def train_random_forest(self):
+    def train_random_forest(self) -> float:
         '''
         Trains a Random Forest Regressor model on the features of the generated simulation data.
         Then gets a prediction for conductance sets that yeild features found in the target data.
@@ -276,25 +269,6 @@ class ACTModule:
         predictions: np.ndarray
             Conductance Predictions
         '''
-        # Load target data
-        dataset_target = np.load(self.target_file)
-        V_target = dataset_target[:, :, 0]
-        I_target = dataset_target[:, :, 1]
-        lto_hto = dataset_target[:, 1, 2]
-
-        # Compute target SF
-        target_df = get_summary_features(
-            V = V_target, 
-            I = I_target,
-            lto_hto = 0, #TODO: fix
-            spike_threshold = self.optimization_parameters.spike_threshold,
-            max_n_spikes = self.optimization_parameters.max_n_spikes
-            )
-
-        # If train_features is None, use all features
-        if self.optimization_parameters.train_features is not None:
-            target_df = select_features(target_df, self.optimization_parameters.train_features)
-        
         # Load train data
         file_path = os.path.join(self.output_folder_path, "train", "filtered_out.npy")
         if os.path.exists(file_path):
@@ -306,12 +280,10 @@ class ACTModule:
         g_train = clean_g_bars(dataset_train)
         V_train = dataset_train[:, :, 0]
         I_train = dataset_train[:, :, 1]
-        lto_hto = dataset_train[:, 1, 3]
         
         train_df = get_summary_features(
             V = V_train, 
             I = I_train,
-            lto_hto = lto_hto, #TODO: check
             spike_threshold = self.optimization_parameters.spike_threshold,
             max_n_spikes = self.optimization_parameters.max_n_spikes
             )
@@ -330,8 +302,10 @@ class ACTModule:
             )
         rf.fit(X_train, y_train)
         
-        # Evaluate performance on the train sample
-        print(f"Train MAE: ", mean_absolute_error(y_train, rf.predict(X_train))) #TODO: maybe return and then create a dataframe of metrics?
-
         # Save the model
         self.model = rf
+
+        # Evaluate performance on the train sample
+        train_mae = mean_absolute_error(y_train, rf.predict(X_train))
+        return train_mae
+

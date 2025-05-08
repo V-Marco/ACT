@@ -20,7 +20,6 @@ class ConstantCurrentInjection:
     amp: float = 0.1                          # (nA)
     dur: float = 400                          # (ms)
     delay: float = 50                         # (ms)
-    lto_hto: float = 0                        # "lto", "hto"
 
 @dataclass
 class RampCurrentInjection:
@@ -30,7 +29,6 @@ class RampCurrentInjection:
     step_time: float = 20                     # (ms)
     dur: float = 400                          # (ms)
     delay: float = 50                         # (ms)
-    lto_hto: float = 0                       # "lto", "hto"
 
 @dataclass
 class GaussianCurrentInjection:
@@ -38,7 +36,6 @@ class GaussianCurrentInjection:
     amp_std: float = 0.02                     # (nA)
     dur: float = 400                          # (ms)
     delay: float = 50                         # (ms)
-    lto_hto: float = 0                        # "lto", "hto"
     
 @dataclass  
 class SimulationParameters:
@@ -52,13 +49,16 @@ class SimulationParameters:
     random_seed: int = 42
     _path: str = None
 
+# ----------
+# Optimization
+# ----------
+
 @dataclass
 class ConductanceOptions:
     variable_name: str = None
     blocked: bool = False
     low: float = None
     high: float = None
-    prediction: float = None
     bounds_variation: float = None
     n_slices: int = 1
     

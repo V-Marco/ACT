@@ -1,16 +1,31 @@
 import os
-import json
 import glob
 import numpy as np
 import pandas as pd
 from scipy import signal
+from scipy.fft import rfft, rfftfreq
 
 #---------------------------------------------
 # Feature Extraction
 #---------------------------------------------
+
+# In **all** files:
+#TODO: make sure all functions have """ for docs (not ''')
+#TODO: make sure there is an empty line between func description and the Parameters word in all files
+#TODO: make sure self is not in Parameters
+#TODO: make sure every non-private has a description; make sure no description starts with "This function". Same for classes.
+#TODO: make sure there are no unused imports; make sure imports are organized as: internal/external libs -- empty line -- act files, e.g.
+# import numpy as np
+# import os
+# ...
+# import pandas as pd
+#
+# from act.metrics import pp_error
+
 def find_events(v: np.ndarray, spike_threshold: float = -20) -> np.ndarray:
     """
-    Counts the number of spikes in a voltage trace. Returns a list of event indices
+    Counts the number of spikes in a voltage trace. Returns a list of event indices.
+
     Parameters:
     -----------
     v: np.ndarray of shape = (T,)
@@ -31,6 +46,7 @@ def select_features(df: pd.DataFrame, feature_keys: list) -> pd.DataFrame:
     """
     Returns a subset of the features dataframe based on a list of user selected feature keys.
     Useful for keyword shortcuts like "spike_times" and "isi" to get all columns related.
+
     Parameters:
     -----------
     df: pd.DataFrame
@@ -63,7 +79,6 @@ def get_summary_features(
         V: np.ndarray,
         I: np.ndarray,
         window: np.ndarray = None,
-        lto_hto = None,
         spike_threshold: int = -20, 
         max_n_spikes: int = 20
         ) -> pd.DataFrame:
@@ -75,11 +90,8 @@ def get_summary_features(
     V: np.ndarray of shape (n_trials, T)
         Voltage traces (mV over ms).
 
-    I: ...
-        ...
-    
-    lto_hto: list[float], default = None
-        A list of labels for lto/hto.
+    I: np.ndarray of shape (n_trials, T)
+        Corresponding current traces (time un over ms).
     
     spike_threshold: int, default = -20
         Threshold for spike detection (mV).
@@ -108,6 +120,7 @@ def get_summary_features(
         # Save overall voltage stats
         row["mean_v"] = np.nanmean(v_trial)
         row["std_v"] = np.nanstd(v_trial)
+        row["max_ampl_v"] = np.nanmax(v_trial) - np.nanmin(v_trial)
 
         # Extract # of spikes and # of troughs and save the number
         spike_idxs = find_events(v_trial, spike_threshold)
@@ -145,29 +158,10 @@ def get_summary_features(
         for isi_idx in range(max_n_spikes - 1):
             row[f"isi_{isi_idx}"] = isi_corrected[isi_idx]
             
-        # # Save pricipal frequency and amplitude
-        # if lto_hto is not None:
-        #     if lto_hto[trial_idx] == 1:
-        #         # Get FFT Magnitudes
-        #         samples = len(window)
-        #         fft_result = np.fft.rfft(window)
-        #         fft_magnitude = np.abs(fft_result)
-                
-        #         # Get FFT Frequencies
-        #         freqs = np.fft.rfftfreq(samples, d=dt) #TODO
-                
-        #         # Ingnore DC component
-        #         if freqs[0] == 0:
-        #             fft_magnitude[0] = 0
-
-        #         max_magnitude_index = np.argmax(fft_magnitude)
-
-        #         principal_freq = freqs[max_magnitude_index]
-        #         row["principal_frequency"] = principal_freq
-        #         row["amplitude"] = max(window) - min(window)
-        #     else:
-        #         row["principal_frequency"] = 1e6
-        #         row["amplitude"] = 1e6
+        # Save main frequency for LTO / HTO
+        magnitude = np.abs(rfft(v_trial))[1:] # Remove DC
+        freqs = rfftfreq(len(v_trial), d = 1 / 1000)
+        row['main_freq'] = freqs[np.argmax(magnitude)]
 
         # Save I stats
         row["mean_i"] = np.nanmean(I[trial_idx])
@@ -215,15 +209,15 @@ def get_traces_with_spikes(data: np.ndarray, spike_threshold: float = -20) -> np
 
     Parameters:
     -----------
-    data: np.ndarray of shape (n_trials, T, 4)
-        Array (V, I, g, lto/hto/sim_idx).
+    data: np.ndarray of shape (n_trials, T, 3)
+        Array (V, I, g).
     
     spike_threshold: int, default = -20
         Threshold for spike detection (mV).
         
     Returns:
     -----------
-    traces_with_spikes: np.ndarray of shape (n_trials, T, 4)
+    traces_with_spikes: np.ndarray of shape (n_trials, T, 3)
         Filtered data containing only traces with spikes.
     '''
     V = data[:, :, 0]
@@ -258,18 +252,17 @@ def combine_data(output_path: str) -> None:
     if os.path.exists(save_path):
         raise RuntimeError(save_path + " already exists.")
 
-    file_list = sorted(glob.glob(os.path.join(output_path, "out_*.npy")))
+    file_list = glob.glob(os.path.join(output_path, "out_*.npy"))
 
+    # Sort by simulation index
+    file_list = sorted(file_list, key = lambda s : int(s.split(".npy")[0].split("_")[-1]))
+
+    # Read and combine data
     data_list = []
-
     for file_name in file_list:
         data = np.load(file_name)
         data_list.append(data)
-        
-    sorted_data_list = sorted(data_list, key=lambda arr: arr[0][3])
-
-    final_data = np.stack(sorted_data_list, axis = 0)
-
+    final_data = np.stack(data_list, axis = 0)
     
     print(save_path)
     np.save(save_path, final_data)
@@ -280,8 +273,8 @@ def clean_g_bars(dataset: np.ndarray) -> np.ndarray:
     ACTSimulator pads the 3rd column (i.e. conductance set) with NANs. This method removes the pad for use in the model.
     Parameters:
     -----------
-    dataset: np.ndarray of shape = (<number of trials>, <number of timesteps in sim>, 4)
-        Voltage traces, current traces, conductance settings, and lto_hto/sim_idx information
+    dataset: np.ndarray of shape = (<number of trials>, <number of timesteps in sim>, 3)
+        Voltage traces, current traces, conductance settings
     
     Returns:
     ----------
@@ -293,221 +286,3 @@ def clean_g_bars(dataset: np.ndarray) -> np.ndarray:
         
     cleaned_g_bars = np.array([remove_nan_from_sample(sample) for sample in dataset[:, :, 2]])
     return cleaned_g_bars
-
-
-def get_fi_curve(V_matrix: np.ndarray, spike_threshold: float, CI_list: list, ignore_negative_CI = True) -> list:
-    '''
-    Given current injection intensities and voltage traces, this method calculates
-    a list of frequencies (FI curve)
-    Parameters:
-    -----------
-    V_matrix: np.ndarray of shape = (<number of trials>, <number of timesteps in sim>), default = None
-        List of voltage traces
-    
-    spike_threshold: float
-        Spike threshold
-        
-    CI_list: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection]
-        A list of Current injection settings
-        
-    ignore_negative_CI: bool, default = True
-        Does not include negative current injections when True
-    
-    Returns:
-    ---------
-    frequencies: list[float]
-        List of frequencies
-    
-    '''
-    # Count spikes
-    raise RuntimeError
-    counts = np.apply_along_axis(len(find_events(V_matrix)), axis = 1, arr = V_matrix, spike_threshold = spike_threshold)
-    
-    # Find injection durations
-    amps = np.array([current_inj.amp for current_inj in CI_list])
-    injection_durations = np.array([current_inj.dur for current_inj in CI_list])
-
-    if ignore_negative_CI:
-        non_neg_idx = np.where(amps >= 0)
-        counts = counts[non_neg_idx]
-        injection_durations = injection_durations[non_neg_idx]
-
-    frequencies =  counts / (injection_durations / 1000)  # Convert to Hz: spikes / time (sec)
-
-    return frequencies
-
-
-def save_to_json(value, key: str, filename: str) -> None:
-    '''
-    A simple helper function to save a key-value pair to a given json file.
-    Parameters:
-    -----------
-    value: Any
-        Value
-    
-    key: str
-        Key
-    
-    filename: str
-        Filename
-    
-    Returns:
-    ---------
-    None
-        
-    '''
-    
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
-    new_entry = {key: value}
-    
-    try:
-        with open(filename, 'r') as file:
-            existing_data = json.load(file)
-    except FileNotFoundError:
-        existing_data = {}
-    
-    existing_data.update(new_entry)
-    
-    with open(filename, 'w') as file:
-        json.dump(existing_data, file, indent=4)
-
-        
-# def load_metric_data(filenames:list) -> tuple:
-#     """
-#     Loads in all values from a saved metrics file.
-#     Parameters:
-#     -----------
-#     filenames: list[str]
-#         List of filepaths to metric files (json)
-    
-#     Returns:
-#     -----------
-#     num_spikes_in_isi_calc_list: list[int]
-#         List of the number of spikes used for interspike interval calculations
-        
-#     mean_interspike_interval_mae_list: list[float]
-#         List of mean interspike interval MAEs
-        
-#     stdev_interspike_interval_mae_list: list[float]
-#         List of stdev interspike interval MAEs
-        
-#     final_g_prediction_list: list[list[float]]
-#         List of final g predictions
-        
-#     model_train_mean_mae_list: list[float]
-#         List of mean model training MAEs
-        
-#     model_train_stdev_mae_list: list[float]
-#         List of stdev model training MAEs
-        
-#     mae_final_predicted_g_list: list[float]
-#         List of conductance MAEs for final predictions
-        
-#     prediction_evaluation_method_list: list[str]
-#         List of prediction evaluation methods
-        
-#     final_prediction_fi_mae_list: list[float]
-#         List of FI curve MAEs for final predictions
-        
-#     final_prediction_voltage_mae_list: list[float]
-#         List of voltage MAEs for final predictions
-        
-#     feature_mae_list: list[float]
-#         List of feature MAEs for final predictions
-        
-#     module_runtime_list: list[float]
-#         List of runtimes
-        
-#     """
-#     num_spikes_in_isi_calc_list = []
-#     mean_interspike_interval_mae_list = []
-#     stdev_interspike_interval_mae_list = []
-#     final_g_prediction_list = []
-#     model_train_mean_mae_list = []
-#     model_train_stdev_mae_list = []
-#     mae_final_predicted_g_list = []
-#     prediction_evaluation_method_list = []
-#     final_prediction_fi_mae_list = []
-#     final_prediction_voltage_mae_list = []
-#     feature_mae_list = []
-#     module_runtime_list = []
-    
-#     for filename in filenames:
-#         with open(filename, 'r') as file:
-#             data = json.load(file)
-        
-#         num_spikes_in_isi_calc_list.append(data.get("num_spikes_in_isi_calc"))
-#         mean_interspike_interval_mae_list.append(data.get("mean_interspike_interval_mae"))
-#         stdev_interspike_interval_mae_list.append(data.get("stdev_interspike_interval_mae"))
-#         final_g_prediction_list.append(data.get("final_g_prediction"))
-#         model_train_mean_mae_list.append(data.get("model_train_mean_mae"))
-#         model_train_stdev_mae_list.append(data.get("model_train_stdev_mae"))
-#         mae_final_predicted_g_list.append(data.get("mae_final_predicted_g"))
-#         prediction_evaluation_method_list.append(data.get("prediction_evaluation_method"))
-#         final_prediction_fi_mae_list.append(data.get("final_prediction_fi_mae"))
-#         final_prediction_voltage_mae_list.append(data.get("final_prediction_voltage_mae"))
-#         feature_mae_list.append(data.get("summary_stats_mae_final_prediction"))
-#         module_runtime_list.append(data.get("module_runtime"))
-
-#     return (
-#         num_spikes_in_isi_calc_list, 
-#         mean_interspike_interval_mae_list, 
-#         stdev_interspike_interval_mae_list, 
-#         final_g_prediction_list, 
-#         model_train_mean_mae_list,
-#         model_train_stdev_mae_list,
-#         mae_final_predicted_g_list,
-#         prediction_evaluation_method_list, 
-#         final_prediction_fi_mae_list, 
-#         final_prediction_voltage_mae_list, 
-#         feature_mae_list,
-#         module_runtime_list
-#     )
-    
-
-# def clear_directory(directory: str) -> None:
-#     """
-#     This method clears every file in a directory (to be used for deleting training data)
-#     clear_directory is developed with the help of OpenAI: o3-mini-high
-#     Parameters:
-#     -----------
-#     directory: str
-#         Directory to be cleared
-    
-#     Returns:
-#     ---------
-#     None
-#     """
-#     print(f"Deleting Train Data: {directory}")
-#     if not os.path.isdir(directory):
-#         print(f"Error: {directory} is not a valid directory.")
-#         return
-
-#     # Iterate over all items in the directory
-#     for item in os.listdir(directory):
-#         item_path = os.path.join(directory, item)
-#         try:
-#             if os.path.isfile(item_path) or os.path.islink(item_path):
-#                 os.unlink(item_path)
-
-#         except Exception as e:
-#             print(f"Failed to delete {item_path}. Reason: {e}")
-    
-    
-# def pickle_rf(rf_model, filename: str) -> None:
-#     '''
-#     Saves the trained RF model
-#     Parameters:
-#     -----------
-#     rf_model: Any
-#         Random Forest model
-    
-#     filename: str
-#         Filename
-    
-#     Returns:
-#     -----------
-#     None
-#     '''
-#     with open(filename, 'wb') as file:
-#         pickle.dump(rf_model, file)

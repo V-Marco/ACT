@@ -1,15 +1,11 @@
-import os
-import sys
-import shutil
-from act.types import SimulationParameters, ConstantCurrentInjection, RampCurrentInjection, GaussianCurrentInjection
-from act.cell_model import ACTCellModel
+import os, sys, shutil
 from neuron import h
 import numpy as np
 from multiprocessing import Pool, cpu_count
 from contextlib import contextmanager
 
-# This file defines ACTSimulator (The primary class for interfacing with NEURON) with helper functions
-
+from act.types import SimulationParameters, ConstantCurrentInjection, RampCurrentInjection, GaussianCurrentInjection
+from act.cell_model import ACTCellModel
 
 
 @contextmanager
@@ -36,18 +32,8 @@ def suppress_neuron_warnings():
             sys.stderr = temp_stderr
             
 
+# https://stackoverflow.com/questions/31729008/python-multiprocessing-seems-near-impossible-to-do-within-classes-using-any-class
 def unwrap_self_run_job(args) -> None:
-    '''
-    A function for implementing multiprocessing for NEURON
-    https://stackoverflow.com/questions/31729008/python-multiprocessing-seems-near-impossible-to-do-within-classes-using-any-class
-    Parameters:
-    -----------
-    args: list[list]
-    
-    Returns:
-    -----------
-    None
-    '''
     return ACTSimulator._run_job(args[0], args[1][0], args[1][1])
 
 
@@ -65,10 +51,10 @@ class ACTSimulator:
 
     def run(self, cell: ACTCellModel, parameters: SimulationParameters) -> None:
         '''
-        Used for single job NEURON simulations
+        Used for single job NEURON simulations.
+
         Parameters:
         -----------
-        self
         
         cell: ACTCellModel
         
@@ -104,8 +90,7 @@ class ACTSimulator:
                     parameters.CI[0].dur, 
                     parameters.CI[0].delay, 
                     parameters.h_tstop, 
-                    parameters.h_dt, 
-                    parameters.CI[0].lto_hto)
+                    parameters.h_dt)
             elif isinstance(parameters.CI[0], RampCurrentInjection):
                 cell._add_ramp_CI(
                     parameters.CI[0].amp_start, 
@@ -115,16 +100,14 @@ class ACTSimulator:
                     parameters.CI[0].dur, 
                     parameters.CI[0].delay, 
                     parameters.h_tstop, 
-                    parameters.h_dt, 
-                    parameters.CI[0].lto_hto)
+                    parameters.h_dt)
             elif isinstance(parameters.CI[0], GaussianCurrentInjection):
                 cell._add_gaussian_CI(
                     parameters.CI[0].amp_mean, 
                     parameters.CI[0].amp_std, 
                     parameters.CI[0].dur, 
                     parameters.CI[0].delay, 
-                    parameters.random_seed, 
-                    parameters.CI[0].lto_hto)
+                    parameters.random_seed)
             else:
                 raise NotImplementedError
 
@@ -227,8 +210,7 @@ class ACTSimulator:
                 parameters.CI[0].dur, 
                 parameters.CI[0].delay, 
                 parameters.h_tstop, 
-                parameters.h_dt, 
-                parameters.CI[0].lto_hto)
+                parameters.h_dt)
         elif isinstance(parameters.CI[0], RampCurrentInjection):
             cell._add_ramp_CI(
                 parameters.CI[0].amp_start, 
@@ -238,16 +220,14 @@ class ACTSimulator:
                 parameters.CI[0].dur, 
                 parameters.CI[0].delay, 
                 parameters.h_tstop, 
-                parameters.h_dt, 
-                parameters.CI[0].lto_hto)
+                parameters.h_dt)
         elif isinstance(parameters.CI[0], GaussianCurrentInjection):
             cell._add_gaussian_CI(
                 parameters.CI[0].amp_mean, 
                 parameters.CI[0].amp_std, 
                 parameters.CI[0].dur, 
                 parameters.CI[0].delay, 
-                parameters.random_seed, 
-                parameters.CI[0].lto_hto)
+                parameters.random_seed)
         else:
             raise NotImplementedError
         
@@ -258,16 +238,13 @@ class ACTSimulator:
         h.finitialize(h.v_init)
         h.run()
 
-        V, I, g, sim_index, lto_hto = cell.get_output()
+        V, I, g = cell.get_output()
 
-        out = np.zeros((int(parameters.h_tstop / parameters.h_dt), 4))
+        out = np.zeros((int(parameters.h_tstop / parameters.h_dt), 3))
         out[:, 0] = V[:int(parameters.h_tstop / parameters.h_dt)]
         out[:, 1] = I[:int(parameters.h_tstop / parameters.h_dt)]
         out[:len(g), 2] = g
         out[len(g):, 2] = np.nan
-        out[0, 3] = sim_index
-        out[1, 3] = lto_hto
-        out[2:, 3] = np.nan
 
         np.save(os.path.join(parameters._path, f"out_{parameters.sim_idx}.npy"), out)
         

@@ -1,6 +1,7 @@
 import numpy as np
 import functools
 from neuron import h
+
 from act.types import SettablePassiveProperties
 
 # Utility functions to get and set conductances with suffix.names
@@ -22,11 +23,10 @@ class ACTCellModel:
             path_to_hoc_file: str = None, 
             path_to_mod_files: str = None,
             passive: list = None,
-            active_channels: list = None,
-            prediction: dict = None
+            active_channels: list = None
             ):
         '''
-        #TODO: add description.
+        Initialize a cell model for simulation or optimization.
 
         Parameters:
         ----------
@@ -44,16 +44,12 @@ class ACTCellModel:
 
         active_channels: list, default = None
             Names of the active channel variables (in ANY order) as stated in the hoc file.
-        
-        prediction: dict #TODO: check if needed here
-            A dictionary of the channel conductance name (used in mod files) and respective predicted values.
         '''
 
         # Build cell info
         self.path_to_hoc_file = path_to_hoc_file
         self.path_to_mod_files = path_to_mod_files
         self.cell_name = cell_name
-        self.prediction = prediction
 
         # Channels
         self.passive = passive.copy()
@@ -75,8 +71,10 @@ class ACTCellModel:
         self.I = None
 
         self._custom_cell_builder = None
-        self.lto_hto = 0 #TODO: do we need it?
         self.sim_index = None
+
+        # Predictions
+        self.prediction = {ch : None for ch in self.active_channels}
     
     # ----------
     # Channels
@@ -161,8 +159,12 @@ class ACTCellModel:
         sim_index: int
             Simulation index
 
-        report_soma_area: bool, default = False
-            Whether to print out the soma area.
+        print_soma_area: bool, default = False
+            If true, prints out the soma area.
+        
+        Returns:
+        ----------
+        None
         """
         self.sim_index = sim_index
 
@@ -200,6 +202,10 @@ class ACTCellModel:
         -----------
         cell_builder: callable
             Callable that returns a hoc cell object.
+
+        Returns:
+        ----------
+        None
         """
         self._custom_cell_builder = cell_builder
     
@@ -207,7 +213,8 @@ class ACTCellModel:
     # Current injection
     # ----------
 
-    def _add_constant_CI(self, amp: float, dur: int, delay: int, sim_time: int, dt: float, lto_hto: int) -> None:
+    #TODO: check if replacing dt directly with h.dt works; if it works, remove dt from the arguments (for all CI types)
+    def _add_constant_CI(self, amp: float, dur: int, delay: int, sim_time: int, dt: float) -> None:
         """
         Sets the cell's constant current injection
         Parameters:
@@ -229,14 +236,10 @@ class ACTCellModel:
         dt: float
             Timestep (ms)
         
-        lto_hto: int
-            0 for not low/high threshold oscillation, 1 for either low or high threshold oscillations
-        
         Returns:
         ----------
         None
         """
-        self.lto_hto = lto_hto
         inj = h.IClamp(self.soma[0](0.5))
         inj.amp = amp; inj.dur = dur; inj.delay = delay
         self.CI.append(inj)
@@ -248,7 +251,7 @@ class ACTCellModel:
         self.I = np.array([0.0] * delay_steps + [amp] * dur_steps + [0.0] * remainder_steps)
         
     
-    def _add_ramp_CI(self, start_amp: float, amp_incr: float, num_steps: int, step_time: float, dur: int, delay: int, sim_time: int, dt: float, lto_hto) -> None:
+    def _add_ramp_CI(self, start_amp: float, amp_incr: float, num_steps: int, step_time: float, dur: int, delay: int, sim_time: int, dt: float) -> None:
         """
         Sets the cell's ramp current injection
         Parameters:
@@ -279,15 +282,11 @@ class ACTCellModel:
         dt: float
             Timestep (ms)
         
-        lto_hto: int
-            0 for not low/high threshold oscillation, 1 for either low or high threshold oscillations
-        
         Returns:
         ----------
         None
         """
         
-        self.lto_hto = lto_hto
         total_delay = delay
         amp = start_amp
 
@@ -310,7 +309,7 @@ class ACTCellModel:
         self.I = np.array(I)
 
 
-    def _add_gaussian_CI(self, amp_mean: float, amp_std: float, dur: int, delay: int, sim_time: int, dt: float, random_state: np.random.RandomState, lto_hto) -> None:
+    def _add_gaussian_CI(self, amp_mean: float, amp_std: float, dur: int, delay: int, sim_time: int, dt: float, random_state: np.random.RandomState) -> None:
         """
         Sets the cell's ramp current injection
         Parameters:
@@ -338,14 +337,10 @@ class ACTCellModel:
         random_state: np.random.RandomState
             Random seed
         
-        lto_hto: int
-            0 for not low/high threshold oscillation, 1 for either low or high threshold oscillations
-        
         Returns:
         ----------
         None
         """
-        self.lto_hto = lto_hto
         total_delay = delay
         I = [0] * total_delay
 
@@ -366,30 +361,21 @@ class ACTCellModel:
 
     def get_output(self) -> tuple:
         """
-        Gets the output of the simulator
-        Parameters:
-        -----------
-        self
+        Gets the output of the simulator.
         
         Returns:
         ----------
-        V: np.ndarray
-            Voltage trace
+        V: np.ndarray of shape (T, 1) #TODO: check shapes of all returns here; might be (T,) or (1, T)
+            Voltage trace.
         
-        I: np.ndarray
-            Current injection trace
+        I: np.ndarray of shape  (T, 1)
+            Current injection trace.
         
-        g_values: np.ndarray
-            Conductance values (Nan padded)
-        
-        sim_index: int
-            Simulation indext
-        
-        lto_hto: int
-            0 for not low/high threshold oscillation, 1 for either low or high threshold oscillations
+        g_values: np.ndarray of shape (len_active_channels, 1)
+            Conductance values (NaN padded).
         """
         g_values = []
         for channel in self.active_channels:
             g_values.append(_rgetattr(self.soma[0](0.5), channel))
 
-        return self.V.as_numpy().flatten(), self.I.flatten(), np.array(g_values).flatten(), self.sim_index, self.lto_hto
+        return self.V.as_numpy().flatten(), self.I.flatten(), np.array(g_values).flatten()
