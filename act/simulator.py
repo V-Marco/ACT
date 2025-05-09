@@ -10,16 +10,13 @@ from act.cell_model import ACTCellModel
 
 @contextmanager
 def suppress_neuron_warnings():
-    '''
+    """
     Turns of nrnivmodl compile warnings.
-    Parameters:
-    -----------
-    None
     
     Returns:
     -----------
     None
-    '''
+    """
     with open(os.devnull, 'w') as dev_null:
         temp_stdout = sys.stdout
         temp_stderr = sys.stderr
@@ -50,12 +47,11 @@ class ACTSimulator:
         
 
     def run(self, cell: ACTCellModel, parameters: SimulationParameters) -> None:
-        '''
+        """
         Used for single job NEURON simulations.
 
         Parameters:
         -----------
-        
         cell: ACTCellModel
         
         parameters: SimulationParameters
@@ -63,7 +59,7 @@ class ACTSimulator:
         Returns:
         -----------
         None
-        '''
+        """
         os.system(f"nrnivmodl {cell.path_to_mod_files} > /dev/null 2>&1")
 
         h.load_file('stdrun.hoc')
@@ -122,12 +118,11 @@ class ACTSimulator:
     
 
     def submit_job(self, cell: ACTCellModel, parameters: SimulationParameters) -> None:
-        '''
-        Used for setting variable simulation parameters in multi-job uses of NEURON simulations
+        """
+        Used for setting variable simulation parameters in multi-job uses of NEURON simulations.
+        
         Parameters:
         -----------
-        self
-        
         cell: ACTCellModel
         
         parameters: SimulationParameters
@@ -135,25 +130,24 @@ class ACTSimulator:
         Returns:
         -----------
         None
-        '''
+        """
         parameters._path = os.path.join(self.path, parameters.sim_name)
         self.pool.append((cell, parameters))
         
 
     def run_jobs(self, n_cpu: int = None) -> None:
-        '''
+        """
         Multiprocessing implementation of multi-job NEURON simulations. Sets up multiprocessing
+        
         Parameters:
         -----------
-        self
-        
         n_cpu: int, default = None
             Number of cores to be used for multiprocessing
                  
         Returns:
         -----------
         None
-        '''
+        """
         os.makedirs(self.path, exist_ok = True)
         
         if n_cpu is None:
@@ -171,12 +165,11 @@ class ACTSimulator:
     
 
     def _run_job(self, cell: ACTCellModel, parameters: SimulationParameters) -> None:
-        '''
+        """
         Instructions for a single NEURON simulation that is thread safe and used in run_jobs().
+        
         Parameters:
         -----------
-        self
-        
         cell: ACTCellModel
         
         parameters: SimulationParameters
@@ -184,7 +177,7 @@ class ACTSimulator:
         Returns:
         -----------
         None
-        '''
+        """
         os.makedirs(parameters._path, exist_ok = True)
 
         h.load_file('stdrun.hoc')

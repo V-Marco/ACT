@@ -55,18 +55,14 @@ class ACTModule:
         return target_df
 
     def run(self) -> pd.DataFrame:
-        '''
+        """
         Run the train-predict sequence.
 
-        Parameters:
-        -----------
-        self
-        
         Returns:
         -----------
         predicted_g_data_file: str
             Filepath to predicted conductances
-        '''
+        """
         start_time = time.time()
         print(f"Running Module '{self.name}'...")
         print("----------")
@@ -256,19 +252,16 @@ class ACTModule:
     
 
     def train_random_forest(self) -> float:
-        '''
+        """
         Trains a Random Forest Regressor model on the features of the generated simulation data.
         Then gets a prediction for conductance sets that yeild features found in the target data.
         Then calculates an evaluation of the RF model and saves the metric.
-        Parameters:
-        -----------
-        self
         
         Returns:
         -----------
         predictions: np.ndarray
             Conductance Predictions
-        '''
+        """
         # Load train data
         file_path = os.path.join(self.output_folder_path, "train", "filtered_out.npy")
         if os.path.exists(file_path):

@@ -1,11 +1,12 @@
 import numpy as np
-from act.act_types import SettablePassiveProperties, GettablePassiveProperties
+
+from act.types import SettablePassiveProperties, GettablePassiveProperties
 
 class ACTPassiveModule:
 
     @staticmethod
     def compute_spp(R_in: float, soma_area: float, tau: float, V_rest: float) -> SettablePassiveProperties:
-        '''
+        """
         Parameters:
         ----------
         R_in: float
@@ -24,7 +25,7 @@ class ACTPassiveModule:
         ----------
         spp: SettablePassiveProperties
             Class with filled settable passive properties
-        '''
+        """
         spp = SettablePassiveProperties()
         spp.e_rev_leak = V_rest
         spp.g_bar_leak = ACTPassiveModule.compute_g_bar_leak(R_in, soma_area)
@@ -34,7 +35,7 @@ class ACTPassiveModule:
 
     @staticmethod
     def compute_g_bar_leak(R_in: float, soma_area: float) -> float:
-        '''
+        """
         Parameters:
         ----------
         R_in: float
@@ -47,13 +48,13 @@ class ACTPassiveModule:
         ----------
         g_bar_leak: float
             (S / cm2)
-        '''
+        """
         return (1 / R_in) / soma_area
 
 
     @staticmethod
     def compute_Cm(g_bar_leak: float, tau: float) -> float:
-        '''
+        """
         Parameters:
         ----------
         g_bar_leak: float
@@ -67,12 +68,12 @@ class ACTPassiveModule:
         Cm: float
             (uF / cm2)
         
-        '''
+        """
         return tau * g_bar_leak * 1e6
     
     
     def compute_gpp(passive_V: np.ndarray, dt: float, I_t_start: float, I_t_end: float, I_amp: float) -> GettablePassiveProperties:
-        '''
+        """
         Parameters:
         ----------
         passive_V: np.ndarray
@@ -94,7 +95,7 @@ class ACTPassiveModule:
         ----------
         gpp: GettablePassiveProperties
             Class containing gettable passive properties
-        '''
+        """
 
         index_V_rest = int(I_t_start / dt) - 1
 

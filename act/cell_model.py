@@ -25,7 +25,7 @@ class ACTCellModel:
             passive: list = None,
             active_channels: list = None
             ):
-        '''
+        """
         Initialize a cell model for simulation or optimization.
 
         Parameters:
@@ -44,7 +44,7 @@ class ACTCellModel:
 
         active_channels: list, default = None
             Names of the active channel variables (in ANY order) as stated in the hoc file.
-        '''
+        """
 
         # Build cell info
         self.path_to_hoc_file = path_to_hoc_file
@@ -101,7 +101,7 @@ class ACTCellModel:
     
     def _set_g_bar(self) -> None:
         """
-        Actually set conductances during NEURON runtime.
+        Set conductances during NEURON runtime.
 
         Parameters:
         -----------
@@ -217,10 +217,9 @@ class ACTCellModel:
     def _add_constant_CI(self, amp: float, dur: int, delay: int, sim_time: int, dt: float) -> None:
         """
         Sets the cell's constant current injection
+        
         Parameters:
         -----------
-        self
-        
         amp: float
             Amps (nA)
         
@@ -254,10 +253,9 @@ class ACTCellModel:
     def _add_ramp_CI(self, start_amp: float, amp_incr: float, num_steps: int, step_time: float, dur: int, delay: int, sim_time: int, dt: float) -> None:
         """
         Sets the cell's ramp current injection
+        
         Parameters:
         -----------
-        self
-        
         start_amp: float
             Starting Amps (nA)
             
@@ -311,11 +309,10 @@ class ACTCellModel:
 
     def _add_gaussian_CI(self, amp_mean: float, amp_std: float, dur: int, delay: int, sim_time: int, dt: float, random_state: np.random.RandomState) -> None:
         """
-        Sets the cell's ramp current injection
+        Sets the cell's gaussian current injection
+        
         Parameters:
         -----------
-        self
-        
         amp_mean: float
             Mean Amps (nA)
             

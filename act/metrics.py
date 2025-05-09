@@ -4,7 +4,7 @@ from dataclasses import fields
 from act.types import GettablePassiveProperties
 
 def pp_error(pp_target: GettablePassiveProperties, pp_pred: GettablePassiveProperties) -> list:
-    '''
+    """
     Compute absolute error between target and predicted passive properties.
 
     Parameters:
@@ -19,14 +19,14 @@ def pp_error(pp_target: GettablePassiveProperties, pp_pred: GettablePassivePrope
     ----------
     error: list[(property, abs_error)]
         Absolute error for each property.
-    '''
+    """
     error = []
     for field in fields(pp_target):
         error.append((field.name, np.abs(getattr(pp_target, field.name) - getattr(pp_pred, field.name))))
     return error
 
 def summary_features_error(sf_target: np.ndarray, sf_pred: np.ndarray) -> float:
-    '''
+    """
     Compute mean absolute error between target and predicted summary features.
 
     Parameters:
@@ -41,7 +41,7 @@ def summary_features_error(sf_target: np.ndarray, sf_pred: np.ndarray) -> float:
     ----------
     mae: np.ndarray of shape (n_trials)
         Mean absolute error across z-transformed features.
-    '''
+    """
 
     # Z-transform the predicted features
     z_mean = np.nanmean(sf_pred, axis = 0)
