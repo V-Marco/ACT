@@ -47,6 +47,7 @@ class SimulationParameters:
     h_celsius: float = 37                     # (deg C)
     CI: list = None
     random_seed: int = 42
+    verbose: bool = False
     _path: str = None
 
 # ----------

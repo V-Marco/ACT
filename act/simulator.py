@@ -111,9 +111,9 @@ class ACTSimulator:
             else:
                 raise NotImplementedError
 
-        #print(f"Soma area: {cell.soma[0](0.5).area()}")
-        #print(f"Soma diam: {cell.soma[0].diam}")
-        #print(f"Soma L: {cell.soma[0].L}")
+        print(f"Soma area: {cell.soma[0](0.5).area()}")
+        print(f"Soma diam: {cell.soma[0].diam}")
+        print(f"Soma L: {cell.soma[0].L}")
 
         h.finitialize(h.v_init)
         h.run()
@@ -201,7 +201,7 @@ class ACTSimulator:
         h.steps_per_ms = 1 / h.dt
         h.v_init = parameters.h_v_init
 
-        cell._build_cell(parameters.sim_idx)
+        cell._build_cell(parameters.sim_idx, parameters.verbose)
         
         # Set current injection
         if isinstance(parameters.CI[0], ConstantCurrentInjection):

@@ -1,5 +1,5 @@
 import numpy as np
-from act.act_types import SettablePassiveProperties, GettablePassiveProperties
+from act.types import SettablePassiveProperties, GettablePassiveProperties
 
 class ACTPassiveModule:
 
