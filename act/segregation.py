@@ -6,12 +6,11 @@ class ACTSegregator:
         pass
 
     def _get_segregation_message_right(self, right_v: float, cutoff_v: float, slope: float, intercept: float) -> str:
-        '''
+        """
         Generates instructions for modifying the .mod files with positive slope sigmoid activation functions.
+        
         Parameters:
         -----------
-        self
-        
         right_v: float
             Right-most voltage involved in the linear segment cutoff for the activation function
             
@@ -28,7 +27,7 @@ class ACTSegregator:
         -----------
         message: str
             Instructions for .mod file changes
-        '''
+        """
         message = f"""
         :Segregation
         if (v < {np.round(right_v, 3)}) {{
@@ -41,12 +40,11 @@ class ACTSegregator:
         return message
 
     def _get_segregation_message_left(self, left_v: float, cutoff_v: float, slope: float, intercept: float):
-        '''
+        """
         Generates instructions for modifying the .mod files with negative slope sigmoid activation functions.
+        
         Parameters:
         -----------
-        self
-        
         left_v: float
             Left-most voltage involved in the linear segment cutoff for the activation function
             
@@ -63,7 +61,7 @@ class ACTSegregator:
         -----------
         message: str
             Instructions for .mod file changes
-        '''
+        """
         message = f"""
         :Segregation
         if (v > {np.round(left_v, 3)}) {{
@@ -76,12 +74,11 @@ class ACTSegregator:
         return message
 
     def segregate(self, v: np.ndarray, activation_curves: list, v_rest: float, dv_from_rest: float, extrapolate_dv: float = 2) -> list:
-        '''
+        """
         Returns segregated activation functions in order of the input activation functions. Prints instructions on modifying .modfiles.
+        
         Parameters:
         -----------
-        self
-        
         v: np.ndarray
             Voltage array (x values mV)
         
@@ -101,7 +98,7 @@ class ACTSegregator:
         -----------
         segregated_activation_curves: list
             Segregated activation curves.
-        '''
+        """
         # Find the voltage cutoff value
         cutoff_v = v_rest + dv_from_rest
 

@@ -10,11 +10,11 @@ from scipy.fft import rfft, rfftfreq
 #---------------------------------------------
 
 # In **all** files:
-#TODO: make sure all functions have """ for docs (not ''')
-#TODO: make sure there is an empty line between func description and the Parameters word in all files
-#TODO: make sure self is not in Parameters
+#TODO: make sure all functions have """ for docs (not '''). COMPLETED
+#TODO: make sure there is an empty line between func description and the Parameters word in all files. COMPLETED
+#TODO: make sure self is not in Parameters. COMPLETED
 #TODO: make sure every non-private has a description; make sure no description starts with "This function". Same for classes.
-#TODO: make sure there are no unused imports; make sure imports are organized as: internal/external libs -- empty line -- act files, e.g.
+#TODO: make sure there are no unused imports; make sure imports are organized as: internal/external libs -- empty line -- act files, e.g. COMPLETED
 # import numpy as np
 # import os
 # ...
@@ -82,7 +82,7 @@ def get_summary_features(
         spike_threshold: int = -20, 
         max_n_spikes: int = 20
         ) -> pd.DataFrame:
-    '''
+    """
     Compute voltage and current summary features.
 
     Parameters:
@@ -103,7 +103,7 @@ def get_summary_features(
     ----------
     stat_df: pd.DataFrame
         Dataframe with extracted summary features.
-    '''
+    """
     if len(V.shape) != 2:
         raise ValueError
 
@@ -177,7 +177,7 @@ def get_summary_features(
 # FILTERING
 #---------------------------------------------
 def remove_saturated_traces(data: np.ndarray, window_of_inspection: tuple, saturation_threshold: float = -50) -> np.ndarray:
-    '''
+    """
     Filters training data to only voltage traces that have not saturated.
 
     Parameters:
@@ -195,7 +195,7 @@ def remove_saturated_traces(data: np.ndarray, window_of_inspection: tuple, satur
     -----------
     filtered_data: np.ndarray of shape (n_trials, T, 4)
         Filtered data containing nonsaturated traces only.
-    '''
+    """
     V = data[:, window_of_inspection[0] : window_of_inspection[1], 0]  
     nonsaturated_idxs = ~np.all(V > saturation_threshold, axis = 1)
     filtered_data = data[nonsaturated_idxs, :, :]
@@ -204,7 +204,7 @@ def remove_saturated_traces(data: np.ndarray, window_of_inspection: tuple, satur
 
 
 def get_traces_with_spikes(data: np.ndarray, spike_threshold: float = -20) -> np.ndarray:
-    '''
+    """
     Filters training data to only voltage traces that have spikes.
 
     Parameters:
@@ -219,7 +219,7 @@ def get_traces_with_spikes(data: np.ndarray, spike_threshold: float = -20) -> np
     -----------
     traces_with_spikes: np.ndarray of shape (n_trials, T, 3)
         Filtered data containing only traces with spikes.
-    '''
+    """
     V = data[:, :, 0]
 
     idx_with_spikes = []
@@ -236,9 +236,10 @@ def get_traces_with_spikes(data: np.ndarray, spike_threshold: float = -20) -> np
 # UTILS 
 #---------------------------------------------
 def combine_data(output_path: str) -> None:
-    '''
+    """
     ACTSimulator outputs .npy files for each simulation run. This method combines this data
     into a single .npy file for ease of processing.
+    
     Parameters:
     -----------
     output_path: str
@@ -247,7 +248,7 @@ def combine_data(output_path: str) -> None:
     Returns:
     -----------
     None
-    '''
+    """
     save_path = os.path.join(output_path, f"combined_out.npy")
     if os.path.exists(save_path):
         raise RuntimeError(save_path + " already exists.")
@@ -269,8 +270,9 @@ def combine_data(output_path: str) -> None:
 
 
 def clean_g_bars(dataset: np.ndarray) -> np.ndarray:
-    '''
+    """
     ACTSimulator pads the 3rd column (i.e. conductance set) with NANs. This method removes the pad for use in the model.
+    
     Parameters:
     -----------
     dataset: np.ndarray of shape = (<number of trials>, <number of timesteps in sim>, 3)
@@ -280,7 +282,7 @@ def clean_g_bars(dataset: np.ndarray) -> np.ndarray:
     ----------
     cleaned_g_bars: np.ndarray of size (<num trials>, <num channels>)
         Array of conductance values for each trail
-    '''
+    """
     def remove_nan_from_sample(sample):
         return sample[~np.isnan(sample)]
         
