@@ -26,7 +26,7 @@ class RampCurrentInjection:
     amp_start: float = 0                      # (nA)
     amp_incr: float = 0.1                     # (nA)
     num_steps: int = 10
-    step_time: float = 20                     # (ms)
+    final_step_add_time: int = 0              # (ms)
     dur: float = 400                          # (ms)
     delay: float = 50                         # (ms)
 

@@ -196,6 +196,8 @@ class ACTSimulator:
 
         cell._build_cell(parameters.sim_idx, parameters.verbose)
         
+        #TODO: fix this -- we want to provide any number of CIs in a list
+        # and then add all of them. E.g., there could be a constant CI from 0 to 200 ms, then no CI, then a Gaussian CI from 300 ms to 500 ms.
         # Set current injection
         if isinstance(parameters.CI[0], ConstantCurrentInjection):
             cell._add_constant_CI(
@@ -208,9 +210,9 @@ class ACTSimulator:
             cell._add_ramp_CI(
                 parameters.CI[0].amp_start, 
                 parameters.CI[0].amp_incr, 
-                parameters.CI[0].num_steps, 
-                parameters.CI[0].step_time, 
-                parameters.CI[0].dur, 
+                parameters.CI[0].num_steps,
+                parameters.CI[0].dur,
+                parameters.CI[0].final_step_add_time, 
                 parameters.CI[0].delay, 
                 parameters.h_tstop, 
                 parameters.h_dt)

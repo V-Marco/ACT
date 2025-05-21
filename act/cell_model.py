@@ -213,96 +213,112 @@ class ACTCellModel:
     # Current injection
     # ----------
 
-    #TODO: check if replacing dt directly with h.dt works; if it works, remove dt from the arguments (for all CI types)
-    def _add_constant_CI(self, amp: float, dur: int, delay: int, sim_time: int, dt: float) -> None:
+    def _add_constant_CI(self, amp: float, dur: int, delay: int, t_stop: int, dt: float) -> None:
         """
-        Sets the cell's constant current injection
+        Set a constant current injection. Note that t_stop and dt parameters are required only for internal self.I construction.
         
         Parameters:
         -----------
         amp: float
-            Amps (nA)
+            Injection amplitude (nA).
         
         dur: int
-            Duration of current injection (ms)
+            Injection duration (ms).
         
         delay: int
-            Delay (ms)
+            Injection delay (ms).
         
-        sim_time: int
-            Total simulation time (ms)
+        t_stop: int
+            Total simulation time (ms).
         
         dt: float
-            Timestep (ms)
+            Timestep (ms).
         
         Returns:
         ----------
         None
         """
         inj = h.IClamp(self.soma[0](0.5))
-        inj.amp = amp; inj.dur = dur; inj.delay = delay
+        inj.amp = amp
+        inj.dur = dur
+        inj.delay = delay
         self.CI.append(inj)
         
         delay_steps = int(delay / dt)
         dur_steps = int(dur / dt)
-        remainder_steps = int((sim_time - delay - dur) / dt)
+        remainder_steps = int((t_stop - delay - dur) / dt)
 
         self.I = np.array([0.0] * delay_steps + [amp] * dur_steps + [0.0] * remainder_steps)
         
     
-    def _add_ramp_CI(self, start_amp: float, amp_incr: float, num_steps: int, step_time: float, dur: int, delay: int, sim_time: int, dt: float) -> None:
+    def _add_ramp_CI(
+            self, 
+            start_amp: float, 
+            amp_incr: float, 
+            num_steps: int, 
+            dur: int, 
+            final_step_add_time: int,
+            delay: int, 
+            t_stop: int, 
+            dt: float) -> None:
         """
-        Sets the cell's ramp current injection
+        Set a ramp current injection. Note that t_stop and dt parameters are required only for internal self.I construction.
         
         Parameters:
         -----------
         start_amp: float
-            Starting Amps (nA)
+            Initial injection amplitude (nA).
             
         amp_incr: float
-            How much the current injection increases each step
+            Amplitude increase per step (nA).
         
         num_steps: int
-            Number of step increases in current injection trace
-        
-        step_time: float
-            Amount of time for each current injection step (ms)
+            Number of steps.
         
         dur: int
-            Duration of current injection (ms)
+            Total duration of current injection (ms).
+
+        final_step_add_time: int
+            How long to prolong the final step for.
         
         delay: int
-            Delay (ms)
+            Injection delay (ms).
         
-        sim_time: int
-            Total simulation time (ms)
+        t_stop: int
+            Total simulation time (ms).
         
         dt: float
-            Timestep (ms)
+            Timestep (ms).
         
         Returns:
         ----------
         None
         """
-        
-        total_delay = delay
-        amp = start_amp
 
-        I = [0] * total_delay
+        # No injection in the beginning
+        I = [0] * delay
+        
+        # Accumulate delay for each step
+        total_delay = delay
+
+        amp = start_amp
+        step_time = dur / num_steps
 
         for _ in range(num_steps):
-            self._add_constant_CI(amp, step_time, total_delay, sim_time, dt)
-            I += [amp] * (step_time / dt)
+            self._add_constant_CI(amp, step_time, total_delay, -1, -1)
+            I += [amp] * int(step_time / dt)
             total_delay += step_time
             amp += amp_incr
 
-        amp -= amp_incr
-        remainder_inj_time = (dur + delay) - total_delay
-        self._add_constant_CI(amp, remainder_inj_time, total_delay, sim_time, dt)
-        I += [amp] * (remainder_inj_time / dt)
-        
-        remainder_no_injection = sim_time - dur - delay
-        I += [amp - amp_incr] * (remainder_no_injection / dt)
+        # Prolong the final step
+        amp = amp - amp_incr
+        self._add_constant_CI(amp, final_step_add_time, total_delay, -1, -1)
+        total_delay += final_step_add_time
+        I += [amp] * int(final_step_add_time / dt)
+
+        # Record the no-injection part
+        remainder_no_injection = int((t_stop - total_delay) / dt)
+        I += [0] * int(remainder_no_injection / dt)
         
         self.I = np.array(I)
 
