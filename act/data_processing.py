@@ -251,7 +251,8 @@ def combine_data(output_path: str) -> None:
     """
     save_path = os.path.join(output_path, f"combined_out.npy")
     if os.path.exists(save_path):
-        raise RuntimeError(save_path + " already exists.")
+        #raise RuntimeError(save_path + " already exists.")
+        pass
 
     file_list = glob.glob(os.path.join(output_path, "out_*.npy"))
 
