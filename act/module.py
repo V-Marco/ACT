@@ -36,17 +36,21 @@ class ACTModule:
 
     def _read_process_target_data(self) -> pd.DataFrame:
         print("Predicting on target data...")
-        dataset_target = np.load(self.target_file)
-        V_target = dataset_target[:, :, 0]
-        I_target = dataset_target[:, :, 1]
+        
+        if self.target_file.endswith(".npy"):
+            dataset_target = np.load(self.target_file)
+            V_target = dataset_target[:, :, 0]
+            I_target = dataset_target[:, :, 1]
 
-        # Compute target SF
-        target_df = get_summary_features(
-            V = V_target, 
-            I = I_target,
-            spike_threshold = self.optimization_parameters.spike_threshold,
-            max_n_spikes = self.optimization_parameters.max_n_spikes
-            )
+            # Compute target SF
+            target_df = get_summary_features(
+                V = V_target, 
+                I = I_target,
+                spike_threshold = self.optimization_parameters.spike_threshold,
+                max_n_spikes = self.optimization_parameters.max_n_spikes
+                )
+        else: # .csv
+            target_df = pd.read_csv(self.target_file)
 
         # If train_features is None, use all features
         if self.optimization_parameters.train_features is not None:
