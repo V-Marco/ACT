@@ -127,7 +127,7 @@ class ACTModule:
             )
         
         if self.optimization_parameters.train_features is not None:
-            pred_df = select_features(pred_df, self.optim_params.train_features)
+            pred_df = select_features(pred_df, self.optimization_parameters.train_features)
         
         # Compute errors
         sf_error = summary_features_error(target_df.to_numpy(), pred_df.to_numpy())
@@ -235,20 +235,20 @@ class ACTModule:
         
     def filter_data(self, path) -> None:
 
-        filtered_out_features = self.optim_params.filter_parameters.filtered_out_features
+        filtered_out_features = self.optimization_parameters.filter_parameters.filtered_out_features
         data = np.load(path)
                            
         if "saturated" in filtered_out_features:
-            window_of_inspection = self.optim_params.filter_parameters.window_of_inspection
+            window_of_inspection = self.optimization_parameters.filter_parameters.window_of_inspection
             if window_of_inspection is None:
-                inspection_start = self.sim_params.CI[0].delay + int(self.sim_params.CI[0].dur * 0.7)
-                inspection_end = self.sim_params.CI[0].delay + self.sim_params.CI[0].dur
+                inspection_start = self.simulation_parameters.CI[0].delay + int(self.simulation_parameters.CI[0].dur * 0.7)
+                inspection_end = self.simulation_parameters.CI[0].delay + self.simulation_parameters.CI[0].dur
                 window_of_inspection = (inspection_start, inspection_end)
-            saturation_threshold = self.optim_params.filter_parameters.saturation_threshold
+            saturation_threshold = self.optimization_parameters.filter_parameters.saturation_threshold
             data = remove_saturated_traces(data, window_of_inspection, threshold = saturation_threshold)
         
         if "no_spikes" in filtered_out_features:
-            spike_threshold = self.optim_params.spike_threshold
+            spike_threshold = self.optimization_parameters.spike_threshold
             data = get_traces_with_spikes(data, spike_threshold = spike_threshold)
          
         print(f"Dataset size after filtering: {len(data)}. Saving to {os.path.join(path, 'filtered_out.npy')}")
@@ -286,7 +286,7 @@ class ACTModule:
             )
         
         if self.optimization_parameters.train_features is not None:
-            train_df = select_features(train_df, self.optim_params.train_features)
+            train_df = select_features(train_df, self.optimization_parameters.train_features)
 
         X_train = train_df.to_numpy()
         y_train = g_train

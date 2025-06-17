@@ -152,7 +152,7 @@ special.nrn
 ~lock.*
 
 /output/*
-/experiments/Spiker/filtered/output/*
+/experiments/Spiker/module_*
 /experiments/BursterCA3/filtered/output/*
 /experiments/BursterIzhikevich/filtered/output/*
 /experiments/BursterS3/filtered/output/*
@@ -179,6 +179,9 @@ simulation/run_bionet.py
 simulation/output_LA_A
 
 examples/LA/output_LA_A
+
+module_*
+*/module_orig/
 
 *.h5
 !exp_spikes.h5
