@@ -206,6 +206,10 @@ class ACTModule:
                 passive = cell.passive,
                 active_channels = cell.active_channels)
             
+            # Set cell builder
+            if cell._custom_cell_builder is not None:
+                specific_cell.set_custom_cell_builder(cell._custom_cell_builder)
+            
             # Set conductances
             specific_cell.set_g_bar(specific_cell.active_channels, list(g_comb[group_id]))
 

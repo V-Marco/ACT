@@ -176,8 +176,11 @@ class ACTCellModel:
             hoc_cell = getattr(h, self.cell_name)()
 
         # Soma and all must exist in any cell
-        self.all = list(hoc_cell.all)
         self.soma = hoc_cell.soma
+        try:
+            self.all = list(hoc_cell.all)
+        except:
+            self.all = [self.soma[0]]
 
         # Report soma area
         if print_soma_area:
