@@ -164,8 +164,8 @@ def get_summary_features(
         row['main_freq'] = freqs[np.argmax(magnitude)]
 
         # Save I stats
-        row["mean_i"] = np.nanmean(I[trial_idx])
-        row["std_i"] = np.nanstd(I[trial_idx])
+        row["mean_i"] = np.nanmean(I[trial_idx][window[0] : window[1]])
+        row["std_i"] = np.nanstd(I[trial_idx][window[0] : window[1]])
 
         stat_df.append(row)
     

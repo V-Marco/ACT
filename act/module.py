@@ -36,17 +36,21 @@ class ACTModule:
 
     def _read_process_target_data(self) -> pd.DataFrame:
         print("Predicting on target data...")
-        dataset_target = np.load(self.target_file)
-        V_target = dataset_target[:, :, 0]
-        I_target = dataset_target[:, :, 1]
 
-        # Compute target SF
-        target_df = get_summary_features(
-            V = V_target, 
-            I = I_target,
-            spike_threshold = self.optimization_parameters.spike_threshold,
-            max_n_spikes = self.optimization_parameters.max_n_spikes
-            )
+        if self.target_file.endswith(".npy"):
+            dataset_target = np.load(self.target_file)
+            V_target = dataset_target[:, :, 0]
+            I_target = dataset_target[:, :, 1]
+
+            # Compute target SF
+            target_df = get_summary_features(
+                V = V_target, 
+                I = I_target,
+                spike_threshold = self.optimization_parameters.spike_threshold,
+                max_n_spikes = self.optimization_parameters.max_n_spikes
+                )
+        else: # .csv
+            target_df = pd.read_csv(self.target_file)
 
         # If train_features is None, use all features
         if self.optimization_parameters.train_features is not None:
@@ -201,6 +205,10 @@ class ACTModule:
                 path_to_mod_files = cell.path_to_mod_files,
                 passive = cell.passive,
                 active_channels = cell.active_channels)
+            
+            # Set cell builder
+            if cell._custom_cell_builder is not None:
+                specific_cell.set_custom_cell_builder(cell._custom_cell_builder)
             
             # Set conductances
             specific_cell.set_g_bar(specific_cell.active_channels, list(g_comb[group_id]))

@@ -43,13 +43,14 @@ def summary_features_error(sf_target: np.ndarray, sf_pred: np.ndarray) -> float:
         Mean absolute error across z-transformed features.
     """
 
-    # Z-transform the predicted features
-    z_mean = np.nanmean(sf_pred, axis = 0)
-    z_std = np.nanstd(sf_pred, axis = 0)
-    sf_pred = (sf_pred - z_mean) / z_std
+    if len(sf_target) > 1:
+        # Z-transform the predicted features
+        z_mean = np.nanmean(sf_pred, axis = 0)
+        z_std = np.nanstd(sf_pred, axis = 0)
+        sf_pred = (sf_pred - z_mean) / z_std
 
-    # Use sample mean and std for target transformation
-    sf_target = (sf_target - z_mean) / z_std
+        # Use sample mean and std for target transformation
+        sf_target = (sf_target - z_mean) / z_std
 
     mae = np.nanmean(np.abs(sf_target - sf_pred), axis = 1)
     return mae

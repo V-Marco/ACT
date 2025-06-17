@@ -1,0 +1,62 @@
+begintemplate BursterCa
+
+public soma, type, connect2target
+
+create soma[1]
+public all
+objref all
+objref this
+
+strdef type
+
+proc init() {
+	
+	type = "BursterCa"
+
+	all = new SectionList()
+	for i=0,0 soma[0] {
+		all.append()
+	}
+
+	soma[0] {
+		nseg = 1 
+		L = 1000
+		diam = 9.99593
+	}
+	
+	soma[0] {
+
+		insert leak
+		eleak = -50
+		gbar_leak = 4e-05
+
+		insert na
+		ena = 50
+		gbar_na = 0.13
+
+		insert kdr
+		ek = -80
+		gbar_kdr = 0.1
+
+		insert capool
+		cao = 3
+		cai = 50e-6
+		tauca_capool = 100
+		fca_capool = 1
+
+		insert cas
+		gbar_cas = 0.01
+
+        	insert ka
+		gbar_ka = 0.17
+
+        	insert kca
+		gbar_kca = 0.02
+
+        	insert cat
+		gbar_cat = 0.005
+
+	}
+}
+
+endtemplate BursterCa
