@@ -36,7 +36,7 @@ class ACTModule:
 
     def _read_process_target_data(self) -> pd.DataFrame:
         print("Predicting on target data...")
-
+        
         if self.target_file.endswith(".npy"):
             dataset_target = np.load(self.target_file)
             V_target = dataset_target[:, :, 0]
