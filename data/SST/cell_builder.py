@@ -6,7 +6,7 @@ def SSTcellbuilder():
 
     # Create the h object
     import os
-    os.chdir("/Users/vladimiromelyusik/ACT/data/SST/seg")
+    os.chdir("/data/SST/seg")
     description = Config().load('manifest.json')
     utils = Utils(description)
     h = utils.h

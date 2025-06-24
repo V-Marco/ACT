@@ -71,6 +71,7 @@ class FilterParameters:
 
 @dataclass
 class OptimizationParameters:
+    n_cpus: int = None
     # Set the search space
     conductance_options: list = None
     CI_options: list = None

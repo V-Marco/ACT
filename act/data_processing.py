@@ -133,7 +133,7 @@ def get_summary_features(
             
             # Save spike frequency
             if event_type_name == "spike":
-                row[f"spike_frequency"] = len(events) * 1000 / len(v_trial) 
+                row["spike_frequency"] = len(events) * 1000 / len(v_trial) 
         
             # Save first max_n_spikes event times
             event_idxs_corrected = np.ones(max_n_spikes) * np.nan
