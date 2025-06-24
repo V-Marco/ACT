@@ -99,13 +99,6 @@ PROCEDURE rates(v (mV)) { :callable from hoc
         qt=q10^((celsius-24)/10)
         a = alpn(v)
         ninf = 1/(1 + a)
-        :Segregation
-        if (v < -67.88) {
-        ninf = 0.0 * v + 0.019
-        }
-        if (v < -69.88) {
-        ninf = 0
-        }
         taun = betn(v)/(qt*a0n*(1+a))
 	if (taun<nmin) {taun=nmin}
         a = alpl(v)
@@ -113,6 +106,14 @@ PROCEDURE rates(v (mV)) { :callable from hoc
 	linf = 1 / ( 1 + exp( ( - v - 56 ) / (-8.738) ) )
 	taul = 0.26*(v+50)/qtl
 	if (taul<lmin/qtl) {taul=lmin/qtl}
+
+        :Segregation
+        if (v < -38) {
+        ninf = 0.065 * v + 2.593
+        }
+        if (v < -40) {
+        ninf = 0
+        }
 }
 
 

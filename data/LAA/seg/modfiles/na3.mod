@@ -92,11 +92,12 @@ PROCEDURE trates(vm,a2) {
         if (mtau<mmin) {mtau=mmin}
 	: minf = a/(a+b)
 	minf  = 1 / ( 1 + exp( ( - v - 38.43 ) / 7.2 ) )
+
 	:Segregation
-	if (v < -48.541) {
-	minf = 0.097 * v + 4.895
+	if (v < -58) {
+	minf = 0.03 * v + 1.824
 	}
-	if (v < -50.541) {
+	if (v < -60) {
 	minf = 0
 	}
 

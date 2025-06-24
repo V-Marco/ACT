@@ -57,10 +57,10 @@ PROCEDURE rate(v (mV)) {
 	hinf = 1.0/(1.0+ (exp ((v+48.9)/(5.18))))  
 	htau = (1.34/(1+ (exp ((v+62.9)/(-10)))))*(1.5 + 1.0/(1.0 + (exp ((v+34.9)/(3.6)))))
 	:Segregation
-        if (v < -32.424) {
-        minf = 0.104 * v + 3.575
+        if (v < -38) {
+        minf = 0.05 * v + 2.018
         }
-        if (v < -34.424) {
+        if (v < -40) {
         minf = 0
         }
 	UNITSON

@@ -76,14 +76,15 @@ PROCEDURE rates(v (mV)) { :callable from hoc
         a = alpn(v)
         : ninf = 1/(1+a)
 		ninf = 1 / ( 1 + exp( ( - v + 13 ) / 8.738 ) )
-		:Segregation
-        if (v < -48.541) {
-        ninf = 0.0 * v + 0.022
-        }
-        if (v < -50.541) {
-        ninf = 0
-        }
         taun = betn(v)/(qt*a0n*(1+a))
 	if (taun<nmax) {taun=nmax}
+
+	:Segregation
+	if (v < -58) {
+	ninf = 0.0 * v + 0.009
+	}
+	if (v < -60) {
+	ninf = 0
+	}
 }
 		

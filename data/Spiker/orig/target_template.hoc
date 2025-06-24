@@ -25,10 +25,11 @@ proc init() {
 		all.append()
 	}
 
-    	soma[0] {
-	nseg = 1  
-	L = 18.8 
-	diam = 18.8}
+    soma[0] {
+		nseg = 1  
+		L = 18.8 
+		diam = 18.8
+	}
 	
 	soma[0] {
         insert hh_spiker
