@@ -39,32 +39,32 @@ proc init() {
 	soma[0] {
 
 		Ra = 200
-		cm = 2.2286
+		cm = 2.5
 
 		insert leak 
-		el_leak = -74.752
-		glbar_leak = 3.196641e-5
+		el_leak = -70 
+		glbar_leak = 3.5e-5
 
 		insert hd 
-		ghdbar_hd = 2.591165e-5
+		ghdbar_hd = 2.3e-05
 		ehd_hd = -43
 
 		insert na3 
 		sh_na3 = 10 
 		ar_na3 = 1	
-		gbar_na3 =2.548112e-2
+		gbar_na3 = 0.03
 
 		insert nap 
-		gbar_nap = 3.299204e-4
+		gbar_nap = 0.0003
 
 		insert kdr 
-		gkdrbar_kdr = 2.82642e-3
+		gkdrbar_kdr = 0.003
 
 		ena = 45 // The same for all Na channels
 		ek = -80 // The same for all K channels
 
 		insert cadyn 
-		gcabar_cadyn =6.99086e-5 
+		gcabar_cadyn = 6e-5  
 		eca = 120
 
 		insert capool 
@@ -72,13 +72,13 @@ proc init() {
 		fcas_capool = 0.05
 
 		insert sAHP 
-		gsAHPbar_sAHP = 6.81599e-3
+		gsAHPbar_sAHP = 0.009
 
 		insert im
-		gmbar_im = 2.056596e-3
+		gmbar_im = 0.002
 
 		insert kap 
-		gkabar_kap = 8.068427e-4
+		gkabar_kap = 0.000843
 		
 		}
 	}

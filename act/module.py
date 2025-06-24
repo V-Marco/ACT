@@ -233,8 +233,11 @@ class ACTModule:
                     )
                 )
                 sim_counter += 1
-
-        simulator.run_jobs()
+        
+        if not self.optimization_parameters.n_cpus == None:
+            simulator.run_jobs(self.optimization_parameters.n_cpus)
+        else:
+            simulator.run_jobs()
         combine_data(os.path.join(self.output_folder_path, mode))
         
     def filter_data(self, path) -> None:
