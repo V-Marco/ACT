@@ -69,13 +69,12 @@ PROCEDURE rates(){
 		hTau =  (360+(1010+24*(v+55))*exp(-((v+75)/48)^2))/qt
 		v = v - 10
 
-	:Segregation
-        if (v < -42.324) {
-        mInf = 0.015 * v + 0.677
+		:Segregation
+        if (v < -68) {
+        mInf = 0.002 * v + 0.131
         }
-        if (v < -44.324) {
+        if (v < -70) {
         mInf = 0
         }
-
 	UNITSON
 }

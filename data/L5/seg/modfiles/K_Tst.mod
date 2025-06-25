@@ -66,11 +66,11 @@ PROCEDURE rates(){
 		v = v - 10
 
 		:Segregation
-        	if (v < -42.324) {
-        	mInf = 0.048 * v + 2.14
-        	}
-        	if (v < -44.324) {
-        	mInf = 0
-        	}
+        if (v < -88) {
+        mInf = 0.005 * v + 0.433
+        }
+        if (v < -90) {
+        mInf = 0
+        }
 	UNITSON
 }
