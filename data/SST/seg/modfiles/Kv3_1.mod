@@ -50,11 +50,12 @@ PROCEDURE rates(){
 	UNITSOFF
 		mInf =  1/(1+exp(((v -(18.700 + vshift))/(-9.700))))
 		mTau =  0.2*20.000/(1+exp(((v -(-46.560 + vshift))/(-44.140))))
-	:Segregation
-        if (v < 4.412) {
-        mInf = 0.092 * v + -0.222
+
+		:Segregation
+        if (v < -38) {
+        mInf = 0.001 * v + 0.057
         }
-        if (v < 2.412) {
+        if (v < -40) {
         mInf = 0
         }
 	UNITSON
