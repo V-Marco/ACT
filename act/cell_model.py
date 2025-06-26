@@ -144,11 +144,27 @@ class ACTCellModel:
         soma_area: float
             Computed area in cm2.
         """
-        soma_area = 0
+        soma_area = 0 # (um2)
         for segment in self.soma[0]:
             segment_area = h.area(segment.x, sec = self.soma[0])
             soma_area += segment_area
-        return soma_area * 1e-8 # (cm2)
+        return soma_area * 1e-8 # (um2 -> cm2)
+    
+    def _get_total_area(self) -> float:
+        """
+        Compute the total cell area in cm2.
+        
+        Returns:
+        ----------
+        total_area: float
+            Computed area in cm2.
+        """
+        total_area = 0 # (um2)
+        for sec in self.all:
+            for segment in sec:
+                segment_area = h.area(segment.x, sec = sec)
+                total_area += segment_area
+        return total_area * 1e-8 # (um2 -> cm2)
 
     def _build_cell(self, sim_index: int, print_soma_area = False) -> None:
         """
@@ -180,11 +196,16 @@ class ACTCellModel:
         try:
             self.all = list(hoc_cell.all)
         except:
-            self.all = [self.soma[0]]
+            self.all = []
+            for sec in hoc_cell.allsec():
+                self.all.append(sec)
 
         # Report soma area
         if print_soma_area:
+            print(f"Soma diam (um): {self.soma[0].diam}")
+            print(f"Soma L (um): {self.soma[0].L}")
             print(f"Soma area (cm2): {self._get_soma_area()}")
+            print(f"Total area (cm2): {self._get_total_area()}")
         
         # Update passive properties if needed
         if self.spp is not None:
