@@ -56,17 +56,18 @@ PROCEDURE settables(v) {
 
 	: minf  = 1 / ( 1 + exp( ( - v - 48 ) / 10 ) )
 	minf  = 1 / ( 1 + exp( ( - v - 48 ) / 5 ) )
-	:Segregation
-	if (v < -67.88) {
-	minf = 0.009 * v + 0.624
-	}
-	if (v < -69.88) {
-	minf = 0
-	}
 	if( v < -40.0 ) {
 		mtau = 100*(0.025 + 0.14 * exp( ( v + 40 ) / 10 ))
 	}else{
 		mtau = 100*(0.02 + 0.145 * exp( ( - v - 40 ) / 10 ))
+	}
+	
+	:Segregation
+	if (v < -68) {
+	minf = 0.009 * v + 0.625
+	}
+	if (v < -70) {
+	minf = 0
 	}
 }
 UNITSON

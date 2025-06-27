@@ -72,14 +72,17 @@ PROCEDURE rate(v (mV)) { :callable from hoc
         qt=q10^((celsius-33)/10)
         a = alpt(v)
         linf = 1/(1 + exp(-(v-vhalfl)/kl))
+:       linf = 1/(1+ alpl(v))
+        taul = bett(v)/(qtl*qt*a0t*(1+a))
+        
         :Segregation
-        if (v > -71.189) {
-        linf = -0.112 * v + -7.727
+        if (v > -72) {
+        linf = -0.122 * v + -8.539
         }
-        if (v > -69.189) {
+        if (v > -70) {
         linf = 0
         }
-        taul = bett(v)/(qtl*qt*a0t*(1+a))
+
 }
 
 

@@ -25,7 +25,8 @@ proc init() {
 	}
 	
 	soma[0] {
-
+		
+		cm = 1
 		insert leak
 		eleak = -50
 		gbar_leak = 4e-05
@@ -47,13 +48,13 @@ proc init() {
 		insert cas
 		gbar_cas = 0.01
 
-        	insert ka
+        insert ka
 		gbar_ka = 0.17
 
-        	insert kca
+        insert kca
 		gbar_kca = 0.02
 
-        	insert cat
+        insert cat
 		gbar_cat = 0.005
 
 	}

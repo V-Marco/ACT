@@ -58,11 +58,11 @@ PROCEDURE rates(){
 		mInf = mAlpha/(mAlpha + mBeta)
 		mTau = 1/(mAlpha + mBeta)
 
-	:Segregation
-        if (v > -62.21) {
-        mInf = -0.004 * v + -0.246
+		:Segregation
+        if (v > -92) {
+        mInf = -0.073 * v + -6.588
         }
-        if (v > -60.21) {
+        if (v > -90) {
         mInf = 0
         }
 	UNITSON

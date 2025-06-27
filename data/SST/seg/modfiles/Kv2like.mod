@@ -69,20 +69,20 @@ PROCEDURE rates() {
 		mInf = mAlpha / (mAlpha + mBeta)
 		mTau = 2.5 * (1 / (qt * (mAlpha + mBeta)))
 
+		:Segregation
+        if (v < -38) {
+        mInf = 0.092 * v + 3.672
+        }
+        if (v < -40) {
+        mInf = 0
+        }
+
 		hInf =  1/(1 + exp((v + 58) / 11))
 		h1Tau = (360 + (1010 + 23.7 * (v + 54)) * exp(-((v + 75) / 48)^2)) / qt
 		h2Tau = (2350 + 1380 * exp(-0.011 * v) - 210 * exp(-0.03 * v)) / qt
 		if (h2Tau < 0) {
 			h2Tau = 1e-3
 		}
-
-		:Segregation
-        if (v < -93.205) {
-        mInf = 0.001 * v + 0.075
-        }
-        if (v < -95.205) {
-        mInf = 0
-        }
 	UNITSON
 }
 

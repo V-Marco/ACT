@@ -109,7 +109,7 @@ PROCEDURE rates(v (mV)) { :callable from hoc
 
         :Segregation
 	if (v < 0) {
-                linf = 0
+                ninf = 0
         }
 }
 

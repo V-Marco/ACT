@@ -57,10 +57,10 @@ PROCEDURE rate(v (mV)) {
 	binf = 1.0/(1.0+ (exp ((v+56.9)/(4.9))))        
 	btau = (77.2 - 58.4/(1.0+ (exp ((v+38.9)/(-26.5)))))
 	:Segregation
-        if (v < -44.627) {
-        ainf = 0.058 * v + 2.727
+        if (v < -48) {
+        ainf = 0.042 * v + 2.095
         }
-        if (v < -46.627) {
+        if (v < -50) {
         ainf = 0
         }              
 	UNITSON

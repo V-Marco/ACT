@@ -52,14 +52,15 @@ DERIVATIVE states {
 PROCEDURE rate(v(mV)) {
 	UNITSOFF
 	uinf = 1/(exp(-(v+24.6)/11.3)+1)
+	utau = 1.25*2/(exp(-0.031*(v+37.1)) + exp(0.031*(v+37.1)))
+
 	:Segregation
-	if (v < -67.88) {
-	uinf = 0.01 * v + 0.732
+	if (v < -38) {
+	uinf = 0.116 * v + 4.646
 	}
-	if (v < -69.88) {
+	if (v < -40) {
 	uinf = 0
 	}
-	utau = 1.25*2/(exp(-0.031*(v+37.1)) + exp(0.031*(v+37.1)))
 
 	zinf = 1/(exp((v+12.6)/18.9)+1)
 	ztau = 420	

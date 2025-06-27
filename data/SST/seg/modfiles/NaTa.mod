@@ -76,6 +76,14 @@ PROCEDURE rates(){
 		mInf = mAlpha/(mAlpha + mBeta)
 		mTau = (1/(mAlpha + mBeta))/qt
 
+		:Segregation
+        if (v < -58) {
+        mInf = 0.107 * v + 6.395
+        }
+        if (v < -60) {
+        mInf = 0
+        }
+
 		hAlpha = halphaF * vtrap(v - hvhalf, hk) : ng - adjusted this to match actual Colbert & Pan values for soma model
 		hBeta = hbetaF * vtrap(-(v - hvhalf), hk) : ng - adjusted this to match actual Colbert & Pan values for soma model
 

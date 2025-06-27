@@ -67,14 +67,16 @@ PROCEDURE rate(v (mV)) {
 	sum = aa+ab
 	:inf = aa/sum
 	inf = 1 / ( 1 + exp( ( - v - 52.7 ) / 10.34 ) )
-	:Segregation
-	if (v < -67.88) {
-	inf = 0.092 * v + 6.461
-	}
-	if (v < -69.88) {
-	inf = 0
-	}
 	tau = 1/sum
 	: tau = 1.5/sum
+	
+	:Segregation
+	if (v < -68) {
+	inf = 0.092 * v + 6.472
+	}
+	if (v < -70) {
+	inf = 0
+	}
+
 	UNITSON
 }

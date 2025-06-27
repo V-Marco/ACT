@@ -54,6 +54,14 @@ PROCEDURE rates() {
   mAlpha = 0.007 * exp( (6 * 0.4 * (v - (-48))) / 26.12 )
   mBeta = 0.007 * exp( (-6 * (1 - 0.4) * (v - (-48))) / 26.12 )
 
-	mInf = mAlpha / (mAlpha + mBeta)
+  mInf = mAlpha / (mAlpha + mBeta)
   mTau = (15 + 1 / (mAlpha + mBeta)) / qt
+
+  	:Segregation
+	if (v < -77.66) {
+	mInf = 0.0 * v + 0.008
+	}
+	if (v < -79.66) {
+	mInf = 0
+	}
 }
