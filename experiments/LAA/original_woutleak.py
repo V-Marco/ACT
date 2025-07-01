@@ -28,9 +28,7 @@ target_cell = ACTCellModel(
                      "gkdrbar_kdr", 
                      "gcabar_cadyn", 
                      "gsAHPbar_sAHP", 
-                     "gkabar_kap",
-                     "ghdbar_hd",
-                     "glbar_leak"]
+                     "gkabar_kap"]
 )
 amps = [0.0, 0.1, 9.0]
 target_g = np.array([0.0003, 0.002, 0.03, 0.003, 6e-5, 0.009, 0.000843, 2.3e-05, 3.5e-5])
@@ -108,9 +106,9 @@ plt.ylabel("Frequency (Hz)")
 plt.title("FI Curve")
 
 random_state = np.random.RandomState(123)
-target_values = np.array([2.5, 0.0003, 0.002, 0.03, 0.003, 6e-5, 0.009, 0.000843, 2.3e-05, 3.5e-5, -70]) 
+target_values = np.array([2.5, 0.0003, 0.002, 0.03, 0.003, 6e-5, 0.009, 0.000843]) 
 
-#Cm, gbar_nap, gmbar_im, gbar_na3, gkdrbar_kdr, gcabar_cadyn, gsAHPbar_sAHP, gkabar_kap, ghdbar_hd, glbar_leak, el_leak
+#Cm, gbar_nap, gmbar_im, gbar_na3, gkdrbar_kdr, gcabar_cadyn, gsAHPbar_sAHP, gkabar_kap
 
 target_values = target_values + random_state.normal(0, np.abs(target_values * 0.1))
 target_values
@@ -127,9 +125,7 @@ train_cell = ACTCellModel(
                      "gkdrbar_kdr", 
                      "gcabar_cadyn", 
                      "gsAHPbar_sAHP", 
-                     "gkabar_kap",
-                     "ghdbar_hd",
-                     "glbar_leak"]
+                     "gkabar_kap"]
 )
 
 # Set simulations
@@ -191,8 +187,6 @@ gkdrbar_kdr = 2.82642e-3
 gcabar_cadyn =6.99086e-5 
 gsAHPbar_sAHP = 6.81599e-3 
 gkabar_kap = 8.068427e-4 
-ghdbar_hd = 2.591165e-5 
-glbar_leak = 3.196641e-5 
 
 random_state = np.random.RandomState(123)
 
@@ -203,8 +197,6 @@ gkdrbar_kdr_range = (gkdrbar_kdr - random_state.uniform(0, gkdrbar_kdr / 2), gkd
 gcabar_cadyn_range = (gcabar_cadyn - random_state.uniform(0, gcabar_cadyn / 2), gcabar_cadyn + random_state.uniform(0, gcabar_cadyn / 2))
 gsAHPbar_sAHP_range = (gsAHPbar_sAHP - random_state.uniform(0, gsAHPbar_sAHP / 2), gsAHPbar_sAHP + random_state.uniform(0, gsAHPbar_sAHP / 2))
 gbar_kap_range = (gkabar_kap - random_state.uniform(0, gkabar_kap / 2), gkabar_kap + random_state.uniform(0, gkabar_kap / 2))
-ghdbar_hd_range = (ghdbar_hd - random_state.uniform(0, ghdbar_hd / 2), ghdbar_hd + random_state.uniform(0, ghdbar_hd / 2))
-glbar_leak_range = (glbar_leak - random_state.uniform(0, glbar_leak / 2), glbar_leak + random_state.uniform(0, glbar_leak / 2))
 
 
 print(f"Nap: {gbar_nap_range}")
@@ -214,8 +206,6 @@ print(f"Kdr: {gkdrbar_kdr_range}")
 print(f"Cadyn: {gcabar_cadyn_range}")
 print(f"sAHP: {gsAHPbar_sAHP_range}")
 print(f"Kap: {gbar_kap_range}")
-print(f"Hd: {ghdbar_hd_range}")
-print(f"Leak: {glbar_leak_range}")
 
 # Possibly adjsut
 train_cell = ACTCellModel(
@@ -229,9 +219,7 @@ train_cell = ACTCellModel(
                      "gkdrbar_kdr", 
                      "gcabar_cadyn", 
                      "gsAHPbar_sAHP", 
-                     "gkabar_kap",
-                     "ghdbar_hd",
-                     "glbar_leak"]
+                     "gkabar_kap"]
 )
 
 from multiprocessing import Pool, cpu_count
@@ -251,9 +239,7 @@ optim_params = OptimizationParameters(
         ConductanceOptions(variable_name = "gkdrbar_kdr", low = gkdrbar_kdr_range[0], high = gkdrbar_kdr_range[1], n_slices = 3),
         ConductanceOptions(variable_name = "gcabar_cadyn", low = gcabar_cadyn_range[0], high = gcabar_cadyn_range[1], n_slices = 3),  
         ConductanceOptions(variable_name = "gsAHPbar_sAHP", low = gsAHPbar_sAHP_range[0], high = gsAHPbar_sAHP_range[1], n_slices = 3),
-        ConductanceOptions(variable_name = "gkabar_kap", low = gbar_kap_range[0], high = gbar_kap_range[1], n_slices = 3),
-        ConductanceOptions(variable_name = "ghdbar_hd", low = ghdbar_hd_range[0], high = ghdbar_hd_range[1], n_slices = 3),
-        ConductanceOptions(variable_name = "glbar_leak", low = glbar_leak_range[0], high = glbar_leak_range[1], n_slices = 3)
+        ConductanceOptions(variable_name = "gkabar_kap", low = gbar_kap_range[0], high = gbar_kap_range[1], n_slices = 3)
     ],
     CI_options = [
         ConstantCurrentInjection(amp = 0.0, dur = 700, delay = 100),
@@ -293,9 +279,7 @@ train_cell = ACTCellModel(
                      "gkdrbar_kdr", 
                      "gcabar_cadyn", 
                      "gsAHPbar_sAHP", 
-                     "gkabar_kap",
-                     "ghdbar_hd",
-                     "glbar_leak"]
+                     "gkabar_kap"]
 )
 
 # Set simulations
@@ -316,9 +300,7 @@ train_cell.set_g_bar(["gbar_nap",
                      "gkdrbar_kdr", 
                      "gcabar_cadyn", 
                      "gsAHPbar_sAHP", 
-                     "gkabar_kap",
-                     "ghdbar_hd",
-                     "glbar_leak"], orig_g)
+                     "gkabar_kap"], orig_g)
 
 simulator.submit_job(train_cell, sim_params)
 simulator.run_jobs(1)
@@ -342,9 +324,7 @@ train_cell = ACTCellModel(
                      "gkdrbar_kdr", 
                      "gcabar_cadyn", 
                      "gsAHPbar_sAHP", 
-                     "gkabar_kap",
-                     "ghdbar_hd",
-                     "glbar_leak"]
+                     "gkabar_kap"]
 )
 
 # Set simulations
@@ -367,9 +347,7 @@ for sim_idx, amp_value in enumerate(amps):
                         "gkdrbar_kdr", 
                         "gcabar_cadyn", 
                         "gsAHPbar_sAHP", 
-                        "gkabar_kap",
-                        "ghdbar_hd",
-                        "glbar_leak"], orig_g)
+                        "gkabar_kap"], orig_g)
 
 
     simulator.submit_job(train_cell, sim_params)

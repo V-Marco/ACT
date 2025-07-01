@@ -10,7 +10,7 @@
 
 
 START=$(date)
-python original.py
+python original_woutleak.py
 END=$(date)
 
 printf "Start: $START \nEnd:   $END\n"
