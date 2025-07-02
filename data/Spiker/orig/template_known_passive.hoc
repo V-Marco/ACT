@@ -25,19 +25,20 @@ proc init() {
 		all.append()
 	}
 
-    	soma[0] {
-	nseg = 1  
-	L = 18.8 
-	diam = 18.8}
+    soma[0] {
+		nseg = 1  
+		L = 18.8 
+		diam = 18.8
+	}
 	
 	soma[0] {
         insert hh_spiker
         Ra = 123.0
 
 		// As if set by an external source
-		cm = 0.89
-		gl_hh_spiker = 0.00025
-		el_hh_spiker = -57.4
+		cm = 1
+		gl_hh_spiker = 0.0003
+		el_hh_spiker = -54.3
 		gnabar_hh_spiker = 0.132
 		gkbar_hh_spiker = 0.037
 
