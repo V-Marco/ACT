@@ -25,18 +25,19 @@ proc init() {
 	}
 	
 	soma[0] {
+		cm = 8.91436940e-01
 
 		insert leak
-		eleak = -50
-		gbar_leak = 4e-05
+		eleak = 52.14456
+		gbar_leak = 3.029328e-5
 
 		insert na
 		ena = 50
-		gbar_na = 0.12
+		gbar_na = 1.42965e-1
 
 		insert kdr
 		ek = -80
-		gbar_kdr = 0.2
+		gbar_kdr = 1.02829e-1
 
 		insert capool
 		cao = 3
@@ -45,16 +46,16 @@ proc init() {
 		fca_capool = 1
 
 		insert cas
-		gbar_cas = 0.01
+		gbar_cas = 8.493705e-3
 
-        	insert ka
-		gbar_ka = 0.11 // SEG
+        insert ka
+		gbar_ka = 1.601638e-1
 
-        	insert kca
-		gbar_kca = 0.05 // SEG
+        insert kca
+		gbar_kca = 0.02
 
-        	insert cat
-		gbar_cat = 0.005
+        insert cat
+		gbar_cat = 5.825718e-3
 
 	}
 }

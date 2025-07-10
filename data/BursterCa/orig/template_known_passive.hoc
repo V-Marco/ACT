@@ -25,11 +25,10 @@ proc init() {
 	}
 	
 	soma[0] {
-		cm = 8.91436940e-01
-
+		cm = 1
 		insert leak
-		eleak = 52.14456
-		gbar_leak = 3.029328e-5
+		eleak = -50
+		gbar_leak = 4e-05
 
 		insert na
 		ena = 50

@@ -190,6 +190,7 @@ class ACTModule:
 
         # Set self.conductance_combos and self.current_inj_combos
         if mode == "train":
+            print("Generating conductance combos...")
             g_comb = self.generate_g_combinations()
         elif mode == "eval": # else, g_comb is given as RF predictions
             if len(g_comb) != len(self.optimization_parameters.CI_options):
@@ -234,6 +235,7 @@ class ACTModule:
                 )
                 sim_counter += 1
         
+        print("Simulating cells...")
         if not self.optimization_parameters.n_cpus == None:
             simulator.run_jobs(self.optimization_parameters.n_cpus)
         else:
