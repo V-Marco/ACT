@@ -115,7 +115,7 @@ class ACTCellModel:
         ----------
         None
         """
-        for sec in self.all:
+        for sec in self.soma:
             for g_name, g_value in self._set_g_to.items():
                 _rsetattr(sec(0.5), g_name, g_value)
                     

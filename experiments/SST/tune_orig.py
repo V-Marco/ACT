@@ -4,7 +4,6 @@ from cell_builder import sst_orig_cell_builder
 from act.module import ACTModule
 
 from act.cell_model import ACTCellModel
-from act.simulator import ACTSimulator
 from act.types import SimulationParameters, ConstantCurrentInjection, OptimizationParameters, ConductanceOptions, FilterParameters
 
 if __name__ == "__main__":
@@ -27,28 +26,30 @@ if __name__ == "__main__":
 
     optim_params = OptimizationParameters(
         conductance_options = [
-            ConductanceOptions(variable_name = "g_pas", low = 1e-5, high = 1e-4, n_slices = 5),
-            ConductanceOptions(variable_name = "gbar_Ih", low = 1e-4, high = 1e-3, n_slices = 5),
-            ConductanceOptions(variable_name = "gbar_Nap", low = 1e-5, high = 1e-3, n_slices = 5),
-            ConductanceOptions(variable_name = "gbar_Im_v2", low = 1e-5, high = 1e-3, n_slices = 5),
-            ConductanceOptions(variable_name = "gbar_NaTa", low = 1e-3, high = 1e-1, n_slices = 5),
-            ConductanceOptions(variable_name = "gbar_Kd", low = 1e-5, high = 1e-2, n_slices = 5),
-            ConductanceOptions(variable_name = "gbar_Ca_LVA", low = 1e-4, high = 1e-2, n_slices = 5),
-            ConductanceOptions(variable_name = "gbar_Ca_HVA", low = 1e-4, high = 1e-2, n_slices = 5),
-            ConductanceOptions(variable_name = "gbar_Kv2like", low = 1e-4, high = 1e-2, n_slices = 5),
-            ConductanceOptions(variable_name = "gbar_Kv3_1", low = 1e-4, high = 1e-2, n_slices = 5) 
+            ConductanceOptions(variable_name = "g_pas", low = 0.00093621306427329868 / 10, high = 0.00093621306427329868 * 10, n_slices = 5),
+            ConductanceOptions(variable_name = "gbar_Ih", low = 0.0017877435830761807 / 10, high = 0.0017877435830761807 * 10, n_slices = 5),
+            ConductanceOptions(variable_name = "gbar_Nap", low = 0.0008, high = 0.008, n_slices = 5),
+            ConductanceOptions(variable_name = "gbar_K_T", low = 0.001, high = 0.01, n_slices = 5),
+            ConductanceOptions(variable_name = "gbar_Im_v2", low = 0.0002, high = 0.002, n_slices = 5),
+            ConductanceOptions(variable_name = "gbar_NaTa", low = 0.01, high = 0.25, n_slices = 5),
+            ConductanceOptions(variable_name = "gbar_Kd", low = 0.008, high = 0.08, n_slices = 5),
+            ConductanceOptions(variable_name = "gbar_Ca_LVA", low = 0.0008, high = 0.008, n_slices = 5),
+            ConductanceOptions(variable_name = "gbar_Ca_HVA", low = 0.001, high = 0.01, n_slices = 5),
+            ConductanceOptions(variable_name = "gbar_Kv2like", low = 0.001, high = 0.02, n_slices = 5),
+            ConductanceOptions(variable_name = "gbar_Kv3_1", low = 0.01, high = 0.09, n_slices = 5)
         ],
         CI_options = [
-            ConstantCurrentInjection(amp = 0.2, dur = 700, delay = 100),
-            ConstantCurrentInjection(amp = 0.25, dur = 700, delay = 100),
-            ConstantCurrentInjection(amp = 0.3, dur = 700, delay = 100),
+            ConstantCurrentInjection(amp = 0.15, dur = 700, delay = 100),
+            ConstantCurrentInjection(amp = 0.16, dur = 700, delay = 100),
+            ConstantCurrentInjection(amp = 0.21, dur = 700, delay = 100),
+            ConstantCurrentInjection(amp = 0.29, dur = 700, delay = 100),
             ConstantCurrentInjection(amp = 0.35, dur = 700, delay = 100)
         ],
         filter_parameters = FilterParameters(
             saturation_threshold = -55,
             window_of_inspection = (100, 800)
         ),
-        n_cpus = 2
+        n_cpus = 8
     )
 
     m = ACTModule(
@@ -56,6 +57,6 @@ if __name__ == "__main__":
         cell = cell,
         simulation_parameters = sim_params,
         optimization_parameters = optim_params,
-        target_file = "/Users/vladimiromelyusik/PV_Cell/target_sf.csv"
+        target_file = "target_sf.csv"
     )
     m.run()

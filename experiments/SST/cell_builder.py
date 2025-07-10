@@ -27,7 +27,7 @@ def sst_seg_cell_builder():
 
     # Create the h object
     current_dir = os.getcwd()
-    os.chdir("../../data/SST/seg")
+    os.chdir("../../data/SST/seg_tuned")
     description = Config().load('manifest.json')
     utils = Utils(description)
     h = utils.h
