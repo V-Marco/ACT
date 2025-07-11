@@ -1,10 +1,10 @@
-:Reference : :		Adams et al. 1982 - M-currents and other potassium currents in bullfrog sympathetic neurones
-:Comment: corrected rates using q10 = 2.3, target temperature 34, orginal 21
+: Reference:		Adams et al. 1982 - M-currents and other potassium currents in bullfrog sympathetic neurones
+: Comment: corrected rates using q10 = 2.3, target temperature 34, orginal 21
 
 NEURON	{
 	SUFFIX Im
 	USEION k READ ek WRITE ik
-	RANGE gImbar, gIm, ik
+	RANGE gbar, g, ik
 }
 
 UNITS	{
@@ -14,14 +14,15 @@ UNITS	{
 }
 
 PARAMETER	{
-	gImbar = 0.00001 (S/cm2) 
+	gbar = 0.00001 (S/cm2) 
 }
 
 ASSIGNED	{
 	v	(mV)
 	ek	(mV)
 	ik	(mA/cm2)
-	gIm	(S/cm2)
+	g	(S/cm2)
+	celsius (degC)
 	mInf
 	mTau
 	mAlpha
@@ -34,8 +35,8 @@ STATE	{
 
 BREAKPOINT	{
 	SOLVE states METHOD cnexp
-	gIm = gImbar*m
-	ik = gIm*(v-ek)
+	g = gbar*m
+	ik = g*(v-ek)
 }
 
 DERIVATIVE states	{
@@ -50,7 +51,7 @@ INITIAL{
 
 PROCEDURE rates(){
   LOCAL qt
-  qt = 2.3^((34-21)/10)
+  qt = 2.3^((celsius-21)/10)
 
 	UNITSOFF
 		mAlpha = 3.3e-3*exp(2.5*0.04*(v - -35))
