@@ -34,16 +34,16 @@ class ACTCellModel:
             Cell name.
         
         path_to_hoc_file: str, default = None
-            Path to the hoc template.
+            Path to the hoc template. Leave as None if no hoc file is explicitly available (e.g., when bulding Allen Cell Types Database cells). 
         
         path_to_mod_files: str, default = None
-            Path to the mod files directory.
+            Path to the modfiles directory.
             
         passive: list, default = None
-            Names of the (1) leak channel g_bar, (2) leak channel reversal potential and (3) h channel g_bar (in THIS order) as stated in the hoc file.
+            Names of the (1) leak channel g_bar, (2) leak channel reversal potential and (3) H channel g_bar (in THIS order) as stated in the hoc file / model parameters.
 
         active_channels: list, default = None
-            Names of the active channel variables (in ANY order) as stated in the hoc file.
+            Names of the active channel variables (in ANY order) as stated in the hoc file / model parameters.
         """
 
         # Build cell info
@@ -77,7 +77,7 @@ class ACTCellModel:
         self.prediction = {ch : None for ch in self.active_channels}
     
     # ----------
-    # Channels
+    # Channels & Passive properties
     # ----------
 
     def set_g_bar(self, g_names: list, g_values: list) -> None:
@@ -128,6 +128,10 @@ class ACTCellModel:
         -----------
         spp: SettablePassiveProperties
             Passive properties to set.
+
+        Returns:
+        ----------
+        None
         """
         self.spp = spp
 
@@ -173,7 +177,7 @@ class ACTCellModel:
         Parameters:
         -----------
         sim_index: int
-            Simulation index
+            Simulation index.
 
         print_soma_area: bool, default = False
             If true, prints out the soma area.
@@ -402,14 +406,14 @@ class ACTCellModel:
         
         Returns:
         ----------
-        V: np.ndarray of shape (T, 1) #TODO: check shapes of all returns here; might be (T,) or (1, T)
+        V: np.ndarray of shape (T,)
             Voltage trace.
         
-        I: np.ndarray of shape  (T, 1)
+        I: np.ndarray of shape  (T,)
             Current injection trace.
         
-        g_values: np.ndarray of shape (len_active_channels, 1)
-            Conductance values (NaN padded).
+        g_values: np.ndarray of shape (len_active_channels,)
+            Conductance values (NaN-padded).
         """
         g_values = []
         for channel in self.active_channels:

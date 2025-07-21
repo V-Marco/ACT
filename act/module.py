@@ -21,6 +21,27 @@ class ACTModule:
             simulation_parameters: SimulationParameters,
             optimization_parameters: OptimizationParameters,
             target_file: str):
+        """
+        Initialize an optimization module.
+
+        Parameters:
+        ----------
+        name: str
+            Module name.
+
+        cell: ACTCellModel
+            Cell model to simulate.
+        
+        simulation_parameters: SimulationParameters
+            Simulation parameters.
+
+        optimization_parameters: OptimizationParameters
+            Optimization parameters.
+
+        target_file: str
+            File with target responses. If .csv, it is assumed that the file contains summary features.
+            If .npy, it is assumed that the file contains current-voltage traces, and summary features will be computed by the module.
+        """
 
         # Module name
         self.name = name
@@ -64,37 +85,37 @@ class ACTModule:
 
         Returns:
         -----------
-        predicted_g_data_file: str
-            Filepath to predicted conductances
+        metrics: pd.DataFrame
+            Evaluation metrics.
         """
         start_time = time.time()
         print(f"Running Module '{self.name}'...")
         print("----------")
 
         print("Simulating train traces...")
-        self.simulate_cells(self.cell)
+        self._simulate_cells(self.cell)
 
         if self.optimization_parameters.filter_parameters is not None:
             if self.optimization_parameters.filter_parameters.filtered_out_features is not None:
                 print("Filtering...")
-                self.filter_data(os.path.join(self.output_folder_name, "train", "combined_out.npy"))
+                self._filter_data(os.path.join(self.output_folder_name, "train", "combined_out.npy"))
         else:
             print("Filtering skipped.")
 
         print("Training RandomForest...")
-        train_mae = self.train_random_forest()
+        train_mae = self._train_random_forest()
 
         # Make and evaluate predictions
         target_df = self._read_process_target_data()
         prediction = self.model.predict(target_df)
-        self.simulate_cells(self.cell, prediction)
+        self._simulate_cells(self.cell, prediction)
 
         print("Evaluating predictions...")
-        sf_error, fi_error, g_pred = self.evaluate_predictions()
+        sf_error, fi_error, g_pred = self._evaluate_predictions()
 
         conductance_option_names_list = [conductance_option.variable_name for conductance_option in self.optimization_parameters.conductance_options]
         final_prediction = dict(zip(conductance_option_names_list, g_pred[np.argmin(sf_error)]))
-        self.cell.prediction = final_prediction #TODO: do we need this?
+        self.cell.prediction = final_prediction
         
         print(self.cell.prediction)
         runtime = round(time.time() - start_time, 3)
@@ -107,7 +128,7 @@ class ACTModule:
 
         return metrics
     
-    def evaluate_predictions(self):
+    def _evaluate_predictions(self):
         # Load target data
         target_df = self._read_process_target_data()
 
@@ -135,7 +156,7 @@ class ACTModule:
         
         return sf_error, fi_error, g_pred
 
-    def generate_g_combinations(self) -> None:
+    def _generate_g_combinations(self) -> None:
 
         g = []
         n_slices = []
@@ -178,7 +199,7 @@ class ACTModule:
         g_combinations = list(product(*[np.linspace(low, high, num = slices) for (low, high), slices in zip(g, n_slices)]))
         return g_combinations
 
-    def simulate_cells(self, cell: ACTCellModel, g_comb: list = None) -> None:
+    def _simulate_cells(self, cell: ACTCellModel, g_comb: list = None) -> None:
 
         if g_comb is None:
             mode = "train"
@@ -190,8 +211,8 @@ class ACTModule:
 
         # Set self.conductance_combos and self.current_inj_combos
         if mode == "train":
-            print("Generating conductance combos...")
-            g_comb = self.generate_g_combinations()
+            print("Generating conductance combinations...")
+            g_comb = self._generate_g_combinations()
         elif mode == "eval": # else, g_comb is given as RF predictions
             if len(g_comb) != len(self.optimization_parameters.CI_options):
                 raise ValueError("The number of CI options must match the number of target traces.")
@@ -242,7 +263,7 @@ class ACTModule:
             simulator.run_jobs()
         combine_data(os.path.join(self.output_folder_path, mode))
         
-    def filter_data(self, path) -> None:
+    def _filter_data(self, path) -> None:
 
         filtered_out_features = self.optimization_parameters.filter_parameters.filtered_out_features
         data = np.load(path)
@@ -264,7 +285,7 @@ class ACTModule:
         np.save(os.path.join(path, f"filtered_out.npy"), data)
     
 
-    def train_random_forest(self) -> float:
+    def _train_random_forest(self) -> float:
         """
         Trains a Random Forest Regressor model on the features of the generated simulation data.
         Then gets a prediction for conductance sets that yeild features found in the target data.

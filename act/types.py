@@ -71,7 +71,9 @@ class FilterParameters:
 
 @dataclass
 class OptimizationParameters:
+    # Set hardware
     n_cpus: int = None
+
     # Set the search space
     conductance_options: list = None
     CI_options: list = None
@@ -86,6 +88,3 @@ class OptimizationParameters:
     filter_parameters: FilterParameters = None
     spike_threshold: float = 0
     max_n_spikes: int = 20
-
-    # Set segregation #TODO
-    previous_modules: list = None

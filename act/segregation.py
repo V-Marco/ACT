@@ -9,16 +9,16 @@ class ACTSegregator:
         Parameters:
         -----------
         right_v: float
-            Right-most voltage involved in the linear segment cutoff for the activation function
+            Right-most voltage involved in the linear segment cutoff for the activation function.
             
         cutoff_v: float
             Voltage at which the activation function is forced to 0 mV.
         
         slope: float
-            Slope of the linear segment connecting the voltage cutoff and the rest of the activation function
+            Slope of the linear segment connecting the voltage cutoff and the rest of the activation function.
         
         intercept: float
-            Intercept of the linear segment
+            Intercept of the linear segment.
                  
         Returns:
         -----------
@@ -43,21 +43,21 @@ class ACTSegregator:
         Parameters:
         -----------
         left_v: float
-            Left-most voltage involved in the linear segment cutoff for the activation function
+            Left-most voltage involved in the linear segment cutoff for the activation function.
             
         cutoff_v: float
             Voltage at which the activation function is forced to 0 mV.
         
         slope: float
-            Slope of the linear segment connecting the voltage cutoff and the rest of the activation function
+            Slope of the linear segment connecting the voltage cutoff and the rest of the activation function.
         
         intercept: float
-            Intercept of the linear segment
+            Intercept of the linear segment.
                  
         Returns:
         -----------
         message: str
-            Instructions for .mod file changes
+            Instructions for .mod file changes.
         """
         message = f"""
         :Segregation

@@ -11,11 +11,7 @@ from act.cell_model import ACTCellModel
 @contextmanager
 def suppress_neuron_warnings():
     """
-    Turns of nrnivmodl compile warnings.
-    
-    Returns:
-    -----------
-    None
+    Turns off nrnivmodl compile warnings.
     """
     with open(os.devnull, 'w') as dev_null:
         temp_stdout = sys.stdout
@@ -37,6 +33,14 @@ def unwrap_self_run_job(args) -> None:
 class ACTSimulator:
 
     def __init__(self, output_folder_name) -> None:
+        '''
+        Initialize the simulator.
+
+        Parameters:
+        ----------
+        output_folder_name: str
+            Name of the output folder.
+        '''
         self.path = output_folder_name
         self.pool = []
         print("""
@@ -46,19 +50,22 @@ class ACTSimulator:
         """)
         
 
-    def run(self, cell: ACTCellModel, parameters: SimulationParameters) -> None:
+    def run(self, cell: ACTCellModel, parameters: SimulationParameters) -> ACTCellModel:
         """
-        Used for single job NEURON simulations.
+        Run a single simulation and return the cell model. Meant for interactive exploration of the cell model.
 
         Parameters:
         -----------
         cell: ACTCellModel
+            Cell model to simulate.
         
         parameters: SimulationParameters
+            Paramteters for the simulation.
         
         Returns:
         -----------
-        None
+        cell: ACTCellModel
+            Cell model after the simulation.
         """
         os.system(f"nrnivmodl {cell.path_to_mod_files} > /dev/null 2>&1")
 
@@ -79,30 +86,20 @@ class ACTSimulator:
         cell._build_cell(parameters.sim_idx)
 
         # Set current injection
-        if len(parameters.CI) > 0:
-            if isinstance(parameters.CI[0], ConstantCurrentInjection):
+        for CI in parameters.CI:
+            if isinstance(CI, ConstantCurrentInjection):
                 cell._add_constant_CI(
-                    parameters.CI[0].amp, 
-                    parameters.CI[0].dur, 
-                    parameters.CI[0].delay, 
+                    CI.amp, CI.dur, CI.delay, 
                     parameters.h_tstop, 
                     parameters.h_dt)
-            elif isinstance(parameters.CI[0], RampCurrentInjection):
+            elif isinstance(CI, RampCurrentInjection):
                 cell._add_ramp_CI(
-                    parameters.CI[0].amp_start, 
-                    parameters.CI[0].amp_incr, 
-                    parameters.CI[0].num_steps, 
-                    parameters.CI[0].step_time, 
-                    parameters.CI[0].dur, 
-                    parameters.CI[0].delay, 
+                    CI.amp_start, CI.amp_incr, CI.num_steps, CI.dur, CI.final_step_add_time, CI.delay, 
                     parameters.h_tstop, 
                     parameters.h_dt)
-            elif isinstance(parameters.CI[0], GaussianCurrentInjection):
+            elif isinstance(CI, GaussianCurrentInjection):
                 cell._add_gaussian_CI(
-                    parameters.CI[0].amp_mean, 
-                    parameters.CI[0].amp_std, 
-                    parameters.CI[0].dur, 
-                    parameters.CI[0].delay, 
+                    CI.amp_mean, CI.amp_std, CI.dur, CI.delay, 
                     parameters.random_seed)
             else:
                 raise NotImplementedError
@@ -119,13 +116,15 @@ class ACTSimulator:
 
     def submit_job(self, cell: ACTCellModel, parameters: SimulationParameters) -> None:
         """
-        Used for setting variable simulation parameters in multi-job uses of NEURON simulations.
+        Schedule a job for a delayed parallel simulation.
         
         Parameters:
         -----------
         cell: ACTCellModel
+            Cell model to simulate.
         
         parameters: SimulationParameters
+            Parameters for the simulations.
         
         Returns:
         -----------
@@ -137,12 +136,12 @@ class ACTSimulator:
 
     def run_jobs(self, n_cpu: int = None) -> None:
         """
-        Multiprocessing implementation of multi-job NEURON simulations. Sets up multiprocessing
+        Run the scheduled jobs.
         
         Parameters:
         -----------
         n_cpu: int, default = None
-            Number of cores to be used for multiprocessing
+            Number of cores to be used for multiprocessing. If None, all available cores are used.
                  
         Returns:
         -----------
@@ -166,7 +165,7 @@ class ACTSimulator:
 
     def _run_job(self, cell: ACTCellModel, parameters: SimulationParameters) -> None:
         """
-        Instructions for a single NEURON simulation that is thread safe and used in run_jobs().
+        Instructions for a single NEURON simulation that is thread-safe and used in run_jobs().
         
         Parameters:
         -----------
@@ -180,6 +179,7 @@ class ACTSimulator:
         """
         os.makedirs(parameters._path, exist_ok = True)
 
+        # Load the modfiles
         h.load_file('stdrun.hoc')
 
         try:
@@ -187,52 +187,45 @@ class ACTSimulator:
                 h.nrn_load_dll("./x86_64/.libs/libnrnmech.so")
         except:
             pass
-
+        
+        # Set simulation parameters
         h.celsius = parameters.h_celsius
         h.tstop = parameters.h_tstop
         h.dt = parameters.h_dt
         h.steps_per_ms = 1 / h.dt
         h.v_init = parameters.h_v_init
 
+        # Build the cell
         cell._build_cell(parameters.sim_idx, parameters.verbose)
         
-        #TODO: fix this -- we want to provide any number of CIs in a list
-        # and then add all of them. E.g., there could be a constant CI from 0 to 200 ms, then no CI, then a Gaussian CI from 300 ms to 500 ms.
         # Set current injection
-        if isinstance(parameters.CI[0], ConstantCurrentInjection):
-            cell._add_constant_CI(
-                parameters.CI[0].amp, 
-                parameters.CI[0].dur, 
-                parameters.CI[0].delay, 
-                parameters.h_tstop, 
-                parameters.h_dt)
-        elif isinstance(parameters.CI[0], RampCurrentInjection):
-            cell._add_ramp_CI(
-                parameters.CI[0].amp_start, 
-                parameters.CI[0].amp_incr, 
-                parameters.CI[0].num_steps,
-                parameters.CI[0].dur,
-                parameters.CI[0].final_step_add_time, 
-                parameters.CI[0].delay, 
-                parameters.h_tstop, 
-                parameters.h_dt)
-        elif isinstance(parameters.CI[0], GaussianCurrentInjection):
-            cell._add_gaussian_CI(
-                parameters.CI[0].amp_mean, 
-                parameters.CI[0].amp_std, 
-                parameters.CI[0].dur, 
-                parameters.CI[0].delay, 
-                parameters.random_seed)
-        else:
-            raise NotImplementedError
+        for CI in parameters.CI:
+            if isinstance(CI, ConstantCurrentInjection):
+                cell._add_constant_CI(
+                    CI.amp, CI.dur, CI.delay, 
+                    parameters.h_tstop, 
+                    parameters.h_dt)
+            elif isinstance(CI, RampCurrentInjection):
+                cell._add_ramp_CI(
+                    CI.amp_start, CI.amp_incr, CI.num_steps, CI.dur, CI.final_step_add_time, CI.delay, 
+                    parameters.h_tstop, 
+                    parameters.h_dt)
+            elif isinstance(CI, GaussianCurrentInjection):
+                cell._add_gaussian_CI(
+                    CI.amp_mean, CI.amp_std, CI.dur, CI.delay, 
+                    parameters.random_seed)
+            else:
+                raise NotImplementedError
         
-        
+        # Update conductances
         if not cell._set_g_to == None and not len(cell._set_g_to) == 0:
             cell._set_g_bar()   
 
+        # Init and run the simulation
         h.finitialize(h.v_init)
         h.run()
 
+        # Save outputs
         V, I, g = cell.get_output()
 
         out = np.zeros((int(parameters.h_tstop / parameters.h_dt), 3))

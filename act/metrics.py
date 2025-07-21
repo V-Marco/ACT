@@ -5,7 +5,7 @@ from act.types import GettablePassiveProperties
 
 def pp_error(pp_target: GettablePassiveProperties, pp_pred: GettablePassiveProperties) -> list:
     """
-    Compute absolute error between target and predicted passive properties.
+    Compute the absolute error between target and predicted passive properties.
 
     Parameters:
     ----------
@@ -27,7 +27,7 @@ def pp_error(pp_target: GettablePassiveProperties, pp_pred: GettablePassivePrope
 
 def summary_features_error(sf_target: np.ndarray, sf_pred: np.ndarray) -> float:
     """
-    Compute mean absolute error between target and predicted summary features.
+    Compute the mean absolute error between target and predicted summary features.
 
     Parameters:
     ----------
@@ -39,7 +39,7 @@ def summary_features_error(sf_target: np.ndarray, sf_pred: np.ndarray) -> float:
     
     Returns:
     ----------
-    mae: np.ndarray of shape (n_trials)
+    mae: np.ndarray of shape (n_trials,)
         Mean absolute error across z-transformed features.
     """
 

@@ -6,24 +6,26 @@ class ACTPassiveModule:
     @staticmethod
     def compute_spp(R_in: float, soma_area: float, tau: float, V_rest: float) -> SettablePassiveProperties:
         """
+        Compute the reversal potential and maximum conductance of the leak channel and membrane capacitance.
+
         Parameters:
         ----------
         R_in: float
-            (Ohm)
+            Target input resistance (Ohm).
         
         soma_area: float
-            (cm2)
+            Target soma area or total cell area (cm2).
         
         tau: float
-            (s)
+            Target membrane time constant (s).
 
         V_rest: float
-            (mV)
+            Target resting potential (mV).
         
         Returns:
         ----------
         spp: SettablePassiveProperties
-            Class with filled settable passive properties
+            Computed settable passive properties.
         """
         spp = SettablePassiveProperties()
         spp.e_rev_leak = V_rest
@@ -35,13 +37,15 @@ class ACTPassiveModule:
     @staticmethod
     def compute_g_bar_leak(R_in: float, soma_area: float) -> float:
         """
+        Compute maximum conductance of the leak channel.
+
         Parameters:
         ----------
         R_in: float
-            (Ohm)
+            Input resistance (Ohm).
         
         soma_area: float
-            (cm2)
+            Soma (or total) area (cm2).
         
         Returns:
         ----------
@@ -54,18 +58,20 @@ class ACTPassiveModule:
     @staticmethod
     def compute_Cm(g_bar_leak: float, tau: float) -> float:
         """
+        Compute membrane capacitance.
+
         Parameters:
         ----------
         g_bar_leak: float
-            (S / cm2)
+            Maximum conductance of the leak channel (S / cm2).
         
         tau: float
-            (s)
+            Membrane time constant (s).
         
         Returns:
         ----------
         Cm: float
-            (uF / cm2)
+            Membrane capacitance (uF / cm2).
         
         """
         return tau * g_bar_leak * 1e6
@@ -73,6 +79,9 @@ class ACTPassiveModule:
     
     def compute_gpp(passive_V: np.ndarray, dt: float, I_t_start: float, I_t_end: float, I_amp: float) -> GettablePassiveProperties:
         """
+        Estimate input resistance, lower and upper bounds of the membrane time constant, membrane resting potential and the sag ratio
+        from a passive trace.
+
         Parameters:
         ----------
         passive_V: np.ndarray

@@ -9,22 +9,9 @@ from scipy.fft import rfft, rfftfreq
 # Feature Extraction
 #---------------------------------------------
 
-# In **all** files:
-#TODO: make sure all functions have """ for docs (not '''). COMPLETED
-#TODO: make sure there is an empty line between func description and the Parameters word in all files. COMPLETED
-#TODO: make sure self is not in Parameters. COMPLETED
-#TODO: make sure every non-private has a description; make sure no description starts with "This function". Same for classes.
-#TODO: make sure there are no unused imports; make sure imports are organized as: internal/external libs -- empty line -- act files, e.g. COMPLETED
-# import numpy as np
-# import os
-# ...
-# import pandas as pd
-#
-# from act.metrics import pp_error
-
 def find_events(v: np.ndarray, spike_threshold: float = -20) -> np.ndarray:
     """
-    Counts the number of spikes in a voltage trace. Returns a list of event indices.
+    Count the number of spikes in a voltage trace. Returns a list of event indices.
 
     Parameters:
     -----------
@@ -178,7 +165,7 @@ def get_summary_features(
 #---------------------------------------------
 def remove_saturated_traces(data: np.ndarray, window_of_inspection: tuple, saturation_threshold: float = -50) -> np.ndarray:
     """
-    Filters training data to only voltage traces that have not saturated.
+    Filter training data to only voltage traces that have not saturated.
 
     Parameters:
     -----------
@@ -205,7 +192,7 @@ def remove_saturated_traces(data: np.ndarray, window_of_inspection: tuple, satur
 
 def get_traces_with_spikes(data: np.ndarray, spike_threshold: float = -20) -> np.ndarray:
     """
-    Filters training data to only voltage traces that have spikes.
+    Filter training data to only voltage traces that have spikes.
 
     Parameters:
     -----------
