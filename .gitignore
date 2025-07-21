@@ -5,6 +5,7 @@ __pycache__/
 
 # Outputs
 .png
+output/
 
 # Mac
 .DS_Store
@@ -142,9 +143,34 @@ special.nrn
 
 *.png
 *.csv
+!exp_metrics.csv
 
 *.json
+!exp_learned_params.json
+!exp_target_v.json
+
 ~lock.*
+
+/output/*
+/experiments/Spiker/module_*
+/experiments/BursterCA3/filtered/output/*
+/experiments/BursterIzhikevich/filtered/output/*
+/experiments/BursterS3/filtered/output/*
+/experiments/L5/filtered/output/*
+/experiments/LA_A/filtered/output/*
+/experiments/LA_C/filtered/output/*
+
+/experiments/Spiker/not-filtered/output/*
+/experiments/Spiker/output/*
+/experiments/BursterCA3/not-filtered/output/*
+/experiments/BursterIzhikevich/not-filtered/output/*
+/experiments/BursterS3/not-filtered/output/*
+/experiments/L5/not-filtered/output/*
+/experiments/LA_A/not-filtered/output/*
+/experiments/LA_A/segregation_procedure/original_*
+/experiments/LA_A/segregation_procedure/seg_*
+/experiments/LA_C/not-filtered/output/*
+/experiments/Spiker/not-filtered/output
 
 simulation/components
 simulation/network
@@ -154,5 +180,10 @@ simulation/output_LA_A
 
 examples/LA/output_LA_A
 
+module_*
+*/module_orig/
+
 *.h5
+!exp_spikes.h5
+!exp_v_report.h5
 old/

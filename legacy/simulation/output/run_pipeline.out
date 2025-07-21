@@ -1,0 +1,774 @@
+/home/mwsrgf/act-venv/lib64/python3.9/site-packages/torch/__init__.py:614: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:451.)
+  _C._set_default_tensor_type(t)
+/home/mwsrgf/act-venv/lib64/python3.9/site-packages/torch/__init__.py:614: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:451.)
+  _C._set_default_tensor_type(t)
+Warning: no DISPLAY environment variable.
+--No graphics will be displayed.
+/home/mwsrgf/proj/ACT/simulation
+Mod files: "temp_modfiles/temp_modfiles/cadyn.mod" "temp_modfiles/temp_modfiles/cal2.mod" "temp_modfiles/temp_modfiles/ca.mod" "temp_modfiles/temp_modfiles/capool.mod" "temp_modfiles/temp_modfiles/cat.mod" "temp_modfiles/temp_modfiles/currentclamp.mod" "temp_modfiles/temp_modfiles/function_TMonitor.mod" "temp_modfiles/temp_modfiles/h.mod" "temp_modfiles/temp_modfiles/ICat2.mod" "temp_modfiles/temp_modfiles/Ikleaksd.mod" "temp_modfiles/temp_modfiles/im.mod" "temp_modfiles/temp_modfiles/kadist.mod" "temp_modfiles/temp_modfiles/kaprox.mod" "temp_modfiles/temp_modfiles/kdrca1DA.mod" "temp_modfiles/temp_modfiles/kdrca1.mod" "temp_modfiles/temp_modfiles/kdrinter.mod" "temp_modfiles/temp_modfiles/kdtx.mod" "temp_modfiles/temp_modfiles/leakDA.mod" "temp_modfiles/temp_modfiles/leakinter.mod" "temp_modfiles/temp_modfiles/leak.mod" "temp_modfiles/temp_modfiles/na3DA.mod" "temp_modfiles/temp_modfiles/na3.mod" "temp_modfiles/temp_modfiles/nainter.mod" "temp_modfiles/temp_modfiles/na.mod" "temp_modfiles/temp_modfiles/nap.mod" "temp_modfiles/temp_modfiles/naxDA.mod" "temp_modfiles/temp_modfiles/nax.mod" "temp_modfiles/temp_modfiles/sahp.mod" "temp_modfiles/temp_modfiles/sahpNE.mod"
+
+Creating 'x86_64' directory for .o files.
+
+ -> [32mCompiling[0m mod_func.cpp
+ -> [32mNMODL[0m ../temp_modfiles/cadyn.mod
+ -> [32mNMODL[0m ../temp_modfiles/cal2.mod
+ -> [32mNMODL[0m ../temp_modfiles/ca.mod
+Translating cadyn.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/cadyn.c
+ -> [32mNMODL[0m ../temp_modfiles/capool.mod
+Translating cal2.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/cal2.c
+Translating ca.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/ca.c
+Thread Safe
+Notice: Assignment to the GLOBAL variable, "minf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "tau", is not thread safe
+Notice: VERBATIM blocks are not thread safe
+Notice: This mechanism cannot be used with CVODE
+Notice: Assignment to the GLOBAL variable, "tadj", is not thread safe
+ -> [32mNMODL[0m ../temp_modfiles/cat.mod
+ -> [32mNMODL[0m ../temp_modfiles/currentclamp.mod
+Translating capool.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/capool.c
+ -> [32mNMODL[0m ../temp_modfiles/function_TMonitor.mod
+Thread Safe
+Translating cat.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/cat.c
+ -> [32mNMODL[0m ../temp_modfiles/h.mod
+Translating currentclamp.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/currentclamp.c
+Thread Safe
+Translating function_TMonitor.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/function_TMonitor.c
+Thread Safe
+Thread Safe
+ -> [32mNMODL[0m ../temp_modfiles/ICat2.mod
+Translating h.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/h.c
+ -> [32mNMODL[0m ../temp_modfiles/Ikleaksd.mod
+ -> [32mNMODL[0m ../temp_modfiles/im.mod
+Notice: Assignment to the GLOBAL variable, "linf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taul", is not thread safe
+Translating ICat2.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/ICat2.c
+ -> [32mNMODL[0m ../temp_modfiles/kadist.mod
+Translating Ikleaksd.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/Ikleaksd.c
+Translating im.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/im.c
+Thread Safe
+Thread Safe
+Warning: Default -70 of PARAMETER ek will be ignored and set by NEURON.
+Thread Safe
+ -> [32mNMODL[0m ../temp_modfiles/kaprox.mod
+ -> [32mNMODL[0m ../temp_modfiles/kdrca1DA.mod
+Translating kadist.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/kadist.c
+ -> [32mNMODL[0m ../temp_modfiles/kdrca1.mod
+Notice: Assignment to the GLOBAL variable, "linf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "ninf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taun", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taul", is not thread safe
+Translating kaprox.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/kaprox.c
+Translating kdrca1DA.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/kdrca1DA.c
+ -> [32mNMODL[0m ../temp_modfiles/kdrinter.mod
+Notice: Assignment to the GLOBAL variable, "taun", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taul", is not thread safe
+Translating kdrca1.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/kdrca1.c
+Notice: Assignment to the GLOBAL variable, "ninf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taun", is not thread safe
+Notice: Assignment to the GLOBAL variable, "ninf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taun", is not thread safe
+ -> [32mNMODL[0m ../temp_modfiles/kdtx.mod
+ -> [32mNMODL[0m ../temp_modfiles/leakDA.mod
+Translating kdrinter.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/kdrinter.c
+ -> [32mNMODL[0m ../temp_modfiles/leakinter.mod
+Thread Safe
+Warning: Default -80 of PARAMETER ek will be ignored and set by NEURON.
+Translating kdtx.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/kdtx.c
+ -> [32mNMODL[0m ../temp_modfiles/leak.mod
+Translating leakDA.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/leakDA.c
+Thread Safe
+Translating leakinter.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/leakinter.c
+Thread Safe
+Thread Safe
+ -> [32mNMODL[0m ../temp_modfiles/na3DA.mod
+Translating leak.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/leak.c
+ -> [32mNMODL[0m ../temp_modfiles/na3.mod
+ -> [32mNMODL[0m ../temp_modfiles/nainter.mod
+Thread Safe
+Translating na3DA.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/na3DA.c
+ -> [32mNMODL[0m ../temp_modfiles/na.mod
+Translating nainter.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/nainter.c
+Notice: Assignment to the GLOBAL variable, "htau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "hinf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "mtau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "minf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "sinf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taus", is not thread safe
+Translating na3.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/na3.c
+Thread Safe
+Warning: Default 45 of PARAMETER ena will be ignored and set by NEURON.
+Notice: Assignment to the GLOBAL variable, "htau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "hinf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "mtau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "minf", is not thread safe
+ -> [32mNMODL[0m ../temp_modfiles/nap.mod
+Translating na.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/na.c
+ -> [32mNMODL[0m ../temp_modfiles/naxDA.mod
+ -> [32mNMODL[0m ../temp_modfiles/nax.mod
+Thread Safe
+Translating nap.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/nap.c
+ -> [32mNMODL[0m ../temp_modfiles/sahp.mod
+Translating naxDA.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/naxDA.c
+Translating nax.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/nax.c
+Thread Safe
+Notice: Assignment to the GLOBAL variable, "htau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "hinf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "mtau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "minf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "htau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "hinf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "mtau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "minf", is not thread safe
+ -> [32mNMODL[0m ../temp_modfiles/sahpNE.mod
+Translating sahp.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/sahp.c
+ -> [32mCompiling[0m cadyn.c
+ -> [32mCompiling[0m cal2.c
+Thread Safe
+Translating sahpNE.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/sahpNE.c
+ -> [32mCompiling[0m ca.c
+Thread Safe
+ -> [32mCompiling[0m capool.c
+ -> [32mCompiling[0m cat.c
+ -> [32mCompiling[0m currentclamp.c
+ -> [32mCompiling[0m function_TMonitor.c
+ -> [32mCompiling[0m h.c
+ -> [32mCompiling[0m ICat2.c
+ -> [32mCompiling[0m Ikleaksd.c
+ -> [32mCompiling[0m im.c
+ -> [32mCompiling[0m kadist.c
+ -> [32mCompiling[0m kaprox.c
+ -> [32mCompiling[0m kdrca1DA.c
+ -> [32mCompiling[0m kdrca1.c
+ -> [32mCompiling[0m kdrinter.c
+ -> [32mCompiling[0m kdtx.c
+ -> [32mCompiling[0m leakDA.c
+ -> [32mCompiling[0m leakinter.c
+ -> [32mCompiling[0m leak.c
+ -> [32mCompiling[0m na3DA.c
+ -> [32mCompiling[0m na3.c
+ -> [32mCompiling[0m nainter.c
+ -> [32mCompiling[0m na.c
+ -> [32mCompiling[0m nap.c
+ -> [32mCompiling[0m naxDA.c
+ -> [32mCompiling[0m nax.c
+ -> [32mCompiling[0m sahp.c
+ -> [32mCompiling[0m sahpNE.c
+ => [32mLINKING[0m shared library ./libnrnmech.so
+ => [32mLINKING[0m executable ./special LDFLAGS are:    -pthread
+Successfully created x86_64/special
+generating traces...
+
+(2024-05-24 15:28:38.188569)-[START]
+loading hoc file ../data/LA/A/orig_modfiles/template.hoc
+Setting el_leak = -70
+Setting Cell_A[0].soma[0].glbar_leak = 0.00007824
+Setting Cell_A[0].soma[0].cm = 2.41605906
+Generating trace for 0.0 pA
+h.celsius set to 31.0
+Generating trace for 100.0 pA
+h.celsius set to 31.0
+Generating trace for 200.0 pA
+h.celsius set to 31.0
+Generating trace for 300.0 pA
+h.celsius set to 31.0
+Generating trace for 400.0 pA
+h.celsius set to 31.0
+h.celsius set to 31.0
+Saving target voltage data to: ./output/Cell_A_orig_2slice/target/./target_v.json
+done
+/home/mwsrgf/act-venv/lib64/python3.9/site-packages/torch/__init__.py:614: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:451.)
+  _C._set_default_tensor_type(t)
+numprocs=1
+WARNING:root:No edges have been made for this network, skipping saving of edges file.
+/home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms
+Mod files: "./cadyn.mod" "./cal2.mod" "./ca.mod" "./capool.mod" "./cat.mod" "./currentclamp.mod" "./function_TMonitor.mod" "./h.mod" "./ICat2.mod" "./Ikleaksd.mod" "./im.mod" "./kadist.mod" "./kaprox.mod" "./kdrca1DA.mod" "./kdrca1.mod" "./kdrinter.mod" "./kdtx.mod" "./leakDA.mod" "./leakinter.mod" "./leak.mod" "./na3DA.mod" "./na3.mod" "./nainter.mod" "./na.mod" "./nap.mod" "./naxDA.mod" "./nax.mod" "./sahp.mod" "./sahpNE.mod"
+
+Creating 'x86_64' directory for .o files.
+
+ -> [32mCompiling[0m mod_func.cpp
+ -> [32mNMODL[0m ../cadyn.mod
+ -> [32mNMODL[0m ../cal2.mod
+ -> [32mNMODL[0m ../ca.mod
+Translating cadyn.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/cadyn.c
+ -> [32mNMODL[0m ../capool.mod
+Translating cal2.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/cal2.c
+Thread Safe
+Translating ca.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/ca.c
+Notice: VERBATIM blocks are not thread safe
+Notice: Assignment to the GLOBAL variable, "minf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "tau", is not thread safe
+Notice: This mechanism cannot be used with CVODE
+Notice: Assignment to the GLOBAL variable, "tadj", is not thread safe
+ -> [32mNMODL[0m ../cat.mod
+Translating capool.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/capool.c
+ -> [32mNMODL[0m ../currentclamp.mod
+Thread Safe
+ -> [32mNMODL[0m ../function_TMonitor.mod
+Translating cat.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/cat.c
+ -> [32mNMODL[0m ../h.mod
+Translating currentclamp.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/currentclamp.c
+Thread Safe
+Translating function_TMonitor.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/function_TMonitor.c
+Thread Safe
+Thread Safe
+ -> [32mNMODL[0m ../ICat2.mod
+Translating h.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/h.c
+ -> [32mNMODL[0m ../Ikleaksd.mod
+ -> [32mNMODL[0m ../im.mod
+Notice: Assignment to the GLOBAL variable, "linf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taul", is not thread safe
+ -> [32mNMODL[0m ../kadist.mod
+Translating Ikleaksd.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/Ikleaksd.c
+Translating ICat2.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/ICat2.c
+Thread Safe
+Warning: Default -70 of PARAMETER ek will be ignored and set by NEURON.
+Translating im.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/im.c
+Thread Safe
+Thread Safe
+ -> [32mNMODL[0m ../kaprox.mod
+Translating kadist.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/kadist.c
+ -> [32mNMODL[0m ../kdrca1DA.mod
+ -> [32mNMODL[0m ../kdrca1.mod
+Notice: Assignment to the GLOBAL variable, "linf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "ninf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taun", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taul", is not thread safe
+Translating kaprox.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/kaprox.c
+ -> [32mNMODL[0m ../kdrinter.mod
+Translating kdrca1DA.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/kdrca1DA.c
+Notice: Assignment to the GLOBAL variable, "taun", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taul", is not thread safe
+Translating kdrca1.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/kdrca1.c
+Notice: Assignment to the GLOBAL variable, "ninf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taun", is not thread safe
+Notice: Assignment to the GLOBAL variable, "ninf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taun", is not thread safe
+Translating kdrinter.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/kdrinter.c
+ -> [32mNMODL[0m ../kdtx.mod
+ -> [32mNMODL[0m ../leakDA.mod
+Thread Safe
+Warning: Default -80 of PARAMETER ek will be ignored and set by NEURON.
+ -> [32mNMODL[0m ../leakinter.mod
+ -> [32mNMODL[0m ../leak.mod
+Translating kdtx.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/kdtx.c
+Translating leakDA.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/leakDA.c
+Thread Safe
+Translating leakinter.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/leakinter.c
+Thread Safe
+Thread Safe
+Translating leak.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/leak.c
+ -> [32mNMODL[0m ../na3DA.mod
+ -> [32mNMODL[0m ../na3.mod
+ -> [32mNMODL[0m ../nainter.mod
+Thread Safe
+ -> [32mNMODL[0m ../na.mod
+Translating na3DA.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/na3DA.c
+Translating na3.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/na3.c
+Translating nainter.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/nainter.c
+Notice: Assignment to the GLOBAL variable, "htau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "hinf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "mtau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "minf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "htau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "hinf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "mtau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "minf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "sinf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taus", is not thread safe
+Thread Safe
+Warning: Default 45 of PARAMETER ena will be ignored and set by NEURON.
+Translating na.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/na.c
+ -> [32mNMODL[0m ../nap.mod
+Thread Safe
+ -> [32mNMODL[0m ../naxDA.mod
+ -> [32mNMODL[0m ../nax.mod
+ -> [32mNMODL[0m ../sahp.mod
+Translating nap.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/nap.c
+Translating naxDA.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/naxDA.c
+Translating nax.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/nax.c
+Thread Safe
+Notice: Assignment to the GLOBAL variable, "htau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "hinf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "mtau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "minf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "htau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "hinf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "mtau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "minf", is not thread safe
+Translating sahp.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/sahp.c
+ -> [32mNMODL[0m ../sahpNE.mod
+Thread Safe
+ -> [32mCompiling[0m cadyn.c
+ -> [32mCompiling[0m cal2.c
+ -> [32mCompiling[0m ca.c
+Translating sahpNE.mod into /home/mwsrgf/proj/ACT/simulation/output/Cell_A_orig_2slice/sim_data/components/mechanisms/x86_64/sahpNE.c
+Thread Safe
+ -> [32mCompiling[0m capool.c
+ -> [32mCompiling[0m cat.c
+ -> [32mCompiling[0m currentclamp.c
+ -> [32mCompiling[0m function_TMonitor.c
+ -> [32mCompiling[0m h.c
+ -> [32mCompiling[0m ICat2.c
+ -> [32mCompiling[0m Ikleaksd.c
+ -> [32mCompiling[0m im.c
+ -> [32mCompiling[0m kadist.c
+ -> [32mCompiling[0m kaprox.c
+ -> [32mCompiling[0m kdrca1DA.c
+ -> [32mCompiling[0m kdrca1.c
+ -> [32mCompiling[0m kdrinter.c
+ -> [32mCompiling[0m kdtx.c
+ -> [32mCompiling[0m leakDA.c
+ -> [32mCompiling[0m leakinter.c
+ -> [32mCompiling[0m leak.c
+ -> [32mCompiling[0m na3DA.c
+ -> [32mCompiling[0m na3.c
+ -> [32mCompiling[0m nainter.c
+ -> [32mCompiling[0m na.c
+ -> [32mCompiling[0m nap.c
+ -> [32mCompiling[0m naxDA.c
+ -> [32mCompiling[0m nax.c
+ -> [32mCompiling[0m sahp.c
+ -> [32mCompiling[0m sahpNE.c
+ => [32mLINKING[0m shared library ./libnrnmech.so
+ => [32mLINKING[0m executable ./special LDFLAGS are:    -pthread
+Successfully created x86_64/special
+/home/mwsrgf/proj/ACT/simulation
+Building Network
+Setting celsius to default value of 31.0
+Number of cells to be generated: 320  (5 amps * 64 cells per amp (parameters ^ splits))
+Submitted batch job 9409
+/home/mwsrgf/act-venv/lib64/python3.9/site-packages/torch/__init__.py:614: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:451.)
+  _C._set_default_tensor_type(t)
+numprocs=1
+-------------------------------------------------
+GENERATING ARIMA STATS
+-------------------------------------------------
+loading large file (./output/Cell_A_orig_2slice/sim_data/output/v_report.h5)
+decimate_factor set - reducing dataset by 10x
+ARIMA order set to (4, 0, 4)
+Traceback (most recent call last):
+  File "/home/mwsrgf/proj/ACT/simulation/generate_arma_stats.py", line 19, in <module>
+    dp.generate_arima_coefficients(selected_config)
+  File "/home/mwsrgf/proj/ACT/simulation/../act/DataProcessor.py", line 75, in generate_arima_coefficients
+    traces = traces.cpu().detach().tolist()
+AttributeError: 'tuple' object has no attribute 'cpu'
+/home/mwsrgf/act-venv/lib64/python3.9/site-packages/torch/__init__.py:614: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:451.)
+  _C._set_default_tensor_type(t)
+Warning: no DISPLAY environment variable.
+--No graphics will be displayed.
+/home/mwsrgf/proj/ACT/simulation
+Mod files: "temp_modfiles/temp_modfiles/cadyn.mod" "temp_modfiles/temp_modfiles/cal2.mod" "temp_modfiles/temp_modfiles/ca.mod" "temp_modfiles/temp_modfiles/capool.mod" "temp_modfiles/temp_modfiles/cat.mod" "temp_modfiles/temp_modfiles/currentclamp.mod" "temp_modfiles/temp_modfiles/function_TMonitor.mod" "temp_modfiles/temp_modfiles/h.mod" "temp_modfiles/temp_modfiles/ICat2.mod" "temp_modfiles/temp_modfiles/Ikleaksd.mod" "temp_modfiles/temp_modfiles/im.mod" "temp_modfiles/temp_modfiles/kadist.mod" "temp_modfiles/temp_modfiles/kaprox.mod" "temp_modfiles/temp_modfiles/kdrca1DA.mod" "temp_modfiles/temp_modfiles/kdrca1.mod" "temp_modfiles/temp_modfiles/kdrinter.mod" "temp_modfiles/temp_modfiles/kdtx.mod" "temp_modfiles/temp_modfiles/leakDA.mod" "temp_modfiles/temp_modfiles/leakinter.mod" "temp_modfiles/temp_modfiles/leak.mod" "temp_modfiles/temp_modfiles/na3DA.mod" "temp_modfiles/temp_modfiles/na3.mod" "temp_modfiles/temp_modfiles/nainter.mod" "temp_modfiles/temp_modfiles/na.mod" "temp_modfiles/temp_modfiles/nap.mod" "temp_modfiles/temp_modfiles/naxDA.mod" "temp_modfiles/temp_modfiles/nax.mod" "temp_modfiles/temp_modfiles/sahp.mod" "temp_modfiles/temp_modfiles/sahpNE.mod"
+
+Creating 'x86_64' directory for .o files.
+
+ -> [32mCompiling[0m mod_func.cpp
+ -> [32mNMODL[0m ../temp_modfiles/cadyn.mod
+ -> [32mNMODL[0m ../temp_modfiles/cal2.mod
+ -> [32mNMODL[0m ../temp_modfiles/ca.mod
+ -> [32mNMODL[0m ../temp_modfiles/capool.mod
+Translating cadyn.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/cadyn.c
+Translating cal2.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/cal2.c
+Translating ca.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/ca.c
+Thread Safe
+Notice: VERBATIM blocks are not thread safe
+Notice: Assignment to the GLOBAL variable, "minf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "tau", is not thread safe
+Notice: This mechanism cannot be used with CVODE
+Notice: Assignment to the GLOBAL variable, "tadj", is not thread safe
+ -> [32mNMODL[0m ../temp_modfiles/cat.mod
+Translating capool.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/capool.c
+ -> [32mNMODL[0m ../temp_modfiles/currentclamp.mod
+Thread Safe
+ -> [32mNMODL[0m ../temp_modfiles/function_TMonitor.mod
+ -> [32mNMODL[0m ../temp_modfiles/h.mod
+Translating cat.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/cat.c
+Translating currentclamp.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/currentclamp.c
+Thread Safe
+Translating function_TMonitor.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/function_TMonitor.c
+Thread Safe
+Thread Safe
+Translating h.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/h.c
+ -> [32mNMODL[0m ../temp_modfiles/ICat2.mod
+ -> [32mNMODL[0m ../temp_modfiles/Ikleaksd.mod
+Notice: Assignment to the GLOBAL variable, "linf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taul", is not thread safe
+ -> [32mNMODL[0m ../temp_modfiles/im.mod
+ -> [32mNMODL[0m ../temp_modfiles/kadist.mod
+Translating ICat2.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/ICat2.c
+Translating Ikleaksd.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/Ikleaksd.c
+Translating im.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/im.c
+Thread Safe
+Thread Safe
+Warning: Default -70 of PARAMETER ek will be ignored and set by NEURON.
+Thread Safe
+Translating kadist.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/kadist.c
+Notice: Assignment to the GLOBAL variable, "linf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "ninf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taun", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taul", is not thread safe
+ -> [32mNMODL[0m ../temp_modfiles/kaprox.mod
+ -> [32mNMODL[0m ../temp_modfiles/kdrca1DA.mod
+ -> [32mNMODL[0m ../temp_modfiles/kdrca1.mod
+ -> [32mNMODL[0m ../temp_modfiles/kdrinter.mod
+Translating kdrca1DA.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/kdrca1DA.c
+Translating kdrca1.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/kdrca1.c
+Translating kaprox.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/kaprox.c
+Notice: Assignment to the GLOBAL variable, "ninf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taun", is not thread safe
+Notice: Assignment to the GLOBAL variable, "ninf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taun", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taun", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taul", is not thread safe
+Translating kdrinter.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/kdrinter.c
+Thread Safe
+Warning: Default -80 of PARAMETER ek will be ignored and set by NEURON.
+ -> [32mNMODL[0m ../temp_modfiles/kdtx.mod
+ -> [32mNMODL[0m ../temp_modfiles/leakDA.mod
+ -> [32mNMODL[0m ../temp_modfiles/leakinter.mod
+ -> [32mNMODL[0m ../temp_modfiles/leak.mod
+Translating kdtx.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/kdtx.c
+Translating leakDA.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/leakDA.c
+Thread Safe
+Translating leakinter.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/leakinter.c
+Translating leak.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/leak.c
+Thread Safe
+Thread Safe
+Thread Safe
+ -> [32mNMODL[0m ../temp_modfiles/na3DA.mod
+ -> [32mNMODL[0m ../temp_modfiles/na3.mod
+ -> [32mNMODL[0m ../temp_modfiles/nainter.mod
+ -> [32mNMODL[0m ../temp_modfiles/na.mod
+Translating na3DA.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/na3DA.c
+Translating na3.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/na3.c
+Translating nainter.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/nainter.c
+Notice: Assignment to the GLOBAL variable, "htau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "hinf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "mtau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "minf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "sinf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taus", is not thread safe
+Translating na.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/na.c
+Notice: Assignment to the GLOBAL variable, "htau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "hinf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "mtau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "minf", is not thread safe
+Thread Safe
+Thread Safe
+Warning: Default 45 of PARAMETER ena will be ignored and set by NEURON.
+ -> [32mNMODL[0m ../temp_modfiles/nap.mod
+ -> [32mNMODL[0m ../temp_modfiles/naxDA.mod
+ -> [32mNMODL[0m ../temp_modfiles/nax.mod
+ -> [32mNMODL[0m ../temp_modfiles/sahp.mod
+Translating nap.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/nap.c
+Translating naxDA.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/naxDA.c
+Translating nax.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/nax.c
+Translating sahp.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/sahp.c
+Thread Safe
+Notice: Assignment to the GLOBAL variable, "htau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "hinf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "mtau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "minf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "htau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "hinf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "mtau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "minf", is not thread safe
+Thread Safe
+ -> [32mNMODL[0m ../temp_modfiles/sahpNE.mod
+ -> [32mCompiling[0m cadyn.c
+ -> [32mCompiling[0m cal2.c
+ -> [32mCompiling[0m ca.c
+Translating sahpNE.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/sahpNE.c
+Thread Safe
+ -> [32mCompiling[0m capool.c
+ -> [32mCompiling[0m cat.c
+ -> [32mCompiling[0m currentclamp.c
+ -> [32mCompiling[0m function_TMonitor.c
+ -> [32mCompiling[0m h.c
+ -> [32mCompiling[0m ICat2.c
+ -> [32mCompiling[0m Ikleaksd.c
+ -> [32mCompiling[0m im.c
+ -> [32mCompiling[0m kadist.c
+ -> [32mCompiling[0m kaprox.c
+ -> [32mCompiling[0m kdrca1DA.c
+ -> [32mCompiling[0m kdrca1.c
+ -> [32mCompiling[0m kdrinter.c
+ -> [32mCompiling[0m kdtx.c
+ -> [32mCompiling[0m leakDA.c
+ -> [32mCompiling[0m leakinter.c
+ -> [32mCompiling[0m leak.c
+ -> [32mCompiling[0m na3DA.c
+ -> [32mCompiling[0m na3.c
+ -> [32mCompiling[0m nainter.c
+ -> [32mCompiling[0m na.c
+ -> [32mCompiling[0m nap.c
+ -> [32mCompiling[0m naxDA.c
+ -> [32mCompiling[0m nax.c
+ -> [32mCompiling[0m sahp.c
+ -> [32mCompiling[0m sahpNE.c
+ => [32mLINKING[0m shared library ./libnrnmech.so
+ => [32mLINKING[0m executable ./special LDFLAGS are:    -pthread
+Successfully created x86_64/special
+/home/mwsrgf/act-venv/lib64/python3.9/site-packages/torch/utils/_device.py:77: UserWarning: The use of `x.T` on tensors of dimension other than 2 to reverse their shape is deprecated and it will throw an error in a future release. Consider `x.mT` to transpose batches of matrices or `x.permute(*torch.arange(x.ndim - 1, -1, -1))` to reverse the dimensions of a tensor. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3614.)
+  return func(*args, **kwargs)
+TRAINING MODEL
+
+(2024-05-24 15:29:31.527384)-[START]
+(2024-05-24 15:29:31.527409)-[INFO]: Number of amplitudes: 5
+Loading ./output/Cell_A_orig_2slice/target/./target_v.json for target traces
+decimate_factor set - reducing generated target voltage by 10x
+(2024-05-24 15:29:31.832400)-[INFO]: Target voltage shape: torch.Size([5, 1000])
+loading hoc file ../data/LA/A/orig_modfiles/template.hoc
+Setting el_leak = -70
+Setting Cell_A[0].soma[0].glbar_leak = 0.00007824
+Setting Cell_A[0].soma[0].cm = 2.41605906
+Extracting first 20 spikes for summary features
+loading large file (./output/Cell_A_orig_2slice/sim_data/output/v_report.h5)
+decimate_factor set - reducing dataset by 10x
+213/320 spiking traces extracted.
+Dropping 15 traces, mean value >-50 between 550:750ms
+Traceback (most recent call last):
+  File "/home/mwsrgf/proj/ACT/simulation/run_simulation.py", line 11, in <module>
+    p = simulator.run(selected_config, subprocess=False)
+  File "/home/mwsrgf/proj/ACT/simulation/../act/simulator.py", line 422, in run
+    _run(config)
+  File "/home/mwsrgf/proj/ACT/simulation/../act/simulator.py", line 149, in _run
+    predictions, train_stats = optim.optimize(target_V)
+  File "/home/mwsrgf/proj/ACT/simulation/../act/RandomForestOptimizer.py", line 84, in optimize
+    (param_samples_for_next_stage, ampl_next_stage.reshape((-1, 1))), dim=1
+UnboundLocalError: local variable 'param_samples_for_next_stage' referenced before assignment
+/home/mwsrgf/act-venv/lib64/python3.9/site-packages/torch/__init__.py:614: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:451.)
+  _C._set_default_tensor_type(t)
+Warning: no DISPLAY environment variable.
+--No graphics will be displayed.
+Traceback (most recent call last):
+  File "/home/mwsrgf/proj/ACT/simulation/analyze_res.py", line 19, in <module>
+    main(selected_config)
+  File "/home/mwsrgf/proj/ACT/simulation/analyze_res.py", line 13, in main
+    analysis.print_run_stats(selected_config)
+  File "/home/mwsrgf/proj/ACT/simulation/../act/analysis.py", line 151, in print_run_stats
+    metrics = pd.read_csv(model_data_dir + "metrics.csv")
+  File "/home/mwsrgf/act-venv/lib64/python3.9/site-packages/pandas/io/parsers/readers.py", line 1024, in read_csv
+    return _read(filepath_or_buffer, kwds)
+  File "/home/mwsrgf/act-venv/lib64/python3.9/site-packages/pandas/io/parsers/readers.py", line 618, in _read
+    parser = TextFileReader(filepath_or_buffer, **kwds)
+  File "/home/mwsrgf/act-venv/lib64/python3.9/site-packages/pandas/io/parsers/readers.py", line 1618, in __init__
+    self._engine = self._make_engine(f, self.engine)
+  File "/home/mwsrgf/act-venv/lib64/python3.9/site-packages/pandas/io/parsers/readers.py", line 1878, in _make_engine
+    self.handles = get_handle(
+  File "/home/mwsrgf/act-venv/lib64/python3.9/site-packages/pandas/io/common.py", line 873, in get_handle
+    handle = open(
+FileNotFoundError: [Errno 2] No such file or directory: './output/Cell_A_orig_2slice/model_data/42-seed/metrics.csv'
+/home/mwsrgf/act-venv/lib64/python3.9/site-packages/torch/__init__.py:614: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:451.)
+  _C._set_default_tensor_type(t)
+Warning: no DISPLAY environment variable.
+--No graphics will be displayed.
+Traceback (most recent call last):
+  File "/home/mwsrgf/proj/ACT/simulation/plot_fi.py", line 71, in <module>
+    main(selected_config, extra_trace, extra_label, title=title)
+  File "/home/mwsrgf/proj/ACT/simulation/plot_fi.py", line 21, in main
+    simulated_traces, target_traces, amps = utils.load_final_traces(traces_file)
+  File "/home/mwsrgf/proj/ACT/simulation/../act/utils.py", line 958, in load_final_traces
+    traces_h5 = h5py.File(trace_file)
+  File "/home/mwsrgf/act-venv/lib64/python3.9/site-packages/h5py/_hl/files.py", line 562, in __init__
+    fid = make_fid(name, mode, userblock_size, fapl, fcpl, swmr=swmr)
+  File "/home/mwsrgf/act-venv/lib64/python3.9/site-packages/h5py/_hl/files.py", line 235, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 102, in h5py.h5f.open
+FileNotFoundError: [Errno 2] Unable to synchronously open file (unable to open file: name = './output/Cell_A_orig_2slice/model_data/42-seed/traces.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+Warning: no DISPLAY environment variable.
+--No graphics will be displayed.
+/home/mwsrgf/act-venv/lib64/python3.9/site-packages/torch/__init__.py:614: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:451.)
+  _C._set_default_tensor_type(t)
+/home/mwsrgf/proj/ACT/simulation
+Mod files: "temp_modfiles/temp_modfiles/cadyn.mod" "temp_modfiles/temp_modfiles/cal2.mod" "temp_modfiles/temp_modfiles/ca.mod" "temp_modfiles/temp_modfiles/capool.mod" "temp_modfiles/temp_modfiles/cat.mod" "temp_modfiles/temp_modfiles/currentclamp.mod" "temp_modfiles/temp_modfiles/function_TMonitor.mod" "temp_modfiles/temp_modfiles/h.mod" "temp_modfiles/temp_modfiles/ICat2.mod" "temp_modfiles/temp_modfiles/Ikleaksd.mod" "temp_modfiles/temp_modfiles/im.mod" "temp_modfiles/temp_modfiles/kadist.mod" "temp_modfiles/temp_modfiles/kaprox.mod" "temp_modfiles/temp_modfiles/kdrca1DA.mod" "temp_modfiles/temp_modfiles/kdrca1.mod" "temp_modfiles/temp_modfiles/kdrinter.mod" "temp_modfiles/temp_modfiles/kdtx.mod" "temp_modfiles/temp_modfiles/leakDA.mod" "temp_modfiles/temp_modfiles/leakinter.mod" "temp_modfiles/temp_modfiles/leak.mod" "temp_modfiles/temp_modfiles/na3DA.mod" "temp_modfiles/temp_modfiles/na3.mod" "temp_modfiles/temp_modfiles/nainter.mod" "temp_modfiles/temp_modfiles/na.mod" "temp_modfiles/temp_modfiles/nap.mod" "temp_modfiles/temp_modfiles/naxDA.mod" "temp_modfiles/temp_modfiles/nax.mod" "temp_modfiles/temp_modfiles/sahp.mod" "temp_modfiles/temp_modfiles/sahpNE.mod"
+
+Creating 'x86_64' directory for .o files.
+
+ -> [32mCompiling[0m mod_func.cpp
+ -> [32mNMODL[0m ../temp_modfiles/cadyn.mod
+ -> [32mNMODL[0m ../temp_modfiles/cal2.mod
+ -> [32mNMODL[0m ../temp_modfiles/ca.mod
+Translating cadyn.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/cadyn.c
+ -> [32mNMODL[0m ../temp_modfiles/capool.mod
+Translating cal2.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/cal2.c
+Translating ca.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/ca.c
+Thread Safe
+Notice: Assignment to the GLOBAL variable, "minf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "tau", is not thread safe
+Notice: VERBATIM blocks are not thread safe
+Notice: This mechanism cannot be used with CVODE
+Notice: Assignment to the GLOBAL variable, "tadj", is not thread safe
+ -> [32mNMODL[0m ../temp_modfiles/cat.mod
+Translating capool.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/capool.c
+ -> [32mNMODL[0m ../temp_modfiles/currentclamp.mod
+ -> [32mNMODL[0m ../temp_modfiles/function_TMonitor.mod
+Thread Safe
+Translating cat.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/cat.c
+ -> [32mNMODL[0m ../temp_modfiles/h.mod
+Thread Safe
+Translating currentclamp.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/currentclamp.c
+Translating function_TMonitor.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/function_TMonitor.c
+Thread Safe
+Thread Safe
+ -> [32mNMODL[0m ../temp_modfiles/ICat2.mod
+Translating h.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/h.c
+ -> [32mNMODL[0m ../temp_modfiles/Ikleaksd.mod
+ -> [32mNMODL[0m ../temp_modfiles/im.mod
+Notice: Assignment to the GLOBAL variable, "linf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taul", is not thread safe
+Translating ICat2.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/ICat2.c
+ -> [32mNMODL[0m ../temp_modfiles/kadist.mod
+Translating Ikleaksd.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/Ikleaksd.c
+Thread Safe
+Translating im.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/im.c
+Thread Safe
+Warning: Default -70 of PARAMETER ek will be ignored and set by NEURON.
+Thread Safe
+ -> [32mNMODL[0m ../temp_modfiles/kaprox.mod
+Translating kadist.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/kadist.c
+ -> [32mNMODL[0m ../temp_modfiles/kdrca1DA.mod
+ -> [32mNMODL[0m ../temp_modfiles/kdrca1.mod
+Notice: Assignment to the GLOBAL variable, "linf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "ninf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taun", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taul", is not thread safe
+Translating kaprox.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/kaprox.c
+ -> [32mNMODL[0m ../temp_modfiles/kdrinter.mod
+Translating kdrca1DA.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/kdrca1DA.c
+Notice: Assignment to the GLOBAL variable, "taun", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taul", is not thread safe
+Translating kdrca1.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/kdrca1.c
+Notice: Assignment to the GLOBAL variable, "ninf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taun", is not thread safe
+Notice: Assignment to the GLOBAL variable, "ninf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taun", is not thread safe
+ -> [32mNMODL[0m ../temp_modfiles/kdtx.mod
+Translating kdrinter.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/kdrinter.c
+ -> [32mNMODL[0m ../temp_modfiles/leakDA.mod
+ -> [32mNMODL[0m ../temp_modfiles/leakinter.mod
+Thread Safe
+Warning: Default -80 of PARAMETER ek will be ignored and set by NEURON.
+Translating kdtx.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/kdtx.c
+ -> [32mNMODL[0m ../temp_modfiles/leak.mod
+Translating leakDA.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/leakDA.c
+Thread Safe
+Translating leakinter.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/leakinter.c
+Thread Safe
+Thread Safe
+ -> [32mNMODL[0m ../temp_modfiles/na3DA.mod
+Translating leak.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/leak.c
+ -> [32mNMODL[0m ../temp_modfiles/na3.mod
+ -> [32mNMODL[0m ../temp_modfiles/nainter.mod
+Thread Safe
+ -> [32mNMODL[0m ../temp_modfiles/na.mod
+Translating na3DA.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/na3DA.c
+Translating na3.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/na3.c
+Notice: Assignment to the GLOBAL variable, "htau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "hinf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "mtau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "minf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "sinf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "taus", is not thread safe
+Translating nainter.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/nainter.c
+Notice: Assignment to the GLOBAL variable, "htau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "hinf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "mtau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "minf", is not thread safe
+Thread Safe
+Warning: Default 45 of PARAMETER ena will be ignored and set by NEURON.
+Translating na.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/na.c
+ -> [32mNMODL[0m ../temp_modfiles/nap.mod
+ -> [32mNMODL[0m ../temp_modfiles/naxDA.mod
+Thread Safe
+ -> [32mNMODL[0m ../temp_modfiles/nax.mod
+ -> [32mNMODL[0m ../temp_modfiles/sahp.mod
+Translating nap.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/nap.c
+Thread Safe
+Translating naxDA.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/naxDA.c
+Translating nax.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/nax.c
+Notice: Assignment to the GLOBAL variable, "htau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "hinf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "mtau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "minf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "htau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "hinf", is not thread safe
+Notice: Assignment to the GLOBAL variable, "mtau", is not thread safe
+Notice: Assignment to the GLOBAL variable, "minf", is not thread safe
+ -> [32mNMODL[0m ../temp_modfiles/sahpNE.mod
+Translating sahp.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/sahp.c
+Thread Safe
+ -> [32mCompiling[0m cadyn.c
+ -> [32mCompiling[0m cal2.c
+ -> [32mCompiling[0m ca.c
+Translating sahpNE.mod into /home/mwsrgf/proj/ACT/simulation/x86_64/sahpNE.c
+Thread Safe
+ -> [32mCompiling[0m capool.c
+ -> [32mCompiling[0m cat.c
+ -> [32mCompiling[0m currentclamp.c
+ -> [32mCompiling[0m function_TMonitor.c
+ -> [32mCompiling[0m h.c
+ -> [32mCompiling[0m ICat2.c
+ -> [32mCompiling[0m Ikleaksd.c
+ -> [32mCompiling[0m im.c
+ -> [32mCompiling[0m kadist.c
+ -> [32mCompiling[0m kaprox.c
+ -> [32mCompiling[0m kdrca1DA.c
+ -> [32mCompiling[0m kdrca1.c
+ -> [32mCompiling[0m kdrinter.c
+ -> [32mCompiling[0m kdtx.c
+ -> [32mCompiling[0m leakDA.c
+ -> [32mCompiling[0m leakinter.c
+ -> [32mCompiling[0m leak.c
+ -> [32mCompiling[0m na3DA.c
+ -> [32mCompiling[0m na3.c
+ -> [32mCompiling[0m nainter.c
+ -> [32mCompiling[0m na.c
+ -> [32mCompiling[0m nap.c
+ -> [32mCompiling[0m naxDA.c
+ -> [32mCompiling[0m nax.c
+ -> [32mCompiling[0m sahp.c
+ -> [32mCompiling[0m sahpNE.c
+ => [32mLINKING[0m shared library ./libnrnmech.so
+ => [32mLINKING[0m executable ./special LDFLAGS are:    -pthread
+Successfully created x86_64/special
+Loading ./output/Cell_A_orig_2slice/target/./target_v.json for target traces
+loading hoc file ../data/LA/A/orig_modfiles/template.hoc
+Setting el_leak = -70
+Setting Cell_A[0].soma[0].glbar_leak = 0.00007824
+Setting Cell_A[0].soma[0].cm = 2.41605906
+Generating trace for 0.0 pA
+Setting params: {}
+h.celsius set to 31.0
+Generating trace for 100.0 pA
+Setting params: {}
+h.celsius set to 31.0
+Generating trace for 200.0 pA
+Setting params: {}
+h.celsius set to 31.0
+Generating trace for 300.0 pA
+Setting params: {}
+h.celsius set to 31.0
+Generating trace for 400.0 pA
+Setting params: {}
+h.celsius set to 31.0
+saving fi
+Model ACT-Original (err: 0.8): [  0. 100. 200. 300. 400.] pA : [0. 2. 4. 4. 6.] Hz
+User Trace: [  0. 100. 200. 300. 400.] pA : [0. 0. 4. 6. 6.] Hz
+Learned Params
+{}
+
+Target Params
+{'gbar_nap': 0.0003, 'gmbar_im': 0.002, 'gbar_na3': 0.03, 'gkdrbar_kdr': 0.03, 'gcabar_cadyn': 6e-05, 'gsAHPbar_sAHP': 0.009}
+
+Difference
+{}
+
+Difference (percent)
+{}
+
+done
+Start: Fri May 24 15:28:29 CDT 2024 
+End:   Fri May 24 15:29:45 CDT 2024
+Done running model at Fri May 24 15:29:45 CDT 2024

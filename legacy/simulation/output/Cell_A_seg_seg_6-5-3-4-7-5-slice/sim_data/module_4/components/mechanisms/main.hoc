@@ -1,0 +1,96 @@
+// Created by A. Alturki (2015)
+
+{load_file("nrngui.hoc")}
+{load_file("onecompartment_template_with_osc.hoc")}
+//{load_file("onecompartment_template_no_osc.hoc")}
+{load_file("graphics_lib.hoc")}
+
+v_init = -70//-70//-69
+objref Cell
+Cell = new Cell_C()
+
+objref stim
+Cell.soma stim = new IClamp(0.5) //creating current clamp in the middle of the soma
+stim.del = 200 // in ms
+stim.dur = 600 // in ms
+stim.amp = 0.4/4.6632 // in nA  // 4.6632 is the ratio between the large soma and small soma
+
+tstop = 1000 // in ms
+
+
+
+
+SubVBoxNum = 3
+objref MainHBoxObj,SubVBoxObj[SubVBoxNum]
+
+proc MainBox() { local i
+		MainHBoxObj = new HBox()
+		for i=0,SubVBoxNum-1 SubVBoxObj[i] = new VBox()
+		SubVBoxObj[0].intercept(1)
+			newPlotVoltage()
+			newPlotCurrent() 
+			newPlotCurrent2()
+		SubVBoxObj[0].intercept(0)
+		SubVBoxObj[1].intercept(1)			
+			access Cell.soma
+			nrnsecmenu(.5,1)
+		SubVBoxObj[1].intercept(0)
+		SubVBoxObj[2].intercept(1)
+			nrncontrolmenu()
+			xpanel(" ")
+				xbutton("QUIT","quit()")
+			xpanel(0)
+			nrnpointmenu(stim)	
+		SubVBoxObj[2].intercept(0)
+		MainHBoxObj.intercept(1)
+			for i=0,SubVBoxNum-1 SubVBoxObj[i].map()
+		MainHBoxObj.intercept(0)
+		MainHBoxObj.map("Re-Tune",10,25,800,600)
+}
+
+proc newPlotVoltage() {
+	newPlot(0,tstop,-100,50)
+	graphItem.save_name("graphList[0].")
+	graphList[0].append(graphItem)
+	graphItem.addexpr("Cell.soma.v(.5)")
+	graphItem.label(.08,.925,"mV")
+}
+proc newPlotCurrent() {
+	newPlot(0,tstop,-0.2,0.2)
+	graphItem.save_name("graphList[2].")
+	graphList[1].append(graphItem)
+	graphItem.addexpr("Cell.soma.i_im",1,2)
+	graphItem.addexpr("Cell.soma.i_nap",2,2)
+	graphItem.label(.08,.925,tstr1)
+}
+
+proc newPlotCurrent2() {
+	newPlot(0,tstop,-0.2,0.2)
+	graphItem.save_name("graphList[2].")
+	graphList[1].append(graphItem)
+	graphItem.addexpr("Cell.soma.i_im",1,2)
+	graphItem.addexpr("Cell.soma.i_nap",2,2)
+	graphItem.addexpr("Cell.soma.i_kap",3,2)
+	graphItem.addexpr("Cell.soma.i_kdr",4,2)
+	graphItem.addexpr("Cell.soma.i_sAHP",5,2)
+	graphItem.addexpr("Cell.soma.i_hd",6,2)
+	graphItem.addexpr("Cell.soma.i_na3",7,2)
+	graphItem.addexpr("Cell.soma.i_cadyn",4,2)
+	graphItem.addexpr("Cell.soma.il_leak",9,2)
+	graphItem.label(.08,.925,tstr1)
+}
+
+MainBox()
+run()
+
+// nrnpointmenu(stim)
+// nrncontrolmenu()
+// nrnsecmenu(.5,1)
+
+
+
+// Plot1V("Cell")
+
+// MainBox()
+// init()
+// run()

@@ -1,0 +1,41 @@
+// Created by Matthew Stroud 2024
+// Basic structure taken from Simple_Spiker by Dr. Tyler Banks. Divided out into separate mod files.
+// 1-compartment Test Spiker
+
+begintemplate Test_Spiker
+
+public soma, connect2target, type
+public all
+objref all
+
+create soma[1]
+public ncl, synlist
+objref ncl, synlist
+strdef type	
+
+     /////biophysical properties/////
+proc init() {
+
+	ncl = new List()
+	synlist =new List()		
+	type = "Simple_Spiker"
+	
+	all = new SectionList()
+	for i=0,0 soma[0] {
+		all.append()
+	}
+
+     /////geometrical properties/////
+    soma[0] {nseg = 1  L = 18.8 diam = 18.8}
+	
+	soma[0] {
+		insert leak gbar_leak = 5.5e-5
+        insert kdr gbar_kdr = 0.05
+		insert na gbar_na = 0.25
+		
+		eleak = -70
+		ena = 45
+		ek = -80
+	}
+}
+endtemplate Test_Spiker
