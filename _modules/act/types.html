@@ -1,0 +1,687 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>act.types &#8212; My sample book</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/act/types';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../intro.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/logo.png" class="logo__image only-light" alt="My sample book - Home"/>
+    <script>document.write(`<img src="../../_static/logo.png" class="logo__image only-dark" alt="My sample book - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../intro.html">
+                    Welcome to your Jupyter Book
+                </a>
+            </li>
+        </ul>
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../markdown.html">Markdown Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../notebooks.html">Content with notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/V-Marco/ACT" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for act.types</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+
+<div class="viewcode-block" id="SettablePassiveProperties">
+<a class="viewcode-back" href="../../api.html#act.types.SettablePassiveProperties">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SettablePassiveProperties</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Passive properties that can be directly set for a cell model.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Cm: float, default = None</span>
+<span class="sd">        Membrane capacitance (uf / cm2).</span>
+
+<span class="sd">    g_bar_leak: float, default = None</span>
+<span class="sd">        Maximum conductance of the leak channel (S / cm2).</span>
+<span class="sd">    </span>
+<span class="sd">    e_rev_leak: float, default = None</span>
+<span class="sd">        Reversal potential of the leak channel (mV).</span>
+<span class="sd">    </span>
+<span class="sd">    g_bar_h: float, default = None</span>
+<span class="sd">        Maximum conductance of the H channel (S / cm2).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Cm</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">g_bar_leak</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">e_rev_leak</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">g_bar_h</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="GettablePassiveProperties">
+<a class="viewcode-back" href="../../api.html#act.types.GettablePassiveProperties">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GettablePassiveProperties</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Passive properties that can be retrieved from traces generated from a cell model.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    R_in: float, default = None</span>
+<span class="sd">        Input resistance (MOhm).</span>
+
+<span class="sd">    tau1: float, default = None</span>
+<span class="sd">        Lower bound on the membrane time constant (ms).</span>
+<span class="sd">    </span>
+<span class="sd">    tau2: float, default = None</span>
+<span class="sd">        Upper bound on the membrance time constant (ms).</span>
+<span class="sd">    </span>
+<span class="sd">    sag_ratio: float, default = None</span>
+<span class="sd">        Computed as (v_final - v_min) / (v_rest - v_min).</span>
+<span class="sd">    </span>
+<span class="sd">    V_rest: float, default = None</span>
+<span class="sd">        Resting potential (mV).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">R_in</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">tau1</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">tau2</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">sag_ratio</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">V_rest</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="ConstantCurrentInjection">
+<a class="viewcode-back" href="../../api.html#act.types.ConstantCurrentInjection">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConstantCurrentInjection</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Set parameters for a constant (pulse) current injection.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    amp: float, default = 0.1</span>
+<span class="sd">        Current injection amplitude (nA).</span>
+<span class="sd">    </span>
+<span class="sd">    dur: float, default = 400</span>
+<span class="sd">        Current injection duration (ms).</span>
+<span class="sd">    </span>
+<span class="sd">    delay: float, default = 50</span>
+<span class="sd">        Current injection delay (ms).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">amp</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span>                          <span class="c1"># (nA)</span>
+    <span class="n">dur</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">400</span>                          <span class="c1"># (ms)</span>
+    <span class="n">delay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">50</span>                         <span class="c1"># (ms)</span></div>
+
+
+<div class="viewcode-block" id="RampCurrentInjection">
+<a class="viewcode-back" href="../../api.html#act.types.RampCurrentInjection">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">RampCurrentInjection</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Set parameters for a ramp (step) current injection.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    amp_start: float, default = 0</span>
+<span class="sd">        Current injection initial amplitude (nA).</span>
+<span class="sd">    </span>
+<span class="sd">    amp_incr: float, default = 0.1</span>
+<span class="sd">        Current injection amplitude increase per step (nA).</span>
+<span class="sd">    </span>
+<span class="sd">    num_steps: int, default = 10</span>
+<span class="sd">        Number of steps (periods of constant current injection).</span>
+
+<span class="sd">    final_step_add_time: int, default = 0</span>
+<span class="sd">        Additional time to extend the final current injection step for (ms).</span>
+
+<span class="sd">    dur: float, default = 400</span>
+<span class="sd">        Total time length of current injection (ms).</span>
+<span class="sd">    </span>
+<span class="sd">    delay: float, default = 50</span>
+<span class="sd">        Current injection delay (ms).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">amp_start</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span>                      <span class="c1"># (nA)</span>
+    <span class="n">amp_incr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span>                     <span class="c1"># (nA)</span>
+    <span class="n">num_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">final_step_add_time</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>              <span class="c1"># (ms)</span>
+    <span class="n">dur</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">400</span>                          <span class="c1"># (ms)</span>
+    <span class="n">delay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">50</span>                         <span class="c1"># (ms)</span></div>
+
+
+<div class="viewcode-block" id="GaussianCurrentInjection">
+<a class="viewcode-back" href="../../api.html#act.types.GaussianCurrentInjection">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GaussianCurrentInjection</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Set parameters for a Gaussian current injection.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    amp_mean: float, default = 0.1</span>
+<span class="sd">        Mean of current injection amplitude (nA).</span>
+<span class="sd">    </span>
+<span class="sd">    amp_std: float, default = 0.02</span>
+<span class="sd">        Standard deviation of current injection amplitude (nA).</span>
+
+<span class="sd">    dur: float, default = 400</span>
+<span class="sd">        Current injection duration (ms).</span>
+<span class="sd">    </span>
+<span class="sd">    delay: float, default = 50</span>
+<span class="sd">        Current injection delay (ms).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">amp_mean</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span>                     <span class="c1"># (nA)</span>
+    <span class="n">amp_std</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.02</span>                     <span class="c1"># (nA)</span>
+    <span class="n">dur</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">400</span>                          <span class="c1"># (ms)</span>
+    <span class="n">delay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">50</span>                         <span class="c1"># (ms)</span></div>
+
+    
+<div class="viewcode-block" id="SimulationParameters">
+<a class="viewcode-back" href="../../api.html#act.types.SimulationParameters">[docs]</a>
+<span class="nd">@dataclass</span>  
+<span class="k">class</span><span class="w"> </span><span class="nc">SimulationParameters</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Set parameters for a simulation with the ACTSimulator.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sim_name: str, default = &quot;&quot;</span>
+<span class="sd">        Simulation name. Saves to a folder output_folder/sim_name. Creates this folder if it does not exist.</span>
+<span class="sd">    </span>
+<span class="sd">    sim_idx: int, default = 0</span>
+<span class="sd">        Simulation index. Simulation results will be saved as output_folder/sim_name/sim_idx.npy.</span>
+<span class="sd">    </span>
+<span class="sd">    h_v_init: float, default = -50</span>
+<span class="sd">        Initial voltage (mV).</span>
+<span class="sd">    </span>
+<span class="sd">    h_tstop: int, default = 500</span>
+<span class="sd">        Simulation time (ms).</span>
+<span class="sd">    </span>
+<span class="sd">    h_dt: float, default = 0.1</span>
+<span class="sd">        Simulation step (ms).</span>
+
+<span class="sd">    h_celsius: float, default = 37</span>
+<span class="sd">        Simulation temperature (deg C).</span>
+
+<span class="sd">    CI: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection], default = None</span>
+<span class="sd">        List of current injections to be applied during the simulation. Supports overlapping injections.</span>
+<span class="sd">    </span>
+<span class="sd">    random_seed: int, default = 42</span>
+<span class="sd">        Global random seed used throughout the simulation.</span>
+<span class="sd">    </span>
+<span class="sd">    verbose: bool, default = False</span>
+<span class="sd">        If True, additional information is printed (e.g., soma and total area).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sim_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">sim_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span> 
+    <span class="n">h_v_init</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mi">50</span>                     <span class="c1"># (mV)</span>
+    <span class="n">h_tstop</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">500</span>                        <span class="c1"># (ms)</span>
+    <span class="n">h_dt</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span>                         <span class="c1"># (ms)</span>
+    <span class="n">h_celsius</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">37</span>                     <span class="c1"># (deg C)</span>
+    <span class="n">CI</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">random_seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span>
+    <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<span class="c1"># ----------</span>
+<span class="c1"># Optimization</span>
+<span class="c1"># ----------</span>
+
+<div class="viewcode-block" id="ConductanceOptions">
+<a class="viewcode-back" href="../../api.html#act.types.ConductanceOptions">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConductanceOptions</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Set a conductance for optimization. </span>
+<span class="sd">    During training, the conductance specified by `variable_name` is uniformly sampled from the (`low`, `high`) range `n_slices` times.</span>
+<span class="sd">    Alternatively, if `bounds_variation` is specified, the sampling space is defined by the `ACTCellModel.prediction` ± `bounds_variation`.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    variable_name: str, default = None</span>
+<span class="sd">        Conductance name matching that in the ACTCellModel.</span>
+<span class="sd">    </span>
+<span class="sd">    blocked: bool, default = False</span>
+<span class="sd">        If True, the channel is blocked during the simulation (its maximum conductance is set to 0).</span>
+<span class="sd">    </span>
+<span class="sd">    low: float, default = None</span>
+<span class="sd">        Lower bound of the conductance sampling space. Ignored if `bounds_variation` is specified.</span>
+
+<span class="sd">    high: float, default = None</span>
+<span class="sd">        Upper bound of the conductance sampling space. Ignored if `bounds_variation` is specified.</span>
+
+<span class="sd">    bounds_variation: float, default = None</span>
+<span class="sd">        If specified, the conductance sampling space is defined by the (`ACTCellModel.prediction` - `bounds_variation`, `ACTCellModel.prediction` + `bounds_variation`).</span>
+<span class="sd">    </span>
+<span class="sd">    n_slices: int, default = 1</span>
+<span class="sd">        Number of conductance samples.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">variable_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">blocked</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">low</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">high</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">bounds_variation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">n_slices</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span></div>
+
+    
+<div class="viewcode-block" id="FilterParameters">
+<a class="viewcode-back" href="../../api.html#act.types.FilterParameters">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FilterParameters</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Set criteria for filtering generated voltage traces.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filtered_out_features: list[str], default = None</span>
+<span class="sd">        Which features to filter out. May contain the following:</span>
+<span class="sd">        - &quot;saturated&quot; (removes saturated traces, i.e., traces with sustained elevated voltage, see `data_processing.remove_saturated_traces`),</span>
+<span class="sd">        - &quot;no_spikes&quot; (removes traces without spikes, see `data_processing.get_traces_with_spikes`).</span>
+<span class="sd">    </span>
+<span class="sd">    window_of_inspection: tuple(int, int), default = None</span>
+<span class="sd">        Time window to consider for filtering (ms).</span>
+<span class="sd">    </span>
+<span class="sd">    saturation_threshold: float, default = -50</span>
+<span class="sd">        If &quot;saturated&quot; is in `filtered_out_features`, defines the voltage elevation threshold (mV).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">filtered_out_features</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">window_of_inspection</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">saturation_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mi">50</span></div>
+
+
+<div class="viewcode-block" id="OptimizationParameters">
+<a class="viewcode-back" href="../../api.html#act.types.OptimizationParameters">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">OptimizationParameters</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Set optimization parameters for an `ACTModule`. Optimization space is defined as a multidimensional grid specified by `conductance_options` and `CI_options`.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_cpus: int, default = None</span>
+<span class="sd">        Number of CPU cores to use during optimization. If `None`, all available cores are used.</span>
+<span class="sd">    </span>
+<span class="sd">    conductance_options: list[ConductanceOptions], default = None</span>
+<span class="sd">        Conductances to optimize in this module.</span>
+<span class="sd">    </span>
+<span class="sd">    CI_options: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection], default = None</span>
+<span class="sd">        Current injections to consider for optimization. Overwrites `SimulationParameters.CI`.</span>
+
+<span class="sd">    random_state: int, default = 42</span>
+<span class="sd">        Random state for the `RandomForestRegressor` model.</span>
+
+<span class="sd">    n_estimators: int, default = 1000</span>
+<span class="sd">        Number of estimators (decision trees) for the `RandomForestRegressor` model.</span>
+
+<span class="sd">    max_depth: int, default = None</span>
+<span class="sd">        Maximum tree depth for the `RandomForestRegressor` model.</span>
+
+<span class="sd">    train_features: list[str], default = None</span>
+<span class="sd">        If specified, only use these summary features for training.</span>
+
+<span class="sd">    filter_parameters: FilterParameters, default = None</span>
+<span class="sd">        Parameters to filter out sampled voltage traces.</span>
+<span class="sd">    </span>
+<span class="sd">    spike_threshold: float, default = 0</span>
+<span class="sd">        Threshold for spike detection.</span>
+
+<span class="sd">    max_n_spikes: int, default = 20</span>
+<span class="sd">        Maximum number of spikes to consider for summary features computation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Set hardware</span>
+    <span class="n">n_cpus</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># Set the search space</span>
+    <span class="n">conductance_options</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">CI_options</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># Set the RF model</span>
+    <span class="n">random_state</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span>
+    <span class="n">n_estimators</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">max_depth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># Set the features</span>
+    <span class="n">train_features</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">filter_parameters</span><span class="p">:</span> <span class="n">FilterParameters</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">spike_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">max_n_spikes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span></div>
+
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By The Jupyter Book Community
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,1461 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>API Reference &#8212; Automatic Cell Tuner</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Quick Start" href="intro.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="intro.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Automatic Cell Tuner</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="intro.html">
+                    Quick Start
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">API Reference</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/V-Marco/ACT" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/api.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>API Reference</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-act.cell_model"><code class="docutils literal notranslate"><span class="pre">act.cell_model</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.cell_model.ACTCellModel"><code class="docutils literal notranslate"><span class="pre">ACTCellModel</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.cell_model.ACTCellModel.get_output"><code class="docutils literal notranslate"><span class="pre">ACTCellModel.get_output()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.cell_model.ACTCellModel.set_custom_cell_builder"><code class="docutils literal notranslate"><span class="pre">ACTCellModel.set_custom_cell_builder()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.cell_model.ACTCellModel.set_g_bar"><code class="docutils literal notranslate"><span class="pre">ACTCellModel.set_g_bar()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.cell_model.ACTCellModel.set_passive_properties"><code class="docutils literal notranslate"><span class="pre">ACTCellModel.set_passive_properties()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-act.simulator"><code class="docutils literal notranslate"><span class="pre">act.simulator</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.simulator.ACTSimulator"><code class="docutils literal notranslate"><span class="pre">ACTSimulator</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.simulator.ACTSimulator.run"><code class="docutils literal notranslate"><span class="pre">ACTSimulator.run()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.simulator.ACTSimulator.run_jobs"><code class="docutils literal notranslate"><span class="pre">ACTSimulator.run_jobs()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.simulator.ACTSimulator.submit_job"><code class="docutils literal notranslate"><span class="pre">ACTSimulator.submit_job()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-act.data_processing"><code class="docutils literal notranslate"><span class="pre">act.data_processing</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.data_processing.clean_g_bars"><code class="docutils literal notranslate"><span class="pre">clean_g_bars()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.data_processing.combine_data"><code class="docutils literal notranslate"><span class="pre">combine_data()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.data_processing.find_events"><code class="docutils literal notranslate"><span class="pre">find_events()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.data_processing.get_summary_features"><code class="docutils literal notranslate"><span class="pre">get_summary_features()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.data_processing.get_traces_with_spikes"><code class="docutils literal notranslate"><span class="pre">get_traces_with_spikes()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.data_processing.remove_saturated_traces"><code class="docutils literal notranslate"><span class="pre">remove_saturated_traces()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.data_processing.select_features"><code class="docutils literal notranslate"><span class="pre">select_features()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-act.segregation"><code class="docutils literal notranslate"><span class="pre">act.segregation</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.segregation.ACTSegregator"><code class="docutils literal notranslate"><span class="pre">ACTSegregator</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.segregation.ACTSegregator.segregate"><code class="docutils literal notranslate"><span class="pre">ACTSegregator.segregate()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-act.passive"><code class="docutils literal notranslate"><span class="pre">act.passive</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.passive.ACTPassiveModule"><code class="docutils literal notranslate"><span class="pre">ACTPassiveModule</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.passive.ACTPassiveModule.compute_Cm"><code class="docutils literal notranslate"><span class="pre">ACTPassiveModule.compute_Cm()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.passive.ACTPassiveModule.compute_g_bar_leak"><code class="docutils literal notranslate"><span class="pre">ACTPassiveModule.compute_g_bar_leak()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.passive.ACTPassiveModule.compute_gpp"><code class="docutils literal notranslate"><span class="pre">ACTPassiveModule.compute_gpp()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.passive.ACTPassiveModule.compute_spp"><code class="docutils literal notranslate"><span class="pre">ACTPassiveModule.compute_spp()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-act.module"><code class="docutils literal notranslate"><span class="pre">act.module</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.module.ACTModule"><code class="docutils literal notranslate"><span class="pre">ACTModule</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.module.ACTModule.run"><code class="docutils literal notranslate"><span class="pre">ACTModule.run()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-act.metrics"><code class="docutils literal notranslate"><span class="pre">act.metrics</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.metrics.pp_error"><code class="docutils literal notranslate"><span class="pre">pp_error()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.metrics.summary_features_error"><code class="docutils literal notranslate"><span class="pre">summary_features_error()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-act.types"><code class="docutils literal notranslate"><span class="pre">act.types</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.types.ConductanceOptions"><code class="docutils literal notranslate"><span class="pre">ConductanceOptions</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.types.ConstantCurrentInjection"><code class="docutils literal notranslate"><span class="pre">ConstantCurrentInjection</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.types.FilterParameters"><code class="docutils literal notranslate"><span class="pre">FilterParameters</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.types.GaussianCurrentInjection"><code class="docutils literal notranslate"><span class="pre">GaussianCurrentInjection</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.types.GettablePassiveProperties"><code class="docutils literal notranslate"><span class="pre">GettablePassiveProperties</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.types.OptimizationParameters"><code class="docutils literal notranslate"><span class="pre">OptimizationParameters</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.types.RampCurrentInjection"><code class="docutils literal notranslate"><span class="pre">RampCurrentInjection</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.types.SettablePassiveProperties"><code class="docutils literal notranslate"><span class="pre">SettablePassiveProperties</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.types.SimulationParameters"><code class="docutils literal notranslate"><span class="pre">SimulationParameters</span></code></a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading">#</a></h1>
+<section id="module-act.cell_model">
+<span id="act-cell-model"></span><h2><code class="docutils literal notranslate"><span class="pre">act.cell_model</span></code><a class="headerlink" href="#module-act.cell_model" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="act.cell_model.ACTCellModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ACTCellModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_to_hoc_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_to_mod_files</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">passive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">active_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/act/cell_model.html#ACTCellModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.cell_model.ACTCellModel" title="Link to this definition">#</a></dt>
+<dd><p>Initialize a cell model for simulation or optimization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>cell_name: str, default = None</strong></dt><dd><p>Cell name.</p>
+</dd>
+<dt><strong>path_to_hoc_file: str, default = None</strong></dt><dd><p>Path to the hoc template. Leave as None if no hoc file is explicitly available (e.g., when bulding Allen Cell Types Database cells).</p>
+</dd>
+<dt><strong>path_to_mod_files: str, default = None</strong></dt><dd><p>Path to the modfiles directory.</p>
+</dd>
+<dt><strong>passive: list[str], default = None</strong></dt><dd><p>Names of the (1) leak channel g_bar, (2) leak channel reversal potential and (3) H channel g_bar (in THIS order) as stated in the hoc file / model parameters.</p>
+</dd>
+<dt><strong>active_channels: list[str], default = None</strong></dt><dd><p>Names of the active channel variables (in ANY order) as stated in the hoc file / model parameters.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#act.cell_model.ACTCellModel.get_output" title="act.cell_model.ACTCellModel.get_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_output</span></code></a>()</p></td>
+<td><p>Gets the output of the simulator.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#act.cell_model.ACTCellModel.set_custom_cell_builder" title="act.cell_model.ACTCellModel.set_custom_cell_builder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_custom_cell_builder</span></code></a>(cell_builder)</p></td>
+<td><p>Set a custom cell builder at simulaiton time.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#act.cell_model.ACTCellModel.set_g_bar" title="act.cell_model.ACTCellModel.set_g_bar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_g_bar</span></code></a>(g_names, g_values)</p></td>
+<td><p>Set each conductance in g_names to a corresponding value in g_values at simulation time.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#act.cell_model.ACTCellModel.set_passive_properties" title="act.cell_model.ACTCellModel.set_passive_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_passive_properties</span></code></a>(spp)</p></td>
+<td><p>Set passive properties at simulation time.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="act.cell_model.ACTCellModel.get_output">
+<span class="sig-name descname"><span class="pre">get_output</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="reference internal" href="_modules/act/cell_model.html#ACTCellModel.get_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.cell_model.ACTCellModel.get_output" title="Link to this definition">#</a></dt>
+<dd><p>Gets the output of the simulator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>V: np.ndarray of shape (T,)</dt><dd><p>Voltage trace.</p>
+</dd>
+<dt>I: np.ndarray of shape  (T,)</dt><dd><p>Current injection trace.</p>
+</dd>
+<dt>g_values: np.ndarray of shape (len_active_channels,)</dt><dd><p>Conductance values (NaN-padded).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="act.cell_model.ACTCellModel.set_custom_cell_builder">
+<span class="sig-name descname"><span class="pre">set_custom_cell_builder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell_builder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">callable</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/act/cell_model.html#ACTCellModel.set_custom_cell_builder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.cell_model.ACTCellModel.set_custom_cell_builder" title="Link to this definition">#</a></dt>
+<dd><p>Set a custom cell builder at simulaiton time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>cell_builder: callable</strong></dt><dd><p>Callable that returns a hoc cell object.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="act.cell_model.ACTCellModel.set_g_bar">
+<span class="sig-name descname"><span class="pre">set_g_bar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">g_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/act/cell_model.html#ACTCellModel.set_g_bar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.cell_model.ACTCellModel.set_g_bar" title="Link to this definition">#</a></dt>
+<dd><p>Set each conductance in g_names to a corresponding value in g_values at simulation time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>g_names: list[str]</strong></dt><dd><p>Conductance variable name as found in the modfiles.</p>
+</dd>
+<dt><strong>g_values: list[float]</strong></dt><dd><p>Conductance values to set.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="act.cell_model.ACTCellModel.set_passive_properties">
+<span class="sig-name descname"><span class="pre">set_passive_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#act.types.SettablePassiveProperties" title="act.types.SettablePassiveProperties"><span class="pre">SettablePassiveProperties</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/act/cell_model.html#ACTCellModel.set_passive_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.cell_model.ACTCellModel.set_passive_properties" title="Link to this definition">#</a></dt>
+<dd><p>Set passive properties at simulation time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>spp: SettablePassiveProperties</strong></dt><dd><p>Passive properties to set.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-act.simulator">
+<span id="act-simulator"></span><h2><code class="docutils literal notranslate"><span class="pre">act.simulator</span></code><a class="headerlink" href="#module-act.simulator" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="act.simulator.ACTSimulator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ACTSimulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_folder_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/act/simulator.html#ACTSimulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.simulator.ACTSimulator" title="Link to this definition">#</a></dt>
+<dd><p>Initialize the simulator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>output_folder_name: str</strong></dt><dd><p>Name of the output folder.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#act.simulator.ACTSimulator.run" title="act.simulator.ACTSimulator.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a>(cell, parameters)</p></td>
+<td><p>Run a single simulation and return the cell model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#act.simulator.ACTSimulator.run_jobs" title="act.simulator.ACTSimulator.run_jobs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_jobs</span></code></a>([n_cpu])</p></td>
+<td><p>Run the scheduled jobs.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#act.simulator.ACTSimulator.submit_job" title="act.simulator.ACTSimulator.submit_job"><code class="xref py py-obj docutils literal notranslate"><span class="pre">submit_job</span></code></a>(cell, parameters)</p></td>
+<td><p>Schedule a job for a delayed parallel simulation.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="act.simulator.ACTSimulator.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#act.cell_model.ACTCellModel" title="act.cell_model.ACTCellModel"><span class="pre">ACTCellModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#act.types.SimulationParameters" title="act.types.SimulationParameters"><span class="pre">SimulationParameters</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#act.cell_model.ACTCellModel" title="act.cell_model.ACTCellModel"><span class="pre">ACTCellModel</span></a></span></span><a class="reference internal" href="_modules/act/simulator.html#ACTSimulator.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.simulator.ACTSimulator.run" title="Link to this definition">#</a></dt>
+<dd><p>Run a single simulation and return the cell model. Meant for interactive exploration of the cell model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>cell: ACTCellModel</strong></dt><dd><p>Cell model to simulate.</p>
+</dd>
+<dt><strong>parameters: SimulationParameters</strong></dt><dd><p>Paramteters for the simulation.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>cell: ACTCellModel</dt><dd><p>Cell model after the simulation.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="act.simulator.ACTSimulator.run_jobs">
+<span class="sig-name descname"><span class="pre">run_jobs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_cpu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/act/simulator.html#ACTSimulator.run_jobs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.simulator.ACTSimulator.run_jobs" title="Link to this definition">#</a></dt>
+<dd><p>Run the scheduled jobs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n_cpu: int, default = None</strong></dt><dd><p>Number of cores to be used for multiprocessing. If None, all available cores are used.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="act.simulator.ACTSimulator.submit_job">
+<span class="sig-name descname"><span class="pre">submit_job</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#act.cell_model.ACTCellModel" title="act.cell_model.ACTCellModel"><span class="pre">ACTCellModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#act.types.SimulationParameters" title="act.types.SimulationParameters"><span class="pre">SimulationParameters</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/act/simulator.html#ACTSimulator.submit_job"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.simulator.ACTSimulator.submit_job" title="Link to this definition">#</a></dt>
+<dd><p>Schedule a job for a delayed parallel simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>cell: ACTCellModel</strong></dt><dd><p>Cell model to simulate.</p>
+</dd>
+<dt><strong>parameters: SimulationParameters</strong></dt><dd><p>Parameters for the simulations.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-act.data_processing">
+<span id="act-data-processing"></span><h2><code class="docutils literal notranslate"><span class="pre">act.data_processing</span></code><a class="headerlink" href="#module-act.data_processing" title="Link to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="act.data_processing.clean_g_bars">
+<span class="sig-name descname"><span class="pre">clean_g_bars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/act/data_processing.html#clean_g_bars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.data_processing.clean_g_bars" title="Link to this definition">#</a></dt>
+<dd><p>Extract conductances from .npy files produced by the <cite>ACTSimulator</cite>.
+The simulator pads the 3rd column (i.e. conductance set) with NANs.
+This method removes the pad for use in the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>dataset: np.ndarray of shape (n_trials, n_timepoints, 3)</strong></dt><dd><p>Voltage traces, current traces, conductance settings</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>cleaned_g_bars: np.ndarray of shape (n_trials, n_channels)</dt><dd><p>Array of conductance values for each trail.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="act.data_processing.combine_data">
+<span class="sig-name descname"><span class="pre">combine_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/act/data_processing.html#combine_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.data_processing.combine_data" title="Link to this definition">#</a></dt>
+<dd><p>Combine .npy files for each simulation run produced by the <cite>ACTSimulator</cite> into a single .npy file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>output_path: str</strong></dt><dd><p>Output path.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="act.data_processing.find_events">
+<span class="sig-name descname"><span class="pre">find_events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spike_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-20</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/act/data_processing.html#find_events"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.data_processing.find_events" title="Link to this definition">#</a></dt>
+<dd><p>Count the number of spikes in a voltage trace.
+Returns a list of event indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>v: np.ndarray of shape = (T,)</strong></dt><dd><p>A single voltage trace.</p>
+</dd>
+<dt><strong>spike_threshold: float, default = -20</strong></dt><dd><p>Threshold for spike detection (mV).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>event_indices: list[float]</dt><dd><p>List of voltage trace indices where spikes occur.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="act.data_processing.get_summary_features">
+<span class="sig-name descname"><span class="pre">get_summary_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">V</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">I</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spike_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_n_spikes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/act/data_processing.html#get_summary_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.data_processing.get_summary_features" title="Link to this definition">#</a></dt>
+<dd><p>Compute voltage and current summary features.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>V: np.ndarray of shape (n_trials, T)</strong></dt><dd><p>Voltage traces (mV over ms).</p>
+</dd>
+<dt><strong>I: np.ndarray of shape (n_trials, T)</strong></dt><dd><p>Corresponding current traces (time un over ms).</p>
+</dd>
+<dt><strong>spike_threshold: int, default = -20</strong></dt><dd><p>Threshold for spike detection (mV).</p>
+</dd>
+<dt><strong>max_n_spikes: int, default = 20</strong></dt><dd><p>Maximum number of spike times to save.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>stat_df: pd.DataFrame</dt><dd><p>Dataframe with extracted summary features.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="act.data_processing.get_traces_with_spikes">
+<span class="sig-name descname"><span class="pre">get_traces_with_spikes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spike_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-20</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/act/data_processing.html#get_traces_with_spikes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.data_processing.get_traces_with_spikes" title="Link to this definition">#</a></dt>
+<dd><p>Filter training data to only voltage traces that have spikes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data: np.ndarray of shape (n_trials, T, 3)</strong></dt><dd><p>Array (V, I, g).</p>
+</dd>
+<dt><strong>spike_threshold: int, default = -20</strong></dt><dd><p>Threshold for spike detection (mV).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>traces_with_spikes: np.ndarray of shape (n_trials, T, 3)</dt><dd><p>Filtered data containing only traces with spikes.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="act.data_processing.remove_saturated_traces">
+<span class="sig-name descname"><span class="pre">remove_saturated_traces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_of_inspection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">saturation_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-50</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/act/data_processing.html#remove_saturated_traces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.data_processing.remove_saturated_traces" title="Link to this definition">#</a></dt>
+<dd><p>Filter training data to only voltage traces that have not saturated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data: np.ndarray of shape (n_trials, T, 4)</strong></dt><dd><p>Array (V, I, g, lto/hto/sim_idx).</p>
+</dd>
+<dt><strong>window_of_inspection: tuple(win_start, win_end)</strong></dt><dd><p>Boundaries for the window of inspection.</p>
+</dd>
+<dt><strong>saturation_threshold: float, default = -50</strong></dt><dd><p>A voltage threshold above which the trace is potentially saturated (mV).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>filtered_data: np.ndarray of shape (n_trials, T, 4)</dt><dd><p>Filtered data containing nonsaturated traces only.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="act.data_processing.select_features">
+<span class="sig-name descname"><span class="pre">select_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_keys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/act/data_processing.html#select_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.data_processing.select_features" title="Link to this definition">#</a></dt>
+<dd><p>Get a subset of the features dataframe based on a list of user selected feature keys.
+Useful for keyword shortcuts like “spike_times” and “isi” to get all columns related.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>df: pd.DataFrame</strong></dt><dd><p>The original full feature dataframe</p>
+</dd>
+<dt><strong>feature_keys: list[str]</strong></dt><dd><p>A list of strings describing the features that the user wants to extract</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>df_sub: pd.DataFrame</dt><dd><p>A smaller pandas dataframe constrained to only select columns</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-act.segregation">
+<span id="act-segregation"></span><h2><code class="docutils literal notranslate"><span class="pre">act.segregation</span></code><a class="headerlink" href="#module-act.segregation" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="act.segregation.ACTSegregator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ACTSegregator</span></span><a class="reference internal" href="_modules/act/segregation.html#ACTSegregator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.segregation.ACTSegregator" title="Link to this definition">#</a></dt>
+<dd><p>Segment the activation curves into functional modules.</p>
+<p class="rubric">Methods</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#act.segregation.ACTSegregator.segregate" title="act.segregation.ACTSegregator.segregate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">segregate</span></code></a>(v, activation_curves, cutoff_v[, ...])</p></td>
+<td><p>Prints instructions on modifying modfiles.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="act.segregation.ACTSegregator.segregate">
+<span class="sig-name descname"><span class="pre">segregate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation_curves</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extrapolate_dv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="_modules/act/segregation.html#ACTSegregator.segregate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.segregation.ACTSegregator.segregate" title="Link to this definition">#</a></dt>
+<dd><p>Prints instructions on modifying modfiles. Returns segregated activation functions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>v: np.ndarray of shape (T,)</strong></dt><dd><p>The range of voltage values over which each activation curve is defined.</p>
+</dd>
+<dt><strong>activation_curves: list[np.ndarray of shape (T,)]</strong></dt><dd><p>List of activation curves. Each activation curve is defined over v.</p>
+</dd>
+<dt><strong>cutoff_v: float</strong></dt><dd><p>Voltage value below/above which each activation function is set to 0.</p>
+</dd>
+<dt><strong>extrapolate_dv: float</strong></dt><dd><p>Voltage range to linearly extrapolate activation functions over.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>segregated_activation_curves: list</dt><dd><p>Segregated activation curves.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-act.passive">
+<span id="act-passive"></span><h2><code class="docutils literal notranslate"><span class="pre">act.passive</span></code><a class="headerlink" href="#module-act.passive" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="act.passive.ACTPassiveModule">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ACTPassiveModule</span></span><a class="reference internal" href="_modules/act/passive.html#ACTPassiveModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.passive.ACTPassiveModule" title="Link to this definition">#</a></dt>
+<dd><p>Estimate passive properties.</p>
+<p class="rubric">Methods</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#act.passive.ACTPassiveModule.compute_Cm" title="act.passive.ACTPassiveModule.compute_Cm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_Cm</span></code></a>(g_bar_leak, tau)</p></td>
+<td><p>Compute membrane capacitance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#act.passive.ACTPassiveModule.compute_g_bar_leak" title="act.passive.ACTPassiveModule.compute_g_bar_leak"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_g_bar_leak</span></code></a>(R_in, soma_area)</p></td>
+<td><p>Compute maximum conductance of the leak channel.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#act.passive.ACTPassiveModule.compute_gpp" title="act.passive.ACTPassiveModule.compute_gpp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_gpp</span></code></a>(passive_V, dt, I_t_start, ...)</p></td>
+<td><p>Estimate input resistance, lower and upper bounds of the membrane time constant, membrane resting potential and the sag ratio from a passive trace.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#act.passive.ACTPassiveModule.compute_spp" title="act.passive.ACTPassiveModule.compute_spp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_spp</span></code></a>(R_in, soma_area, tau, V_rest)</p></td>
+<td><p>Compute the reversal potential and maximum conductance of the leak channel and membrane capacitance.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="act.passive.ACTPassiveModule.compute_Cm">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_Cm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">g_bar_leak</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/act/passive.html#ACTPassiveModule.compute_Cm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.passive.ACTPassiveModule.compute_Cm" title="Link to this definition">#</a></dt>
+<dd><p>Compute membrane capacitance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>g_bar_leak: float</strong></dt><dd><p>Maximum conductance of the leak channel (S / cm2).</p>
+</dd>
+<dt><strong>tau: float</strong></dt><dd><p>Membrane time constant (s).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>Cm: float</dt><dd><p>Membrane capacitance (uF / cm2).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="act.passive.ACTPassiveModule.compute_g_bar_leak">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_g_bar_leak</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">R_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">soma_area</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/act/passive.html#ACTPassiveModule.compute_g_bar_leak"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.passive.ACTPassiveModule.compute_g_bar_leak" title="Link to this definition">#</a></dt>
+<dd><p>Compute maximum conductance of the leak channel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>R_in: float</strong></dt><dd><p>Input resistance (Ohm).</p>
+</dd>
+<dt><strong>soma_area: float</strong></dt><dd><p>Soma (or total) area (cm2).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>g_bar_leak: float</dt><dd><p>(S / cm2)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="act.passive.ACTPassiveModule.compute_gpp">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_gpp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passive_V</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">I_t_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">I_t_end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">I_amp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#act.types.GettablePassiveProperties" title="act.types.GettablePassiveProperties"><span class="pre">GettablePassiveProperties</span></a></span></span><a class="reference internal" href="_modules/act/passive.html#ACTPassiveModule.compute_gpp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.passive.ACTPassiveModule.compute_gpp" title="Link to this definition">#</a></dt>
+<dd><p>Estimate input resistance, lower and upper bounds of the membrane time constant, membrane resting potential and the sag ratio
+from a passive trace.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>passive_V: np.ndarray</strong></dt><dd><p>Voltage trace under negative current injection</p>
+</dd>
+<dt><strong>dt: float</strong></dt><dd><p>Timestep (ms)</p>
+</dd>
+<dt><strong>I_t_start: float</strong></dt><dd><p>Current injection start time (ms).</p>
+</dd>
+<dt><strong>I_t_end: float</strong></dt><dd><p>Current injection end time (ms)</p>
+</dd>
+<dt><strong>I_amp: float</strong></dt><dd><p>Current injection amplitude (mV)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>gpp: GettablePassiveProperties</dt><dd><p>Class containing gettable passive properties.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="act.passive.ACTPassiveModule.compute_spp">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_spp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">R_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">soma_area</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">V_rest</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#act.types.SettablePassiveProperties" title="act.types.SettablePassiveProperties"><span class="pre">SettablePassiveProperties</span></a></span></span><a class="reference internal" href="_modules/act/passive.html#ACTPassiveModule.compute_spp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.passive.ACTPassiveModule.compute_spp" title="Link to this definition">#</a></dt>
+<dd><p>Compute the reversal potential and maximum conductance of the leak channel and membrane capacitance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>R_in: float</strong></dt><dd><p>Target input resistance (Ohm).</p>
+</dd>
+<dt><strong>soma_area: float</strong></dt><dd><p>Target soma area or total cell area (cm2).</p>
+</dd>
+<dt><strong>tau: float</strong></dt><dd><p>Target membrane time constant (s).</p>
+</dd>
+<dt><strong>V_rest: float</strong></dt><dd><p>Target resting potential (mV).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>spp: SettablePassiveProperties</dt><dd><p>Computed settable passive properties.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-act.module">
+<span id="act-module"></span><h2><code class="docutils literal notranslate"><span class="pre">act.module</span></code><a class="headerlink" href="#module-act.module" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="act.module.ACTModule">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ACTModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#act.cell_model.ACTCellModel" title="act.cell_model.ACTCellModel"><span class="pre">ACTCellModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">simulation_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#act.types.SimulationParameters" title="act.types.SimulationParameters"><span class="pre">SimulationParameters</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimization_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#act.types.OptimizationParameters" title="act.types.OptimizationParameters"><span class="pre">OptimizationParameters</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/act/module.html#ACTModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.module.ACTModule" title="Link to this definition">#</a></dt>
+<dd><p>Initialize an optimization module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name: str</strong></dt><dd><p>Module name.</p>
+</dd>
+<dt><strong>cell: ACTCellModel</strong></dt><dd><p>Cell model to simulate.</p>
+</dd>
+<dt><strong>simulation_parameters: SimulationParameters</strong></dt><dd><p>Simulation parameters.</p>
+</dd>
+<dt><strong>optimization_parameters: OptimizationParameters</strong></dt><dd><p>Optimization parameters.</p>
+</dd>
+<dt><strong>target_file: str</strong></dt><dd><p>File with target responses. If .csv, it is assumed that the file contains summary features.
+If .npy, it is assumed that the file contains current-voltage traces, and summary features will be computed by the module.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#act.module.ACTModule.run" title="act.module.ACTModule.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a>()</p></td>
+<td><p>Run the train-predict sequence.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="act.module.ACTModule.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/act/module.html#ACTModule.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.module.ACTModule.run" title="Link to this definition">#</a></dt>
+<dd><p>Run the train-predict sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>metrics: pd.DataFrame</dt><dd><p>Evaluation metrics.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-act.metrics">
+<span id="act-metrics"></span><h2><code class="docutils literal notranslate"><span class="pre">act.metrics</span></code><a class="headerlink" href="#module-act.metrics" title="Link to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="act.metrics.pp_error">
+<span class="sig-name descname"><span class="pre">pp_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pp_target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#act.types.GettablePassiveProperties" title="act.types.GettablePassiveProperties"><span class="pre">GettablePassiveProperties</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pp_pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#act.types.GettablePassiveProperties" title="act.types.GettablePassiveProperties"><span class="pre">GettablePassiveProperties</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="_modules/act/metrics.html#pp_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.metrics.pp_error" title="Link to this definition">#</a></dt>
+<dd><p>Compute the absolute error between target and predicted passive properties.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>pp_target: GettablePasssiveProperties</strong></dt><dd><p>Target passive properties.</p>
+</dd>
+<dt><strong>pp_pred: GettablePasssiveProperties</strong></dt><dd><p>Predicted passive properties.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>error: list[(property, abs_error)]</dt><dd><p>Absolute error for each property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="act.metrics.summary_features_error">
+<span class="sig-name descname"><span class="pre">summary_features_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sf_target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sf_pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/act/metrics.html#summary_features_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.metrics.summary_features_error" title="Link to this definition">#</a></dt>
+<dd><p>Compute the mean absolute error between target and predicted summary features.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>sf_target: np.ndarray of shape (n_trials, n_features)</strong></dt><dd><p>Target summary features.</p>
+</dd>
+<dt><strong>sf_pred: np.ndarray of shape (n_trials, n_features)</strong></dt><dd><p>Predicted summary features.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>mae: np.ndarray of shape (n_trials,)</dt><dd><p>Mean absolute error across z-transformed features.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-act.types">
+<span id="act-types"></span><h2><code class="docutils literal notranslate"><span class="pre">act.types</span></code><a class="headerlink" href="#module-act.types" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="act.types.ConductanceOptions">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ConductanceOptions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variable_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blocked</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds_variation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_slices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/act/types.html#ConductanceOptions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.types.ConductanceOptions" title="Link to this definition">#</a></dt>
+<dd><p>Set a conductance for optimization.
+During training, the conductance specified by <cite>variable_name</cite> is uniformly sampled from the (<cite>low</cite>, <cite>high</cite>) range <cite>n_slices</cite> times.
+Alternatively, if <cite>bounds_variation</cite> is specified, the sampling space is defined by the <cite>ACTCellModel.prediction</cite> ± <cite>bounds_variation</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>variable_name: str, default = None</strong></dt><dd><p>Conductance name matching that in the ACTCellModel.</p>
+</dd>
+<dt><strong>blocked: bool, default = False</strong></dt><dd><p>If True, the channel is blocked during the simulation (its maximum conductance is set to 0).</p>
+</dd>
+<dt><strong>low: float, default = None</strong></dt><dd><p>Lower bound of the conductance sampling space. Ignored if <cite>bounds_variation</cite> is specified.</p>
+</dd>
+<dt><strong>high: float, default = None</strong></dt><dd><p>Upper bound of the conductance sampling space. Ignored if <cite>bounds_variation</cite> is specified.</p>
+</dd>
+<dt><strong>bounds_variation: float, default = None</strong></dt><dd><p>If specified, the conductance sampling space is defined by the (<cite>ACTCellModel.prediction</cite> - <cite>bounds_variation</cite>, <cite>ACTCellModel.prediction</cite> + <cite>bounds_variation</cite>).</p>
+</dd>
+<dt><strong>n_slices: int, default = 1</strong></dt><dd><p>Number of conductance samples.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="act.types.ConstantCurrentInjection">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ConstantCurrentInjection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">amp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dur</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">400</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/act/types.html#ConstantCurrentInjection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.types.ConstantCurrentInjection" title="Link to this definition">#</a></dt>
+<dd><p>Set parameters for a constant (pulse) current injection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>amp: float, default = 0.1</strong></dt><dd><p>Current injection amplitude (nA).</p>
+</dd>
+<dt><strong>dur: float, default = 400</strong></dt><dd><p>Current injection duration (ms).</p>
+</dd>
+<dt><strong>delay: float, default = 50</strong></dt><dd><p>Current injection delay (ms).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="act.types.FilterParameters">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FilterParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filtered_out_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_of_inspection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">saturation_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-50</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/act/types.html#FilterParameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.types.FilterParameters" title="Link to this definition">#</a></dt>
+<dd><p>Set criteria for filtering generated voltage traces.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filtered_out_features: list[str], default = None</strong></dt><dd><p>Which features to filter out. May contain the following:
+- “saturated” (removes saturated traces, i.e., traces with sustained elevated voltage, see <cite>data_processing.remove_saturated_traces</cite>),
+- “no_spikes” (removes traces without spikes, see <cite>data_processing.get_traces_with_spikes</cite>).</p>
+</dd>
+<dt><strong>window_of_inspection: tuple(int, int), default = None</strong></dt><dd><p>Time window to consider for filtering (ms).</p>
+</dd>
+<dt><strong>saturation_threshold: float, default = -50</strong></dt><dd><p>If “saturated” is in <cite>filtered_out_features</cite>, defines the voltage elevation threshold (mV).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="act.types.GaussianCurrentInjection">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">GaussianCurrentInjection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">amp_mean</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amp_std</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.02</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dur</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">400</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/act/types.html#GaussianCurrentInjection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.types.GaussianCurrentInjection" title="Link to this definition">#</a></dt>
+<dd><p>Set parameters for a Gaussian current injection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>amp_mean: float, default = 0.1</strong></dt><dd><p>Mean of current injection amplitude (nA).</p>
+</dd>
+<dt><strong>amp_std: float, default = 0.02</strong></dt><dd><p>Standard deviation of current injection amplitude (nA).</p>
+</dd>
+<dt><strong>dur: float, default = 400</strong></dt><dd><p>Current injection duration (ms).</p>
+</dd>
+<dt><strong>delay: float, default = 50</strong></dt><dd><p>Current injection delay (ms).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="act.types.GettablePassiveProperties">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">GettablePassiveProperties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">R_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sag_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">V_rest</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/act/types.html#GettablePassiveProperties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.types.GettablePassiveProperties" title="Link to this definition">#</a></dt>
+<dd><p>Passive properties that can be retrieved from traces generated from a cell model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>R_in: float, default = None</strong></dt><dd><p>Input resistance (MOhm).</p>
+</dd>
+<dt><strong>tau1: float, default = None</strong></dt><dd><p>Lower bound on the membrane time constant (ms).</p>
+</dd>
+<dt><strong>tau2: float, default = None</strong></dt><dd><p>Upper bound on the membrance time constant (ms).</p>
+</dd>
+<dt><strong>sag_ratio: float, default = None</strong></dt><dd><p>Computed as (v_final - v_min) / (v_rest - v_min).</p>
+</dd>
+<dt><strong>V_rest: float, default = None</strong></dt><dd><p>Resting potential (mV).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="act.types.OptimizationParameters">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">OptimizationParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_cpus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conductance_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CI_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">42</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_estimators</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#act.types.FilterParameters" title="act.types.FilterParameters"><span class="pre">FilterParameters</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spike_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_n_spikes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/act/types.html#OptimizationParameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.types.OptimizationParameters" title="Link to this definition">#</a></dt>
+<dd><p>Set optimization parameters for an <cite>ACTModule</cite>. Optimization space is defined as a multidimensional grid specified by <cite>conductance_options</cite> and <cite>CI_options</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n_cpus: int, default = None</strong></dt><dd><p>Number of CPU cores to use during optimization. If <cite>None</cite>, all available cores are used.</p>
+</dd>
+<dt><strong>conductance_options: list[ConductanceOptions], default = None</strong></dt><dd><p>Conductances to optimize in this module.</p>
+</dd>
+<dt><strong>CI_options: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection], default = None</strong></dt><dd><p>Current injections to consider for optimization. Overwrites <cite>SimulationParameters.CI</cite>.</p>
+</dd>
+<dt><strong>random_state: int, default = 42</strong></dt><dd><p>Random state for the <cite>RandomForestRegressor</cite> model.</p>
+</dd>
+<dt><strong>n_estimators: int, default = 1000</strong></dt><dd><p>Number of estimators (decision trees) for the <cite>RandomForestRegressor</cite> model.</p>
+</dd>
+<dt><strong>max_depth: int, default = None</strong></dt><dd><p>Maximum tree depth for the <cite>RandomForestRegressor</cite> model.</p>
+</dd>
+<dt><strong>train_features: list[str], default = None</strong></dt><dd><p>If specified, only use these summary features for training.</p>
+</dd>
+<dt><strong>filter_parameters: FilterParameters, default = None</strong></dt><dd><p>Parameters to filter out sampled voltage traces.</p>
+</dd>
+<dt><strong>spike_threshold: float, default = 0</strong></dt><dd><p>Threshold for spike detection.</p>
+</dd>
+<dt><strong>max_n_spikes: int, default = 20</strong></dt><dd><p>Maximum number of spikes to consider for summary features computation.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="act.types.RampCurrentInjection">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RampCurrentInjection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">amp_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amp_incr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_step_add_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dur</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">400</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/act/types.html#RampCurrentInjection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.types.RampCurrentInjection" title="Link to this definition">#</a></dt>
+<dd><p>Set parameters for a ramp (step) current injection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>amp_start: float, default = 0</strong></dt><dd><p>Current injection initial amplitude (nA).</p>
+</dd>
+<dt><strong>amp_incr: float, default = 0.1</strong></dt><dd><p>Current injection amplitude increase per step (nA).</p>
+</dd>
+<dt><strong>num_steps: int, default = 10</strong></dt><dd><p>Number of steps (periods of constant current injection).</p>
+</dd>
+<dt><strong>final_step_add_time: int, default = 0</strong></dt><dd><p>Additional time to extend the final current injection step for (ms).</p>
+</dd>
+<dt><strong>dur: float, default = 400</strong></dt><dd><p>Total time length of current injection (ms).</p>
+</dd>
+<dt><strong>delay: float, default = 50</strong></dt><dd><p>Current injection delay (ms).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="act.types.SettablePassiveProperties">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SettablePassiveProperties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Cm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g_bar_leak</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_rev_leak</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g_bar_h</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/act/types.html#SettablePassiveProperties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.types.SettablePassiveProperties" title="Link to this definition">#</a></dt>
+<dd><p>Passive properties that can be directly set for a cell model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>Cm: float, default = None</strong></dt><dd><p>Membrane capacitance (uf / cm2).</p>
+</dd>
+<dt><strong>g_bar_leak: float, default = None</strong></dt><dd><p>Maximum conductance of the leak channel (S / cm2).</p>
+</dd>
+<dt><strong>e_rev_leak: float, default = None</strong></dt><dd><p>Reversal potential of the leak channel (mV).</p>
+</dd>
+<dt><strong>g_bar_h: float, default = None</strong></dt><dd><p>Maximum conductance of the H channel (S / cm2).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="act.types.SimulationParameters">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SimulationParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sim_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h_v_init</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h_tstop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h_dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h_celsius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">37</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CI</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">42</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/act/types.html#SimulationParameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#act.types.SimulationParameters" title="Link to this definition">#</a></dt>
+<dd><p>Set parameters for a simulation with the ACTSimulator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>sim_name: str, default = “”</strong></dt><dd><p>Simulation name. Saves to a folder output_folder/sim_name. Creates this folder if it does not exist.</p>
+</dd>
+<dt><strong>sim_idx: int, default = 0</strong></dt><dd><p>Simulation index. Simulation results will be saved as output_folder/sim_name/sim_idx.npy.</p>
+</dd>
+<dt><strong>h_v_init: float, default = -50</strong></dt><dd><p>Initial voltage (mV).</p>
+</dd>
+<dt><strong>h_tstop: int, default = 500</strong></dt><dd><p>Simulation time (ms).</p>
+</dd>
+<dt><strong>h_dt: float, default = 0.1</strong></dt><dd><p>Simulation step (ms).</p>
+</dd>
+<dt><strong>h_celsius: float, default = 37</strong></dt><dd><p>Simulation temperature (deg C).</p>
+</dd>
+<dt><strong>CI: list[ConstantCurrentInjection | RampCurrentInjection | GaussianCurrentInjection], default = None</strong></dt><dd><p>List of current injections to be applied during the simulation. Supports overlapping injections.</p>
+</dd>
+<dt><strong>random_seed: int, default = 42</strong></dt><dd><p>Global random seed used throughout the simulation.</p>
+</dd>
+<dt><strong>verbose: bool, default = False</strong></dt><dd><p>If True, additional information is printed (e.g., soma and total area).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="intro.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Quick Start</p>
+      </div>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-act.cell_model"><code class="docutils literal notranslate"><span class="pre">act.cell_model</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.cell_model.ACTCellModel"><code class="docutils literal notranslate"><span class="pre">ACTCellModel</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.cell_model.ACTCellModel.get_output"><code class="docutils literal notranslate"><span class="pre">ACTCellModel.get_output()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.cell_model.ACTCellModel.set_custom_cell_builder"><code class="docutils literal notranslate"><span class="pre">ACTCellModel.set_custom_cell_builder()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.cell_model.ACTCellModel.set_g_bar"><code class="docutils literal notranslate"><span class="pre">ACTCellModel.set_g_bar()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.cell_model.ACTCellModel.set_passive_properties"><code class="docutils literal notranslate"><span class="pre">ACTCellModel.set_passive_properties()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-act.simulator"><code class="docutils literal notranslate"><span class="pre">act.simulator</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.simulator.ACTSimulator"><code class="docutils literal notranslate"><span class="pre">ACTSimulator</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.simulator.ACTSimulator.run"><code class="docutils literal notranslate"><span class="pre">ACTSimulator.run()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.simulator.ACTSimulator.run_jobs"><code class="docutils literal notranslate"><span class="pre">ACTSimulator.run_jobs()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.simulator.ACTSimulator.submit_job"><code class="docutils literal notranslate"><span class="pre">ACTSimulator.submit_job()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-act.data_processing"><code class="docutils literal notranslate"><span class="pre">act.data_processing</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.data_processing.clean_g_bars"><code class="docutils literal notranslate"><span class="pre">clean_g_bars()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.data_processing.combine_data"><code class="docutils literal notranslate"><span class="pre">combine_data()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.data_processing.find_events"><code class="docutils literal notranslate"><span class="pre">find_events()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.data_processing.get_summary_features"><code class="docutils literal notranslate"><span class="pre">get_summary_features()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.data_processing.get_traces_with_spikes"><code class="docutils literal notranslate"><span class="pre">get_traces_with_spikes()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.data_processing.remove_saturated_traces"><code class="docutils literal notranslate"><span class="pre">remove_saturated_traces()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.data_processing.select_features"><code class="docutils literal notranslate"><span class="pre">select_features()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-act.segregation"><code class="docutils literal notranslate"><span class="pre">act.segregation</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.segregation.ACTSegregator"><code class="docutils literal notranslate"><span class="pre">ACTSegregator</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.segregation.ACTSegregator.segregate"><code class="docutils literal notranslate"><span class="pre">ACTSegregator.segregate()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-act.passive"><code class="docutils literal notranslate"><span class="pre">act.passive</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.passive.ACTPassiveModule"><code class="docutils literal notranslate"><span class="pre">ACTPassiveModule</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.passive.ACTPassiveModule.compute_Cm"><code class="docutils literal notranslate"><span class="pre">ACTPassiveModule.compute_Cm()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.passive.ACTPassiveModule.compute_g_bar_leak"><code class="docutils literal notranslate"><span class="pre">ACTPassiveModule.compute_g_bar_leak()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.passive.ACTPassiveModule.compute_gpp"><code class="docutils literal notranslate"><span class="pre">ACTPassiveModule.compute_gpp()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.passive.ACTPassiveModule.compute_spp"><code class="docutils literal notranslate"><span class="pre">ACTPassiveModule.compute_spp()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-act.module"><code class="docutils literal notranslate"><span class="pre">act.module</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.module.ACTModule"><code class="docutils literal notranslate"><span class="pre">ACTModule</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#act.module.ACTModule.run"><code class="docutils literal notranslate"><span class="pre">ACTModule.run()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-act.metrics"><code class="docutils literal notranslate"><span class="pre">act.metrics</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.metrics.pp_error"><code class="docutils literal notranslate"><span class="pre">pp_error()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.metrics.summary_features_error"><code class="docutils literal notranslate"><span class="pre">summary_features_error()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-act.types"><code class="docutils literal notranslate"><span class="pre">act.types</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.types.ConductanceOptions"><code class="docutils literal notranslate"><span class="pre">ConductanceOptions</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.types.ConstantCurrentInjection"><code class="docutils literal notranslate"><span class="pre">ConstantCurrentInjection</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.types.FilterParameters"><code class="docutils literal notranslate"><span class="pre">FilterParameters</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.types.GaussianCurrentInjection"><code class="docutils literal notranslate"><span class="pre">GaussianCurrentInjection</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.types.GettablePassiveProperties"><code class="docutils literal notranslate"><span class="pre">GettablePassiveProperties</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.types.OptimizationParameters"><code class="docutils literal notranslate"><span class="pre">OptimizationParameters</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.types.RampCurrentInjection"><code class="docutils literal notranslate"><span class="pre">RampCurrentInjection</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.types.SettablePassiveProperties"><code class="docutils literal notranslate"><span class="pre">SettablePassiveProperties</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#act.types.SimulationParameters"><code class="docutils literal notranslate"><span class="pre">SimulationParameters</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By The Jupyter Book community
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

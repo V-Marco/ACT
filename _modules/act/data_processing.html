@@ -1,0 +1,672 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>act.data_processing &#8212; My sample book</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/act/data_processing';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../intro.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/logo.png" class="logo__image only-light" alt="My sample book - Home"/>
+    <script>document.write(`<img src="../../_static/logo.png" class="logo__image only-dark" alt="My sample book - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../intro.html">
+                    Welcome to your Jupyter Book
+                </a>
+            </li>
+        </ul>
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../markdown.html">Markdown Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../notebooks.html">Content with notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/V-Marco/ACT" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for act.data_processing</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">signal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.fft</span><span class="w"> </span><span class="kn">import</span> <span class="n">rfft</span><span class="p">,</span> <span class="n">rfftfreq</span>
+
+<span class="c1">#---------------------------------------------</span>
+<span class="c1"># Feature Extraction</span>
+<span class="c1">#---------------------------------------------</span>
+
+<div class="viewcode-block" id="find_events">
+<a class="viewcode-back" href="../../api.html#act.data_processing.find_events">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_events</span><span class="p">(</span><span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">spike_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mi">20</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Count the number of spikes in a voltage trace.</span>
+<span class="sd">    Returns a list of event indices.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    v: np.ndarray of shape = (T,)</span>
+<span class="sd">        A single voltage trace.</span>
+<span class="sd">    </span>
+<span class="sd">    spike_threshold: float, default = -20</span>
+<span class="sd">        Threshold for spike detection (mV).</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -----------</span>
+<span class="sd">    event_indices: list[float]</span>
+<span class="sd">        List of voltage trace indices where spikes occur.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">potential_spikes</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">argrelextrema</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">greater</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">spike_time</span> <span class="k">for</span> <span class="n">spike_time</span> <span class="ow">in</span> <span class="n">potential_spikes</span> <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="n">spike_time</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">spike_threshold</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="select_features">
+<a class="viewcode-back" href="../../api.html#act.data_processing.select_features">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">select_features</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">feature_keys</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get a subset of the features dataframe based on a list of user selected feature keys.</span>
+<span class="sd">    Useful for keyword shortcuts like &quot;spike_times&quot; and &quot;isi&quot; to get all columns related.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df: pd.DataFrame</span>
+<span class="sd">        The original full feature dataframe</span>
+<span class="sd">    </span>
+<span class="sd">    feature_keys: list[str]</span>
+<span class="sd">        A list of strings describing the features that the user wants to extract</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df_sub: pd.DataFrame</span>
+<span class="sd">        A smaller pandas dataframe constrained to only select columns</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">feature_keys</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;spike_times&quot;</span><span class="p">:</span>
+            <span class="n">cols</span> <span class="o">+=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;spike_time_&quot;</span><span class="p">)]</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;interspike_intervals&quot;</span><span class="p">:</span>
+            <span class="n">cols</span> <span class="o">+=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;isi_&quot;</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># fall back to substring‐match</span>
+            <span class="n">cols</span> <span class="o">+=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">c</span><span class="p">]</span>
+    <span class="c1"># drop duplicates &amp; preserve original order</span>
+    <span class="n">seen</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cols</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">c</span> <span class="ow">in</span> <span class="n">seen</span> <span class="ow">or</span> <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">c</span><span class="p">))]</span>
+    <span class="k">return</span> <span class="n">df</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="get_summary_features">
+<a class="viewcode-back" href="../../api.html#act.data_processing.get_summary_features">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_summary_features</span><span class="p">(</span>
+        <span class="n">V</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">I</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">window</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">spike_threshold</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">20</span><span class="p">,</span> 
+        <span class="n">max_n_spikes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute voltage and current summary features.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    V: np.ndarray of shape (n_trials, T)</span>
+<span class="sd">        Voltage traces (mV over ms).</span>
+
+<span class="sd">    I: np.ndarray of shape (n_trials, T)</span>
+<span class="sd">        Corresponding current traces (time un over ms).</span>
+<span class="sd">    </span>
+<span class="sd">    spike_threshold: int, default = -20</span>
+<span class="sd">        Threshold for spike detection (mV).</span>
+<span class="sd">    </span>
+<span class="sd">    max_n_spikes: int, default = 20</span>
+<span class="sd">        Maximum number of spike times to save.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    stat_df: pd.DataFrame</span>
+<span class="sd">        Dataframe with extracted summary features.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">V</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span>
+
+    <span class="n">stat_df</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">trial_idx</span><span class="p">,</span> <span class="n">v_trial</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">V</span><span class="p">):</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="c1"># Remove edge effects</span>
+        <span class="k">if</span> <span class="n">window</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">v_trial</span> <span class="o">=</span> <span class="n">v_trial</span><span class="p">[</span><span class="n">window</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">window</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">window</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">v_trial</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        
+        <span class="c1"># Save overall voltage stats</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">&quot;mean_v&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">v_trial</span><span class="p">)</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">&quot;std_v&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="n">v_trial</span><span class="p">)</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">&quot;max_ampl_v&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">v_trial</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">v_trial</span><span class="p">)</span>
+
+        <span class="c1"># Extract # of spikes and # of troughs and save the number</span>
+        <span class="n">spike_idxs</span> <span class="o">=</span> <span class="n">find_events</span><span class="p">(</span><span class="n">v_trial</span><span class="p">,</span> <span class="n">spike_threshold</span><span class="p">)</span>
+        <span class="n">trough_idxs</span> <span class="o">=</span> <span class="n">find_events</span><span class="p">(</span><span class="o">-</span><span class="n">v_trial</span><span class="p">,</span> <span class="o">-</span><span class="n">spike_threshold</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">events</span><span class="p">,</span> <span class="n">event_type_name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="n">spike_idxs</span><span class="p">,</span> <span class="n">trough_idxs</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;spike&quot;</span><span class="p">,</span> <span class="s2">&quot;trough&quot;</span><span class="p">]):</span>
+
+            <span class="c1"># Save the number of events</span>
+            <span class="n">row</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;n_</span><span class="si">{</span><span class="n">event_type_name</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">events</span><span class="p">)</span>
+            
+            <span class="c1"># Save spike frequency</span>
+            <span class="k">if</span> <span class="n">event_type_name</span> <span class="o">==</span> <span class="s2">&quot;spike&quot;</span><span class="p">:</span>
+                <span class="n">row</span><span class="p">[</span><span class="s2">&quot;spike_frequency&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">events</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">v_trial</span><span class="p">)</span> 
+        
+            <span class="c1"># Save first max_n_spikes event times</span>
+            <span class="n">event_idxs_corrected</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">max_n_spikes</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="n">events_length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">events</span><span class="p">),</span> <span class="n">max_n_spikes</span><span class="p">])</span>
+            <span class="n">event_idxs_corrected</span><span class="p">[:</span><span class="n">events_length</span><span class="p">]</span> <span class="o">=</span> <span class="n">events</span><span class="p">[:</span><span class="n">events_length</span><span class="p">]</span>
+
+            <span class="k">for</span> <span class="n">event_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_n_spikes</span><span class="p">):</span>
+                <span class="n">row</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">event_type_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">event_idx</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">event_idxs_corrected</span><span class="p">[</span><span class="n">event_idx</span><span class="p">]</span> <span class="o">+</span> <span class="n">window</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="c1"># Save event stats</span>
+            <span class="k">for</span> <span class="n">opertaion</span><span class="p">,</span> <span class="n">operation_name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;std&quot;</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">events</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">row</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">operation_name</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">event_type_name</span><span class="si">}</span><span class="s1">_volt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">opertaion</span><span class="p">(</span><span class="n">v_trial</span><span class="p">[</span><span class="n">events</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">row</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">operation_name</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">event_type_name</span><span class="si">}</span><span class="s1">_volt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        
+        <span class="c1"># Save ISIs for spikes only</span>
+        <span class="n">isi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">spike_idxs</span><span class="p">)</span>
+        <span class="n">isi_corrected</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">max_n_spikes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">isi_length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">isi</span><span class="p">),</span> <span class="n">max_n_spikes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="n">isi_corrected</span><span class="p">[:</span><span class="n">isi_length</span><span class="p">]</span> <span class="o">=</span> <span class="n">isi</span><span class="p">[:</span><span class="n">isi_length</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">isi_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_n_spikes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">row</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;isi_</span><span class="si">{</span><span class="n">isi_idx</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">isi_corrected</span><span class="p">[</span><span class="n">isi_idx</span><span class="p">]</span>
+            
+        <span class="c1"># Save main frequency for LTO / HTO</span>
+        <span class="n">magnitude</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">rfft</span><span class="p">(</span><span class="n">v_trial</span><span class="p">))[</span><span class="mi">1</span><span class="p">:]</span> <span class="c1"># Remove DC</span>
+        <span class="n">freqs</span> <span class="o">=</span> <span class="n">rfftfreq</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">v_trial</span><span class="p">),</span> <span class="n">d</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span>
+        <span class="n">row</span><span class="p">[</span><span class="s1">&#39;main_freq&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">freqs</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">magnitude</span><span class="p">)]</span>
+
+        <span class="c1"># Save I stats</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">&quot;mean_i&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">I</span><span class="p">[</span><span class="n">trial_idx</span><span class="p">][</span><span class="n">window</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">window</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">&quot;std_i&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="n">I</span><span class="p">[</span><span class="n">trial_idx</span><span class="p">][</span><span class="n">window</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">window</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+
+        <span class="n">stat_df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+    
+    <span class="n">stat_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">stat_df</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">stat_df</span></div>
+
+
+    
+<span class="c1">#---------------------------------------------</span>
+<span class="c1"># FILTERING</span>
+<span class="c1">#---------------------------------------------</span>
+<div class="viewcode-block" id="remove_saturated_traces">
+<a class="viewcode-back" href="../../api.html#act.data_processing.remove_saturated_traces">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">remove_saturated_traces</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">window_of_inspection</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">saturation_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mi">50</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Filter training data to only voltage traces that have not saturated.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data: np.ndarray of shape (n_trials, T, 4)</span>
+<span class="sd">        Array (V, I, g, lto/hto/sim_idx).</span>
+<span class="sd">        </span>
+<span class="sd">    window_of_inspection: tuple(win_start, win_end)</span>
+<span class="sd">        Boundaries for the window of inspection.</span>
+<span class="sd">    </span>
+<span class="sd">    saturation_threshold: float, default = -50</span>
+<span class="sd">        A voltage threshold above which the trace is potentially saturated (mV).</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    filtered_data: np.ndarray of shape (n_trials, T, 4)</span>
+<span class="sd">        Filtered data containing nonsaturated traces only.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">V</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="n">window_of_inspection</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">window_of_inspection</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">]</span>  
+    <span class="n">nonsaturated_idxs</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">V</span> <span class="o">&gt;</span> <span class="n">saturation_threshold</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">filtered_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">nonsaturated_idxs</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saturation filter: dropped </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">filtered_data</span><span class="p">)</span><span class="si">}</span><span class="s2"> traces.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">filtered_data</span></div>
+
+
+
+<div class="viewcode-block" id="get_traces_with_spikes">
+<a class="viewcode-back" href="../../api.html#act.data_processing.get_traces_with_spikes">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_traces_with_spikes</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">spike_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mi">20</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Filter training data to only voltage traces that have spikes.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data: np.ndarray of shape (n_trials, T, 3)</span>
+<span class="sd">        Array (V, I, g).</span>
+<span class="sd">    </span>
+<span class="sd">    spike_threshold: int, default = -20</span>
+<span class="sd">        Threshold for spike detection (mV).</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    traces_with_spikes: np.ndarray of shape (n_trials, T, 3)</span>
+<span class="sd">        Filtered data containing only traces with spikes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">V</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">idx_with_spikes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">trial_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">V</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">find_events</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">trial_idx</span><span class="p">],</span> <span class="n">spike_threshold</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">idx_with_spikes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">trial_idx</span><span class="p">)</span>
+
+    <span class="n">traces_with_spikes</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">idx_with_spikes</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Spike filter: dropped </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">traces_with_spikes</span><span class="p">)</span><span class="si">}</span><span class="s2"> traces.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">traces_with_spikes</span></div>
+
+
+
+<span class="c1">#---------------------------------------------</span>
+<span class="c1"># UTILS </span>
+<span class="c1">#---------------------------------------------</span>
+<div class="viewcode-block" id="combine_data">
+<a class="viewcode-back" href="../../api.html#act.data_processing.combine_data">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">combine_data</span><span class="p">(</span><span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Combine .npy files for each simulation run produced by the `ACTSimulator` into a single .npy file.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    output_path: str</span>
+<span class="sd">        Output path.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">save_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;combined_out.npy&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">save_path</span><span class="p">):</span>
+        <span class="c1">#raise RuntimeError(save_path + &quot; already exists.&quot;)</span>
+        <span class="k">pass</span>
+
+    <span class="n">file_list</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">&quot;out_*.npy&quot;</span><span class="p">))</span>
+
+    <span class="c1"># Sort by simulation index</span>
+    <span class="n">file_list</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">file_list</span><span class="p">,</span> <span class="n">key</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">s</span> <span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.npy&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+
+    <span class="c1"># Read and combine data</span>
+    <span class="n">data_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">file_name</span> <span class="ow">in</span> <span class="n">file_list</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+        <span class="n">data_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">final_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">data_list</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="n">final_data</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="clean_g_bars">
+<a class="viewcode-back" href="../../api.html#act.data_processing.clean_g_bars">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">clean_g_bars</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract conductances from .npy files produced by the `ACTSimulator`.</span>
+<span class="sd">    The simulator pads the 3rd column (i.e. conductance set) with NANs.</span>
+<span class="sd">    This method removes the pad for use in the model.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dataset: np.ndarray of shape (n_trials, n_timepoints, 3)</span>
+<span class="sd">        Voltage traces, current traces, conductance settings</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cleaned_g_bars: np.ndarray of shape (n_trials, n_channels)</span>
+<span class="sd">        Array of conductance values for each trail.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove_nan_from_sample</span><span class="p">(</span><span class="n">sample</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">sample</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">sample</span><span class="p">)]</span>
+        
+    <span class="n">cleaned_g_bars</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">remove_nan_from_sample</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">2</span><span class="p">]])</span>
+    <span class="k">return</span> <span class="n">cleaned_g_bars</span></div>
+
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By The Jupyter Book Community
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
