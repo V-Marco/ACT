@@ -9,7 +9,7 @@ from act.cell_model import ACTCellModel
 
 
 @contextmanager
-def suppress_neuron_warnings():
+def _suppress_neuron_warnings():
     """
     Turns off nrnivmodl compile warnings.
     """
@@ -26,21 +26,23 @@ def suppress_neuron_warnings():
             
 
 # https://stackoverflow.com/questions/31729008/python-multiprocessing-seems-near-impossible-to-do-within-classes-using-any-class
-def unwrap_self_run_job(args) -> None:
+def _unwrap_self_run_job(args) -> None:
     return ACTSimulator._run_job(args[0], args[1][0], args[1][1])
 
 
 class ACTSimulator:
+    """Simulate ACT-compatible cell models.
+    """
 
     def __init__(self, output_folder_name) -> None:
-        '''
+        """
         Initialize the simulator.
 
-        Parameters:
+        Parameters
         ----------
         output_folder_name: str
             Name of the output folder.
-        '''
+        """
         self.path = output_folder_name
         self.pool = []
         print("""
@@ -54,16 +56,16 @@ class ACTSimulator:
         """
         Run a single simulation and return the cell model. Meant for interactive exploration of the cell model.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         cell: ACTCellModel
             Cell model to simulate.
         
         parameters: SimulationParameters
             Paramteters for the simulation.
         
-        Returns:
-        -----------
+        Returns
+        -------
         cell: ACTCellModel
             Cell model after the simulation.
         """
@@ -72,7 +74,7 @@ class ACTSimulator:
         h.load_file('stdrun.hoc')
 
         try:
-            with suppress_neuron_warnings():
+            with _suppress_neuron_warnings():
                 h.nrn_load_dll("./x86_64/.libs/libnrnmech.so")
         except:
             pass
@@ -118,16 +120,16 @@ class ACTSimulator:
         """
         Schedule a job for a delayed parallel simulation.
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         cell: ACTCellModel
             Cell model to simulate.
         
         parameters: SimulationParameters
             Parameters for the simulations.
         
-        Returns:
-        -----------
+        Returns
+        -------
         None
         """
         parameters._path = os.path.join(self.path, parameters.sim_name)
@@ -138,13 +140,13 @@ class ACTSimulator:
         """
         Run the scheduled jobs.
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         n_cpu: int, default = None
             Number of cores to be used for multiprocessing. If None, all available cores are used.
                  
-        Returns:
-        -----------
+        Returns
+        -------
         None
         """
         os.makedirs(self.path, exist_ok = True)
@@ -155,7 +157,7 @@ class ACTSimulator:
         os.system(f"nrnivmodl {self.pool[0][0].path_to_mod_files} > /dev/null 2>&1")
         
         pool = Pool(processes = n_cpu)
-        pool.map(unwrap_self_run_job, zip([self] * len(self.pool), self.pool))
+        pool.map(_unwrap_self_run_job, zip([self] * len(self.pool), self.pool))
         pool.close()
         pool.join()
 
@@ -167,14 +169,14 @@ class ACTSimulator:
         """
         Instructions for a single NEURON simulation that is thread-safe and used in run_jobs().
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         cell: ACTCellModel
         
         parameters: SimulationParameters
                  
-        Returns:
-        -----------
+        Returns
+        -------
         None
         """
         os.makedirs(parameters._path, exist_ok = True)
@@ -183,7 +185,7 @@ class ACTSimulator:
         h.load_file('stdrun.hoc')
 
         try:
-            with suppress_neuron_warnings():
+            with _suppress_neuron_warnings():
                 h.nrn_load_dll("./x86_64/.libs/libnrnmech.so")
         except:
             pass

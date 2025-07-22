@@ -13,6 +13,8 @@ from act.data_processing import combine_data, remove_saturated_traces, get_trace
 from act.metrics import summary_features_error
 
 class ACTModule:
+    """Train a random forest model to predict conductances.
+    """
 
     def __init__(
             self, 
@@ -24,7 +26,7 @@ class ACTModule:
         """
         Initialize an optimization module.
 
-        Parameters:
+        Parameters
         ----------
         name: str
             Module name.
@@ -83,8 +85,8 @@ class ACTModule:
         """
         Run the train-predict sequence.
 
-        Returns:
-        -----------
+        Returns
+        -------
         metrics: pd.DataFrame
             Evaluation metrics.
         """
@@ -291,8 +293,8 @@ class ACTModule:
         Then gets a prediction for conductance sets that yeild features found in the target data.
         Then calculates an evaluation of the RF model and saves the metric.
         
-        Returns:
-        -----------
+        Returns
+        -------
         predictions: np.ndarray
             Conductance Predictions
         """

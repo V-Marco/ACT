@@ -16,6 +16,10 @@ def _rsetattr(obj, attr, val):
     return setattr(_rgetattr(obj, pre) if pre else obj, post, val)
 
 class ACTCellModel:
+    """A wrapper class for NEURON cell models. 
+    Stores the cell properties and applies them only during simulation, facilitating conflict-free parallel execution.
+    Supports custom cell builders.
+    """
 
     def __init__(
             self, 
@@ -28,7 +32,7 @@ class ACTCellModel:
         """
         Initialize a cell model for simulation or optimization.
 
-        Parameters:
+        Parameters
         ----------
         cell_name: str, default = None
             Cell name.
@@ -39,10 +43,10 @@ class ACTCellModel:
         path_to_mod_files: str, default = None
             Path to the modfiles directory.
             
-        passive: list, default = None
+        passive: list[str], default = None
             Names of the (1) leak channel g_bar, (2) leak channel reversal potential and (3) H channel g_bar (in THIS order) as stated in the hoc file / model parameters.
 
-        active_channels: list, default = None
+        active_channels: list[str], default = None
             Names of the active channel variables (in ANY order) as stated in the hoc file / model parameters.
         """
 
@@ -84,16 +88,16 @@ class ACTCellModel:
         """
         Set each conductance in g_names to a corresponding value in g_values at simulation time.
 
-        Parameters:
+        Parameters
         -----------
-        g_names: list
+        g_names: list[str]
             Conductance variable name as found in the modfiles.
         
-        g_values: list
+        g_values: list[float]
             Conductance values to set.
         
-        Returns:
-        ----------
+        Returns
+        -------
         None
         """
         for g_name, g_value in zip(g_names, g_values):
@@ -103,16 +107,16 @@ class ACTCellModel:
         """
         Set conductances during NEURON runtime.
 
-        Parameters:
-        -----------
-        g_names: list
+        Parameters
+        ----------
+        g_names: list[str]
             Conductance variable name as found in the modfiles.
         
-        g_values: list
+        g_values: list[float]
             Conductance values to set.
         
-        Returns:
-        ----------
+        Returns
+        -------
         None
         """
         for sec in self.soma:
@@ -124,13 +128,13 @@ class ACTCellModel:
         """
         Set passive properties at simulation time.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         spp: SettablePassiveProperties
             Passive properties to set.
 
-        Returns:
-        ----------
+        Returns
+        -------
         None
         """
         self.spp = spp
@@ -143,8 +147,8 @@ class ACTCellModel:
         """
         Compute the area of the soma in cm2.
         
-        Returns:
-        ----------
+        Returns
+        -------
         soma_area: float
             Computed area in cm2.
         """
@@ -158,8 +162,8 @@ class ACTCellModel:
         """
         Compute the total cell area in cm2.
         
-        Returns:
-        ----------
+        Returns
+        -------
         total_area: float
             Computed area in cm2.
         """
@@ -174,16 +178,16 @@ class ACTCellModel:
         """
         Build the NEURON cell.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         sim_index: int
             Simulation index.
 
         print_soma_area: bool, default = False
             If true, prints out the soma area.
         
-        Returns:
-        ----------
+        Returns
+        -------
         None
         """
         self.sim_index = sim_index
@@ -226,13 +230,13 @@ class ACTCellModel:
         """
         Set a custom cell builder at simulaiton time.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         cell_builder: callable
             Callable that returns a hoc cell object.
 
-        Returns:
-        ----------
+        Returns
+        -------
         None
         """
         self._custom_cell_builder = cell_builder
@@ -245,8 +249,8 @@ class ACTCellModel:
         """
         Set a constant current injection. Note that t_stop and dt parameters are required only for internal self.I construction.
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         amp: float
             Injection amplitude (nA).
         
@@ -262,8 +266,8 @@ class ACTCellModel:
         dt: float
             Timestep (ms).
         
-        Returns:
-        ----------
+        Returns
+        -------
         None
         """
         inj = h.IClamp(self.soma[0](0.5))
@@ -292,8 +296,8 @@ class ACTCellModel:
         """
         Set a ramp current injection. Note that t_stop and dt parameters are required only for internal self.I construction.
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         start_amp: float
             Initial injection amplitude (nA).
             
@@ -318,8 +322,8 @@ class ACTCellModel:
         dt: float
             Timestep (ms).
         
-        Returns:
-        ----------
+        Returns
+        -------
         None
         """
 
@@ -355,8 +359,8 @@ class ACTCellModel:
         """
         Sets the cell's gaussian current injection
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         amp_mean: float
             Mean Amps (nA)
             
@@ -378,8 +382,8 @@ class ACTCellModel:
         random_state: np.random.RandomState
             Random seed
         
-        Returns:
-        ----------
+        Returns
+        -------
         None
         """
         total_delay = delay
@@ -404,8 +408,8 @@ class ACTCellModel:
         """
         Gets the output of the simulator.
         
-        Returns:
-        ----------
+        Returns
+        -------
         V: np.ndarray of shape (T,)
             Voltage trace.
         

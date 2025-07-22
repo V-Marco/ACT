@@ -11,9 +11,10 @@ from scipy.fft import rfft, rfftfreq
 
 def find_events(v: np.ndarray, spike_threshold: float = -20) -> np.ndarray:
     """
-    Count the number of spikes in a voltage trace. Returns a list of event indices.
+    Count the number of spikes in a voltage trace.
+    Returns a list of event indices.
 
-    Parameters:
+    Parameters
     -----------
     v: np.ndarray of shape = (T,)
         A single voltage trace.
@@ -21,7 +22,7 @@ def find_events(v: np.ndarray, spike_threshold: float = -20) -> np.ndarray:
     spike_threshold: float, default = -20
         Threshold for spike detection (mV).
         
-    Returns:
+    Returns
     -----------
     event_indices: list[float]
         List of voltage trace indices where spikes occur.
@@ -31,19 +32,19 @@ def find_events(v: np.ndarray, spike_threshold: float = -20) -> np.ndarray:
 
 def select_features(df: pd.DataFrame, feature_keys: list) -> pd.DataFrame:
     """
-    Returns a subset of the features dataframe based on a list of user selected feature keys.
+    Get a subset of the features dataframe based on a list of user selected feature keys.
     Useful for keyword shortcuts like "spike_times" and "isi" to get all columns related.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     df: pd.DataFrame
         The original full feature dataframe
     
     feature_keys: list[str]
         A list of strings describing the features that the user wants to extract
         
-    Returns:
-    -----------
+    Returns
+    -------
     df_sub: pd.DataFrame
         A smaller pandas dataframe constrained to only select columns
     """
@@ -72,7 +73,7 @@ def get_summary_features(
     """
     Compute voltage and current summary features.
 
-    Parameters:
+    Parameters
     ----------
     V: np.ndarray of shape (n_trials, T)
         Voltage traces (mV over ms).
@@ -86,8 +87,8 @@ def get_summary_features(
     max_n_spikes: int, default = 20
         Maximum number of spike times to save.
 
-    Returns:
-    ----------
+    Returns
+    -------
     stat_df: pd.DataFrame
         Dataframe with extracted summary features.
     """
@@ -167,8 +168,8 @@ def remove_saturated_traces(data: np.ndarray, window_of_inspection: tuple, satur
     """
     Filter training data to only voltage traces that have not saturated.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     data: np.ndarray of shape (n_trials, T, 4)
         Array (V, I, g, lto/hto/sim_idx).
         
@@ -178,8 +179,8 @@ def remove_saturated_traces(data: np.ndarray, window_of_inspection: tuple, satur
     saturation_threshold: float, default = -50
         A voltage threshold above which the trace is potentially saturated (mV).
         
-    Returns:
-    -----------
+    Returns
+    -------
     filtered_data: np.ndarray of shape (n_trials, T, 4)
         Filtered data containing nonsaturated traces only.
     """
@@ -194,16 +195,16 @@ def get_traces_with_spikes(data: np.ndarray, spike_threshold: float = -20) -> np
     """
     Filter training data to only voltage traces that have spikes.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     data: np.ndarray of shape (n_trials, T, 3)
         Array (V, I, g).
     
     spike_threshold: int, default = -20
         Threshold for spike detection (mV).
         
-    Returns:
-    -----------
+    Returns
+    -------
     traces_with_spikes: np.ndarray of shape (n_trials, T, 3)
         Filtered data containing only traces with spikes.
     """
@@ -224,16 +225,15 @@ def get_traces_with_spikes(data: np.ndarray, spike_threshold: float = -20) -> np
 #---------------------------------------------
 def combine_data(output_path: str) -> None:
     """
-    ACTSimulator outputs .npy files for each simulation run. This method combines this data
-    into a single .npy file for ease of processing.
+    Combine .npy files for each simulation run produced by the `ACTSimulator` into a single .npy file.
     
-    Parameters:
-    -----------
+    Parameters
+    ----------
     output_path: str
         Output path.
         
-    Returns:
-    -----------
+    Returns
+    -------
     None
     """
     save_path = os.path.join(output_path, f"combined_out.npy")
@@ -259,17 +259,19 @@ def combine_data(output_path: str) -> None:
 
 def clean_g_bars(dataset: np.ndarray) -> np.ndarray:
     """
-    ACTSimulator pads the 3rd column (i.e. conductance set) with NANs. This method removes the pad for use in the model.
+    Extract conductances from .npy files produced by the `ACTSimulator`.
+    The simulator pads the 3rd column (i.e. conductance set) with NANs.
+    This method removes the pad for use in the model.
     
-    Parameters:
-    -----------
-    dataset: np.ndarray of shape = (<number of trials>, <number of timesteps in sim>, 3)
+    Parameters
+    ----------
+    dataset: np.ndarray of shape (n_trials, n_timepoints, 3)
         Voltage traces, current traces, conductance settings
     
-    Returns:
-    ----------
-    cleaned_g_bars: np.ndarray of size (<num trials>, <num channels>)
-        Array of conductance values for each trail
+    Returns
+    -------
+    cleaned_g_bars: np.ndarray of shape (n_trials, n_channels)
+        Array of conductance values for each trail.
     """
     def remove_nan_from_sample(sample):
         return sample[~np.isnan(sample)]

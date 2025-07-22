@@ -1,13 +1,16 @@
 import numpy as np
 
 class ACTSegregator:
+    """
+    Segment the activation curves into functional modules.
+    """
 
     def _get_segregation_message_right(self, right_v: float, cutoff_v: float, slope: float, intercept: float) -> str:
         """
         Generates instructions for modifying the .mod files with positive slope sigmoid activation functions.
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         right_v: float
             Right-most voltage involved in the linear segment cutoff for the activation function.
             
@@ -20,8 +23,8 @@ class ACTSegregator:
         intercept: float
             Intercept of the linear segment.
                  
-        Returns:
-        -----------
+        Returns
+        -------
         message: str
             Instructions for .mod file changes
         """
@@ -40,8 +43,8 @@ class ACTSegregator:
         """
         Generates instructions for modifying the .mod files with negative slope sigmoid activation functions.
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         left_v: float
             Left-most voltage involved in the linear segment cutoff for the activation function.
             
@@ -54,8 +57,8 @@ class ACTSegregator:
         intercept: float
             Intercept of the linear segment.
                  
-        Returns:
-        -----------
+        Returns
+        -------
         message: str
             Instructions for .mod file changes.
         """
@@ -74,8 +77,8 @@ class ACTSegregator:
         """
         Prints instructions on modifying modfiles. Returns segregated activation functions. 
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         v: np.ndarray of shape (T,)
             The range of voltage values over which each activation curve is defined. 
         
@@ -88,8 +91,8 @@ class ACTSegregator:
         extrapolate_dv: float
             Voltage range to linearly extrapolate activation functions over.
                  
-        Returns:
-        -----------
+        Returns
+        -------
         segregated_activation_curves: list
             Segregated activation curves.
         """

@@ -7,7 +7,7 @@ def pp_error(pp_target: GettablePassiveProperties, pp_pred: GettablePassivePrope
     """
     Compute the absolute error between target and predicted passive properties.
 
-    Parameters:
+    Parameters
     ----------
     pp_target: GettablePasssiveProperties
         Target passive properties.
@@ -15,8 +15,8 @@ def pp_error(pp_target: GettablePassiveProperties, pp_pred: GettablePassivePrope
     pp_pred: GettablePasssiveProperties
         Predicted passive properties.
 
-    Returns:
-    ----------
+    Returns
+    -------
     error: list[(property, abs_error)]
         Absolute error for each property.
     """
@@ -29,7 +29,7 @@ def summary_features_error(sf_target: np.ndarray, sf_pred: np.ndarray) -> float:
     """
     Compute the mean absolute error between target and predicted summary features.
 
-    Parameters:
+    Parameters
     ----------
     sf_target: np.ndarray of shape (n_trials, n_features)
         Target summary features.
@@ -37,8 +37,8 @@ def summary_features_error(sf_target: np.ndarray, sf_pred: np.ndarray) -> float:
     sf_pred: np.ndarray of shape (n_trials, n_features)
         Predicted summary features.
     
-    Returns:
-    ----------
+    Returns
+    -------
     mae: np.ndarray of shape (n_trials,)
         Mean absolute error across z-transformed features.
     """

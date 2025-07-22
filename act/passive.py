@@ -2,13 +2,15 @@ import numpy as np
 from act.types import SettablePassiveProperties, GettablePassiveProperties
 
 class ACTPassiveModule:
+    """Estimate passive properties. 
+    """
 
     @staticmethod
     def compute_spp(R_in: float, soma_area: float, tau: float, V_rest: float) -> SettablePassiveProperties:
         """
         Compute the reversal potential and maximum conductance of the leak channel and membrane capacitance.
 
-        Parameters:
+        Parameters
         ----------
         R_in: float
             Target input resistance (Ohm).
@@ -22,8 +24,8 @@ class ACTPassiveModule:
         V_rest: float
             Target resting potential (mV).
         
-        Returns:
-        ----------
+        Returns
+        -------
         spp: SettablePassiveProperties
             Computed settable passive properties.
         """
@@ -39,7 +41,7 @@ class ACTPassiveModule:
         """
         Compute maximum conductance of the leak channel.
 
-        Parameters:
+        Parameters
         ----------
         R_in: float
             Input resistance (Ohm).
@@ -47,8 +49,8 @@ class ACTPassiveModule:
         soma_area: float
             Soma (or total) area (cm2).
         
-        Returns:
-        ----------
+        Returns
+        -------
         g_bar_leak: float
             (S / cm2)
         """
@@ -60,7 +62,7 @@ class ACTPassiveModule:
         """
         Compute membrane capacitance.
 
-        Parameters:
+        Parameters
         ----------
         g_bar_leak: float
             Maximum conductance of the leak channel (S / cm2).
@@ -68,21 +70,21 @@ class ACTPassiveModule:
         tau: float
             Membrane time constant (s).
         
-        Returns:
-        ----------
+        Returns
+        -------
         Cm: float
             Membrane capacitance (uF / cm2).
         
         """
         return tau * g_bar_leak * 1e6
     
-    
+    @staticmethod
     def compute_gpp(passive_V: np.ndarray, dt: float, I_t_start: float, I_t_end: float, I_amp: float) -> GettablePassiveProperties:
         """
         Estimate input resistance, lower and upper bounds of the membrane time constant, membrane resting potential and the sag ratio
         from a passive trace.
 
-        Parameters:
+        Parameters
         ----------
         passive_V: np.ndarray
             Voltage trace under negative current injection
@@ -99,10 +101,10 @@ class ACTPassiveModule:
         I_amp: float
             Current injection amplitude (mV)
             
-        Returns:
-        ----------
+        Returns
+        -------
         gpp: GettablePassiveProperties
-            Class containing gettable passive properties
+            Class containing gettable passive properties.
         """
 
         index_V_rest = int(I_t_start / dt) - 1
