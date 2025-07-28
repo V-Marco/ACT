@@ -60,7 +60,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'intro';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API Reference" href="api.html" />
+    <link rel="next" title="Workflow" href="workflow/workflow.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -175,6 +175,13 @@
             </li>
         </ul>
         <ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="workflow/workflow.html">Workflow</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="workflow/download_build_from_allendb.html">Download and build the cell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workflow/segmentation.html">Segment the cell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workflow/match_passive.html">Match passive properties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workflow/match_fi.html">Match the FI curve</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
 </ul>
 
@@ -341,6 +348,8 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cite">Cite</a></li>
 </ul>
             </nav>
         </div>
@@ -356,9 +365,24 @@ document.write(`
 <h1>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading">#</a></h1>
 <section id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
+<p>Automatic Cell Tuner (ACT) is a workflow for semi-automated tuning of somatic conductances of biophysical cell models.
+ACT implements the functional current segmentation approach (Alturki et al., 2016) allowing for modular opitmization that effectively constrains the parameter space and reduces the search time.</p>
 </section>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
+<p>Currently, only installation from source is supported.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/V-Marco/ACT.git
+pip<span class="w"> </span>install<span class="w"> </span>.
+</pre></div>
+</div>
+</section>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">#</a></h2>
+<p>See the <a class="reference internal" href="workflow/workflow.html"><span class="std std-doc">Workflow</span></a> section for a full tuning example.</p>
+</section>
+<section id="cite">
+<h2>Cite<a class="headerlink" href="#cite" title="Link to this heading">#</a></h2>
+<p>TBD</p>
 </section>
 <div class="toctree-wrapper compound">
 </div>
@@ -395,11 +419,11 @@ document.write(`
                   
 <div class="prev-next-area">
     <a class="right-next"
-       href="api.html"
+       href="workflow/workflow.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">API Reference</p>
+        <p class="prev-next-title">Workflow</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -421,6 +445,8 @@ document.write(`
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cite">Cite</a></li>
 </ul>
   </nav></div>
 
