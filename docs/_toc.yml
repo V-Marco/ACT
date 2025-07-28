@@ -4,4 +4,10 @@
 format: jb-book
 root: intro
 chapters:
+- file: workflow/workflow.md
+  sections:
+  - file: workflow/download_build_from_allendb.ipynb
+  - file: workflow/segmentation.ipynb
+  - file: workflow/match_passive.ipynb
+  - file: workflow/match_fi.ipynb
 - file: api.md

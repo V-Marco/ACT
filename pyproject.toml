@@ -17,5 +17,6 @@ dependencies = [
     "scipy",
     "pandas",
     "timeout_decorator",
-    "scikit-learn"
+    "scikit-learn",
+    "allensdk"
 ]
