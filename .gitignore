@@ -148,7 +148,6 @@ special.nrn
 *.csv
 !exp_metrics.csv
 
-*.json
 !exp_learned_params.json
 !exp_target_v.json
 
