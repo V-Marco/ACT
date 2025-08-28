@@ -46,9 +46,14 @@ class GettablePassiveProperties:
     V_rest: float, default = None
         Resting potential (mV).
     """
-    R_in: float = None
-    tau1: float = None
-    tau2: float = None
+    R_in_rest_to_trough: float = None
+    R_in_trough_to_final: float = None
+    R_in_rest_to_final: float = None
+
+    tau_rest_to_trough: float = None
+    tau_trough_to_final: float = None
+    tau_avg: float = None
+
     sag_ratio: float = None
     V_rest: float = None
 

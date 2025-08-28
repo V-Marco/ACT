@@ -118,32 +118,36 @@ class ACTPassiveModule:
         V_final = passive_V[index_V_final]
 
         # R_in
-        R_in = (V_rest - V_trough) / (0 - I_amp)
+        R_in_rest_to_trough = (V_rest - V_trough) / (0 - I_amp)
+        R_in_trough_to_final = (V_final - V_trough) / (0 - I_amp)
+        R_in_rest_to_final = (V_rest - V_final) / (0 - I_amp)
 
         # Tau1
         V_tau1 = V_rest - (V_rest - V_trough) * 0.632
-
-        index_v_tau1 = next(
-                    index for index, voltage_value in enumerate(list(passive_V[index_V_rest:]))
-                    if voltage_value < V_tau1
-                )
-        tau1 = index_v_tau1 * dt
+        index_V_tau1 = np.argmax(passive_V[index_V_rest:] < V_tau1)
+        tau1 = index_V_tau1 * dt
 
         # Tau2
         V_tau2 = V_trough - (V_trough - V_final) * 0.632
-        index_v_tau2 = next(
-                    index for index, voltage_value in enumerate(list(passive_V[index_V_trough:]))
-                    if voltage_value > V_tau2
-                )
-        tau2 = index_v_tau2 * dt
+        index_V_tau2 = np.argmax(passive_V[index_V_trough:] > V_tau2)
+        tau2 = index_V_tau2 * dt
+
+        # Tau3
+        # Weighted average time constant
+        w0 = (V_rest - V_trough)
+        w1 = (V_final - V_trough)
+        tau3 = (w0 * tau1 + w1 * tau2) / (w0 + w1)
 
         # Sag ratio
         sag = (V_final - V_trough) / (V_rest - V_trough)
 
         gpp = GettablePassiveProperties(
-            R_in = R_in,
-            tau1 = tau1,
-            tau2 = tau2,
+            R_in_rest_to_trough = R_in_rest_to_trough,
+            R_in_trough_to_final = R_in_trough_to_final,
+            R_in_rest_to_final = R_in_rest_to_final,
+            tau_rest_to_trough = tau1,
+            tau_trough_to_final = tau2,
+            tau_avg = tau3,
             sag_ratio = sag,
             V_rest = V_rest
         )
