@@ -194,7 +194,11 @@ class ACTCellModel:
 
         # Get the cell hoc object
         if self._custom_cell_builder is not None:
-            hoc_cell = self._custom_cell_builder()
+            cell_builder, kwargs = self._custom_cell_builder
+            if kwargs is not None:
+                hoc_cell = cell_builder(**kwargs)
+            else:
+                hoc_cell = cell_builder()
         else:
             h.load_file(self.path_to_hoc_file)
             hoc_cell = getattr(h, self.cell_name)()
@@ -226,7 +230,7 @@ class ACTCellModel:
         self.t = h.Vector().record(h._ref_t)
         self.V = h.Vector().record(self.soma[0](0.5)._ref_v)
 
-    def set_custom_cell_builder(self, cell_builder: callable) -> None:
+    def set_custom_cell_builder(self, cell_builder: callable, cell_builder_kwargs: dict = None) -> None:
         """
         Set a custom cell builder at simulaiton time.
 
@@ -239,7 +243,7 @@ class ACTCellModel:
         -------
         None
         """
-        self._custom_cell_builder = cell_builder
+        self._custom_cell_builder = (cell_builder, cell_builder_kwargs)
     
     # ----------
     # Current injection

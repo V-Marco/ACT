@@ -34,7 +34,7 @@ class ACTSimulator:
     """Simulate ACT-compatible cell models.
     """
 
-    def __init__(self, output_folder_name) -> None:
+    def __init__(self, output_folder_name: str = "./") -> None:
         """
         Initialize the simulator.
 
@@ -50,73 +50,8 @@ class ACTSimulator:
         ----------
         When submitting multiple jobs, note that the cells must share modfiles.
         """)
-        
 
-    def run(self, cell: ACTCellModel, parameters: SimulationParameters) -> ACTCellModel:
-        """
-        Run a single simulation and return the cell model. Meant for interactive exploration of the cell model.
-
-        Parameters
-        ----------
-        cell: ACTCellModel
-            Cell model to simulate.
-        
-        parameters: SimulationParameters
-            Paramteters for the simulation.
-        
-        Returns
-        -------
-        cell: ACTCellModel
-            Cell model after the simulation.
-        """
-        os.system(f"nrnivmodl {cell.path_to_mod_files} > /dev/null 2>&1")
-
-        h.load_file('stdrun.hoc')
-
-        try:
-            with _suppress_neuron_warnings():
-                h.nrn_load_dll("./x86_64/.libs/libnrnmech.so")
-        except:
-            pass
-
-        h.celsius = parameters.h_celsius
-        h.tstop = parameters.h_tstop
-        h.dt = parameters.h_dt
-        h.steps_per_ms = 1 / h.dt
-        h.v_init = parameters.h_v_init
-
-        cell._build_cell(parameters.sim_idx)
-
-        # Set current injection
-        for CI in parameters.CI:
-            if isinstance(CI, ConstantCurrentInjection):
-                cell._add_constant_CI(
-                    CI.amp, CI.dur, CI.delay, 
-                    parameters.h_tstop, 
-                    parameters.h_dt)
-            elif isinstance(CI, RampCurrentInjection):
-                cell._add_ramp_CI(
-                    CI.amp_start, CI.amp_incr, CI.num_steps, CI.dur, CI.final_step_add_time, CI.delay, 
-                    parameters.h_tstop, 
-                    parameters.h_dt)
-            elif isinstance(CI, GaussianCurrentInjection):
-                cell._add_gaussian_CI(
-                    CI.amp_mean, CI.amp_std, CI.dur, CI.delay, 
-                    parameters.random_seed)
-            else:
-                raise NotImplementedError
-
-        print(f"Soma area: {cell.soma[0](0.5).area()}")
-        print(f"Soma diam: {cell.soma[0].diam}")
-        print(f"Soma L: {cell.soma[0].L}")
-
-        h.finitialize(h.v_init)
-        h.run()
-
-        return cell
-    
-
-    def submit_job(self, cell: ACTCellModel, parameters: SimulationParameters) -> None:
+    def submit_job(self, cell: ACTCellModel, parameters: SimulationParameters = SimulationParameters()) -> None:
         """
         Schedule a job for a delayed parallel simulation.
         

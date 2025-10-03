@@ -2,7 +2,8 @@ import numpy as np
 from act.types import SettablePassiveProperties, GettablePassiveProperties
 
 class ACTPassiveModule:
-    """Estimate passive properties. 
+    """
+    Estimate passive properties. 
     """
 
     @staticmethod

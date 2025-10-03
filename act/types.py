@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 @dataclass
 class SettablePassiveProperties:
@@ -167,13 +167,13 @@ class SimulationParameters:
     verbose: bool, default = False
         If True, additional information is printed (e.g., soma and total area).
     """
-    sim_name: str = ""
+    sim_name: str = "act_simulation"
     sim_idx: int = 0 
     h_v_init: float = -50                     # (mV)
     h_tstop: int = 500                        # (ms)
     h_dt: float = 0.1                         # (ms)
     h_celsius: float = 37                     # (deg C)
-    CI: list = None
+    CI: list = field(default_factory = lambda: [ConstantCurrentInjection(amp = 0, dur = 0, delay = 0)])
     random_seed: int = 42
     verbose: bool = False
     _path: str = None
