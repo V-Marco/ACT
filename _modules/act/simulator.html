@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>act.simulator &#8212; My sample book</title>
+    <title>act.simulator &#8212; Automatic Cell Tuner</title>
   
   
   
@@ -31,7 +31,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -147,14 +147,8 @@
   
   
   
-    
-    
-      
-    
-    
-    <img src="../../_static/logo.png" class="logo__image only-light" alt="My sample book - Home"/>
-    <script>document.write(`<img src="../../_static/logo.png" class="logo__image only-dark" alt="My sample book - Home"/>`);</script>
   
+    <p class="title logo__title">Automatic Cell Tuner</p>
   
 </a></div>
         <div class="sidebar-primary-item">
@@ -174,14 +168,20 @@
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
                 <a class="reference internal" href="../../intro.html">
-                    Welcome to your Jupyter Book
+                    Quick Start
                 </a>
             </li>
         </ul>
         <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../../markdown.html">Markdown Files</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../notebooks.html">Content with notebooks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prerequisites/convert_allen.html">Making modfiles compatible with ACT</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../workflow/workflow.html">Workflow</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../workflow/download_build_from_allendb.html">Download and build the cell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../workflow/segmentation.html">Segment the cell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../workflow/match_passive.html">Match passive properties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../workflow/match_fi.html">Match the FI curve</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
 </ul>
 
     </div>
@@ -338,7 +338,7 @@ document.write(`
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Simulate ACT-compatible cell models.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_folder_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_folder_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;./&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize the simulator.</span>
 
@@ -354,78 +354,10 @@ document.write(`
 <span class="s2">        ----------</span>
 <span class="s2">        When submitting multiple jobs, note that the cells must share modfiles.</span>
 <span class="s2">        &quot;&quot;&quot;</span><span class="p">)</span>
-        
-
-<div class="viewcode-block" id="ACTSimulator.run">
-<a class="viewcode-back" href="../../api.html#act.simulator.ACTSimulator.run">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="n">ACTCellModel</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="n">SimulationParameters</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ACTCellModel</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Run a single simulation and return the cell model. Meant for interactive exploration of the cell model.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        cell: ACTCellModel</span>
-<span class="sd">            Cell model to simulate.</span>
-<span class="sd">        </span>
-<span class="sd">        parameters: SimulationParameters</span>
-<span class="sd">            Paramteters for the simulation.</span>
-<span class="sd">        </span>
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        cell: ACTCellModel</span>
-<span class="sd">            Cell model after the simulation.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;nrnivmodl </span><span class="si">{</span><span class="n">cell</span><span class="o">.</span><span class="n">path_to_mod_files</span><span class="si">}</span><span class="s2"> &gt; /dev/null 2&gt;&amp;1&quot;</span><span class="p">)</span>
-
-        <span class="n">h</span><span class="o">.</span><span class="n">load_file</span><span class="p">(</span><span class="s1">&#39;stdrun.hoc&#39;</span><span class="p">)</span>
-
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">with</span> <span class="n">_suppress_neuron_warnings</span><span class="p">():</span>
-                <span class="n">h</span><span class="o">.</span><span class="n">nrn_load_dll</span><span class="p">(</span><span class="s2">&quot;./x86_64/.libs/libnrnmech.so&quot;</span><span class="p">)</span>
-        <span class="k">except</span><span class="p">:</span>
-            <span class="k">pass</span>
-
-        <span class="n">h</span><span class="o">.</span><span class="n">celsius</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">h_celsius</span>
-        <span class="n">h</span><span class="o">.</span><span class="n">tstop</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">h_tstop</span>
-        <span class="n">h</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">h_dt</span>
-        <span class="n">h</span><span class="o">.</span><span class="n">steps_per_ms</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">h</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">h</span><span class="o">.</span><span class="n">v_init</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">h_v_init</span>
-
-        <span class="n">cell</span><span class="o">.</span><span class="n">_build_cell</span><span class="p">(</span><span class="n">parameters</span><span class="o">.</span><span class="n">sim_idx</span><span class="p">)</span>
-
-        <span class="c1"># Set current injection</span>
-        <span class="k">for</span> <span class="n">CI</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">CI</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">CI</span><span class="p">,</span> <span class="n">ConstantCurrentInjection</span><span class="p">):</span>
-                <span class="n">cell</span><span class="o">.</span><span class="n">_add_constant_CI</span><span class="p">(</span>
-                    <span class="n">CI</span><span class="o">.</span><span class="n">amp</span><span class="p">,</span> <span class="n">CI</span><span class="o">.</span><span class="n">dur</span><span class="p">,</span> <span class="n">CI</span><span class="o">.</span><span class="n">delay</span><span class="p">,</span> 
-                    <span class="n">parameters</span><span class="o">.</span><span class="n">h_tstop</span><span class="p">,</span> 
-                    <span class="n">parameters</span><span class="o">.</span><span class="n">h_dt</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">CI</span><span class="p">,</span> <span class="n">RampCurrentInjection</span><span class="p">):</span>
-                <span class="n">cell</span><span class="o">.</span><span class="n">_add_ramp_CI</span><span class="p">(</span>
-                    <span class="n">CI</span><span class="o">.</span><span class="n">amp_start</span><span class="p">,</span> <span class="n">CI</span><span class="o">.</span><span class="n">amp_incr</span><span class="p">,</span> <span class="n">CI</span><span class="o">.</span><span class="n">num_steps</span><span class="p">,</span> <span class="n">CI</span><span class="o">.</span><span class="n">dur</span><span class="p">,</span> <span class="n">CI</span><span class="o">.</span><span class="n">final_step_add_time</span><span class="p">,</span> <span class="n">CI</span><span class="o">.</span><span class="n">delay</span><span class="p">,</span> 
-                    <span class="n">parameters</span><span class="o">.</span><span class="n">h_tstop</span><span class="p">,</span> 
-                    <span class="n">parameters</span><span class="o">.</span><span class="n">h_dt</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">CI</span><span class="p">,</span> <span class="n">GaussianCurrentInjection</span><span class="p">):</span>
-                <span class="n">cell</span><span class="o">.</span><span class="n">_add_gaussian_CI</span><span class="p">(</span>
-                    <span class="n">CI</span><span class="o">.</span><span class="n">amp_mean</span><span class="p">,</span> <span class="n">CI</span><span class="o">.</span><span class="n">amp_std</span><span class="p">,</span> <span class="n">CI</span><span class="o">.</span><span class="n">dur</span><span class="p">,</span> <span class="n">CI</span><span class="o">.</span><span class="n">delay</span><span class="p">,</span> 
-                    <span class="n">parameters</span><span class="o">.</span><span class="n">random_seed</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
-
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Soma area: </span><span class="si">{</span><span class="n">cell</span><span class="o">.</span><span class="n">soma</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">area</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Soma diam: </span><span class="si">{</span><span class="n">cell</span><span class="o">.</span><span class="n">soma</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">diam</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Soma L: </span><span class="si">{</span><span class="n">cell</span><span class="o">.</span><span class="n">soma</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">L</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="n">h</span><span class="o">.</span><span class="n">finitialize</span><span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">v_init</span><span class="p">)</span>
-        <span class="n">h</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
-
-        <span class="k">return</span> <span class="n">cell</span></div>
-
-    
 
 <div class="viewcode-block" id="ACTSimulator.submit_job">
 <a class="viewcode-back" href="../../api.html#act.simulator.ACTSimulator.submit_job">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">submit_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="n">ACTCellModel</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="n">SimulationParameters</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">submit_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="n">ACTCellModel</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="n">SimulationParameters</span> <span class="o">=</span> <span class="n">SimulationParameters</span><span class="p">())</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Schedule a job for a delayed parallel simulation.</span>
 <span class="sd">        </span>
@@ -580,7 +512,7 @@ document.write(`
   <div class="footer-item">
     
 <p class="component-author">
-By The Jupyter Book Community
+By The Jupyter Book community
 </p>
 
   </div>
@@ -590,7 +522,7 @@ By The Jupyter Book Community
 
   <p class="copyright">
     
-      © Copyright 2023.
+      © Copyright 2025.
       <br/>
     
   </p>
