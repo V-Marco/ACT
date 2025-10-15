@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import numpy as np
 import os
+from scipy.optimize import curve_fit
 
 @dataclass
 class StateVariable:
@@ -189,3 +190,30 @@ class ACTModfile:
         af.append("\t:Segmentation-end\n")
 
         return str.join("\n", af)
+    
+# -----
+# ALLEN
+# -----
+
+def vtrap(x, y):
+    if np.any(np.abs(x / y) < 1e-6):
+        vtrap = y * (1 - x / y / 2)
+    else:
+        vtrap = x / (np.exp(x / y) - 1)
+    return vtrap
+
+def fit_boltzmann(v, p_v):
+    def boltzmann(v, vhalf, k):
+        return 1 / (1 + np.exp((vhalf - v) / k))
+    params, _ = curve_fit(f = boltzmann, xdata = v, ydata = p_v)
+    return params # vhalf, k
+    
+class AllenIh(ACTModfile):
+
+     def __init__(self):
+        
+        self.channel_name = "Ih"
+        self.ion = None
+        self.gbar = 0.00001
+        self.e = -45.0
+        self.state_variables = state_variables

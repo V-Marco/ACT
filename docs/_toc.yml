@@ -4,6 +4,7 @@
 format: jb-book
 root: intro
 chapters:
+- file: prerequisites/convert_allen.ipynb
 - file: workflow/workflow.md
   sections:
   - file: workflow/download_build_from_allendb.ipynb
