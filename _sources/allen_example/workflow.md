@@ -1,4 +1,4 @@
-# Workflow
+# Example: Detailed L5 cell from ACTD
 
 Here we provide a step-by-step example of using the ACT workflow to tune a detailed Layer-5 cell model.
 

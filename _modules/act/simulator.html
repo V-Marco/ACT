@@ -31,7 +31,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -173,12 +173,23 @@
             </li>
         </ul>
         <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../../prerequisites/convert_allen.html">Making modfiles compatible with ACT</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../workflow/workflow.html">Workflow</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../workflow/download_build_from_allendb.html">Download and build the cell</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../workflow/segmentation.html">Segment the cell</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../workflow/match_passive.html">Match passive properties</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../workflow/match_fi.html">Match the FI curve</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../guidelines/guidelines.html">General workflow</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../guidelines/making_compatible.html">Making modfiles compatible with ACT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../guidelines/download_setup_cell.html">Download and set up the cell files</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../spiker_example/spiker_example.html">Example: Spiker</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../spiker_example/spiker_download.html">Set up the model files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../spiker_example/spiker_convert.html">Making the modfile compatible</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../spiker_example/spiker_segmentation.html">Segmentation</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../allen_example/workflow.html">Example: Detailed L5 cell from ACTD</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../allen_example/download_build_from_allendb.html">Download and build the cell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../allen_example/convert_allen.html">Allen Cell Types Database modfiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../allen_example/segmentation.html">Segment the cell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../allen_example/match_passive.html">Match passive properties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../allen_example/match_fi.html">Match the FI curve</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
@@ -406,7 +417,10 @@ document.write(`
         <span class="n">pool</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">pool</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="s2">&quot;x86_64&quot;</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;x86_64&quot;</span><span class="p">):</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="s2">&quot;x86_64&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;arm64&quot;</span><span class="p">):</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="s2">&quot;arm64&quot;</span><span class="p">)</span></div>
 
     
 

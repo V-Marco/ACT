@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Making modfiles compatible with ACT &#8212; Automatic Cell Tuner</title>
+    <title>Allen Cell Types Database modfiles &#8212; Automatic Cell Tuner</title>
   
   
   
@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -57,13 +57,11 @@
     <script async="async" src="../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
-    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'prerequisites/convert_allen';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'allen_example/convert_allen';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Workflow" href="../workflow/workflow.html" />
-    <link rel="prev" title="Quick Start" href="../intro.html" />
+    <link rel="next" title="Segment the cell" href="segmentation.html" />
+    <link rel="prev" title="Download and build the cell" href="download_build_from_allendb.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -176,12 +174,23 @@
             </li>
         </ul>
         <ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Making modfiles compatible with ACT</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../workflow/workflow.html">Workflow</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../workflow/download_build_from_allendb.html">Download and build the cell</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../workflow/segmentation.html">Segment the cell</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../workflow/match_passive.html">Match passive properties</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../workflow/match_fi.html">Match the FI curve</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../guidelines/guidelines.html">General workflow</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../guidelines/making_compatible.html">Making modfiles compatible with ACT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../guidelines/download_setup_cell.html">Download and set up the cell files</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../spiker_example/spiker_example.html">Example: Spiker</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../spiker_example/spiker_download.html">Set up the model files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../spiker_example/spiker_convert.html">Making the modfile compatible</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../spiker_example/spiker_segmentation.html">Segmentation</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="workflow.html">Example: Detailed L5 cell from ACTD</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="download_build_from_allendb.html">Download and build the cell</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Allen Cell Types Database modfiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="segmentation.html">Segment the cell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="match_passive.html">Match passive properties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="match_fi.html">Match the FI curve</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
@@ -254,7 +263,7 @@
       
       
       
-      <li><a href="../_sources/prerequisites/convert_allen.ipynb" target="_blank"
+      <li><a href="../_sources/allen_example/convert_allen.ipynb" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -338,7 +347,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Making modfiles compatible with ACT</h1>
+    <h1>Allen Cell Types Database modfiles</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -348,15 +357,11 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#general-algorithm">General algorithm</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#nata">NaTa</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ca-hva">Ca_HVA</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ih">Ih</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#im-v2">Im_v2</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#kv2like">Kv2like</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#nata">NaTa</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ca-hva">Ca_HVA</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ih">Ih</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#im-v2">Im_v2</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#kv2like">Kv2like</a></li>
 </ul>
             </nav>
         </div>
@@ -368,13 +373,12 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="making-modfiles-compatible-with-act">
-<h1>Making modfiles compatible with ACT<a class="headerlink" href="#making-modfiles-compatible-with-act" title="Link to this heading">#</a></h1>
-<p>ACT supports activation functions specified in the Boltzmann (<span class="math notranslate nohighlight">\(V_{1/2}\)</span>, <span class="math notranslate nohighlight">\(k\)</span>) format and provides tools for conversion from other specifications. In this example we demonstrate how to convert Allen Cell Types Database modfiles from the alpha-beta specification to the Boltzmann specification.</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="allen-cell-types-database-modfiles">
+<h1>Allen Cell Types Database modfiles<a class="headerlink" href="#allen-cell-types-database-modfiles" title="Link to this heading">#</a></h1>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;../&quot;</span><span class="p">)</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;../../&quot;</span><span class="p">)</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
@@ -384,20 +388,6 @@ document.write(`
 </div>
 </div>
 </div>
-<section id="general-algorithm">
-<h2>General algorithm<a class="headerlink" href="#general-algorithm" title="Link to this heading">#</a></h2>
-<ol class="arabic simple">
-<li><p>Transfer the activation function from the modfile and express it as a <code class="docutils literal notranslate"><span class="pre">Python</span></code> function.</p></li>
-<li><p>Define a suitable voltage range. Use the <code class="docutils literal notranslate"><span class="pre">fit_boltzmann()</span></code> function from <code class="docutils literal notranslate"><span class="pre">act.modfiles</span></code> to fit a sigmoid and obtain <span class="math notranslate nohighlight">\(V_{1/2}\)</span> and <span class="math notranslate nohighlight">\(k\)</span>.</p></li>
-<li><p>Replace the activation function in the modfile with</p></li>
-</ol>
-<div class="math notranslate nohighlight">
-\[
-1.0 / \left(1.0 + \exp(-(v- V_{1/2})/k)\right).
-\]</div>
-</section>
-<section id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># For convenience</span>
@@ -408,7 +398,7 @@ document.write(`
 </div>
 </div>
 <section id="nata">
-<h3>NaTa<a class="headerlink" href="#nata" title="Link to this heading">#</a></h3>
+<h2>NaTa<a class="headerlink" href="#nata" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Copied from the modfile</span>
@@ -433,14 +423,11 @@ document.write(`
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;V (mV)&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Prob.&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;vhalf = </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">vhalf</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">, k = </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.legend.Legend at 0x1330c1750&gt;
-</pre></div>
-</div>
 <img alt="../_images/02658d3e11f75369613df304766f00f8bf0d4b441067ebf6a54e922f87e846f4.png" src="../_images/02658d3e11f75369613df304766f00f8bf0d4b441067ebf6a54e922f87e846f4.png" />
 </div>
 </div>
@@ -448,7 +435,7 @@ document.write(`
 <p><img alt="" src="../_images/convert_allen_1.png" /></p>
 </section>
 <section id="ca-hva">
-<h3>Ca_HVA<a class="headerlink" href="#ca-hva" title="Link to this heading">#</a></h3>
+<h2>Ca_HVA<a class="headerlink" href="#ca-hva" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Copied from the modfile</span>
@@ -469,21 +456,18 @@ document.write(`
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;V (mV)&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Prob.&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;vhalf = </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">vhalf</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">, k = </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.legend.Legend at 0x133340d90&gt;
-</pre></div>
-</div>
 <img alt="../_images/679b9b0e1690885275cfe174dc7fadc2d309df709b3902350015ce64b62daf94.png" src="../_images/679b9b0e1690885275cfe174dc7fadc2d309df709b3902350015ce64b62daf94.png" />
 </div>
 </div>
 <p>Update the modfile…</p>
 </section>
 <section id="ih">
-<h3>Ih<a class="headerlink" href="#ih" title="Link to this heading">#</a></h3>
+<h2>Ih<a class="headerlink" href="#ih" title="Link to this heading">#</a></h2>
 <p>Note the reverse shape of the Ih activation function.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -505,21 +489,18 @@ document.write(`
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;V (mV)&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Prob.&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;vhalf = </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">vhalf</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">, k = </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.legend.Legend at 0x1331a7670&gt;
-</pre></div>
-</div>
 <img alt="../_images/7a5807c9c10ca49bf1cff75fff756bc1f1601ece99ca18427dd0952efa735d56.png" src="../_images/7a5807c9c10ca49bf1cff75fff756bc1f1601ece99ca18427dd0952efa735d56.png" />
 </div>
 </div>
 <p>Update the modfile…</p>
 </section>
 <section id="im-v2">
-<h3>Im_v2<a class="headerlink" href="#im-v2" title="Link to this heading">#</a></h3>
+<h2>Im_v2<a class="headerlink" href="#im-v2" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Copied from the modfile</span>
@@ -540,21 +521,18 @@ document.write(`
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;V (mV)&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Prob.&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;vhalf = </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">vhalf</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">, k = </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.legend.Legend at 0x132a11630&gt;
-</pre></div>
-</div>
 <img alt="../_images/37f7989b2552e041686a01794a78f54d81192cd46598304c9a374942c7a9b3d7.png" src="../_images/37f7989b2552e041686a01794a78f54d81192cd46598304c9a374942c7a9b3d7.png" />
 </div>
 </div>
 <p>Update the modfile…</p>
 </section>
 <section id="kv2like">
-<h3>Kv2like<a class="headerlink" href="#kv2like" title="Link to this heading">#</a></h3>
+<h2>Kv2like<a class="headerlink" href="#kv2like" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Copied from the modfile</span>
@@ -575,19 +553,15 @@ document.write(`
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;V (mV)&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Prob.&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;vhalf = </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">vhalf</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">, k = </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.legend.Legend at 0x127710b20&gt;
-</pre></div>
-</div>
 <img alt="../_images/5ebaaf63fd1d96603ee791b7843fbfd19a9a482a9a82bcc2ffd24a48ed021598.png" src="../_images/5ebaaf63fd1d96603ee791b7843fbfd19a9a482a9a82bcc2ffd24a48ed021598.png" />
 </div>
 </div>
 <p>Update the modfile…</p>
-</section>
 </section>
 </section>
 
@@ -604,7 +578,7 @@ document.write(`
         },
         kernelOptions: {
             name: "python3",
-            path: "./prerequisites"
+            path: "./allen_example"
         },
         predefinedOutput: true
     }
@@ -622,20 +596,20 @@ document.write(`
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../intro.html"
+       href="download_build_from_allendb.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Quick Start</p>
+        <p class="prev-next-title">Download and build the cell</p>
       </div>
     </a>
     <a class="right-next"
-       href="../workflow/workflow.html"
+       href="segmentation.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Workflow</p>
+        <p class="prev-next-title">Segment the cell</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -655,15 +629,11 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#general-algorithm">General algorithm</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#nata">NaTa</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ca-hva">Ca_HVA</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ih">Ih</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#im-v2">Im_v2</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#kv2like">Kv2like</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#nata">NaTa</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ca-hva">Ca_HVA</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ih">Ih</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#im-v2">Im_v2</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#kv2like">Kv2like</a></li>
 </ul>
   </nav></div>
 

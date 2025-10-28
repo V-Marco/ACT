@@ -62,7 +62,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'intro';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Making modfiles compatible with ACT" href="prerequisites/convert_allen.html" />
+    <link rel="next" title="Workflow and guidelines" href="guidelines/guidelines.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -177,12 +177,24 @@
             </li>
         </ul>
         <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="prerequisites/convert_allen.html">Making modfiles compatible with ACT</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="workflow/workflow.html">Workflow</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="workflow/download_build_from_allendb.html">Download and build the cell</a></li>
-<li class="toctree-l2"><a class="reference internal" href="workflow/segmentation.html">Segment the cell</a></li>
-<li class="toctree-l2"><a class="reference internal" href="workflow/match_passive.html">Match passive properties</a></li>
-<li class="toctree-l2"><a class="reference internal" href="workflow/match_fi.html">Match the FI curve</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="guidelines/guidelines.html">Workflow and guidelines</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="guidelines/making_compatible.html">Making modfiles compatible with ACT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guidelines/download_setup_cell.html">Downloading and seting up the cell files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guidelines/segmentation.html">Segmentation of activation functions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="spiker_example/spiker_example.html">Example: Spiker</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="spiker_example/spiker_download.html">Set up the model files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spiker_example/spiker_convert.html">Making the modfile compatible</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spiker_example/spiker_segmentation.html">Segmentation</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="allen_example/workflow.html">Example: Detailed L5 cell from ACTD</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="allen_example/download_build_from_allendb.html">Download and build the cell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="allen_example/convert_allen.html">Allen Cell Types Database modfiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="allen_example/segmentation.html">Segment the cell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="allen_example/match_passive.html">Match passive properties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="allen_example/match_fi.html">Match the FI curve</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
@@ -351,7 +363,6 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cite">Cite</a></li>
 </ul>
             </nav>
@@ -378,10 +389,6 @@ ACT implements the functional current segmentation approach (Alturki et al., 201
 pip<span class="w"> </span>install<span class="w"> </span>.
 </pre></div>
 </div>
-</section>
-<section id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">#</a></h2>
-<p>See the <a class="reference internal" href="workflow/workflow.html"><span class="std std-doc">Workflow</span></a> section for a full tuning example.</p>
 </section>
 <section id="cite">
 <h2>Cite<a class="headerlink" href="#cite" title="Link to this heading">#</a></h2>
@@ -422,11 +429,11 @@ pip<span class="w"> </span>install<span class="w"> </span>.
                   
 <div class="prev-next-area">
     <a class="right-next"
-       href="prerequisites/convert_allen.html"
+       href="guidelines/guidelines.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Making modfiles compatible with ACT</p>
+        <p class="prev-next-title">Workflow and guidelines</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -448,7 +455,6 @@ pip<span class="w"> </span>install<span class="w"> </span>.
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cite">Cite</a></li>
 </ul>
   </nav></div>

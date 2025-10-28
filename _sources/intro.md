@@ -14,10 +14,6 @@ git clone https://github.com/V-Marco/ACT.git
 pip install .
 ```
 
-## Usage
-
-See the [Workflow](workflow/workflow.md) section for a full tuning example.
-
 ## Cite
 
 TBD

@@ -1,0 +1,879 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Segmentation &#8212; Automatic Cell Tuner</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'spiker_example/spiker_segmentation';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Example: Detailed L5 cell from ACTD" href="../allen_example/workflow.html" />
+    <link rel="prev" title="Making the modfile compatible" href="spiker_convert.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../intro.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Automatic Cell Tuner</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../intro.html">
+                    Quick Start
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../guidelines/guidelines.html">Workflow and guidelines</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../guidelines/making_compatible.html">Making modfiles compatible with ACT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../guidelines/download_setup_cell.html">Downloading and seting up the cell files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../guidelines/segmentation.html">Segmentation of activation functions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="spiker_example.html">Example: Spiker</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="spiker_download.html">Set up the model files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spiker_convert.html">Making the modfile compatible</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Segmentation</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../allen_example/workflow.html">Example: Detailed L5 cell from ACTD</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../allen_example/download_build_from_allendb.html">Download and build the cell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../allen_example/convert_allen.html">Allen Cell Types Database modfiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../allen_example/segmentation.html">Segment the cell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../allen_example/match_passive.html">Match passive properties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../allen_example/match_fi.html">Match the FI curve</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/V-Marco/ACT" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/spiker_example/spiker_segmentation.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Segmentation</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#define-the-channels-based-on-the-modfile">Define the channels based on the modfile</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#run-actsegmenter">Run <code class="docutils literal notranslate"><span class="pre">ACTSegmenter</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#update-the-modfile">Update the modfile</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#simulate-and-compare">Simulate and compare</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="segmentation">
+<h1>Segmentation<a class="headerlink" href="#segmentation" title="Link to this heading">#</a></h1>
+<p>Note that for this example we assume the passive properties of the cell are known and do not need to be estimated.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;../&quot;</span><span class="p">)</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">act.modfiles</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">act.segmentation</span><span class="w"> </span><span class="kn">import</span> <span class="n">ACTSegmenter</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">act.simulator</span><span class="w"> </span><span class="kn">import</span> <span class="n">ACTSimulator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">act.cell_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">ACTCellModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">act.data_processing</span><span class="w"> </span><span class="kn">import</span> <span class="n">find_events</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">act.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimulationParameters</span><span class="p">,</span> <span class="n">ConstantCurrentInjection</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>libnrniv.dylib running as arm64
+but /usr/local/lib/libmpi.dylib can only run as x86_64
+</pre></div>
+</div>
+</div>
+</div>
+<section id="define-the-channels-based-on-the-modfile">
+<h2>Define the channels based on the modfile<a class="headerlink" href="#define-the-channels-based-on-the-modfile" title="Link to this heading">#</a></h2>
+<p>We first define modfiles as <code class="docutils literal notranslate"><span class="pre">python</span></code> objects using the <code class="docutils literal notranslate"><span class="pre">ACTModfile</span></code> class.</p>
+<ol class="arabic simple">
+<li><p>Choose the channels for segmentation (Na, K).</p></li>
+</ol>
+<p>For each channel:</p>
+<ol class="arabic" start="2">
+<li><p>Transfer the channel name (<code class="docutils literal notranslate"><span class="pre">channel_name</span></code>), channel ion (<code class="docutils literal notranslate"><span class="pre">ion</span></code>), maximum conductance (<code class="docutils literal notranslate"><span class="pre">gbar</span></code>) and channel reversal potential (<code class="docutils literal notranslate"><span class="pre">e</span></code>) from the modfile.</p></li>
+<li><p>Define the channel’s state variables. Use <code class="docutils literal notranslate"><span class="pre">act.modfiles.StateVariable</span></code> for variables that do not need to be segmented (typically, inactivation functions) and <code class="docutils literal notranslate"><span class="pre">act.modfiles.SegmentableStateVariable</span></code> for variables that need to be segmented.</p>
+<p>For each variable, Transfer the name (<code class="docutils literal notranslate"><span class="pre">name</span></code>), the power of the variable in the conductance equation (<code class="docutils literal notranslate"><span class="pre">power</span></code>), <span class="math notranslate nohighlight">\(V_{1/2}\)</span> (<code class="docutils literal notranslate"><span class="pre">vhalf</span></code>) and <span class="math notranslate nohighlight">\(k\)</span> (<code class="docutils literal notranslate"><span class="pre">k</span></code>) from the modfile. The <code class="docutils literal notranslate"><span class="pre">tau</span></code> parameter is not considered during segmentation and can be set to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">SegmentableStateVariable</span></code>s, specify the bounds for <code class="docutils literal notranslate"><span class="pre">vhalf</span></code> and <code class="docutils literal notranslate"><span class="pre">k</span></code>. Note that we are not using the full biological range for <code class="docutils literal notranslate"><span class="pre">vhalf</span></code> of Na activation function to achieve a closer match between the original and segmented cell.</p>
+</li>
+</ol>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Na</span> <span class="o">=</span> <span class="n">act</span><span class="o">.</span><span class="n">modfiles</span><span class="o">.</span><span class="n">ACTModfile</span><span class="p">(</span>
+    <span class="n">channel_name</span> <span class="o">=</span> <span class="s2">&quot;Na&quot;</span><span class="p">,</span>
+    <span class="n">ion</span> <span class="o">=</span> <span class="s2">&quot;na&quot;</span><span class="p">,</span>
+    <span class="n">gbar</span> <span class="o">=</span> <span class="mf">0.12</span><span class="p">,</span>
+    <span class="n">e</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
+    <span class="n">state_variables</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">act</span><span class="o">.</span><span class="n">modfiles</span><span class="o">.</span><span class="n">SegmentableStateVariable</span><span class="p">(</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;m&quot;</span><span class="p">,</span>
+            <span class="n">power</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="c1"># m * m * m</span>
+            <span class="n">vhalf</span> <span class="o">=</span> <span class="o">-</span><span class="mf">39.57</span><span class="p">,</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="mf">9.55</span><span class="p">,</span>
+            <span class="n">tau</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">segmentation_vhalf_bounds</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">45</span><span class="p">,</span> <span class="o">-</span><span class="mi">40</span><span class="p">),</span>
+            <span class="n">segmentation_k_bounds</span> <span class="o">=</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">act</span><span class="o">.</span><span class="n">modfiles</span><span class="o">.</span><span class="n">StateVariable</span><span class="p">(</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;h&quot;</span><span class="p">,</span>
+            <span class="n">power</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">vhalf</span> <span class="o">=</span> <span class="o">-</span><span class="mi">60</span><span class="p">,</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="o">-</span><span class="mi">6</span><span class="p">,</span>
+            <span class="n">tau</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+
+<span class="n">K</span> <span class="o">=</span> <span class="n">act</span><span class="o">.</span><span class="n">modfiles</span><span class="o">.</span><span class="n">ACTModfile</span><span class="p">(</span>
+    <span class="n">channel_name</span> <span class="o">=</span> <span class="s2">&quot;K&quot;</span><span class="p">,</span>
+    <span class="n">ion</span> <span class="o">=</span> <span class="s2">&quot;k&quot;</span><span class="p">,</span>
+    <span class="n">gbar</span> <span class="o">=</span> <span class="mf">0.036</span><span class="p">,</span>
+    <span class="n">e</span> <span class="o">=</span> <span class="o">-</span><span class="mi">77</span><span class="p">,</span>
+    <span class="n">state_variables</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">act</span><span class="o">.</span><span class="n">modfiles</span><span class="o">.</span><span class="n">SegmentableStateVariable</span><span class="p">(</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;n&quot;</span><span class="p">,</span>
+            <span class="n">power</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="c1"># n * n * n * n</span>
+            <span class="n">vhalf</span> <span class="o">=</span> <span class="o">-</span><span class="mf">50.98</span><span class="p">,</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="mf">17.44</span><span class="p">,</span>
+            <span class="n">tau</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">segmentation_vhalf_bounds</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">55</span><span class="p">,</span> <span class="o">-</span><span class="mi">35</span><span class="p">),</span>
+            <span class="n">segmentation_k_bounds</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="run-actsegmenter">
+<h2>Run <code class="docutils literal notranslate"><span class="pre">ACTSegmenter</span></code><a class="headerlink" href="#run-actsegmenter" title="Link to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Assumed to be known in this example</span>
+<span class="n">V_rest</span> <span class="o">=</span> <span class="o">-</span><span class="mi">65</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>The spiker model has only 2 modules: passive (voltages below <span class="math notranslate nohighlight">\(V_{rest}\)</span>) and spiking (voltages above <span class="math notranslate nohighlight">\(V_{rest}\)</span>). Consequently, in this case the threshold voltage is known and equal to <span class="math notranslate nohighlight">\(V_{rest}\)</span>. We can use <code class="docutils literal notranslate"><span class="pre">ACTSegmenter</span></code>’s <code class="docutils literal notranslate"><span class="pre">segment_v()</span></code> function to segment at this threshold value.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">segmenter</span> <span class="o">=</span> <span class="n">ACTSegmenter</span><span class="p">()</span>
+<span class="n">segmenter</span><span class="o">.</span><span class="n">segment_v</span><span class="p">(</span><span class="n">modfile_group</span> <span class="o">=</span> <span class="p">[</span><span class="n">Na</span><span class="p">,</span> <span class="n">K</span><span class="p">],</span> <span class="n">v_threshold</span> <span class="o">=</span> <span class="n">V_rest</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>--------------------
+Segmentation results
+--------------------
+Module voltage cutoff: -65 mV
+
+Estimated parameters for activation functions:
+Na(m): vhalf = -40.0 mV, k = 5.0 mV
+K(n): vhalf = -35.0 mV, k = 10.0 mV
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">ca</span> <span class="o">=</span> <span class="n">ax</span>
+
+<span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">var_color</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="n">Na</span><span class="p">[</span><span class="s2">&quot;m&quot;</span><span class="p">],</span> <span class="n">K</span><span class="p">[</span><span class="s2">&quot;n&quot;</span><span class="p">]],</span> <span class="p">[</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="s2">&quot;red&quot;</span><span class="p">]):</span>
+    <span class="n">ca</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">activation_function</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> (orig)&quot;</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="n">var_color</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">ls</span> <span class="o">=</span> <span class="s2">&quot;--&quot;</span><span class="p">)</span>
+    <span class="n">ca</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">segmented_activation_function</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> (seg)&quot;</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="n">var_color</span><span class="p">)</span>
+
+<span class="n">ca</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;mV&quot;</span><span class="p">)</span>
+<span class="n">ca</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Prob.&quot;</span><span class="p">)</span>
+<span class="n">ca</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">V_rest</span><span class="p">,</span> <span class="n">ls</span> <span class="o">=</span> <span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s2">&quot;black&quot;</span><span class="p">)</span>
+<span class="n">ca</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">V_rest</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;V-rest = </span><span class="si">{</span><span class="n">V_rest</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">ca</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/76e89fe3957863d4cf4ec3d78754408c17e156b2e336a0e6cc74fa927adbec29.png" src="../_images/76e89fe3957863d4cf4ec3d78754408c17e156b2e336a0e6cc74fa927adbec29.png" />
+</div>
+</div>
+</section>
+<section id="update-the-modfile">
+<h2>Update the modfile<a class="headerlink" href="#update-the-modfile" title="Link to this heading">#</a></h2>
+<p>Defining modfiles as <code class="docutils literal notranslate"><span class="pre">ACTModfile</span></code> objects allows us to easily obtain the segmented activation functions as shown below.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">Na</span><span class="o">.</span><span class="n">compose_segmented_activation_function</span><span class="p">(</span><span class="n">svar</span> <span class="o">=</span> <span class="n">Na</span><span class="p">[</span><span class="s2">&quot;m&quot;</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>	:Segmentation-start
+	minf = 1.0 / (1.0 + exp(-(v - -40.0) / 5.0))
+	if (v &lt; -62) {
+		minf = 0.26164 + v * 0.00403
+	}
+	if (v &lt; -65) {
+		minf = 0
+	}
+	:Segmentation-end
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">K</span><span class="o">.</span><span class="n">compose_segmented_activation_function</span><span class="p">(</span><span class="n">svar</span> <span class="o">=</span> <span class="n">K</span><span class="p">[</span><span class="s2">&quot;n&quot;</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>	:Segmentation-start
+	ninf = 1.0 / (1.0 + exp(-(v - -35.0) / 10.0))
+	if (v &lt; -62) {
+		ninf = 1.36161 + v * 0.02095
+	}
+	if (v &lt; -65) {
+		ninf = 0
+	}
+	:Segmentation-end
+</pre></div>
+</div>
+</div>
+</div>
+<p>Copy the printouts into the <code class="docutils literal notranslate"><span class="pre">modfiles/seg/hh_spiker.mod</span></code>. E.g., for Na:</p>
+<p><img alt="" src="../_images/spiker_img2.png" /></p>
+</section>
+<section id="simulate-and-compare">
+<h2>Simulate and compare<a class="headerlink" href="#simulate-and-compare" title="Link to this heading">#</a></h2>
+<p>Finally, we simulate from both the original and segmented cell and compare the voltage traces and the FI curve.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">original_cell</span> <span class="o">=</span> <span class="n">ACTCellModel</span><span class="p">(</span>
+    <span class="n">path_to_hoc_file</span> <span class="o">=</span> <span class="s2">&quot;./spiker/orig/template.hoc&quot;</span><span class="p">,</span>
+    <span class="n">cell_name</span> <span class="o">=</span> <span class="s2">&quot;Spiker&quot;</span><span class="p">,</span>
+    <span class="n">path_to_mod_files</span> <span class="o">=</span> <span class="s2">&quot;./spiker/orig/modfiles&quot;</span><span class="p">,</span>
+    <span class="n">passive</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;gl_hh_spiker&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mf">54.4</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+    <span class="n">active_channels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;gnabar_hh_spiker&quot;</span><span class="p">,</span> <span class="s2">&quot;gkbar_hh_spiker&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+
+<span class="n">segmented_cell</span> <span class="o">=</span> <span class="n">ACTCellModel</span><span class="p">(</span>
+    <span class="n">path_to_hoc_file</span> <span class="o">=</span> <span class="s2">&quot;./spiker/seg/template.hoc&quot;</span><span class="p">,</span>
+    <span class="n">cell_name</span> <span class="o">=</span> <span class="s2">&quot;Spiker&quot;</span><span class="p">,</span>
+    <span class="n">path_to_mod_files</span> <span class="o">=</span> <span class="s2">&quot;./spiker/seg/modfiles&quot;</span><span class="p">,</span>
+    <span class="n">passive</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;gl_hh_spiker&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mf">54.4</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+    <span class="n">active_channels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;gnabar_hh_spiker&quot;</span><span class="p">,</span> <span class="s2">&quot;gkbar_hh_spiker&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">simulator</span> <span class="o">=</span> <span class="n">ACTSimulator</span><span class="p">()</span>
+
+<span class="n">I</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">0.09</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">sim_idx</span><span class="p">,</span> <span class="n">i_amp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">I</span><span class="p">):</span>
+    <span class="n">simulator</span><span class="o">.</span><span class="n">submit_job</span><span class="p">(</span>
+        <span class="n">original_cell</span><span class="p">,</span> 
+        <span class="n">SimulationParameters</span><span class="p">(</span>
+            <span class="n">sim_idx</span> <span class="o">=</span> <span class="n">sim_idx</span><span class="p">,</span>
+            <span class="n">sim_name</span> <span class="o">=</span> <span class="s2">&quot;spiker_orig&quot;</span><span class="p">,</span>
+            <span class="n">h_celsius</span> <span class="o">=</span> <span class="mf">6.3</span><span class="p">,</span> 
+            <span class="n">h_v_init</span> <span class="o">=</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span>
+            <span class="n">h_tstop</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+            <span class="n">CI</span> <span class="o">=</span> <span class="p">[</span><span class="n">ConstantCurrentInjection</span><span class="p">(</span><span class="n">amp</span> <span class="o">=</span> <span class="n">i_amp</span><span class="p">,</span> <span class="n">dur</span> <span class="o">=</span> <span class="mi">800</span><span class="p">,</span> <span class="n">delay</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)]</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+
+<span class="n">simulator</span><span class="o">.</span><span class="n">run_jobs</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>        ACTSimulator (2025)
+        ----------
+        When submitting multiple jobs, note that the cells must share modfiles.
+        
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>libnrniv.dylib running as arm64
+but /usr/local/lib/libmpi.dylib can only run as x86_64
+
+libnrniv.dylib running as arm64
+but /usr/local/lib/libmpi.dylib can only run as x86_64
+
+libnrniv.dylib running as arm64
+but /usr/local/lib/libmpi.dylib can only run as x86_64
+
+libnrniv.dylib running as arm64
+but /usr/local/lib/libmpi.dylib can only run as x86_64
+
+libnrniv.dylib running as arm64
+but /usr/local/lib/libmpi.dylib can only run as x86_64
+
+libnrniv.dylib running as arm64
+libnrniv.dylib running as arm64
+but /usr/local/lib/libmpi.dylib can only run as x86_64
+
+but /usr/local/lib/libmpi.dylib can only run as x86_64
+
+libnrniv.dylib running as arm64
+but /usr/local/lib/libmpi.dylib can only run as x86_64
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">simulator</span> <span class="o">=</span> <span class="n">ACTSimulator</span><span class="p">()</span>
+
+<span class="n">I</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">0.09</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">sim_idx</span><span class="p">,</span> <span class="n">i_amp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">I</span><span class="p">):</span>
+    <span class="n">simulator</span><span class="o">.</span><span class="n">submit_job</span><span class="p">(</span>
+        <span class="n">segmented_cell</span><span class="p">,</span> 
+        <span class="n">SimulationParameters</span><span class="p">(</span>
+            <span class="n">sim_idx</span> <span class="o">=</span> <span class="n">sim_idx</span><span class="p">,</span>
+            <span class="n">sim_name</span> <span class="o">=</span> <span class="s2">&quot;spiker_seg&quot;</span><span class="p">,</span>
+            <span class="n">h_celsius</span> <span class="o">=</span> <span class="mf">6.3</span><span class="p">,</span> 
+            <span class="n">h_v_init</span> <span class="o">=</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span>
+            <span class="n">h_tstop</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+            <span class="n">CI</span> <span class="o">=</span> <span class="p">[</span><span class="n">ConstantCurrentInjection</span><span class="p">(</span><span class="n">amp</span> <span class="o">=</span> <span class="n">i_amp</span><span class="p">,</span> <span class="n">dur</span> <span class="o">=</span> <span class="mi">800</span><span class="p">,</span> <span class="n">delay</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)]</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+
+<span class="n">simulator</span><span class="o">.</span><span class="n">run_jobs</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>        ACTSimulator (2025)
+        ----------
+        When submitting multiple jobs, note that the cells must share modfiles.
+        
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>libnrniv.dylib running as arm64
+but /usr/local/lib/libmpi.dylib can only run as x86_64
+
+libnrniv.dylib running as arm64
+but /usr/local/lib/libmpi.dylib can only run as x86_64
+
+libnrniv.dylib running as arm64
+but /usr/local/lib/libmpi.dylib can only run as x86_64
+
+libnrniv.dylib running as arm64
+but /usr/local/lib/libmpi.dylib can only run as x86_64
+
+libnrniv.dylib running as arm64
+but /usr/local/lib/libmpi.dylib can only run as x86_64
+
+libnrniv.dylib running as arm64
+but /usr/local/lib/libmpi.dylib can only run as x86_64
+
+libnrniv.dylib running as arm64
+but /usr/local/lib/libmpi.dylib can only run as x86_64
+
+libnrniv.dylib running as arm64
+but /usr/local/lib/libmpi.dylib can only run as x86_64
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Read the data</span>
+<span class="n">v_orig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;spiker_orig/out_7.npy&quot;</span><span class="p">)[:,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">v_seg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;spiker_seg/out_7.npy&quot;</span><span class="p">)[:,</span> <span class="mi">0</span><span class="p">]</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">ca</span> <span class="o">=</span> <span class="n">ax</span>
+<span class="n">T</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">v_orig</span><span class="p">))</span>
+
+<span class="n">ca</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">v_orig</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Original&quot;</span><span class="p">)</span>
+<span class="n">ca</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">v_seg</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Segmented&quot;</span><span class="p">)</span>
+<span class="n">ca</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Time (ms/10)&quot;</span><span class="p">)</span>
+<span class="n">ca</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;V (mV)&quot;</span><span class="p">)</span>
+
+<span class="n">ca</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/f88c8cbe1e7e70ee36344c31d9bfcf2a4b212894e1c366ccfe6e3491b980d468.png" src="../_images/f88c8cbe1e7e70ee36344c31d9bfcf2a4b212894e1c366ccfe6e3491b980d468.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">f_orig</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">f_seg</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">sim_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">I</span><span class="p">)):</span>
+    <span class="n">f_orig</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">find_events</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;spiker_orig/out_</span><span class="si">{</span><span class="n">sim_idx</span><span class="si">}</span><span class="s2">.npy&quot;</span><span class="p">)[</span><span class="mi">1000</span><span class="p">:</span><span class="mi">9000</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">)))</span>
+    <span class="n">f_seg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">find_events</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;spiker_seg/out_</span><span class="si">{</span><span class="n">sim_idx</span><span class="si">}</span><span class="s2">.npy&quot;</span><span class="p">)[</span><span class="mi">1000</span><span class="p">:</span><span class="mi">9000</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">)))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">f_orig</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Original&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">f_seg</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Segmented&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;I (nA)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;V (mV)&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Text(0, 0.5, &#39;V (mV)&#39;)
+</pre></div>
+</div>
+<img alt="../_images/bdd034164b661881d6a9c9562669f63a754e375f6b02e3e26c7e740cbe2ac628.png" src="../_images/bdd034164b661881d6a9c9562669f63a754e375f6b02e3e26c7e740cbe2ac628.png" />
+</div>
+</div>
+<p>As we can see, although a particular trace matches fairly closely, the FI curve for the segmented cell is off. This is expected, since we adjusted <span class="math notranslate nohighlight">\(V_{1/2}\)</span> and <span class="math notranslate nohighlight">\(k\)</span>, and these changes need to be compensated by adjusting conductances.</p>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./spiker_example"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="spiker_convert.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Making the modfile compatible</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../allen_example/workflow.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Example: Detailed L5 cell from ACTD</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#define-the-channels-based-on-the-modfile">Define the channels based on the modfile</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#run-actsegmenter">Run <code class="docutils literal notranslate"><span class="pre">ACTSegmenter</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#update-the-modfile">Update the modfile</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#simulate-and-compare">Simulate and compare</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By The Jupyter Book community
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
